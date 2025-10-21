@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/AR.js@2.0.0/aframe/build/aframe-ar.js"></script>
+  </head>
+  <body style="margin: 0px; overflow: hidden;">
+    <!-- A-Frame Scene -->
+    <a-scene embedded arjs>
+      <!-- Image Marker -->
+      <a-marker type="image" url="lion-orig.jpg" id="marker">
+        <!-- Plane to Display the Video -->
+        <a-video
+          id="videoElement"
+          src="#video"
+          position="0 0 0"
+          rotation="-90 0 0"
+          width="2"
+          height="1.5"
+        ></a-video>
+      </a-marker>
+      <a-entity camera></a-entity>
+    </a-scene>
+
+    <!-- Video Element -->
+    <video id="video" src="videos/lion-gs.mp4" autoplay loop muted crossorigin="anonymous" style="display: none;"></video>
+
+    <script>
+      window.addEventListener("DOMContentLoaded", function () {
+        const video = document.querySelector("#video");
+
+        // Make sure the video is muted and set up autoplay
+        video.muted = true;
+        video.play();
+
+        // Select the marker element
+        const marker = document.querySelector("#marker");
+
+        // Listen for marker-found event
+        marker.addEventListener('markerFound', function () {
+          console.log("Marker found, unmuting video...");
+          video.muted = false; // Unmute the video when the marker is found
+        });
+
+        // Listen for marker-lost event
+        marker.addEventListener('markerLost', function () {
+          console.log("Marker lost, muting video...");
+          video.muted = true; // Mute the video when the marker is lost
+        });
+      });
+    </script>
+  </body>
+</html>
