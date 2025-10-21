@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Halloween AR</title>
+    <title>ARVille AR for Everyone!!!</title>
 
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
@@ -32,10 +32,10 @@
       <a-entity light="type: ambient; color: #888; intensity: 1"></a-entity>
 
       <!-- Directional Light for front illumination -->
-      <a-entity light="type: directional; color: #FFFFFF; intensity: 1.5" position="0 3 3" shadow></a-entity>
+      <a-entity light="type: directional; color: #FFFFFF; intensity: 1.5; position: 0 3 3" shadow></a-entity>
 
       <!-- Point Light for additional front fill -->
-      <a-entity light="type: point; color: #FFFFFF; intensity: 1.5" position="0 2 2"></a-entity>
+      <a-entity light="type: point; color: #FFFFFF; intensity: 1.5; position: 0 2 2"></a-entity>
 
       <!-- Vamp Marker -->
       <a-marker type="pattern" url="AR/patts/vamp.patt" id="marker-vamp">
@@ -54,7 +54,7 @@
         </a-entity>
         <a-entity
           id="vamp-sound"
-          sound="src: AR/sounds/vamp.mp3; autoplay: false; loop: true; volume: 0.7"
+          sound="src: AR/sounds/vamp.mp3; autoplay: false; loop: true; volume: 1; preload: auto"
         ></a-entity>
       </a-marker>
 
@@ -75,7 +75,7 @@
         </a-entity>
         <a-entity
           id="frankie-sound"
-          sound="src: AR/sounds/frankie.mp3; autoplay: false; loop: true; volume: 0.7"
+          sound="src: AR/sounds/frankie.mp3; autoplay: false; loop: true; volume: 1; preload: auto"
         ></a-entity>
       </a-marker>
 
@@ -96,7 +96,7 @@
         </a-entity>
         <a-entity
           id="zombie-sound"
-          sound="src: AR/sounds/zombie.mp3; autoplay: false; loop: true; volume: 0.7"
+          sound="src: AR/sounds/zombie.mp3; autoplay: false; loop: true; volume: 1; preload: auto"
         ></a-entity>
       </a-marker>
 
@@ -117,7 +117,7 @@
         </a-entity>
         <a-entity
           id="devil-sound"
-          sound="src: AR/sounds/devil.mp3; autoplay: false; loop: true; volume: 0.7"
+          sound="src: AR/sounds/devil.mp3; autoplay: false; loop: true; volume: 1; preload: auto"
         ></a-entity>
       </a-marker>
 
@@ -138,7 +138,7 @@
         </a-entity>
         <a-entity
           id="bones-sound"
-          sound="src: AR/sounds/bones.mp3; autoplay: false; loop: true; volume: 0.7"
+          sound="src: AR/sounds/bones.mp3; autoplay: false; loop: true; volume: 1; preload: auto"
         ></a-entity>
       </a-marker>
 
@@ -159,7 +159,7 @@
         </a-entity>
         <a-entity
           id="scarecrow-sound"
-          sound="src: AR/sounds/scarecrow.mp3; autoplay: false; loop: true; volume: 0.7"
+          sound="src: AR/sounds/scarecrow.mp3; autoplay: false; loop: true; volume: 1; preload: auto"
         ></a-entity>
       </a-marker>
 
@@ -178,6 +178,7 @@
         const mixerActiveStates = {};
         const animationStates = {}; // Track animation state for each model
         const soundTimeouts = {}; // Track sound timeouts for each marker
+        const soundWasBrieflyLost = {}; // NEW: Track if sound was only briefly lost
 
         // Orientation detection
         let currentOrientation = 'unknown';
@@ -217,14 +218,15 @@
             transitionDuration: 0.5
           };
 
-          // Preload sound - use setTimeout to ensure A-Frame components are loaded
-          setTimeout(() => {
-            if (soundEl && soundEl.components && soundEl.components.sound) {
-              // A-Frame sound component handles preloading automatically
-              // Just ensure the sound is ready by accessing the component
-              console.log(`Sound component ready for ${markerConfig.soundId}`);
-            }
-          }, 1000);
+          // Initialize sound tracking
+          soundWasBrieflyLost[markerConfig.soundId] = false;
+
+          // Preload sound immediately
+// Preload sound immediately - use the sound element directly
+window.addEventListener('load', function() {
+  // Sounds will auto-preload with the preload attribute
+  // No need to call .load() method
+});
 
           // Marker found / lost events
           marker.addEventListener("markerFound", () => {
@@ -232,6 +234,8 @@
             if (soundTimeouts[markerConfig.id]) {
               clearTimeout(soundTimeouts[markerConfig.id]);
               soundTimeouts[markerConfig.id] = null;
+              // MARK: This means marker was only briefly lost (<1 second)
+              soundWasBrieflyLost[markerConfig.soundId] = true;
             }
             
             // Start animations for this model
@@ -248,6 +252,9 @@
             if (mixers[markerConfig.modelId]) {
               mixerActiveStates[markerConfig.modelId] = false;
             }
+            
+            // Reset the brief loss flag
+            soundWasBrieflyLost[markerConfig.soundId] = false;
             
             // Set timeout to stop music permanently after 1 second for this marker
             soundTimeouts[markerConfig.id] = setTimeout(() => {
@@ -312,15 +319,13 @@
         }
 
         function setupModelAnimations(modelId, gltfObj) {
-          let clips = gltfObj.animations || (gltfObj && gltfObj.userData && gltfObj.userData.animations) || [];
+          const clips = gltfObj.animations || (gltfObj && gltfObj.userData && gltfObj.userData.animations) || [];
 
           if ((!clips || clips.length === 0) && gltfObj.children) {
-            // Try to find animations in children
             clips = gltfObj.animations || [];
           }
 
           if (!AFRAME || !AFRAME.THREE || !clips || clips.length === 0) {
-            console.log(`No animations found for ${modelId}`);
             return;
           }
 
@@ -418,26 +423,38 @@
         // Sound control functions for individual markers
         function playMarkerSound(soundId) {
           const soundEl = document.querySelector(`#${soundId}`);
-          if (soundEl && soundEl.components && soundEl.components.sound) {
+          if (soundEl) {
             const soundComponent = soundEl.components.sound;
-            soundComponent.stopSound();
-            soundComponent.playSound();
+            if (soundComponent) {
+              // NEW: Only restart if the sound wasn't briefly lost
+              if (soundWasBrieflyLost[soundId]) {
+                // Sound was only briefly lost - just ensure it's playing
+                soundComponent.playSound();
+                soundWasBrieflyLost[soundId] = false; // Reset the flag
+              } else {
+                // Normal behavior: stop and restart from beginning
+                soundComponent.stopSound();
+                soundComponent.playSound();
+              }
+            }
           }
         }
 
         function stopMarkerSound(soundId) {
           const soundEl = document.querySelector(`#${soundId}`);
-          if (soundEl && soundEl.components && soundEl.components.sound) {
+          if (soundEl) {
             const soundComponent = soundEl.components.sound;
-            soundComponent.stopSound();
+            if (soundComponent) {
+              soundComponent.stopSound();
+            }
           }
         }
 
         // Set up orientation change listeners
         window.addEventListener('resize', detectOrientation);
         window.addEventListener('orientationchange', detectOrientation);
-        // Initial detection
-        detectOrientation();
+        // Continuous checking for Android
+        setInterval(detectOrientation, 1000);
 
         // Clean up on unload
         window.addEventListener("beforeunload", () => {
