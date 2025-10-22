@@ -54,7 +54,7 @@
         </a-entity>
         <a-entity
           id="vamp-sound"
-          sound="src: AR/sounds/vamp.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
+          sound="src: AR/sounds/vamp.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
         ></a-entity>
       </a-marker>
 
@@ -75,7 +75,7 @@
         </a-entity>
         <a-entity
           id="frankie-sound"
-          sound="src: AR/sounds/frankie.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
+          sound="src: AR/sounds/frankie.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
         ></a-entity>
       </a-marker>
 
@@ -96,7 +96,7 @@
         </a-entity>
         <a-entity
           id="zombie-sound"
-          sound="src: AR/sounds/zombie.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
+          sound="src: AR/sounds/zombie.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
         ></a-entity>
       </a-marker>
 
@@ -117,7 +117,7 @@
         </a-entity>
         <a-entity
           id="devil-sound"
-          sound="src: AR/sounds/devil.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
+          sound="src: AR/sounds/devil.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
         ></a-entity>
       </a-marker>
 
@@ -138,7 +138,7 @@
         </a-entity>
         <a-entity
           id="bones-sound"
-          sound="src: AR/sounds/bones.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
+          sound="src: AR/sounds/bones.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
         ></a-entity>
       </a-marker>
 
@@ -159,7 +159,133 @@
         </a-entity>
         <a-entity
           id="scarecrow-sound"
-          sound="src: AR/sounds/scarecrow.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
+          sound="src: AR/sounds/scarecrow.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
+        ></a-entity>
+      </a-marker>
+
+      <!-- Clown Marker -->
+      <a-marker type="pattern" url="AR/patts/clown.patt" id="marker-clown">
+        <a-entity
+          id="clown-wrapper"
+          position="0 0 0"
+          rotation="-90 0 0"
+          class="orientation-dependent"
+        >
+          <a-entity
+            id="clown-model"
+            gltf-model="AR/models/clown.glb"
+            scale="4 4 4"
+            position="0 -0.6 0"
+          ></a-entity>
+        </a-entity>
+        <a-entity
+          id="clown-sound"
+          sound="src: AR/sounds/clown.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
+        ></a-entity>
+      </a-marker>
+
+      <!-- Teddy Marker -->
+      <a-marker type="pattern" url="AR/patts/teddy.patt" id="marker-teddy">
+        <a-entity
+          id="teddy-wrapper"
+          position="0 0 0"
+          rotation="-90 0 0"
+          class="orientation-dependent"
+        >
+          <a-entity
+            id="teddy-model"
+            gltf-model="AR/models/teddy.glb"
+            scale="4 4 4"
+            position="0 -0.6 0"
+          ></a-entity>
+        </a-entity>
+        <a-entity
+          id="teddy-sound"
+          sound="src: AR/sounds/teddy.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
+        ></a-entity>
+      </a-marker>
+
+      <!-- Pumpkin Marker -->
+      <a-marker type="pattern" url="AR/patts/pumpkin.patt" id="marker-pumpkin">
+        <a-entity
+          id="pumpkin-wrapper"
+          position="0 0 0"
+          rotation="-90 0 0"
+          class="orientation-dependent"
+        >
+          <a-entity
+            id="pumpkin-model"
+            gltf-model="AR/models/pumpkin.glb"
+            scale="4 4 4"
+            position="0 -0.6 0"
+          ></a-entity>
+        </a-entity>
+        <a-entity
+          id="pumpkin-sound"
+          sound="src: AR/sounds/pumpkin.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
+        ></a-entity>
+      </a-marker>
+
+      <!-- Witch Marker -->
+      <a-marker type="pattern" url="AR/patts/witch.patt" id="marker-witch">
+        <a-entity
+          id="witch-wrapper"
+          position="0 0 0"
+          rotation="-90 0 0"
+          class="orientation-dependent"
+        >
+          <a-entity
+            id="witch-model"
+            gltf-model="AR/models/witch.glb"
+            scale="4 4 4"
+            position="0 -0.6 0"
+          ></a-entity>
+        </a-entity>
+        <a-entity
+          id="witch-sound"
+          sound="src: AR/sounds/witch.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
+        ></a-entity>
+      </a-marker>
+
+      <!-- Zombina Marker -->
+      <a-marker type="pattern" url="AR/patts/zombina.patt" id="marker-zombina">
+        <a-entity
+          id="zombina-wrapper"
+          position="0 0 0"
+          rotation="-90 0 0"
+          class="orientation-dependent"
+        >
+          <a-entity
+            id="zombina-model"
+            gltf-model="AR/models/zombina.glb"
+            scale="4 4 4"
+            position="0 -0.6 0"
+          ></a-entity>
+        </a-entity>
+        <a-entity
+          id="zombina-sound"
+          sound="src: AR/sounds/zombina.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
+        ></a-entity>
+      </a-marker>
+
+      <!-- Wolfie Marker -->
+      <a-marker type="pattern" url="AR/patts/wolfie.patt" id="marker-wolfie">
+        <a-entity
+          id="wolfie-wrapper"
+          position="0 0 0"
+          rotation="-90 0 0"
+          class="orientation-dependent"
+        >
+          <a-entity
+            id="wolfie-model"
+            gltf-model="AR/models/wolfie.glb"
+            scale="4 4 4"
+            position="0 -0.6 0"
+          ></a-entity>
+        </a-entity>
+        <a-entity
+          id="wolfie-sound"
+          sound="src: AR/sounds/wolfie.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
         ></a-entity>
       </a-marker>
 
@@ -199,7 +325,13 @@
           { id: 'marker-zombie', modelId: 'zombie-model', wrapperId: 'zombie-wrapper', soundId: 'zombie-sound' },
           { id: 'marker-devil', modelId: 'devil-model', wrapperId: 'devil-wrapper', soundId: 'devil-sound' },
           { id: 'marker-bones', modelId: 'bones-model', wrapperId: 'bones-wrapper', soundId: 'bones-sound' },
-          { id: 'marker-scarecrow', modelId: 'scarecrow-model', wrapperId: 'scarecrow-wrapper', soundId: 'scarecrow-sound' }
+          { id: 'marker-scarecrow', modelId: 'scarecrow-model', wrapperId: 'scarecrow-wrapper', soundId: 'scarecrow-sound' },
+          { id: 'marker-clown', modelId: 'clown-model', wrapperId: 'clown-wrapper', soundId: 'clown-sound' },
+          { id: 'marker-teddy', modelId: 'teddy-model', wrapperId: 'teddy-wrapper', soundId: 'teddy-sound' },
+          { id: 'marker-pumpkin', modelId: 'pumpkin-model', wrapperId: 'pumpkin-wrapper', soundId: 'pumpkin-sound' },
+          { id: 'marker-witch', modelId: 'witch-model', wrapperId: 'witch-wrapper', soundId: 'witch-sound' },
+          { id: 'marker-zombina', modelId: 'zombina-model', wrapperId: 'zombina-wrapper', soundId: 'zombina-sound' },
+          { id: 'marker-wolfie', modelId: 'wolfie-model', wrapperId: 'wolfie-wrapper', soundId: 'wolfie-sound' }
         ];
 
         markers.forEach(markerConfig => {
