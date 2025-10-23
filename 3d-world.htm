@@ -123,26 +123,39 @@
           scene.add(animatedModel);
 
           // Animate all clips sequentially and loop forever
-          if (gltf.animations && gltf.animations.length > 0) {
-            mixer = new THREE.AnimationMixer(animatedModel);
-            const clips = gltf.animations;
-            let currentIndex = 0;
+          
+if (gltf.animations && gltf.animations.length > 0) {
+  mixer = new THREE.AnimationMixer(animatedModel);
+  const clips = gltf.animations;
+  let currentIndex = 0;
+  let currentAction, nextAction;
+  const crossFadeDuration = 0.7; // seconds of overlap between clips
 
-            const playNext = () => {
-              const clip = clips[currentIndex];
-              const action = mixer.clipAction(clip);
-              action.reset();
-              action.play();
-              action.clampWhenFinished = true;
-              action.loop = THREE.LoopOnce;
+  const playNext = () => {
+    const clip = clips[currentIndex];
+    nextAction = mixer.clipAction(clip);
 
-              mixer.addEventListener('finished', () => {
-                currentIndex = (currentIndex + 1) % clips.length;
-                playNext();
-              });
-            };
-            playNext();
-          }
+    // fade from previous animation if one exists
+    if (currentAction) {
+      currentAction.crossFadeTo(nextAction, crossFadeDuration, false);
+    }
+
+    nextAction.reset();
+    nextAction.play();
+    nextAction.loop = THREE.LoopOnce;
+
+    // schedule next animation just before this one finishes
+    const nextDelay = Math.max(clip.duration - crossFadeDuration, 0.1) * 1000;
+    setTimeout(() => {
+      currentIndex = (currentIndex + 1) % clips.length;
+      currentAction = nextAction;
+      playNext();
+    }, nextDelay);
+  };
+
+  // start first animation
+  playNext();
+}
 
           document.getElementById("loading").style.display = "none";
           console.log("&#9989; bones.glb loaded and animated");
