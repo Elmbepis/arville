@@ -37,260 +37,24 @@
       <!-- Point Light for additional front fill -->
       <a-entity light="type: point; color: #FFFFFF; intensity: 1.5; position: 0 2 2"></a-entity>
 
-
-/*
-      <!-- Vamp Marker -->
-      <a-marker type="pattern" url="patts/vamp.patt" id="marker-vamp">
+      <!-- trex Marker -->
+      <a-marker type="pattern" url="patts/dinos/trex.patt" id="marker-trex">
         <a-entity
-          id="vamp-wrapper"
+          id="trex-wrapper"
           position="0 0 0"
           rotation="-90 0 0"
           class="orientation-dependent"
         >
           <a-entity
-            id="vamp-model"
-            gltf-model="models/vamp.glb"
+            id="trex-model"
+            gltf-model="models/dinos/trex.glb"
             scale="4 4 4"
             position="0 -0.6 0"
           ></a-entity>
         </a-entity>
         <a-entity
-          id="vamp-sound"
-          sound="src: sounds/vamp.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-*/
-
-
-      <!-- Frankie Marker -->
-      <a-marker type="pattern" url="patts/frankie.patt" id="marker-frankie">
-        <a-entity
-          id="frankie-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="frankie-model"
-            gltf-model="models/frankie.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="frankie-sound"
-          sound="src: sounds/frankie.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Zombie Marker -->
-      <a-marker type="pattern" url="patts/zombie.patt" id="marker-zombie">
-        <a-entity
-          id="zombie-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="zombie-model"
-            gltf-model="models/zombie.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="zombie-sound"
-          sound="src: sounds/zombie.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Devil Marker -->
-      <a-marker type="pattern" url="patts/devil.patt" id="marker-devil">
-        <a-entity
-          id="devil-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="devil-model"
-            gltf-model="models/devil.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="devil-sound"
-          sound="src: sounds/devil.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Bones Marker -->
-      <a-marker type="pattern" url="patts/bones.patt" id="marker-bones">
-        <a-entity
-          id="bones-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="bones-model"
-            gltf-model="models/bones.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="bones-sound"
-          sound="src: sounds/bones.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Scarecrow Marker -->
-      <a-marker type="pattern" url="patts/scarecrow.patt" id="marker-scarecrow">
-        <a-entity
-          id="scarecrow-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="scarecrow-model"
-            gltf-model="models/scarecrow.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="scarecrow-sound"
-          sound="src: sounds/scarecrow.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Clown Marker -->
-      <a-marker type="pattern" url="patts/vamp.patt" id="marker-clown">
-        <a-entity
-          id="clown-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="clown-model"
-            gltf-model="models/clown.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="clown-sound"
-          sound="src: sounds/clown.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Teddy Marker -->
-      <a-marker type="pattern" url="patts/teddy.patt" id="marker-teddy">
-        <a-entity
-          id="teddy-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="teddy-model"
-            gltf-model="models/teddy.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="teddy-sound"
-          sound="src: sounds/teddy.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Pumpkin Marker -->
-      <a-marker type="pattern" url="patts/pumpkin.patt" id="marker-pumpkin">
-        <a-entity
-          id="pumpkin-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="pumpkin-model"
-            gltf-model="models/pumpkin.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="pumpkin-sound"
-          sound="src: sounds/pumpkin.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Witch Marker -->
-      <a-marker type="pattern" url="patts/witch.patt" id="marker-witch">
-        <a-entity
-          id="witch-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="witch-model"
-            gltf-model="models/witch.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="witch-sound"
-          sound="src: sounds/witch.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Zombina Marker -->
-      <a-marker type="pattern" url="patts/zombina.patt" id="marker-zombina">
-        <a-entity
-          id="zombina-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="zombina-model"
-            gltf-model="models/zombina.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="zombina-sound"
-          sound="src: sounds/zombina.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Wolfie Marker -->
-      <a-marker type="pattern" url="patts/wolfie.patt" id="marker-wolfie">
-        <a-entity
-          id="wolfie-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="wolfie-model"
-            gltf-model="models/wolfie.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="wolfie-sound"
-          sound="src: sounds/wolfie.mp3; autoplay: false; loop: true; volume: 3; preload: auto"
+          id="trex-sound"
+          sound="src: sounds/dinos/trex.wav; autoplay: false; loop: true; volume: 3; preload: auto"
         ></a-entity>
       </a-marker>
 
@@ -325,18 +89,7 @@
 
         // Setup all markers
         const markers = [
-          { id: 'marker-vamp', modelId: 'vamp-model', wrapperId: 'vamp-wrapper', soundId: 'vamp-sound' },
-          { id: 'marker-frankie', modelId: 'frankie-model', wrapperId: 'frankie-wrapper', soundId: 'frankie-sound' },
-          { id: 'marker-zombie', modelId: 'zombie-model', wrapperId: 'zombie-wrapper', soundId: 'zombie-sound' },
-          { id: 'marker-devil', modelId: 'devil-model', wrapperId: 'devil-wrapper', soundId: 'devil-sound' },
-          { id: 'marker-bones', modelId: 'bones-model', wrapperId: 'bones-wrapper', soundId: 'bones-sound' },
-          { id: 'marker-scarecrow', modelId: 'scarecrow-model', wrapperId: 'scarecrow-wrapper', soundId: 'scarecrow-sound' },
-          { id: 'marker-clown', modelId: 'clown-model', wrapperId: 'clown-wrapper', soundId: 'clown-sound' },
-          { id: 'marker-teddy', modelId: 'teddy-model', wrapperId: 'teddy-wrapper', soundId: 'teddy-sound' },
-          { id: 'marker-pumpkin', modelId: 'pumpkin-model', wrapperId: 'pumpkin-wrapper', soundId: 'pumpkin-sound' },
-          { id: 'marker-witch', modelId: 'witch-model', wrapperId: 'witch-wrapper', soundId: 'witch-sound' },
-          { id: 'marker-zombina', modelId: 'zombina-model', wrapperId: 'zombina-wrapper', soundId: 'zombina-sound' },
-          { id: 'marker-wolfie', modelId: 'wolfie-model', wrapperId: 'wolfie-wrapper', soundId: 'wolfie-sound' }
+          { id: 'marker-trex', modelId: 'trex-model', wrapperId: 'trex-wrapper', soundId: 'trex-sound' }
         ];
 
         markers.forEach(markerConfig => {
