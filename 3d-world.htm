@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Showroom - Animated Bones</title>
+  <title>3D Showroom - Bones with Vamp Animations</title>
   <style>
     body {
       margin: 0;
@@ -40,9 +40,9 @@
   </style>
 </head>
 <body>
-  <div id="info">3D Showroom | WASD: Move | Mouse: Look | R: Reset | ESC: Exit</div>
+  <div id="info">3D Showroom | WASD: Move | Mouse: Look | R: Reset | ESC: Exit | 1-9: Change Animation</div>
   <div id="instructions">Explore and approach the animated bones model</div>
-  <div id="loading">Loading bones.glb...</div>
+  <div id="loading">Loading vamp.glb animations...</div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -51,6 +51,11 @@
     let scene, camera, renderer, mixer, animatedModel;
     const clock = new THREE.Clock();
     const EYE_HEIGHT = 1.7;
+    
+    // Animation management
+    let animationClips = [];
+    let currentAction = null;
+    let animationNames = [];
 
     init();
     animate();
@@ -59,7 +64,7 @@
       scene = new THREE.Scene();
 
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(0, EYE_HEIGHT, 20);
+      camera.position.set(0, EYE_HEIGHT, 5); // Closer camera
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -111,66 +116,153 @@
       ceiling.position.y = wallHeight;
       scene.add(ceiling);
 
-      // --- Load bones.glb ---
+      // --- Load animations from vamp.glb first, then apply to bones.glb ---
       const loader = new THREE.GLTFLoader();
+      
+      // Step 1: Load vamp.glb to extract animations
       loader.load(
-        "AR/models/horror/bones.glb",
-        (gltf) => {
-          animatedModel = gltf.scene;
-          animatedModel.position.set(0, 0, 0);
-          animatedModel.scale.set(6, 6, 6);
-          animatedModel.updateMatrixWorld(true);
-          scene.add(animatedModel);
-
-          // Animate all clips sequentially and loop forever
-          
-if (gltf.animations && gltf.animations.length > 0) {
-  mixer = new THREE.AnimationMixer(animatedModel);
-  const clips = gltf.animations;
-  let currentIndex = 0;
-  let currentAction, nextAction;
-  const crossFadeDuration = 0.7; // seconds of overlap between clips
-
-  const playNext = () => {
-    const clip = clips[currentIndex];
-    nextAction = mixer.clipAction(clip);
-
-    // fade from previous animation if one exists
-    if (currentAction) {
-      currentAction.crossFadeTo(nextAction, crossFadeDuration, false);
-    }
-
-    nextAction.reset();
-    nextAction.play();
-    nextAction.loop = THREE.LoopOnce;
-
-    // schedule next animation just before this one finishes
-    const nextDelay = Math.max(clip.duration - crossFadeDuration, 0.1) * 1000;
-    setTimeout(() => {
-      currentIndex = (currentIndex + 1) % clips.length;
-      currentAction = nextAction;
-      playNext();
-    }, nextDelay);
-  };
-
-  // start first animation
-  playNext();
-}
-
-          document.getElementById("loading").style.display = "none";
-          console.log("&#9989; bones.glb loaded and animated");
-        },
-        (xhr) => {
-          if (xhr.lengthComputable) {
-            const percent = (xhr.loaded / xhr.total) * 100;
-            document.getElementById("loading").textContent = `Loading bones.glb... ${percent.toFixed(1)}%`;
+        "AR/models/horror/vamp.glb",
+        (vampGltf) => {
+          if (vampGltf.animations && vampGltf.animations.length > 0) {
+            // Store all animations from the vamp model
+            animationClips = vampGltf.animations;
+            
+            // Create better names for the animations
+            animationNames = animationClips.map((clip, index) => {
+              if (clip.name && clip.name !== 'mixamo.com') {
+                return clip.name;
+              }
+              // Assign descriptive names based on index
+              const names = ['Idle', 'Walk', 'Attack', 'Run', 'Jump', 'Death', 'Special1', 'Special2'];
+              return names[index] || `Animation_${index + 1}`;
+            });
+            
+            console.log(`&#9989; Loaded ${animationClips.length} animations from vamp.glb:`, animationNames);
+            document.getElementById("loading").textContent = `Loaded ${animationClips.length} animations. Now loading bones model...`;
+            
+            // Step 2: Now load the bones model
+            loadBonesModel();
+          } else {
+            console.warn("&#10060; No animations found in vamp.glb");
+            document.getElementById("loading").textContent = "No animations found in vamp.glb. Loading bones model...";
+            loadBonesModel();
           }
         },
+        (xhr) => {
+          document.getElementById("loading").textContent = `Loading vamp.glb animations... ${((xhr.loaded / xhr.total) * 100).toFixed(1)}%`;
+        },
         (error) => {
-          console.error("&#10060; Error loading bones.glb:", error);
-          document.getElementById("loading").textContent = "Failed to load bones.glb";
+          console.error("&#10060; Error loading vamp.glb:", error);
+          document.getElementById("loading").textContent = "Failed to load vamp animations. Loading bones model...";
+          loadBonesModel();
         }
       );
+
+function loadBonesModel() {
+  loader.load(
+    "AR/models/horror/bones.glb",
+    (gltf) => {
+      // Create a container group for the bones model
+      const modelContainer = new THREE.Group();
+      
+      animatedModel = gltf.scene;
+      
+      // DEBUG: Check the model's bounding box
+      const initialBox = new THREE.Box3().setFromObject(animatedModel);
+      const initialSize = initialBox.getSize(new THREE.Vector3());
+      console.log("Initial model size:", initialSize);
+      
+      // Add the bones model to the container
+      modelContainer.add(animatedModel);
+      
+      // Scale the model itself
+      animatedModel.scale.set(6, 6, 6);
+
+      // ROTATE THE CONTAINER to stand upright
+	modelContainer.rotation.set(
+	  THREE.MathUtils.degToRad(-110),
+	  THREE.MathUtils.degToRad(-180), 
+	  THREE.MathUtils.degToRad(-180)
+	);      // Position the container
+      modelContainer.position.set(0, 0, 0);
+
+      // --- ALIGN MODEL FEET TO FLOOR ---
+      // Update the bounding box after scaling and rotation
+      const updatedBox = new THREE.Box3().setFromObject(modelContainer);
+      const heightOffset = updatedBox.min.y;
+      modelContainer.position.y = -heightOffset; // Feet at floor level
+
+      scene.add(modelContainer);
+
+      // Create animation mixer for the bones model (not the container!)
+      mixer = new THREE.AnimationMixer(animatedModel);
+
+      // Apply animations from vamp.glb to bones model
+      if (animationClips.length > 0) {
+        playAnimation(0); // Start with first animation
+        
+        // Update instructions to show animation controls
+        document.getElementById("instructions").innerHTML = 
+          `Press 1-${Math.min(9, animationClips.length)} to switch animations. Current: ${animationNames[0]}`;
+      } else {
+        console.warn("No animations available to play");
+      }
+
+      document.getElementById("loading").style.display = "none";
+      console.log("&#9989; bones.glb loaded with vamp animations");
+    },
+    (xhr) => {
+      document.getElementById("loading").textContent = `Loading bones.glb... ${((xhr.loaded / xhr.total) * 100).toFixed(1)}%`;
+    },
+    (error) => {
+      console.error("&#10060; Error loading bones.glb:", error);
+      document.getElementById("loading").textContent = "Failed to load bones.glb";
+    }
+  );
+}
+
+
+function playAnimation(index) {
+  if (!mixer || index >= animationClips.length) return;
+  
+  // Stop current animation
+  if (currentAction) {
+    currentAction.stop();
+    mixer.stopAllAction();
+  }
+  
+  // Get the animation clip from vamp.glb
+  const clip = animationClips[index];
+  
+  // CRITICAL: Create a modified clip that removes scale tracks
+  const tracksWithoutScale = clip.tracks.filter(track => 
+    !track.name.includes('.scale') && 
+    !track.name.includes('morphTargetInfluences')
+  );
+  
+  const modifiedClip = new THREE.AnimationClip(
+    clip.name,
+    clip.duration,
+    tracksWithoutScale
+  );
+  
+  console.log(`Removed ${clip.tracks.length - tracksWithoutScale.length} scale tracks`);
+  
+  // Create action with modified clip (no scale tracks)
+  currentAction = mixer.clipAction(modifiedClip);
+  currentAction.reset();
+  currentAction.setEffectiveTimeScale(1.0);
+  currentAction.setEffectiveWeight(1.0);
+  currentAction.setLoop(THREE.LoopRepeat, Infinity);
+  currentAction.play();
+  
+  // Update UI
+  document.getElementById("instructions").innerHTML = 
+    `Press 1-${Math.min(9, animationClips.length)} to switch animations. Current: ${animationNames[index]}`;
+  
+  console.log(`&#127917; Playing animation ${index + 1}: ${animationNames[index]}`);
+  console.log(`&#128202; Original tracks: ${clip.tracks.length}, Without scale: ${tracksWithoutScale.length}`);
+}
 
       setupControls();
       window.addEventListener("resize", onWindowResize);
@@ -178,7 +270,15 @@ if (gltf.animations && gltf.animations.length > 0) {
       // --- Exit page on ESC key ---
       document.addEventListener("keydown", (e) => {
         if (e.code === "Escape") {
-          window.location.href = "about:blank"; // Change this to another URL if desired
+          window.location.href = "about:blank";
+        }
+        
+        // Animation switching with number keys 1-9
+        if (e.code >= 'Digit1' && e.code <= 'Digit9') {
+          const animationIndex = parseInt(e.code.replace('Digit', '')) - 1;
+          if (animationIndex < animationClips.length) {
+            playAnimation(animationIndex);
+          }
         }
       });
     }
@@ -227,7 +327,7 @@ if (gltf.animations && gltf.animations.length > 0) {
       });
 
       function resetCamera() {
-        camera.position.set(0, EYE_HEIGHT, 20);
+        camera.position.set(0, EYE_HEIGHT, 5);
         camera.rotation.set(0, 0, 0);
         yaw = 0;
         velocity.set(0, 0, 0);
