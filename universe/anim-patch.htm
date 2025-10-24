@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animation Pause Analyzer</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #1a1a1a;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px 0;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .analysis {
+      background: #2a2a2a;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 10px 0;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+    .success { color: #4CAF50; }
+    .warning { color: #FF9800; }
+    .error { color: #f44336; }
+    .info { color: #2196F3; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>&#128269; Animation Pause Analyzer</h1>
+    <p>Analyzing: <code>animations/cucaracha.json</code></p>
+    
+    <button onclick="analyzecucaracha()">Analyze cucaracha Animation</button>
+    
+    <div id="results"></div>
+  </div>
+
+  <script>
+    async function analyzecucaracha() {
+      const results = document.getElementById('results');
+      results.innerHTML = '<div class="analysis info">&#128260; Loading animation file...</div>';
+
+      try {
+        // Load the cucaracha.json animation file
+        const response = await fetch('animations/cucaracha.json');
+        if (!response.ok) {
+          throw new Error(`Failed to load cucaracha.json: ${response.status}`);
+        }
+        
+        const animationData = await response.json();
+        const analysis = analyzeAnimation(animationData);
+        
+        results.innerHTML = `<div class="analysis">${analysis}</div>`;
+        
+      } catch (error) {
+        results.innerHTML = `<div class="analysis error">&#10060; Error: ${error.message}</div>`;
+      }
+    }
+
+    function analyzeAnimation(animationData) {
+      let analysis = '&#128202; ANIMATION ANALYSIS REPORT\n';
+      analysis += '='.repeat(50) + '\n\n';
+      
+      // Basic info
+      analysis += `&#128193; File: cucaracha.json\n`;
+      analysis += `&#9201;&#65039;  Declared Duration: ${animationData.duration.toFixed(3)} seconds\n`;
+      analysis += `&#127919; Number of Tracks: ${animationData.tracks.length}\n\n`;
+      
+      // Find actual animation bounds
+      let earliestStart = Infinity;
+      let latestEnd = -Infinity;
+      let totalKeyframes = 0;
+      
+      analysis += '&#128269; TRACK ANALYSIS:\n';
+      analysis += '-'.repeat(30) + '\n';
+      
+      animationData.tracks.forEach((track, index) => {
+        if (!track.times || track.times.length === 0) return;
+        
+        const trackStart = Math.min(...track.times);
+        const trackEnd = Math.max(...track.times);
+        const keyframeCount = track.times.length;
+        
+        earliestStart = Math.min(earliestStart, trackStart);
+        latestEnd = Math.max(latestEnd, trackEnd);
+        totalKeyframes += keyframeCount;
+        
+        analysis += `Track ${index}: ${track.name}\n`;
+        analysis += `  Start: ${trackStart.toFixed(3)}s | End: ${trackEnd.toFixed(3)}s\n`;
+        analysis += `  Keyframes: ${keyframeCount}\n`;
+        analysis += `  Values: ${track.values.length}\n\n`;
+      });
+      
+      // Calculate pauses
+      const startPause = earliestStart;
+      const endPause = animationData.duration - latestEnd;
+      const actualAnimationLength = latestEnd - earliestStart;
+      
+      analysis += '&#9201;&#65039;  PAUSE DETECTION:\n';
+      analysis += '-'.repeat(30) + '\n';
+      analysis += `Earliest animation start: ${earliestStart.toFixed(3)}s\n`;
+      analysis += `Latest animation end: ${latestEnd.toFixed(3)}s\n`;
+      analysis += `Actual animation length: ${actualAnimationLength.toFixed(3)}s\n\n`;
+      
+      analysis += `START PAUSE: ${startPause.toFixed(3)}s `;
+      if (startPause === 0) {
+        analysis += '&#9989; (No pause)\n';
+      } else if (startPause <= 0.01) {
+        analysis += '&#9989; (Negligible)\n';
+      } else if (startPause <= 0.1) {
+        analysis += '&#9888;&#65039; (Small pause)\n';
+      } else {
+        analysis += '&#10060; (Significant pause)\n';
+      }
+      
+      analysis += `END PAUSE: ${endPause.toFixed(3)}s `;
+      if (endPause === 0) {
+        analysis += '&#9989; (No pause)\n';
+      } else if (endPause <= 0.01) {
+        analysis += '&#9989; (Negligible)\n';
+      } else if (endPause <= 0.1) {
+        analysis += '&#9888;&#65039; (Small pause)\n';
+      } else {
+        analysis += '&#10060; (Significant pause)\n';
+      }
+      
+      analysis += `TOTAL WASTED TIME: ${(startPause + endPause).toFixed(3)}s\n\n`;
+      
+      // Recommendations
+      analysis += '&#128161; RECOMMENDATIONS:\n';
+      analysis += '-'.repeat(30) + '\n';
+      
+      if (startPause > 0.1 || endPause > 0.1) {
+        analysis += 'Trim the animation to remove pauses:\n';
+        analysis += `• Remove first ${startPause.toFixed(3)}s\n`;
+        analysis += `• Remove last ${endPause.toFixed(3)}s\n`;
+        analysis += `• New duration: ${actualAnimationLength.toFixed(3)}s\n`;
+        analysis += `• Efficiency improvement: ${((startPause + endPause) / animationData.duration * 100).toFixed(1)}%\n`;
+      } else if (startPause > 0 || endPause > 0) {
+        analysis += 'Minor pauses detected, but probably not worth trimming\n';
+      } else {
+        analysis += '&#9989; Perfect! No pauses detected\n';
+      }
+      
+      // Summary
+      analysis += '\n&#128200; SUMMARY:\n';
+      analysis += '-'.repeat(30) + '\n';
+      analysis += `Total Keyframes: ${totalKeyframes}\n`;
+      analysis += `Declared Duration: ${animationData.duration.toFixed(3)}s\n`;
+      analysis += `Effective Duration: ${actualAnimationLength.toFixed(3)}s\n`;
+      analysis += `Efficiency: ${(actualAnimationLength / animationData.duration * 100).toFixed(1)}%\n`;
+      
+      return analysis;
+    }
+
+    // Auto-analyze when page loads
+    window.addEventListener('load', analyzecucaracha);
+  </script>
+</body>
+</html>
