@@ -10,6 +10,7 @@
       overflow: hidden;
       background: #000;
       font-family: Arial, sans-serif;
+      touch-action: none;
     }
     #info, #instructions, #loading {
       position: absolute;
@@ -37,12 +38,113 @@
       border-radius: 10px;
       font-size: 18px;
     }
+    
+    /* Mobile Controls */
+    #mobile-controls {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+    
+    #joystick-container {
+      position: absolute;
+      bottom: 100px;
+      left: 20px;
+      width: 120px;
+      height: 120px;
+      pointer-events: auto;
+    }
+    
+    #joystick-base {
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      position: absolute;
+      border: 2px solid rgba(255,255,255,0.5);
+      top: 20px;
+      left: 20px;
+    }
+    
+    #joystick-handle {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 50%;
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      transition: transform 0.1s;
+    }
+    
+    #camera-control-area {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40%;
+      height: 100%;
+      pointer-events: auto;
+    }
+    
+    #center-tap-area {
+      position: absolute;
+      top: 0;
+      left: 40%;
+      width: 20%;
+      height: 100%;
+      pointer-events: auto;
+    }
+    
+    .control-hint {
+      position: absolute;
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+      text-align: center;
+      pointer-events: none;
+    }
+    
+    #joystick-hint {
+      bottom: 220px;
+      left: 20px;
+      width: 120px;
+    }
+    
+    #camera-hint {
+      top: 50%;
+      right: 10%;
+      transform: translateY(-50%);
+    }
+    
+    #tap-hint {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
   </style>
 </head>
 <body>
   <div id="info">3D Showroom | WASD: Move | Mouse: Look | R: Reset | ESC: Exit | SPACE: Next Animation</div>
   <div id="instructions">Character performing animations</div>
   <div id="loading">Loading model...</div>
+  
+  <!-- Mobile Controls -->
+  <div id="mobile-controls">
+    <div id="joystick-container">
+      <div id="joystick-base"></div>
+      <div id="joystick-handle"></div>
+      <div class="control-hint" id="joystick-hint">Move: Drag here</div>
+    </div>
+    <div id="camera-control-area">
+      <div class="control-hint" id="camera-hint">Look: Drag here</div>
+    </div>
+    <div id="center-tap-area">
+      <div class="control-hint" id="tap-hint">Tap for next animation</div>
+    </div>
+  </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -361,6 +463,7 @@
 
       const moveSpeed = 0.03;
 
+      // --- DESKTOP CONTROLS (Keep existing functionality) ---
       document.addEventListener("mousedown", (e) => {
         isMouseDown = true;
         previousMouseX = e.clientX;
@@ -399,6 +502,112 @@
           case "KeyA": moveState.right = false; break;
         }
       });
+
+      // --- MOBILE TOUCH CONTROLS ---
+      let joystickActive = false;
+      let cameraTouchActive = false;
+      const joystickBase = document.getElementById('joystick-base');
+      const joystickHandle = document.getElementById('joystick-handle');
+      const joystickContainer = document.getElementById('joystick-container');
+      const cameraControlArea = document.getElementById('camera-control-area');
+      const centerTapArea = document.getElementById('center-tap-area');
+      
+      const joystickRect = joystickContainer.getBoundingClientRect();
+      const joystickCenter = {
+        x: joystickRect.left + joystickRect.width / 2,
+        y: joystickRect.top + joystickRect.height / 2
+      };
+      const maxJoystickDistance = 35;
+
+      // Touch start handler
+      document.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const touchX = touch.clientX;
+        const screenWidth = window.innerWidth;
+        
+        // Determine which control area was touched
+        if (touchX < screenWidth * 0.4) {
+          // Left side - joystick control
+          joystickActive = true;
+          updateJoystick(touch);
+        } else if (touchX > screenWidth * 0.6) {
+          // Right side - camera control
+          cameraTouchActive = true;
+          previousMouseX = touchX;
+        } else {
+          // Center - tap for next animation
+          if (!isTransitioning) {
+            advanceToNextAnimation();
+          }
+        }
+      });
+
+      // Touch move handler
+      document.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const touchX = touch.clientX;
+        
+        if (joystickActive) {
+          updateJoystick(touch);
+        }
+        
+        if (cameraTouchActive) {
+          const deltaX = touch.clientX - previousMouseX;
+          previousMouseX = touch.clientX;
+          yaw -= deltaX * 0.002;
+          camera.rotation.y = yaw;
+        }
+      });
+
+      // Touch end handler
+      document.addEventListener('touchend', (e) => {
+        joystickActive = false;
+        cameraTouchActive = false;
+        resetJoystick();
+        // Reset all movement
+        moveState.forward = moveState.backward = moveState.left = moveState.right = false;
+      });
+
+      function updateJoystick(touch) {
+        const touchX = touch.clientX;
+        const touchY = touch.clientY;
+        
+        const deltaX = touchX - joystickCenter.x;
+        const deltaY = touchY - joystickCenter.y;
+        
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        const angle = Math.atan2(deltaY, deltaX);
+        
+        const limitedDistance = Math.min(distance, maxJoystickDistance);
+        
+        // Update joystick handle position
+        const handleX = limitedDistance * Math.cos(angle);
+        const handleY = limitedDistance * Math.sin(angle);
+        
+        joystickHandle.style.transform = `translate(${handleX}px, ${handleY}px)`;
+        
+        // Update movement state based on joystick position
+        const deadZone = 15; // Minimum distance to register movement
+        
+        if (limitedDistance > deadZone) {
+          // Forward/backward based on Y axis (inverted)
+          moveState.forward = deltaY < -deadZone;
+          moveState.backward = deltaY > deadZone;
+          
+          // Left/right based on X axis
+          moveState.left = deltaX < -deadZone;
+          moveState.right = deltaX > deadZone;
+        } else {
+          moveState.forward = moveState.backward = moveState.left = moveState.right = false;
+        }
+      }
+
+      function resetJoystick() {
+        joystickHandle.style.transform = 'translate(0, 0)';
+        moveState.forward = moveState.backward = moveState.left = moveState.right = false;
+      }
 
       function resetCamera() {
         camera.position.set(0, EYE_HEIGHT, 5);
