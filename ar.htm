@@ -16,10 +16,24 @@
         padding: 12px 22px; font-size:18px; z-index:1000;
         background:#007bff; color:white; border:none; border-radius:8px; cursor:pointer;
       }
+      #loading-overlay {
+        position: fixed; top:0; left:0; width:100%; height:100%;
+        background: rgba(0,0,0,0.8); color: white; z-index: 9999;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        font-family: Arial, sans-serif;
+      }
+      #loading-progress { width: 80%; max-width: 300px; margin: 20px 0; }
+      #loading-text { margin: 10px 0; font-size: 16px; }
     </style>
   </head>
 
   <body>
+    <div id="loading-overlay">
+      <h2>&#128260; Preloading AR Experience</h2>
+      <progress id="loading-progress" value="0" max="100"></progress>
+      <div id="loading-text">Preparing markers and models...</div>
+    </div>
+
     <button id="start-button">Start AR Experience</button>
 
     <a-scene
@@ -75,14 +89,23 @@
           },
           animationSettings: {
             transitionDuration: 0.5
+          },
+          buffering: {
+            enabled: true,
+            preloadCount: 3, // Preload next 3 models when one is detected
+            bufferSize: 5, // Maximum number of models to keep in buffer
+            preloadSounds: true // Preload sounds aggressively
           }
         };
 
-        // ==================== CACHE MANAGER ====================
+        // ==================== AGGRESSIVE CACHE MANAGER ====================
         class ARModelCache {
           constructor() {
             this.cache = new Map();
             this.loading = new Map();
+            this.preloadQueue = new Set();
+            this.activePreloads = 0;
+            this.maxConcurrentPreloads = 2;
           }
           
           async loadModel(url) {
@@ -115,6 +138,36 @@
             this.loading.set(url, promise);
             return promise;
           }
+
+          // NEW: Aggressive preloading
+          async preloadModels(urls) {
+            const preloadPromises = urls.map(url => {
+              if (this.cache.has(url) || this.loading.has(url) || this.preloadQueue.has(url)) {
+                return Promise.resolve();
+              }
+              
+              this.preloadQueue.add(url);
+              return this.loadModel(url).catch(() => {}); // Silent fail for preloads
+            });
+            
+            return Promise.all(preloadPromises);
+          }
+
+          // NEW: Get models that should be preloaded based on current active marker
+          getPreloadCandidates(activeMarkerId, allMarkers) {
+            const activeIndex = allMarkers.findIndex(m => m.id === activeMarkerId);
+            if (activeIndex === -1) return [];
+            
+            const candidates = [];
+            // Preload next few models
+            for (let i = 1; i <= AR_CONFIG.buffering.preloadCount; i++) {
+              const nextIndex = (activeIndex + i) % allMarkers.length;
+              if (nextIndex !== activeIndex) {
+                candidates.push(allMarkers[nextIndex]);
+              }
+            }
+            return candidates;
+          }
         }
 
         // ==================== AR MANAGER CLASS ====================
@@ -131,19 +184,70 @@
             this.soundTimeouts = {};
             this.soundWasBrieflyLost = {};
             this.modelLoadedStates = {};
+            this.modelPreloadedStates = {};
             this.currentOrientation = 'unknown';
             this.arInitialized = false;
+            this.lastActiveMarker = null;
             
             this.startButton = document.getElementById("start-button");
             this.arScene = document.getElementById("ar-scene");
+            this.loadingOverlay = document.getElementById("loading-overlay");
+            this.loadingProgress = document.getElementById("loading-progress");
+            this.loadingText = document.getElementById("loading-text");
             
             this.init();
           }
           
-          init() {
+          async init() {
+            await this.preloadCriticalAssets();
             this.generateMarkers();
             this.setupMarkers();
             this.bindEvents();
+            this.hideLoadingScreen();
+          }
+
+          // NEW: Aggressive preloading of critical assets
+          async preloadCriticalAssets() {
+            if (!this.config.buffering.enabled) return;
+
+            console.log('&#128640; Starting aggressive preloading...');
+            
+            // Preload first few models immediately
+            const initialPreloads = this.config.markers.slice(0, 3);
+            const preloadUrls = initialPreloads.map(marker => 
+              `${this.config.basePaths.models}/${marker.id}.glb`
+            );
+
+            // Preload sounds if enabled
+            if (this.config.buffering.preloadSounds) {
+              const soundUrls = this.config.markers.map(marker =>
+                `${this.config.basePaths.sounds}/${marker.id}.mp3`
+              );
+              preloadUrls.push(...soundUrls);
+            }
+
+            let loaded = 0;
+            const total = preloadUrls.length;
+
+            for (const url of preloadUrls) {
+              try {
+                await this.modelCache.loadModel(url);
+                loaded++;
+                const progress = (loaded / total) * 100;
+                this.loadingProgress.value = progress;
+                this.loadingText.textContent = `Preloading assets... ${loaded}/${total}`;
+              } catch (error) {
+                console.log('&#9888;&#65039; Preload failed for:', url);
+                loaded++;
+              }
+            }
+          }
+
+          hideLoadingScreen() {
+            setTimeout(() => {
+              this.loadingOverlay.style.display = 'none';
+              console.log('&#9989; Preloading complete');
+            }, 500);
           }
           
           // ==================== MARKER GENERATION ====================
@@ -174,6 +278,7 @@
               scene.insertAdjacentHTML('beforeend', markerHTML);
               
               this.modelLoadedStates[marker.id] = false;
+              this.modelPreloadedStates[marker.id] = false;
             });
           }
           
@@ -225,12 +330,18 @@
             marker.wrapper = wrapper;
           }
           
-          // ==================== LAZY LOADING ====================
+          // ==================== LAZY LOADING WITH AGGRESSIVE PRELOADING ====================
           setupLazyLoading(markerConfig) {
             const marker = document.querySelector(`#marker-${markerConfig.id}`);
             const modelContainer = document.querySelector(`#${markerConfig.modelId}`);
             
             const onMarkerFound = () => {
+              // Track last active marker for preloading
+              this.lastActiveMarker = markerConfig.id;
+              
+              // Trigger aggressive preloading
+              this.triggerAggressivePreloading(markerConfig.id);
+              
               if (!this.modelLoadedStates[markerConfig.id]) {
                 console.log(`&#128260; First detection of ${markerConfig.id}, loading model...`);
                 
@@ -261,6 +372,27 @@
             
             marker.addEventListener("markerFound", onMarkerFound);
           }
+
+          // NEW: Aggressive preloading system
+          triggerAggressivePreloading(activeMarkerId) {
+            if (!this.config.buffering.enabled) return;
+
+            const candidates = this.modelCache.getPreloadCandidates(activeMarkerId, this.config.markers);
+            const urlsToPreload = [];
+            
+            candidates.forEach(candidate => {
+              if (!this.modelPreloadedStates[candidate.id]) {
+                const modelUrl = `${this.config.basePaths.models}/${candidate.id}.glb`;
+                urlsToPreload.push(modelUrl);
+                this.modelPreloadedStates[candidate.id] = true;
+              }
+            });
+
+            if (urlsToPreload.length > 0) {
+              console.log(`&#127919; Aggressive preloading:`, urlsToPreload.map(url => url.split('/').pop()));
+              this.modelCache.preloadModels(urlsToPreload);
+            }
+          }
           
           // ==================== EVENT HANDLERS ====================
           onMarkerFound(markerConfig) {
@@ -290,18 +422,45 @@
             }, 1000);
           }
           
+          // ==================== IMMEDIATE ANIMATION START ====================
           onModelLoaded(modelId, gltfObj) {
             this.setupModelAnimations(modelId, gltfObj);
+            
+            // IMMEDIATELY start animations if marker is currently visible
+            const markerId = modelId.replace('-model', '');
+            const marker = document.querySelector(`#marker-${markerId}`);
+            if (marker && this.isMarkerVisible(marker)) {
+              console.log(`&#127916; Starting animations immediately for ${markerId}`);
+              this.mixerActiveStates[modelId] = true;
+              
+              // Force first animation to play immediately
+              const state = this.animationStates[modelId];
+              if (state.currentAction) {
+                state.currentAction.play();
+              }
+            }
+          }
+          
+          // Helper to check marker visibility
+          isMarkerVisible(marker) {
+            return marker.object3D.visible;
           }
           
           // ==================== ANIMATION SYSTEM ====================
           setupModelAnimations(modelId, gltfObj) {
             const clips = gltfObj.animations || [];
             
-            if (!AFRAME?.THREE || !clips.length) return;
+            if (!AFRAME?.THREE || !clips.length) {
+              console.log(`&#9888;&#65039; No animations found for ${modelId}`);
+              return;
+            }
+            
+            console.log(`&#127917; Setting up ${clips.length} animations for ${modelId}`);
             
             this.clocks[modelId] = new AFRAME.THREE.Clock();
             this.mixers[modelId] = new AFRAME.THREE.AnimationMixer(gltfObj);
+            
+            // Start with mixer inactive, will be activated if marker is visible
             this.mixerActiveStates[modelId] = false;
             this.animationStates[modelId].clips = clips;
             
@@ -323,6 +482,7 @@
                   const currentTime = state.currentAction.time;
                   const clipDuration = state.currentAction.getClip().duration;
                   
+                  // Start next animation before current one ends
                   if (currentTime >= clipDuration - state.transitionDuration - 0.1) {
                     this.startNextAnimation(modelId);
                   }
@@ -330,7 +490,9 @@
               }
             };
             
-            if (!this.rafIds[modelId]) animateMixer();
+            if (!this.rafIds[modelId]) {
+              animateMixer();
+            }
           }
           
           startAnimationSequence(modelId) {
@@ -345,7 +507,9 @@
             const state = this.animationStates[modelId];
             if (!this.mixers[modelId] || !state.clips[clipIndex]) return;
             
-            if (state.currentAction) state.currentAction.stop();
+            if (state.currentAction) {
+              state.currentAction.stop();
+            }
             
             state.currentClipIndex = clipIndex;
             state.currentAction = this.mixers[modelId].clipAction(state.clips[clipIndex]);
@@ -354,6 +518,8 @@
             state.currentAction.clampWhenFinished = true;
             state.currentAction.play();
             state.isTransitioning = false;
+            
+            console.log(`&#9654;&#65039; Playing animation ${clipIndex} for ${modelId}`);
           }
           
           startNextAnimation(modelId) {
@@ -362,6 +528,8 @@
             
             state.isTransitioning = true;
             const nextClipIndex = (state.currentClipIndex + 1) % state.clips.length;
+            
+            console.log(`&#128260; Transitioning to animation ${nextClipIndex} for ${modelId}`);
             
             state.nextAction = this.mixers[modelId].clipAction(state.clips[nextClipIndex]);
             state.nextAction.reset();
@@ -375,7 +543,9 @@
             state.currentClipIndex = nextClipIndex;
             state.nextAction = null;
             
-            setTimeout(() => state.isTransitioning = false, state.transitionDuration * 1000);
+            setTimeout(() => {
+              state.isTransitioning = false;
+            }, state.transitionDuration * 1000);
           }
           
           // ==================== SOUND SYSTEM ====================
