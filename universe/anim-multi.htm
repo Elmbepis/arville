@@ -546,40 +546,39 @@
           moveState.forward = moveState.backward = moveState.left = moveState.right = false;
         });
 
-        function updateJoystick(touch) {
-          const touchX = touch.clientX;
-          const touchY = touch.clientY;
-          
-          const deltaX = touchX - joystickCenter.x;
-          const deltaY = touchY - joystickCenter.y;
-          
-          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-          const angle = Math.atan2(deltaY, deltaX);
-          
-          const limitedDistance = Math.min(distance, maxJoystickDistance);
-          
-          // Update joystick handle position
-          const handleX = limitedDistance * Math.cos(angle);
-          const handleY = limitedDistance * Math.sin(angle);
-          
-          joystickHandle.style.transform = `translate(${handleX}px, ${handleY}px)`;
-          
-          // Update movement state based on joystick position
-          const deadZone = 15;
-          
-          if (limitedDistance > deadZone) {
-            // EXCHANGED: Up/down movement reversed
-            // Now: UP moves forward (toward model), DOWN moves backward
-            moveState.forward = deltaY > deadZone;    // UP moves forward
-            moveState.backward = deltaY < -deadZone;  // DOWN moves backward
-            
-            // Left/right based on X axis
-            moveState.left = deltaX < -deadZone;
-            moveState.right = deltaX > deadZone;
-          } else {
-            moveState.forward = moveState.backward = moveState.left = moveState.right = false;
-          }
-        }
+function updateJoystick(touch) {
+  const touchX = touch.clientX;
+  const touchY = touch.clientY;
+  
+  const deltaX = touchX - joystickCenter.x;
+  const deltaY = touchY - joystickCenter.y;
+  
+  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+  const angle = Math.atan2(deltaY, deltaX);
+  
+  const limitedDistance = Math.min(distance, maxJoystickDistance);
+  
+  // Update joystick handle position
+  const handleX = limitedDistance * Math.cos(angle);
+  const handleY = limitedDistance * Math.sin(angle);
+  
+  joystickHandle.style.transform = `translate(${handleX}px, ${handleY}px)`;
+  
+  // Update movement state based on joystick position
+  const deadZone = 15;
+  
+  if (limitedDistance > deadZone) {
+    // UP moves forward (toward model), DOWN moves backward
+    moveState.forward = deltaY > deadZone;    // UP moves forward
+    moveState.backward = deltaY < -deadZone;  // DOWN moves backward
+    
+    // INTERCHANGED: Left/right controls swapped
+    moveState.left = deltaX > deadZone;    // RIGHT moves left
+    moveState.right = deltaX < -deadZone;  // LEFT moves right
+  } else {
+    moveState.forward = moveState.backward = moveState.left = moveState.right = false;
+  }
+}
 
         function resetJoystick() {
           joystickHandle.style.transform = 'translate(0, 0)';
