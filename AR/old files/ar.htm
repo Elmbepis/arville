@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>ARVille Web AR for Everyone!!!</title>
+
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <style>
+      body { margin: 0; overflow: hidden; }
+      #ar-scene { position: fixed; top:0; left:0; width:100%; height:100%; }
+      #start-button {
+        position: fixed; top:50%; left:50%;
+        transform: translate(-50%,-50%);
+        padding: 12px 22px; font-size:18px; z-index:1000;
+        background:#007bff; color:white; border:none; border-radius:8px; cursor:pointer;
+      }
+    </style>
+  </head>
+
+  <body>
+    <button id="start-button">Start AR Experience</button>
+
+    <a-scene
+      id="ar-scene"
+      embedded
+      arjs="debugUIEnabled: false; sourceType: webcam; patternRatio: 0.9;"
+      style="display: none;"
+    >
+      <!-- Ambient Light for overall scene brightness -->
+      <a-entity light="type: ambient; color: #888; intensity: 1"></a-entity>
+
+      <!-- Directional Light for front illumination -->
+      <a-entity light="type: directional; color: #FFFFFF; intensity: 1.5; position: 0 3 3" shadow></a-entity>
+
+      <!-- Point Light for additional front fill -->
+      <a-entity light="type: point; color: #FFFFFF; intensity: 1.5; position: 0 2 2"></a-entity>
+
+      <!-- Define all markers in a compact array-based format -->
+      <script>
+        const markers = [
+          { id: 'vamp', model: 'vamp.glb', sound: 'vamp.mp3' },
+          { id: 'frankie', model: 'frankie.glb', sound: 'frankie.mp3' },
+          { id: 'zombie', model: 'zombie.glb', sound: 'zombie.mp3' },
+          { id: 'devil', model: 'devil.glb', sound: 'devil.mp3' },
+          { id: 'bones', model: 'bones.glb', sound: 'bones.mp3' },
+          { id: 'scarecrow', model: 'scarecrow.glb', sound: 'scarecrow.mp3' },
+          { id: 'clown', model: 'clown.glb', sound: 'clown.mp3' },
+          { id: 'teddy', model: 'teddy.glb', sound: 'teddy.mp3' },
+          { id: 'pumpkin', model: 'pumpkin.glb', sound: 'pumpkin.mp3' },
+          { id: 'witch', model: 'witch.glb', sound: 'witch.mp3' },
+          { id: 'zombina', model: 'zombina.glb', sound: 'zombina.mp3' },
+          { id: 'wolfie', model: 'wolfie.glb', sound: 'wolfie.mp3' }
+        ];
+
+        markers.forEach(marker => {
+          document.write(`
+            <a-marker type="pattern" url="AR/patts/horror/${marker.id}.patt" id="marker-${marker.id}">
+              <a-entity
+                id="${marker.id}-wrapper"
+                position="0 0 0"
+                rotation="-90 0 0"
+                class="orientation-dependent"
+              >
+                <a-entity
+                  id="${marker.id}-model"
+                  gltf-model="AR/models/horror/${marker.model}"
+                  scale="4 4 4"
+                  position="0 -0.6 0"
+                ></a-entity>
+              </a-entity>
+              <a-entity
+                id="${marker.id}-sound"
+                sound="src: AR/sounds/horror/${marker.sound}; autoplay: false; loop: true; volume: 4; preload: auto"
+              ></a-entity>
+            </a-marker>
+          `);
+        });
+      </script>
+
+      <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+      (function () {
+        const startButton = document.getElementById("start-button");
+        const arScene = document.getElementById("ar-scene");
+
+        // Variables for animation mixers (one per model)
+        const mixers = {};
+        const clocks = {};
+        const rafIds = {};
+        const mixerActiveStates = {};
+        const animationStates = {}; // Track animation state for each model
+        const soundTimeouts = {}; // Track sound timeouts for each marker
+        const soundWasBrieflyLost = {}; // NEW: Track if sound was only briefly lost
+
+        // Orientation detection
+        let currentOrientation = 'unknown';
+        let arInitialized = false;
+
+        // Start AR button
+        startButton.addEventListener("click", () => {
+          startButton.style.display = "none";
+          arScene.style.display = "block";
+          arInitialized = true;
+          updateAllModelDimensions();
+        });
+
+        // Setup all markers
+        const markers = [
+          { id: 'vamp', modelId: 'vamp-model', wrapperId: 'vamp-wrapper', soundId: 'vamp-sound' },
+          { id: 'frankie', modelId: 'frankie-model', wrapperId: 'frankie-wrapper', soundId: 'frankie-sound' },
+          { id: 'zombie', modelId: 'zombie-model', wrapperId: 'zombie-wrapper', soundId: 'zombie-sound' },
+          { id: 'devil', modelId: 'devil-model', wrapperId: 'devil-wrapper', soundId: 'devil-sound' },
+          { id: 'bones', modelId: 'bones-model', wrapperId: 'bones-wrapper', soundId: 'bones-sound' },
+          { id: 'scarecrow', modelId: 'scarecrow-model', wrapperId: 'scarecrow-wrapper', soundId: 'scarecrow-sound' },
+          { id: 'clown', modelId: 'clown-model', wrapperId: 'clown-wrapper', soundId: 'clown-sound' },
+          { id: 'teddy', modelId: 'teddy-model', wrapperId: 'teddy-wrapper', soundId: 'teddy-sound' },
+          { id: 'pumpkin', modelId: 'pumpkin-model', wrapperId: 'pumpkin-wrapper', soundId: 'pumpkin-sound' },
+          { id: 'witch', modelId: 'witch-model', wrapperId: 'witch-wrapper', soundId: 'witch-sound' },
+          { id: 'zombina', modelId: 'zombina-model', wrapperId: 'zombina-wrapper', soundId: 'zombina-sound' },
+          { id: 'wolfie', modelId: 'wolfie-model', wrapperId: 'wolfie-wrapper', soundId: 'wolfie-sound' }
+        ];
+
+        markers.forEach(markerConfig => {
+          const marker = document.querySelector(`#marker-${markerConfig.id}`);
+          const model = document.querySelector(`#${markerConfig.modelId}`);
+          const wrapper = document.querySelector(`#${markerConfig.wrapperId}`);
+          const soundEl = document.querySelector(`#${markerConfig.soundId}`);
+
+          // Initialize animation state for this model
+          animationStates[markerConfig.modelId] = {
+            clips: [],
+            currentClipIndex: 0,
+            currentAction: null,
+            nextAction: null,
+            isTransitioning: false,
+            transitionDuration: 0.5
+          };
+
+          // Initialize sound tracking
+          soundWasBrieflyLost[markerConfig.soundId] = false;
+
+          // Preload sound immediately
+// Preload sound immediately - use the sound element directly
+window.addEventListener('load', function() {
+  // Sounds will auto-preload with the preload attribute
+  // No need to call .load() method
+});
+
+          // Marker found / lost events
+          marker.addEventListener("markerFound", () => {
+            // Clear any pending stop timeout for this marker
+            if (soundTimeouts[markerConfig.id]) {
+              clearTimeout(soundTimeouts[markerConfig.id]);
+              soundTimeouts[markerConfig.id] = null;
+              // MARK: This means marker was only briefly lost (<1 second)
+              soundWasBrieflyLost[markerConfig.soundId] = true;
+            }
+            
+            // Start animations for this model
+            if (mixers[markerConfig.modelId]) {
+              mixerActiveStates[markerConfig.modelId] = true;
+            }
+            
+            // Play individual sound for this marker
+            playMarkerSound(markerConfig.soundId);
+          });
+
+          marker.addEventListener("markerLost", () => {
+            // Pause animations for this model
+            if (mixers[markerConfig.modelId]) {
+              mixerActiveStates[markerConfig.modelId] = false;
+            }
+            
+            // Reset the brief loss flag
+            soundWasBrieflyLost[markerConfig.soundId] = false;
+            
+            // Set timeout to stop music permanently after 1 second for this marker
+            soundTimeouts[markerConfig.id] = setTimeout(() => {
+              stopMarkerSound(markerConfig.soundId);
+              soundTimeouts[markerConfig.id] = null;
+            }, 1000);
+          });
+
+          // Model loaded event
+          model.addEventListener("model-loaded", (e) => {
+            setupModelAnimations(markerConfig.modelId, e.detail.model);
+          });
+
+          // Store wrapper for orientation updates
+          marker.wrapper = wrapper;
+        });
+
+        function detectOrientation() {
+          // Method 1: Check window.orientation (deprecated but still widely supported)
+          if (typeof window.orientation !== 'undefined') {
+            currentOrientation = Math.abs(window.orientation) === 90 ? 'landscape' : 'portrait';
+          } 
+          // Method 2: Check screen dimensions
+          else if (window.screen && window.screen.orientation && window.screen.orientation.type) {
+            currentOrientation = window.screen.orientation.type.includes('landscape') ? 'landscape' : 'portrait';
+          }
+          // Method 3: Check window dimensions as fallback
+          else {
+            currentOrientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+          }
+          
+          // Update model dimensions when orientation changes
+          if (arInitialized) {
+            updateAllModelDimensions();
+          }
+          
+          return currentOrientation;
+        }
+
+        function updateAllModelDimensions() {
+          markers.forEach(markerConfig => {
+            const wrapper = document.querySelector(`#${markerConfig.wrapperId}`);
+            if (wrapper) {
+              updateModelDimensions(wrapper);
+            }
+          });
+        }
+
+        function updateModelDimensions(wrapper) {
+          if (!wrapper) return;
+          
+          let scaleValue;
+          if (currentOrientation === 'portrait') {
+            // PORTRAIT: Larger scale for better visibility
+            scaleValue = '2 0.8 2';
+          } else {
+            // LANDSCAPE: Smaller scale to fit better in wider view
+            scaleValue = '1 1.8 1';
+          }
+          
+          wrapper.setAttribute('scale', scaleValue);
+        }
+
+        function setupModelAnimations(modelId, gltfObj) {
+          const clips = gltfObj.animations || (gltfObj && gltfObj.userData && gltfObj.userData.animations) || [];
+
+          if ((!clips || clips.length === 0) && gltfObj.children) {
+            clips = gltfObj.animations || [];
+          }
+
+          if (!AFRAME || !AFRAME.THREE || !clips || clips.length === 0) {
+            return;
+          }
+
+          // Create clock and mixer for this model
+          clocks[modelId] = new AFRAME.THREE.Clock();
+          mixers[modelId] = new AFRAME.THREE.AnimationMixer(gltfObj);
+          mixerActiveStates[modelId] = false;
+          animationStates[modelId].clips = clips;
+
+          // Start with the first animation
+          startAnimationSequence(modelId);
+          
+          // Start the animation update loop for this model
+          function animateMixer() {
+            rafIds[modelId] = requestAnimationFrame(animateMixer);
+            if (!mixers[modelId] || !clocks[modelId]) return;
+            const delta = clocks[modelId].getDelta();
+            if (mixerActiveStates[modelId]) {
+              mixers[modelId].update(delta);
+              
+              // Check if we should transition to next animation
+              const state = animationStates[modelId];
+              if (state.currentAction && !state.isTransitioning) {
+                const currentTime = state.currentAction.time;
+                const clipDuration = state.currentAction.getClip().duration;
+                
+                // Start transition before current animation ends
+                if (currentTime >= clipDuration - state.transitionDuration - 0.1) {
+                  startNextAnimation(modelId);
+                }
+              }
+            }
+          }
+
+          // Start loop
+          if (!rafIds[modelId]) animateMixer();
+        }
+
+        function startAnimationSequence(modelId) {
+          const state = animationStates[modelId];
+          if (!mixers[modelId] || state.clips.length === 0) return;
+          
+          state.currentClipIndex = 0;
+          playClip(modelId, state.currentClipIndex);
+        }
+
+        function playClip(modelId, clipIndex) {
+          const state = animationStates[modelId];
+          if (!mixers[modelId] || !state.clips[clipIndex]) return;
+          
+          // Stop any current action immediately
+          if (state.currentAction) {
+            state.currentAction.stop();
+          }
+          
+          // Play new clip
+          state.currentClipIndex = clipIndex;
+          state.currentAction = mixers[modelId].clipAction(state.clips[clipIndex]);
+          state.currentAction.reset();
+          state.currentAction.setLoop(AFRAME.THREE.LoopOnce, 1);
+          state.currentAction.clampWhenFinished = true;
+          state.currentAction.play();
+          
+          state.isTransitioning = false;
+        }
+
+        function startNextAnimation(modelId) {
+          const state = animationStates[modelId];
+          if (state.isTransitioning || !mixers[modelId]) return;
+          
+          state.isTransitioning = true;
+          const nextClipIndex = (state.currentClipIndex + 1) % state.clips.length;
+          
+          // Prepare the next action
+          state.nextAction = mixers[modelId].clipAction(state.clips[nextClipIndex]);
+          state.nextAction.reset();
+          state.nextAction.setLoop(AFRAME.THREE.LoopOnce, 1);
+          state.nextAction.clampWhenFinished = true;
+          
+          // Crossfade from current to next
+          state.currentAction.crossFadeTo(state.nextAction, state.transitionDuration, false);
+          state.nextAction.play();
+          
+          // Update current references
+          state.currentAction = state.nextAction;
+          state.currentClipIndex = nextClipIndex;
+          state.nextAction = null;
+          
+          // Reset transitioning flag after crossfade completes
+          setTimeout(() => {
+            state.isTransitioning = false;
+          }, state.transitionDuration * 1000);
+        }
+
+        // Sound control functions for individual markers
+        function playMarkerSound(soundId) {
+          const soundEl = document.querySelector(`#${soundId}`);
+          if (soundEl) {
+            const soundComponent = soundEl.components.sound;
+            if (soundComponent) {
+              // NEW: Only restart if the sound wasn't briefly lost
+              if (soundWasBrieflyLost[soundId]) {
+                // Sound was only briefly lost - just ensure it's playing
+                soundComponent.playSound();
+                soundWasBrieflyLost[soundId] = false; // Reset the flag
+              } else {
+                // Normal behavior: stop and restart from beginning
+                soundComponent.stopSound();
+                soundComponent.playSound();
+              }
+            }
+          }
+        }
+
+        function stopMarkerSound(soundId) {
+          const soundEl = document.querySelector(`#${soundId}`);
+          if (soundEl) {
+            const soundComponent = soundEl.components.sound;
+            if (soundComponent) {
+              soundComponent.stopSound();
+            }
+          }
+        }
+
+        // Set up orientation change listeners
+        window.addEventListener('resize', detectOrientation);
+        window.addEventListener('orientationchange', detectOrientation);
+        // Continuous checking for Android
+        setInterval(detectOrientation, 1000);
+
+        // Clean up on unload
+        window.addEventListener("beforeunload", () => {
+          // Cancel all animation frames
+          Object.values(rafIds).forEach(rafId => {
+            if (rafId) cancelAnimationFrame(rafId);
+          });
+          // Clear all sound timeouts
+          Object.values(soundTimeouts).forEach(timeout => {
+            if (timeout) clearTimeout(timeout);
+          });
+        });
+
+      })();
+    </script>
+  </body>
+</html>
