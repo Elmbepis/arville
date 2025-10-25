@@ -373,52 +373,57 @@
       });
     }
 
-    function playNextAnimation() {
-      if (isTransitioning || animationQueue.length === 0) return;
-      
-      const animName = animationQueue[currentAnimationIndex];
-      const clip = animationClips.get(animName);
-      
-      if (!clip) {
-        console.warn(`&#9888;&#65039; Animation clip not found: ${animName}`);
-        advanceToNextAnimation();
-        return;
-      }
+function playNextAnimation() {
+  if (isTransitioning || animationQueue.length === 0) return;
+  
+  const animName = animationQueue[currentAnimationIndex];
+  const clip = animationClips.get(animName);
+  
+  if (!clip) {
+    console.warn(`&#9888;&#65039; Animation clip not found: ${animName}`);
+    advanceToNextAnimation();
+    return;
+  }
 
-      console.log(`&#127916; Playing animation: ${animName} (${currentAnimationIndex + 1}/${animationQueue.length})`);
-      
-      // Create new action
-      nextAction = mixer.clipAction(clip);
-      nextAction.setLoop(THREE.LoopRepeat, Infinity);
-      nextAction.clampWhenFinished = false;
-      
-      // Crossfade from current to new animation
-      if (currentAction) {
-        isTransitioning = true;
-        
-        // Reset and start the new action
-        nextAction.reset();
-        nextAction.play();
-        
-        // Crossfade over TRANSITION_DURATION seconds
-        currentAction.crossFadeTo(nextAction, TRANSITION_DURATION, false);
-        
-        // Update current action reference
-        currentAction = nextAction;
-        
-        // Reset transitioning flag after transition
-        setTimeout(() => {
-          isTransitioning = false;
-        }, TRANSITION_DURATION * 1000);
-      } else {
-        // First animation, no transition needed
-        currentAction = nextAction;
-        currentAction.play();
-      }
-      
-      // Remove instructions text completely
-      document.getElementById("instructions").innerHTML = "";
-    }
+  console.log(`&#127916; Playing animation: ${animName} (${currentAnimationIndex + 1}/${animationQueue.length})`);
+  
+  // Create new action
+  nextAction = mixer.clipAction(clip);
+  nextAction.setLoop(THREE.LoopRepeat, Infinity);
+  nextAction.clampWhenFinished = false;
+  
+  // Crossfade from current to new animation
+  if (currentAction) {
+    isTransitioning = true;
+    
+    // Reset and start the new action
+    nextAction.reset();
+    nextAction.play();
+    
+    // Crossfade over TRANSITION_DURATION seconds
+    currentAction.crossFadeTo(nextAction, TRANSITION_DURATION, false);
+    
+    // Update current action reference
+    currentAction = nextAction;
+    
+    // Reset transitioning flag after transition
+    setTimeout(() => {
+      isTransitioning = false;
+    }, TRANSITION_DURATION * 1000);
+  } else {
+    // First animation, no transition needed
+    currentAction = nextAction;
+    currentAction.play();
+  }
+  
+  // Remove instructions text completely
+  document.getElementById("instructions").innerHTML = "";
+  
+  // Auto-advance after animation duration (minus transition time)
+  setTimeout(() => {
+    advanceToNextAnimation();
+  }, (clip.duration - TRANSITION_DURATION) * 1000);
+}
 
     function advanceToNextAnimation() {
       if (animationQueue.length === 0) return;
@@ -458,8 +463,8 @@
       document.addEventListener("keydown", (e) => {
         switch (e.code) {
           // EXCHANGED: W now moves forward (toward model), S moves backward
-          case "KeyW": moveState.forward = true; break;
-          case "KeyS": moveState.backward = true; break;
+          case "KeyS": moveState.forward = true; break;
+          case "KeyW": moveState.backward = true; break;
           case "KeyD": moveState.left = true; break;
           case "KeyA": moveState.right = true; break;
           case "KeyR": resetCamera(); break;
@@ -473,8 +478,8 @@
       });
       document.addEventListener("keyup", (e) => {
         switch (e.code) {
-          case "KeyW": moveState.forward = false; break;
-          case "KeyS": moveState.backward = false; break;
+          case "KeyS": moveState.forward = false; break;
+          case "KeyW": moveState.backward = false; break;
           case "KeyD": moveState.left = false; break;
           case "KeyA": moveState.right = false; break;
         }
