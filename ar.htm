@@ -37,434 +37,432 @@
       <!-- Point Light for additional front fill -->
       <a-entity light="type: point; color: #FFFFFF; intensity: 1.5; position: 0 2 2"></a-entity>
 
-      <!-- Define all markers in a compact array-based format -->
-      <script>
-        const markers = [
-          { id: 'vamp', model: 'vamp.glb', sound: 'vamp.mp3' },
-          { id: 'frankie', model: 'frankie.glb', sound: 'frankie.mp3' },
-          { id: 'zombie', model: 'zombie.glb', sound: 'zombie.mp3' },
-          { id: 'devil', model: 'devil.glb', sound: 'devil.mp3' },
-          { id: 'bones', model: 'bones.glb', sound: 'bones.mp3' },
-          { id: 'scarecrow', model: 'scarecrow.glb', sound: 'scarecrow.mp3' },
-          { id: 'clown', model: 'clown.glb', sound: 'clown.mp3' },
-          { id: 'teddy', model: 'teddy.glb', sound: 'teddy.mp3' },
-          { id: 'pumpkin', model: 'pumpkin.glb', sound: 'pumpkin.mp3' },
-          { id: 'witch', model: 'witch.glb', sound: 'witch.mp3' },
-          { id: 'zombina', model: 'zombina.glb', sound: 'zombina.mp3' },
-          { id: 'wolfie', model: 'wolfie.glb', sound: 'wolfie.mp3' }
-        ];
-
-        markers.forEach(marker => {
-          document.write(`
-            <a-marker type="pattern" url="AR/patts/horror/${marker.id}.patt" id="marker-${marker.id}">
-              <a-entity
-                id="${marker.id}-wrapper"
-                position="0 0 0"
-                rotation="-90 0 0"
-                class="orientation-dependent"
-              >
-                <a-entity
-                  id="${marker.id}-model"
-                  gltf-model="AR/models/horror/${marker.model}"
-                  scale="4 4 4"
-                  position="0 -0.6 0"
-                ></a-entity>
-              </a-entity>
-              <a-entity
-                id="${marker.id}-sound"
-                sound="src: AR/sounds/horror/${marker.sound}; autoplay: false; loop: true; volume: 4; preload: auto"
-              ></a-entity>
-            </a-marker>
-          `);
-        });
-      </script>
-
+      <!-- Markers will be generated automatically by JavaScript -->
       <a-entity camera></a-entity>
     </a-scene>
 
     <script>
       (function () {
+        // ==================== SINGLE CONFIGURATION OBJECT ====================
+        const AR_CONFIG = {
+          basePaths: {
+            patterns: 'AR/patts/horror',
+            models: 'AR/models/horror',
+            sounds: 'AR/sounds/horror'
+          },
+          markers: [
+            { id: 'vamp', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'frankie', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'zombie', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'devil', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'bones', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'scarecrow', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'clown', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'teddy', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'pumpkin', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'witch', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'zombina', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'wolfie', scale: '4 4 4', position: '0 -0.6 0' }
+          ],
+          orientationScales: {
+            portrait: '2 0.8 2',
+            landscape: '1 1.8 1'
+          },
+          soundSettings: {
+            loop: true,
+            volume: 4,
+            preload: 'auto'
+          },
+          animationSettings: {
+            transitionDuration: 0.5
+          }
+        };
+
         // ==================== CACHE MANAGER ====================
         class ARModelCache {
-            constructor() {
-                this.cache = new Map();
-                this.loading = new Map();
-            }
-            
-            async loadModel(url) {
-                // Return cached model if available
-                if (this.cache.has(url)) {
-                    console.log('&#9989; Using cached model:', url);
-                    return this.cache.get(url);
-                }
-                
-                // Prevent duplicate downloads
-                if (this.loading.has(url)) {
-                    return this.loading.get(url);
-                }
-                
-                // Download and cache
-                console.log('&#128229; Downloading model:', url);
-                const promise = fetch(url)
-                    .then(response => {
-                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                        return response.arrayBuffer();
-                    })
-                    .then(data => {
-                        this.cache.set(url, data);
-                        this.loading.delete(url);
-                        return data;
-                    })
-                    .catch(error => {
-                        this.loading.delete(url);
-                        console.error('&#10060; Failed to load model:', url, error);
-                        throw error;
-                    });
-                    
-                this.loading.set(url, promise);
-                return promise;
-            }
-        }
-
-        // Initialize cache
-        const modelCache = new ARModelCache();
-
-        const startButton = document.getElementById("start-button");
-        const arScene = document.getElementById("ar-scene");
-
-        // Variables for animation mixers (one per model)
-        const mixers = {};
-        const clocks = {};
-        const rafIds = {};
-        const mixerActiveStates = {};
-        const animationStates = {}; // Track animation state for each model
-        const soundTimeouts = {}; // Track sound timeouts for each marker
-        const soundWasBrieflyLost = {}; // NEW: Track if sound was only briefly lost
-
-        // Orientation detection
-        let currentOrientation = 'unknown';
-        let arInitialized = false;
-
-        // Start AR button
-        startButton.addEventListener("click", () => {
-          startButton.style.display = "none";
-          arScene.style.display = "block";
-          arInitialized = true;
-          updateAllModelDimensions();
-        });
-
-        // Setup all markers
-        const markers = [
-          { id: 'vamp', modelId: 'vamp-model', wrapperId: 'vamp-wrapper', soundId: 'vamp-sound' },
-          { id: 'frankie', modelId: 'frankie-model', wrapperId: 'frankie-wrapper', soundId: 'frankie-sound' },
-          { id: 'zombie', modelId: 'zombie-model', wrapperId: 'zombie-wrapper', soundId: 'zombie-sound' },
-          { id: 'devil', modelId: 'devil-model', wrapperId: 'devil-wrapper', soundId: 'devil-sound' },
-          { id: 'bones', modelId: 'bones-model', wrapperId: 'bones-wrapper', soundId: 'bones-sound' },
-          { id: 'scarecrow', modelId: 'scarecrow-model', wrapperId: 'scarecrow-wrapper', soundId: 'scarecrow-sound' },
-          { id: 'clown', modelId: 'clown-model', wrapperId: 'clown-wrapper', soundId: 'clown-sound' },
-          { id: 'teddy', modelId: 'teddy-model', wrapperId: 'teddy-wrapper', soundId: 'teddy-sound' },
-          { id: 'pumpkin', modelId: 'pumpkin-model', wrapperId: 'pumpkin-wrapper', soundId: 'pumpkin-sound' },
-          { id: 'witch', modelId: 'witch-model', wrapperId: 'witch-wrapper', soundId: 'witch-sound' },
-          { id: 'zombina', modelId: 'zombina-model', wrapperId: 'zombina-wrapper', soundId: 'zombina-sound' },
-          { id: 'wolfie', modelId: 'wolfie-model', wrapperId: 'wolfie-wrapper', soundId: 'wolfie-sound' }
-        ];
-
-        // Store original model URLs for caching
-        const modelUrls = {};
-        markers.forEach(markerConfig => {
-          modelUrls[markerConfig.modelId] = `AR/models/horror/${markerConfig.id}.glb`;
-        });
-
-        markers.forEach(markerConfig => {
-          const marker = document.querySelector(`#marker-${markerConfig.id}`);
-          const model = document.querySelector(`#${markerConfig.modelId}`);
-          const wrapper = document.querySelector(`#${markerConfig.wrapperId}`);
-          const soundEl = document.querySelector(`#${markerConfig.soundId}`);
-
-          // Initialize animation state for this model
-          animationStates[markerConfig.modelId] = {
-            clips: [],
-            currentClipIndex: 0,
-            currentAction: null,
-            nextAction: null,
-            isTransitioning: false,
-            transitionDuration: 0.5
-          };
-
-          // Initialize sound tracking
-          soundWasBrieflyLost[markerConfig.soundId] = false;
-
-          // Preload sound immediately
-          window.addEventListener('load', function() {
-            // Sounds will auto-preload with the preload attribute
-            // No need to call .load() method
-          });
-
-          // Marker found / lost events
-          marker.addEventListener("markerFound", () => {
-            // Clear any pending stop timeout for this marker
-            if (soundTimeouts[markerConfig.id]) {
-              clearTimeout(soundTimeouts[markerConfig.id]);
-              soundTimeouts[markerConfig.id] = null;
-              // MARK: This means marker was only briefly lost (<1 second)
-              soundWasBrieflyLost[markerConfig.soundId] = true;
-            }
-            
-            // Start animations for this model
-            if (mixers[markerConfig.modelId]) {
-              mixerActiveStates[markerConfig.modelId] = true;
-            }
-            
-            // Play individual sound for this marker
-            playMarkerSound(markerConfig.soundId);
-          });
-
-          marker.addEventListener("markerLost", () => {
-            // Pause animations for this model
-            if (mixers[markerConfig.modelId]) {
-              mixerActiveStates[markerConfig.modelId] = false;
-            }
-            
-            // Reset the brief loss flag
-            soundWasBrieflyLost[markerConfig.soundId] = false;
-            
-            // Set timeout to stop music permanently after 1 second for this marker
-            soundTimeouts[markerConfig.id] = setTimeout(() => {
-              stopMarkerSound(markerConfig.soundId);
-              soundTimeouts[markerConfig.id] = null;
-            }, 1000);
-          });
-
-          // Model loaded event - MODIFIED FOR CACHING
-          model.addEventListener("model-loaded", (e) => {
-            setupModelAnimations(markerConfig.modelId, e.detail.model);
-          });
-
-          // Store wrapper for orientation updates
-          marker.wrapper = wrapper;
-
-          // INTERCEPT MODEL LOADING FOR CACHING
-          const originalSetAttribute = model.setAttribute.bind(model);
-          model.setAttribute = function(attr, value) {
-            if (attr === 'gltf-model' && value && !value.startsWith('blob:')) {
-              // Cache and load model
-              const modelUrl = value;
-              modelCache.loadModel(modelUrl)
-                .then(data => {
-                  const blob = new Blob([data]);
-                  const objectUrl = URL.createObjectURL(blob);
-                  originalSetAttribute('gltf-model', objectUrl);
-                  
-                  // Clean up Object URL after model loads
-                  model.addEventListener('model-loaded', () => {
-                    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
-                  });
-                })
-                .catch(error => {
-                  console.error('Cache load failed, falling back to original:', error);
-                  originalSetAttribute('gltf-model', modelUrl);
-                });
-            } else {
-              originalSetAttribute(attr, value);
-            }
-          };
-        });
-
-        function detectOrientation() {
-          // Method 1: Check window.orientation (deprecated but still widely supported)
-          if (typeof window.orientation !== 'undefined') {
-            currentOrientation = Math.abs(window.orientation) === 90 ? 'landscape' : 'portrait';
-          } 
-          // Method 2: Check screen dimensions
-          else if (window.screen && window.screen.orientation && window.screen.orientation.type) {
-            currentOrientation = window.screen.orientation.type.includes('landscape') ? 'landscape' : 'portrait';
-          }
-          // Method 3: Check window dimensions as fallback
-          else {
-            currentOrientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+          constructor() {
+            this.cache = new Map();
+            this.loading = new Map();
           }
           
-          // Update model dimensions when orientation changes
-          if (arInitialized) {
-            updateAllModelDimensions();
-          }
-          
-          return currentOrientation;
-        }
-
-        function updateAllModelDimensions() {
-          markers.forEach(markerConfig => {
-            const wrapper = document.querySelector(`#${markerConfig.wrapperId}`);
-            if (wrapper) {
-              updateModelDimensions(wrapper);
+          async loadModel(url) {
+            if (this.cache.has(url)) {
+              console.log('&#9989; Using cached model:', url);
+              return this.cache.get(url);
             }
-          });
-        }
-
-        function updateModelDimensions(wrapper) {
-          if (!wrapper) return;
-          
-          let scaleValue;
-          if (currentOrientation === 'portrait') {
-            // PORTRAIT: Larger scale for better visibility
-            scaleValue = '2 0.8 2';
-          } else {
-            // LANDSCAPE: Smaller scale to fit better in wider view
-            scaleValue = '1 1.8 1';
-          }
-          
-          wrapper.setAttribute('scale', scaleValue);
-        }
-
-        function setupModelAnimations(modelId, gltfObj) {
-          const clips = gltfObj.animations || (gltfObj && gltfObj.userData && gltfObj.userData.animations) || [];
-
-          if ((!clips || clips.length === 0) && gltfObj.children) {
-            clips = gltfObj.animations || [];
-          }
-
-          if (!AFRAME || !AFRAME.THREE || !clips || clips.length === 0) {
-            return;
-          }
-
-          // Create clock and mixer for this model
-          clocks[modelId] = new AFRAME.THREE.Clock();
-          mixers[modelId] = new AFRAME.THREE.AnimationMixer(gltfObj);
-          mixerActiveStates[modelId] = false;
-          animationStates[modelId].clips = clips;
-
-          // Start with the first animation
-          startAnimationSequence(modelId);
-          
-          // Start the animation update loop for this model
-          function animateMixer() {
-            rafIds[modelId] = requestAnimationFrame(animateMixer);
-            if (!mixers[modelId] || !clocks[modelId]) return;
-            const delta = clocks[modelId].getDelta();
-            if (mixerActiveStates[modelId]) {
-              mixers[modelId].update(delta);
+            
+            if (this.loading.has(url)) {
+              return this.loading.get(url);
+            }
+            
+            console.log('&#128229; Downloading model:', url);
+            const promise = fetch(url)
+              .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.arrayBuffer();
+              })
+              .then(data => {
+                this.cache.set(url, data);
+                this.loading.delete(url);
+                return data;
+              })
+              .catch(error => {
+                this.loading.delete(url);
+                console.error('&#10060; Failed to load model:', url, error);
+                throw error;
+              });
               
-              // Check if we should transition to next animation
-              const state = animationStates[modelId];
-              if (state.currentAction && !state.isTransitioning) {
-                const currentTime = state.currentAction.time;
-                const clipDuration = state.currentAction.getClip().duration;
+            this.loading.set(url, promise);
+            return promise;
+          }
+        }
+
+        // ==================== AR MANAGER CLASS ====================
+        class ARManager {
+          constructor(config) {
+            this.config = config;
+            this.modelCache = new ARModelCache();
+            this.markers = [];
+            this.mixers = {};
+            this.clocks = {};
+            this.rafIds = {};
+            this.mixerActiveStates = {};
+            this.animationStates = {};
+            this.soundTimeouts = {};
+            this.soundWasBrieflyLost = {};
+            this.modelLoadedStates = {};
+            this.currentOrientation = 'unknown';
+            this.arInitialized = false;
+            
+            this.startButton = document.getElementById("start-button");
+            this.arScene = document.getElementById("ar-scene");
+            
+            this.init();
+          }
+          
+          init() {
+            this.generateMarkers();
+            this.setupMarkers();
+            this.bindEvents();
+          }
+          
+          // ==================== MARKER GENERATION ====================
+          generateMarkers() {
+            const scene = document.querySelector('a-scene');
+            
+            this.config.markers.forEach(marker => {
+              const markerHTML = `
+                <a-marker type="pattern" url="${this.config.basePaths.patterns}/${marker.id}.patt" id="marker-${marker.id}">
+                  <a-entity
+                    id="${marker.id}-wrapper"
+                    position="0 0 0"
+                    rotation="-90 0 0"
+                    class="orientation-dependent"
+                  >
+                    <a-entity
+                      id="${marker.id}-model"
+                      scale="${marker.scale}"
+                      position="${marker.position}"
+                    ></a-entity>
+                  </a-entity>
+                  <a-entity
+                    id="${marker.id}-sound"
+                    sound="src: ${this.config.basePaths.sounds}/${marker.id}.mp3; autoplay: false; loop: ${this.config.soundSettings.loop}; volume: ${this.config.soundSettings.volume}; preload: ${this.config.soundSettings.preload}"
+                  ></a-entity>
+                </a-marker>
+              `;
+              scene.insertAdjacentHTML('beforeend', markerHTML);
+              
+              this.modelLoadedStates[marker.id] = false;
+            });
+          }
+          
+          // ==================== MARKER SETUP ====================
+          setupMarkers() {
+            this.markers = this.config.markers.map(marker => ({
+              id: marker.id,
+              modelId: `${marker.id}-model`,
+              wrapperId: `${marker.id}-wrapper`,
+              soundId: `${marker.id}-sound`,
+              containerId: `${marker.id}-container`
+            }));
+            
+            this.markers.forEach(markerConfig => {
+              this.setupMarkerEvents(markerConfig);
+            });
+          }
+          
+          // ==================== MARKER EVENT SETUP ====================
+          setupMarkerEvents(markerConfig) {
+            const marker = document.querySelector(`#marker-${markerConfig.id}`);
+            const model = document.querySelector(`#${markerConfig.modelId}`);
+            const wrapper = document.querySelector(`#${markerConfig.wrapperId}`);
+            
+            // Initialize animation state
+            this.animationStates[markerConfig.modelId] = {
+              clips: [],
+              currentClipIndex: 0,
+              currentAction: null,
+              nextAction: null,
+              isTransitioning: false,
+              transitionDuration: this.config.animationSettings.transitionDuration
+            };
+            
+            // Initialize sound tracking
+            this.soundWasBrieflyLost[markerConfig.soundId] = false;
+            
+            // Set up lazy loading
+            this.setupLazyLoading(markerConfig);
+            
+            // Marker event handlers
+            marker.addEventListener("markerFound", () => this.onMarkerFound(markerConfig));
+            marker.addEventListener("markerLost", () => this.onMarkerLost(markerConfig));
+            
+            // Model loaded event
+            model.addEventListener("model-loaded", (e) => this.onModelLoaded(markerConfig.modelId, e.detail.model));
+            
+            // Store wrapper reference
+            marker.wrapper = wrapper;
+          }
+          
+          // ==================== LAZY LOADING ====================
+          setupLazyLoading(markerConfig) {
+            const marker = document.querySelector(`#marker-${markerConfig.id}`);
+            const modelContainer = document.querySelector(`#${markerConfig.modelId}`);
+            
+            const onMarkerFound = () => {
+              if (!this.modelLoadedStates[markerConfig.id]) {
+                console.log(`&#128260; First detection of ${markerConfig.id}, loading model...`);
                 
-                // Start transition before current animation ends
-                if (currentTime >= clipDuration - state.transitionDuration - 0.1) {
-                  startNextAnimation(modelId);
+                const modelUrl = `${this.config.basePaths.models}/${markerConfig.id}.glb`;
+                this.modelCache.loadModel(modelUrl)
+                  .then(data => {
+                    const blob = new Blob([data]);
+                    const objectUrl = URL.createObjectURL(blob);
+                    
+                    modelContainer.setAttribute('gltf-model', objectUrl);
+                    
+                    const onModelLoaded = () => {
+                      console.log(`&#9989; Model loaded for ${markerConfig.id}`);
+                      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+                      modelContainer.removeEventListener('model-loaded', onModelLoaded);
+                    };
+                    
+                    modelContainer.addEventListener('model-loaded', onModelLoaded);
+                    this.modelLoadedStates[markerConfig.id] = true;
+                  })
+                  .catch(error => {
+                    console.error(`&#10060; Failed to load model for ${markerConfig.id}:`, error);
+                    modelContainer.setAttribute('gltf-model', modelUrl);
+                    this.modelLoadedStates[markerConfig.id] = true;
+                  });
+              }
+            };
+            
+            marker.addEventListener("markerFound", onMarkerFound);
+          }
+          
+          // ==================== EVENT HANDLERS ====================
+          onMarkerFound(markerConfig) {
+            if (this.soundTimeouts[markerConfig.id]) {
+              clearTimeout(this.soundTimeouts[markerConfig.id]);
+              this.soundTimeouts[markerConfig.id] = null;
+              this.soundWasBrieflyLost[markerConfig.soundId] = true;
+            }
+            
+            if (this.mixers[markerConfig.modelId]) {
+              this.mixerActiveStates[markerConfig.modelId] = true;
+            }
+            
+            this.playMarkerSound(markerConfig.soundId);
+          }
+          
+          onMarkerLost(markerConfig) {
+            if (this.mixers[markerConfig.modelId]) {
+              this.mixerActiveStates[markerConfig.modelId] = false;
+            }
+            
+            this.soundWasBrieflyLost[markerConfig.soundId] = false;
+            
+            this.soundTimeouts[markerConfig.id] = setTimeout(() => {
+              this.stopMarkerSound(markerConfig.soundId);
+              this.soundTimeouts[markerConfig.id] = null;
+            }, 1000);
+          }
+          
+          onModelLoaded(modelId, gltfObj) {
+            this.setupModelAnimations(modelId, gltfObj);
+          }
+          
+          // ==================== ANIMATION SYSTEM ====================
+          setupModelAnimations(modelId, gltfObj) {
+            const clips = gltfObj.animations || [];
+            
+            if (!AFRAME?.THREE || !clips.length) return;
+            
+            this.clocks[modelId] = new AFRAME.THREE.Clock();
+            this.mixers[modelId] = new AFRAME.THREE.AnimationMixer(gltfObj);
+            this.mixerActiveStates[modelId] = false;
+            this.animationStates[modelId].clips = clips;
+            
+            this.startAnimationSequence(modelId);
+            this.startAnimationLoop(modelId);
+          }
+          
+          startAnimationLoop(modelId) {
+            const animateMixer = () => {
+              this.rafIds[modelId] = requestAnimationFrame(animateMixer);
+              if (!this.mixers[modelId] || !this.clocks[modelId]) return;
+              
+              const delta = this.clocks[modelId].getDelta();
+              if (this.mixerActiveStates[modelId]) {
+                this.mixers[modelId].update(delta);
+                
+                const state = this.animationStates[modelId];
+                if (state.currentAction && !state.isTransitioning) {
+                  const currentTime = state.currentAction.time;
+                  const clipDuration = state.currentAction.getClip().duration;
+                  
+                  if (currentTime >= clipDuration - state.transitionDuration - 0.1) {
+                    this.startNextAnimation(modelId);
+                  }
                 }
               }
-            }
-          }
-
-          // Start loop
-          if (!rafIds[modelId]) animateMixer();
-        }
-
-        function startAnimationSequence(modelId) {
-          const state = animationStates[modelId];
-          if (!mixers[modelId] || state.clips.length === 0) return;
-          
-          state.currentClipIndex = 0;
-          playClip(modelId, state.currentClipIndex);
-        }
-
-        function playClip(modelId, clipIndex) {
-          const state = animationStates[modelId];
-          if (!mixers[modelId] || !state.clips[clipIndex]) return;
-          
-          // Stop any current action immediately
-          if (state.currentAction) {
-            state.currentAction.stop();
+            };
+            
+            if (!this.rafIds[modelId]) animateMixer();
           }
           
-          // Play new clip
-          state.currentClipIndex = clipIndex;
-          state.currentAction = mixers[modelId].clipAction(state.clips[clipIndex]);
-          state.currentAction.reset();
-          state.currentAction.setLoop(AFRAME.THREE.LoopOnce, 1);
-          state.currentAction.clampWhenFinished = true;
-          state.currentAction.play();
+          startAnimationSequence(modelId) {
+            const state = this.animationStates[modelId];
+            if (!this.mixers[modelId] || !state.clips.length) return;
+            
+            state.currentClipIndex = 0;
+            this.playClip(modelId, state.currentClipIndex);
+          }
           
-          state.isTransitioning = false;
-        }
-
-        function startNextAnimation(modelId) {
-          const state = animationStates[modelId];
-          if (state.isTransitioning || !mixers[modelId]) return;
-          
-          state.isTransitioning = true;
-          const nextClipIndex = (state.currentClipIndex + 1) % state.clips.length;
-          
-          // Prepare the next action
-          state.nextAction = mixers[modelId].clipAction(state.clips[nextClipIndex]);
-          state.nextAction.reset();
-          state.nextAction.setLoop(AFRAME.THREE.LoopOnce, 1);
-          state.nextAction.clampWhenFinished = true;
-          
-          // Crossfade from current to next
-          state.currentAction.crossFadeTo(state.nextAction, state.transitionDuration, false);
-          state.nextAction.play();
-          
-          // Update current references
-          state.currentAction = state.nextAction;
-          state.currentClipIndex = nextClipIndex;
-          state.nextAction = null;
-          
-          // Reset transitioning flag after crossfade completes
-          setTimeout(() => {
+          playClip(modelId, clipIndex) {
+            const state = this.animationStates[modelId];
+            if (!this.mixers[modelId] || !state.clips[clipIndex]) return;
+            
+            if (state.currentAction) state.currentAction.stop();
+            
+            state.currentClipIndex = clipIndex;
+            state.currentAction = this.mixers[modelId].clipAction(state.clips[clipIndex]);
+            state.currentAction.reset();
+            state.currentAction.setLoop(AFRAME.THREE.LoopOnce, 1);
+            state.currentAction.clampWhenFinished = true;
+            state.currentAction.play();
             state.isTransitioning = false;
-          }, state.transitionDuration * 1000);
-        }
-
-        // Sound control functions for individual markers
-        function playMarkerSound(soundId) {
-          const soundEl = document.querySelector(`#${soundId}`);
-          if (soundEl) {
-            const soundComponent = soundEl.components.sound;
-            if (soundComponent) {
-              // NEW: Only restart if the sound wasn't briefly lost
-              if (soundWasBrieflyLost[soundId]) {
-                // Sound was only briefly lost - just ensure it's playing
+          }
+          
+          startNextAnimation(modelId) {
+            const state = this.animationStates[modelId];
+            if (state.isTransitioning || !this.mixers[modelId]) return;
+            
+            state.isTransitioning = true;
+            const nextClipIndex = (state.currentClipIndex + 1) % state.clips.length;
+            
+            state.nextAction = this.mixers[modelId].clipAction(state.clips[nextClipIndex]);
+            state.nextAction.reset();
+            state.nextAction.setLoop(AFRAME.THREE.LoopOnce, 1);
+            state.nextAction.clampWhenFinished = true;
+            
+            state.currentAction.crossFadeTo(state.nextAction, state.transitionDuration, false);
+            state.nextAction.play();
+            
+            state.currentAction = state.nextAction;
+            state.currentClipIndex = nextClipIndex;
+            state.nextAction = null;
+            
+            setTimeout(() => state.isTransitioning = false, state.transitionDuration * 1000);
+          }
+          
+          // ==================== SOUND SYSTEM ====================
+          playMarkerSound(soundId) {
+            const soundEl = document.querySelector(`#${soundId}`);
+            if (soundEl?.components?.sound) {
+              const soundComponent = soundEl.components.sound;
+              if (this.soundWasBrieflyLost[soundId]) {
                 soundComponent.playSound();
-                soundWasBrieflyLost[soundId] = false; // Reset the flag
+                this.soundWasBrieflyLost[soundId] = false;
               } else {
-                // Normal behavior: stop and restart from beginning
                 soundComponent.stopSound();
                 soundComponent.playSound();
               }
             }
           }
-        }
-
-        function stopMarkerSound(soundId) {
-          const soundEl = document.querySelector(`#${soundId}`);
-          if (soundEl) {
-            const soundComponent = soundEl.components.sound;
-            if (soundComponent) {
-              soundComponent.stopSound();
+          
+          stopMarkerSound(soundId) {
+            const soundEl = document.querySelector(`#${soundId}`);
+            if (soundEl?.components?.sound) {
+              soundEl.components.sound.stopSound();
             }
+          }
+          
+          // ==================== ORIENTATION SYSTEM ====================
+          detectOrientation() {
+            if (typeof window.orientation !== 'undefined') {
+              this.currentOrientation = Math.abs(window.orientation) === 90 ? 'landscape' : 'portrait';
+            } else if (window.screen?.orientation?.type) {
+              this.currentOrientation = window.screen.orientation.type.includes('landscape') ? 'landscape' : 'portrait';
+            } else {
+              this.currentOrientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+            }
+            
+            if (this.arInitialized) this.updateAllModelDimensions();
+            return this.currentOrientation;
+          }
+          
+          updateAllModelDimensions() {
+            this.markers.forEach(markerConfig => {
+              const wrapper = document.querySelector(`#${markerConfig.wrapperId}`);
+              if (wrapper) this.updateModelDimensions(wrapper);
+            });
+          }
+          
+          updateModelDimensions(wrapper) {
+            if (!wrapper) return;
+            const scaleValue = this.currentOrientation === 'portrait' 
+              ? this.config.orientationScales.portrait 
+              : this.config.orientationScales.landscape;
+            wrapper.setAttribute('scale', scaleValue);
+          }
+          
+          // ==================== EVENT BINDING ====================
+          bindEvents() {
+            this.startButton.addEventListener("click", () => this.startAR());
+            
+            window.addEventListener('resize', () => this.detectOrientation());
+            window.addEventListener('orientationchange', () => this.detectOrientation());
+            setInterval(() => this.detectOrientation(), 1000);
+            
+            window.addEventListener("beforeunload", () => this.cleanup());
+          }
+          
+          startAR() {
+            this.startButton.style.display = "none";
+            this.arScene.style.display = "block";
+            this.arInitialized = true;
+            this.updateAllModelDimensions();
+          }
+          
+          cleanup() {
+            Object.values(this.rafIds).forEach(rafId => rafId && cancelAnimationFrame(rafId));
+            Object.values(this.soundTimeouts).forEach(timeout => timeout && clearTimeout(timeout));
           }
         }
 
-        // Set up orientation change listeners
-        window.addEventListener('resize', detectOrientation);
-        window.addEventListener('orientationchange', detectOrientation);
-        // Continuous checking for Android
-        setInterval(detectOrientation, 1000);
-
-        // Clean up on unload
-        window.addEventListener("beforeunload", () => {
-          // Cancel all animation frames
-          Object.values(rafIds).forEach(rafId => {
-            if (rafId) cancelAnimationFrame(rafId);
+        // ==================== INITIALIZE AR MANAGER ====================
+        let arManager;
+        
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            arManager = new ARManager(AR_CONFIG);
           });
-          // Clear all sound timeouts
-          Object.values(soundTimeouts).forEach(timeout => {
-            if (timeout) clearTimeout(timeout);
-          });
-        });
+        } else {
+          arManager = new ARManager(AR_CONFIG);
+        }
 
       })();
     </script>

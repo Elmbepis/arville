@@ -112,6 +112,7 @@
         const animationStates = {};
         const soundTimeouts = {};
         const soundWasBrieflyLost = {};
+        const modelLoadedStates = {}; // Track which models have been loaded
 
         // Orientation detection
         let currentOrientation = 'unknown';
@@ -130,9 +131,9 @@
                     rotation="-90 0 0"
                     class="orientation-dependent"
                   >
+                    <!-- EMPTY ENTITY - Model will be loaded when marker is first detected -->
                     <a-entity
                       id="${marker.id}-model"
-                      gltf-model="AR/models/mixamo/${marker.id}.glb"
                       scale="${marker.scale}"
                       position="${marker.position}"
                     ></a-entity>
@@ -145,7 +146,54 @@
               </a-marker>
             `;
             document.querySelector('a-scene').insertAdjacentHTML('beforeend', markerHTML);
+            
+            // Initialize model loaded state
+            modelLoadedStates[marker.id] = false;
           });
+        }
+
+        // ==================== LAZY MODEL LOADING ====================
+        function loadModelWhenFirstDetected(markerConfig) {
+          const marker = document.querySelector(`#marker-${markerConfig.id}`);
+          const modelContainer = document.querySelector(`#${markerConfig.modelId}`);
+          
+          // Add marker found event for lazy loading
+          const onMarkerFound = () => {
+            // Only load the model if it hasn't been loaded before
+            if (!modelLoadedStates[markerConfig.id]) {
+              console.log(`&#128260; First detection of ${markerConfig.id}, loading model...`);
+              
+              // Load the model via cache
+              const modelUrl = `AR/models/mixamo/${markerConfig.id}.glb`;
+              modelCache.loadModel(modelUrl)
+                .then(data => {
+                  const blob = new Blob([data]);
+                  const objectUrl = URL.createObjectURL(blob);
+                  
+                  // Set the gltf-model attribute to trigger loading
+                  modelContainer.setAttribute('gltf-model', objectUrl);
+                  
+                  // Listen for when the model finishes loading
+                  const onModelLoaded = () => {
+                    console.log(`&#9989; Model loaded for ${markerConfig.id}`);
+                    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+                    modelContainer.removeEventListener('model-loaded', onModelLoaded);
+                  };
+                  
+                  modelContainer.addEventListener('model-loaded', onModelLoaded);
+                  modelLoadedStates[markerConfig.id] = true;
+                })
+                .catch(error => {
+                  console.error(`&#10060; Failed to load model for ${markerConfig.id}:`, error);
+                  // Fallback: try direct loading
+                  modelContainer.setAttribute('gltf-model', modelUrl);
+                  modelLoadedStates[markerConfig.id] = true;
+                });
+            }
+          };
+          
+          // Add the lazy loading event listener
+          marker.addEventListener("markerFound", onMarkerFound);
         }
 
         // ==================== AUTOMATED MARKER SETUP ====================
@@ -183,7 +231,10 @@
 
             soundWasBrieflyLost[markerConfig.soundId] = false;
 
-            // Marker event handlers
+            // Set up lazy loading for this marker
+            loadModelWhenFirstDetected(markerConfig);
+
+            // Marker event handlers for sound and animation
             marker.addEventListener("markerFound", () => {
               if (soundTimeouts[markerConfig.id]) {
                 clearTimeout(soundTimeouts[markerConfig.id]);
@@ -211,33 +262,10 @@
               }, 1000);
             });
 
-            // Model loaded event
+            // Model loaded event (triggered by lazy loading)
             model.addEventListener("model-loaded", (e) => {
               setupModelAnimations(markerConfig.modelId, e.detail.model);
             });
-
-            // Cache interception
-            const originalSetAttribute = model.setAttribute.bind(model);
-            model.setAttribute = function(attr, value) {
-              if (attr === 'gltf-model' && value && !value.startsWith('blob:')) {
-                modelCache.loadModel(value)
-                  .then(data => {
-                    const blob = new Blob([data]);
-                    const objectUrl = URL.createObjectURL(blob);
-                    originalSetAttribute('gltf-model', objectUrl);
-                    
-                    model.addEventListener('model-loaded', () => {
-                      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
-                    });
-                  })
-                  .catch(error => {
-                    console.error('Cache load failed, falling back to original:', error);
-                    originalSetAttribute('gltf-model', value);
-                  });
-              } else {
-                originalSetAttribute(attr, value);
-              }
-            };
 
             // Store for orientation updates
             marker.wrapper = wrapper;
