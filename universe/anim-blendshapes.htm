@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Showroom - Jordan with Blendshapes</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      font-family: Arial, sans-serif;
+    }
+    #info, #instructions, #loading {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      color: white;
+      z-index: 10;
+    }
+    #info {
+      top: 10px;
+      background: rgba(0,0,0,0.5);
+      padding: 5px;
+    }
+    #instructions {
+      bottom: 20px;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+    }
+    #loading {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.7);
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 18px;
+    }
+    
+    /* Blendshape Controls */
+    #blendshape-controls {
+      position: absolute;
+      top: 60px;
+      right: 10px;
+      background: rgba(0,0,0,0.7);
+      padding: 15px;
+      border-radius: 8px;
+      color: white;
+      width: 250px;
+      max-height: 70vh;
+      overflow-y: auto;
+      z-index: 100;
+    }
+    
+    #blendshape-controls h3 {
+      margin-top: 0;
+      border-bottom: 1px solid #555;
+      padding-bottom: 8px;
+    }
+    
+    .blendshape-slider {
+      margin-bottom: 12px;
+    }
+    
+    .blendshape-slider label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    
+    .blendshape-slider input {
+      width: 100%;
+    }
+    
+    .blendshape-value {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 3px;
+    }
+    
+    #toggle-controls {
+      position: absolute;
+      top: 60px;
+      right: 10px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 101;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">3D Showroom | WASD: Move | Mouse: Look | R: Reset | ESC: Exit | SPACE: Next Animation</div>
+  <div id="instructions">Character performing animations</div>
+  <div id="loading">Loading model...</div>
+  
+  <button id="toggle-controls">Show Blendshapes</button>
+  <div id="blendshape-controls" style="display: none;">
+    <h3>Blendshape Controls</h3>
+    <div id="blendshape-sliders"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+  <script>
+    let scene, camera, renderer, mixer, animatedModel, loader;
+    const clock = new THREE.Clock();
+    const EYE_HEIGHT = 2.7;
+
+    // Define Avaturn models
+    const Avaturn_MODELS = ['girl.glb', 'jordan.glb']; // Add other Avaturn models here as needed
+
+    // Animation state variables
+    let currentAction = null;
+    let animationQueue = [];
+    let currentAnimationIndex = 0;
+    let animationClips = new Map();
+    let isTransitioning = false;
+    let currentModelName = '';
+    const TRANSITION_DURATION = 0.3;
+    
+    // Blendshape variables
+    let blendshapeMeshes = [];
+    let activeBlendshapes = {};
+
+    init();
+    animate();
+
+    function init() {
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, EYE_HEIGHT, 5);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x202020);
+      document.body.appendChild(renderer.domElement);
+
+      // --- Lighting: brighter & even ---
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+      hemiLight.position.set(0, 20, 0);
+      scene.add(hemiLight);
+
+      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambient);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+      dirLight.position.set(5, 10, 7.5);
+      dirLight.castShadow = true;
+      scene.add(dirLight);
+
+      // --- Room setup ---
+      const roomSize = 50;
+      const wallHeight = 10;
+
+      const floorMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.3 });
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, roomSize), floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      scene.add(floor);
+
+      const wallMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.6 });
+      const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, wallHeight), wallMat);
+      backWall.position.set(0, wallHeight / 2, -roomSize / 2);
+      scene.add(backWall);
+
+      const leftWall = backWall.clone();
+      leftWall.rotation.y = Math.PI / 2;
+      leftWall.position.set(-roomSize / 2, wallHeight / 2, 0);
+      scene.add(leftWall);
+
+      const rightWall = backWall.clone();
+      rightWall.rotation.y = -Math.PI / 2;
+      rightWall.position.set(roomSize / 2, wallHeight / 2, 0);
+      scene.add(rightWall);
+
+      const ceiling = new THREE.Mesh(
+        new THREE.PlaneGeometry(roomSize, roomSize),
+        new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.9 })
+      );
+      ceiling.rotation.x = Math.PI / 2;
+      ceiling.position.y = wallHeight;
+      scene.add(ceiling);
+
+      // --- Create loader ---
+      loader = new THREE.GLTFLoader();
+      
+      // --- Load Jordan model with multiple animations ---
+      const animations = ['chacha', 'swim', 'billy_bounce', 'crisscross'];
+      loadModel("models/people/jordan.glb", animations);
+
+      setupControls();
+      window.addEventListener("resize", onWindowResize);
+
+      document.addEventListener("keydown", (e) => {
+        if (e.code === "Escape") {
+          window.location.href = "about:blank";
+        }
+      });
+      
+      // Toggle blendshape controls
+      document.getElementById('toggle-controls').addEventListener('click', function() {
+        const controls = document.getElementById('blendshape-controls');
+        const isVisible = controls.style.display !== 'none';
+        controls.style.display = isVisible ? 'none' : 'block';
+        this.textContent = isVisible ? 'Show Blendshapes' : 'Hide Blendshapes';
+      });
+    }
+
+    function loadModel(modelPath, animationArray = ['floss']) {
+      loader.load(
+        modelPath,
+        (gltf) => {
+          // CREATE CONTAINER
+          const modelContainer = new THREE.Group();
+          
+          animatedModel = gltf.scene;
+          
+          // Add model to container
+          modelContainer.add(animatedModel);
+          
+          // Scale the model
+          animatedModel.scale.set(1, 1, 1);
+
+          // ROTATE CONTAINER based on model type
+          currentModelName = modelPath.split('/').pop();
+
+          if (currentModelName.includes('witch') || currentModelName.includes('vamp') || currentModelName.includes('zombina') || currentModelName.includes('girl') || currentModelName.includes('jordan')) {
+            // Witch/Vampire rotation
+            modelContainer.rotation.set(
+              THREE.MathUtils.degToRad(180),
+              THREE.MathUtils.degToRad(-180), 
+              THREE.MathUtils.degToRad(-180)
+            );
+          } else {
+            // Default rotation for all other models
+            modelContainer.rotation.set(
+              THREE.MathUtils.degToRad(-100),
+              THREE.MathUtils.degToRad(-180), 
+              THREE.MathUtils.degToRad(-180)
+            );
+          }
+
+          // Position the container
+          modelContainer.position.set(0, 0, 0);
+
+          // --- ALIGN MODEL FEET TO FLOOR ---
+          const updatedBox = new THREE.Box3().setFromObject(modelContainer);
+          const heightOffset = updatedBox.min.y;
+          modelContainer.position.y = -heightOffset;
+
+          // Add container to scene instead of model directly
+          scene.add(modelContainer);
+
+          // Create animation mixer for the model
+          mixer = new THREE.AnimationMixer(animatedModel);
+
+          // Set up animation queue and load all animations
+          animationQueue = animationArray;
+          loadAllAnimations(animationArray);
+
+          // Initialize blendshapes
+          initializeBlendshapes(gltf.scene);
+          
+          // Create blendshape controls
+          createBlendshapeControls();
+
+          document.getElementById("loading").style.display = "none";
+          console.log(`&#9989; ${modelPath} loaded in container`);
+        },
+        (xhr) => {
+          const fileName = modelPath.split('/').pop();
+          document.getElementById("loading").textContent = `Loading ${fileName}... ${((xhr.loaded / xhr.total) * 100).toFixed(1)}%`;
+        },
+        (error) => {
+          console.error(`&#10060; Error loading ${modelPath}:`, error);
+          document.getElementById("loading").textContent = `Failed to load ${modelPath}`;
+        }
+      );
+    }
+
+    function initializeBlendshapes(model) {
+      blendshapeMeshes = [];
+      
+      model.traverse((child) => {
+        if (child.isMesh && child.morphTargetInfluences) {
+          blendshapeMeshes.push(child);
+          
+          // Initialize all blendshapes to 0
+          for (let i = 0; i < child.morphTargetInfluences.length; i++) {
+            child.morphTargetInfluences[i] = 0;
+          }
+          
+          console.log(`Found mesh with blendshapes: ${child.name}`);
+          console.log(`Blendshape dictionary:`, child.morphTargetDictionary);
+        }
+      });
+    }
+
+    function createBlendshapeControls() {
+      const slidersContainer = document.getElementById('blendshape-sliders');
+      slidersContainer.innerHTML = '';
+      
+      if (blendshapeMeshes.length === 0) {
+        slidersContainer.innerHTML = '<p>No blendshapes found in this model.</p>';
+        return;
+      }
+      
+      // Get all unique blendshape names from all meshes
+      const allBlendshapes = new Set();
+      
+      blendshapeMeshes.forEach(mesh => {
+        if (mesh.morphTargetDictionary) {
+          Object.keys(mesh.morphTargetDictionary).forEach(blendshapeName => {
+            allBlendshapes.add(blendshapeName);
+          });
+        }
+      });
+      
+      // Create a slider for each blendshape
+      allBlendshapes.forEach(blendshapeName => {
+        const sliderDiv = document.createElement('div');
+        sliderDiv.className = 'blendshape-slider';
+        
+        const label = document.createElement('label');
+        label.textContent = blendshapeName;
+        label.htmlFor = `slider-${blendshapeName}`;
+        
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = '0';
+        slider.max = '1';
+        slider.step = '0.01';
+        slider.value = '0';
+        slider.id = `slider-${blendshapeName}`;
+        
+        const valueDisplay = document.createElement('div');
+        valueDisplay.className = 'blendshape-value';
+        valueDisplay.id = `value-${blendshapeName}`;
+        valueDisplay.textContent = '0.00';
+        
+        slider.addEventListener('input', function() {
+          const value = parseFloat(this.value);
+          setBlendshape(blendshapeName, value);
+          valueDisplay.textContent = value.toFixed(2);
+        });
+        
+        sliderDiv.appendChild(label);
+        sliderDiv.appendChild(slider);
+        sliderDiv.appendChild(valueDisplay);
+        
+        slidersContainer.appendChild(sliderDiv);
+      });
+    }
+
+    function setBlendshape(blendshapeName, weight) {
+      blendshapeMeshes.forEach(mesh => {
+        if (mesh.morphTargetDictionary && 
+            mesh.morphTargetDictionary[blendshapeName] !== undefined) {
+          const index = mesh.morphTargetDictionary[blendshapeName];
+          mesh.morphTargetInfluences[index] = weight;
+        }
+      });
+      
+      // Store the active blendshape value
+      activeBlendshapes[blendshapeName] = weight;
+    }
+
+    function loadAllAnimations(animationArray) {
+      console.log(`&#128229; Loading ${animationArray.length} animations:`, animationArray);
+      
+      let loadedCount = 0;
+      const totalAnimations = animationArray.length;
+
+      animationArray.forEach(animName => {
+        loadAnimationClip(animName).then(clip => {
+          if (clip) {
+            animationClips.set(animName, clip);
+            loadedCount++;
+            console.log(`&#9989; Loaded animation: ${animName} (${loadedCount}/${totalAnimations})`);
+            
+            // Start the sequence when all animations are loaded
+            if (loadedCount === totalAnimations) {
+              console.log(`&#127916; All animations loaded, starting sequence`);
+              playNextAnimation();
+            }
+          }
+        }).catch(error => {
+          console.error(`&#10060; Failed to load ${animName}:`, error);
+          loadedCount++;
+          // Continue even if some animations fail
+          if (loadedCount === totalAnimations && animationClips.size > 0) {
+            playNextAnimation();
+          }
+        });
+      });
+    }
+
+    function loadAnimationClip(animName) {
+      return new Promise((resolve, reject) => {
+        // Determine animation path based on model type
+        const isAvaturnModel = Avaturn_MODELS.some(AvaturnModel => currentModelName.includes(AvaturnModel));
+        const animationPath = isAvaturnModel 
+          ? `animations/avaturn/${animName}.json`
+          : `animations/${animName}.json`;
+        
+        console.log(`&#128193; Loading animation from: ${animationPath}`);
+        
+        fetch(animationPath)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`Failed to load ${animName}.json`);
+            }
+            return response.json();
+          })
+          .then(animationData => {
+            // Filter out problematic tracks
+            const tracks = animationData.tracks.map(trackData => {
+              // Remove ALL scale tracks
+              if (trackData.name.includes('.scale')) {
+                return null;
+              }
+              
+              // Remove root bone rotations that cause flipping
+              if (trackData.name.includes('.quaternion')) {
+                const boneName = trackData.name.split('.')[0];
+                if (boneName.includes('Char_01') || boneName === 'Bone') {
+                  return null;
+                }
+              }
+              
+              return new THREE.KeyframeTrack(
+                trackData.name,
+                new Float32Array(trackData.times),
+                new Float32Array(trackData.values)
+              );
+            }).filter(track => track !== null);
+
+            const clip = new THREE.AnimationClip(
+              animName,
+              animationData.duration,
+              tracks
+            );
+            
+            resolve(clip);
+          })
+          .catch(error => {
+            reject(error);
+          });
+      });
+    }
+
+    function playNextAnimation() {
+      if (isTransitioning || animationQueue.length === 0) return;
+      
+      const animName = animationQueue[currentAnimationIndex];
+      const clip = animationClips.get(animName);
+      
+      if (!clip) {
+        console.warn(`&#9888;&#65039; Animation clip not found: ${animName}`);
+        advanceToNextAnimation();
+        return;
+      }
+
+      console.log(`&#127916; Playing animation: ${animName} (${currentAnimationIndex + 1}/${animationQueue.length})`);
+      
+      // Stop current action
+      if (currentAction) {
+        currentAction.stop();
+      }
+
+      // Create new action with repeat
+      currentAction = mixer.clipAction(clip);
+      currentAction.setLoop(THREE.LoopRepeat, Infinity);
+      currentAction.clampWhenFinished = false;
+      currentAction.play();
+      
+      document.getElementById("instructions").innerHTML = 
+        `Playing: ${animName} (${currentAnimationIndex + 1}/${animationQueue.length})`;
+      
+      // Auto-advance after animation duration
+      setTimeout(() => {
+        advanceToNextAnimation();
+      }, clip.duration * 1000);
+    }
+
+    function advanceToNextAnimation() {
+      if (animationQueue.length === 0) return;
+      
+      currentAnimationIndex = (currentAnimationIndex + 1) % animationQueue.length;
+      console.log(`&#9197;&#65039; Advancing to animation ${currentAnimationIndex + 1}: ${animationQueue[currentAnimationIndex]}`);
+      playNextAnimation();
+    }
+
+    function setupControls() {
+      const moveState = { forward: false, backward: false, left: false, right: false };
+      const velocity = new THREE.Vector3();
+      const direction = new THREE.Vector3();
+      let yaw = 0;
+      let isMouseDown = false;
+      let previousMouseX = 0;
+
+      const moveSpeed = 0.03;
+
+      document.addEventListener("mousedown", (e) => {
+        isMouseDown = true;
+        previousMouseX = e.clientX;
+      });
+      document.addEventListener("mouseup", () => (isMouseDown = false));
+
+      document.addEventListener("mousemove", (e) => {
+        if (!isMouseDown) return;
+        const deltaX = e.clientX - previousMouseX;
+        previousMouseX = e.clientX;
+        yaw -= deltaX * 0.002;
+        camera.rotation.y = yaw;
+      });
+
+      document.addEventListener("keydown", (e) => {
+        switch (e.code) {
+          case "KeyS": moveState.forward = true; break;
+          case "KeyW": moveState.backward = true; break;
+          case "KeyD": moveState.left = true; break;
+          case "KeyA": moveState.right = true; break;
+          case "KeyR": resetCamera(); break;
+          case "Space": 
+            e.preventDefault();
+            // Manual advance to next animation
+            if (!isTransitioning) {
+              advanceToNextAnimation();
+            }
+            break;
+        }
+      });
+      document.addEventListener("keyup", (e) => {
+        switch (e.code) {
+          case "KeyS": moveState.forward = false; break;
+          case "KeyW": moveState.backward = false; break;
+          case "KeyD": moveState.left = false; break;
+          case "KeyA": moveState.right = false; break;
+        }
+      });
+
+      function resetCamera() {
+        camera.position.set(0, EYE_HEIGHT, 5);
+        camera.rotation.set(0, 0, 0);
+        yaw = 0;
+        velocity.set(0, 0, 0);
+      }
+
+      camera.userData.update = function () {
+        velocity.x -= velocity.x * 0.15;
+        velocity.z -= velocity.z * 0.15;
+
+        direction.z = Number(moveState.forward) - Number(moveState.backward);
+        direction.x = Number(moveState.right) - Number(moveState.left);
+        direction.normalize();
+
+        if (moveState.forward || moveState.backward) velocity.z -= direction.z * moveSpeed;
+        if (moveState.left || moveState.right) velocity.x -= direction.x * moveSpeed;
+
+        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+        forward.y = 0; right.y = 0;
+        forward.normalize(); right.normalize();
+
+        camera.position.add(forward.multiplyScalar(velocity.z));
+        camera.position.add(right.multiplyScalar(velocity.x));
+        camera.position.y = EYE_HEIGHT;
+      };
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      if (mixer) mixer.update(delta);
+      if (camera.userData.update) camera.userData.update();
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+</html>

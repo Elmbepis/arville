@@ -15,7 +15,7 @@
 </head>
 <body>
     <h1>Fixed Animation Extractor</h1>
-    <button id="extractBtn">Extract Animations from vamp2.glb</button>
+    <button id="extractBtn">Extract Animations from jordan.glb</button>
     <div id="status"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -85,15 +85,15 @@
 
             async extractAnimations() {
                 this.extractBtn.disabled = true;
-                this.setStatus('Loading vamp2.glb...', 'info');
+                this.setStatus('Loading jordan.glb...', 'info');
 
                 try {
                     const gltf = await new Promise((resolve, reject) => {
-                        this.loader.load('models/horror/vamp2.glb', resolve, null, reject);
+                        this.loader.load('models/people/jordan.glb', resolve, null, reject);
                     });
 
                     if (!gltf.animations || gltf.animations.length === 0) {
-                        this.setStatus('No animations found in vamp2.glb', 'error');
+                        this.setStatus('No animations found in jordan.glb', 'error');
                         return;
                     }
 

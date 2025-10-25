@@ -52,6 +52,9 @@
     const clock = new THREE.Clock();
     const EYE_HEIGHT = 1.7;
 
+    // Define Mixamo models
+    const MIXAMO_MODELS = ['girl.glb']; // Add other Mixamo models here as needed
+
     init();
     animate();
 
@@ -115,189 +118,196 @@
       const loader = new THREE.GLTFLoader();
       
       // Load bones model first
-loadModel("models/horror/zombina.glb", "chacha");
-      
+      loadModel("models/horror/girl.glb", "billy_bounce");
 
-function loadModel(modelPath, initialAnimation = 'floss') {
-  loader.load(
-    modelPath,
-    (gltf) => {
-      // CREATE CONTAINER
-      const modelContainer = new THREE.Group();
-      
-      animatedModel = gltf.scene;
-      
-      // Add model to container
-      modelContainer.add(animatedModel);
-      
-      // Scale the model
-      animatedModel.scale.set(6, 6, 6);
+      function loadModel(modelPath, initialAnimation = 'floss') {
+        loader.load(
+          modelPath,
+          (gltf) => {
+            // CREATE CONTAINER
+            const modelContainer = new THREE.Group();
+            
+            animatedModel = gltf.scene;
+            
+            // Add model to container
+            modelContainer.add(animatedModel);
+            
+            // Scale the model
+            animatedModel.scale.set(6, 6, 6);
 
-      // ROTATE CONTAINER based on model type
-const modelName = modelPath.split('/').pop(); // Get filename like 'witch.glb'
+            // ROTATE CONTAINER based on model type
+            const modelName = modelPath.split('/').pop(); // Get filename like 'witch.glb'
 
-if (modelName.includes('witch') || modelName.includes('vamp') || modelName.includes('zombina')) {
-  // Witch/Vampire rotation
-  modelContainer.rotation.set(
-    THREE.MathUtils.degToRad(180),
-    THREE.MathUtils.degToRad(-180), 
-    THREE.MathUtils.degToRad(-180)
-  );
-} else {
-  // Default rotation for all other models
-  modelContainer.rotation.set(
-    THREE.MathUtils.degToRad(-100),
-    THREE.MathUtils.degToRad(-180), 
-    THREE.MathUtils.degToRad(-180)
-  );
-}
-      // Position the container
-      modelContainer.position.set(0, 0, 0);
+            if (modelName.includes('witch') || modelName.includes('vamp') || modelName.includes('zombina') || modelName.includes('girl')) {
+              // Witch/Vampire rotation
+              modelContainer.rotation.set(
+                THREE.MathUtils.degToRad(180),
+                THREE.MathUtils.degToRad(-180), 
+                THREE.MathUtils.degToRad(-180)
+              );
+            } else {
+              // Default rotation for all other models
+              modelContainer.rotation.set(
+                THREE.MathUtils.degToRad(-90),
+                THREE.MathUtils.degToRad(-180), 
+                THREE.MathUtils.degToRad(-180)
+              );
+            }
+            // Position the container
+            modelContainer.position.set(0, 0, 0);
 
-      // --- ALIGN MODEL FEET TO FLOOR ---
-      const updatedBox = new THREE.Box3().setFromObject(modelContainer);
-      const heightOffset = updatedBox.min.y;
-      modelContainer.position.y = -heightOffset;
+            // --- ALIGN MODEL FEET TO FLOOR ---
+            const updatedBox = new THREE.Box3().setFromObject(modelContainer);
+            const heightOffset = updatedBox.min.y;
+            modelContainer.position.y = -heightOffset;
 
-      // Add container to scene instead of model directly
-      scene.add(modelContainer);
+            // Add container to scene instead of model directly
+            scene.add(modelContainer);
 
-      // Create animation mixer for the model
-      mixer = new THREE.AnimationMixer(animatedModel);
+            // Create animation mixer for the model
+            mixer = new THREE.AnimationMixer(animatedModel);
 
-      // Load initial animation
-      loadAnim(initialAnimation);
+            // Load initial animation
+            loadAnim(initialAnimation, modelName);
 
-      document.getElementById("loading").style.display = "none";
-      console.log(`&#9989; ${modelPath} loaded in container`);
-    },
-    (xhr) => {
-      const fileName = modelPath.split('/').pop();
-      document.getElementById("loading").textContent = `Loading ${fileName}... ${((xhr.loaded / xhr.total) * 100).toFixed(1)}%`;
-    },
-    (error) => {
-      console.error(`&#10060; Error loading ${modelPath}:`, error);
-      document.getElementById("loading").textContent = `Failed to load ${modelPath}`;
-    }
-  );
-}
-
-let currentAction = null;
-const TRANSITION_DURATION = 0.3;
-
-function loadAnim(animName) {
-  console.log(`&#128260; Starting loadAnim for: ${animName}`);
-  
-  // Store reference to current action BEFORE starting the fetch
-  const previousAction = currentAction;
-  
-  // If we have a current action, log its state
-  if (previousAction) {
-    console.log(`&#128202; Previous action:`, {
-      isRunning: previousAction.isRunning(),
-      time: previousAction.time,
-      weight: previousAction.getEffectiveWeight()
-    });
-  }
-  
-  // Use cached fetch to avoid re-downloading
-  const startTime = performance.now();
-  
-  fetch(`animations/${animName}.json`)
-    .then(response => {
-      console.log(`&#128229; JSON fetch completed in ${(performance.now() - startTime).toFixed(2)}ms`);
-      if (!response.ok) {
-        throw new Error(`Failed to load ${animName}.json`);
-      }
-      return response.json();
-    })
-    .then(animationData => {
-      const parseStartTime = performance.now();
-      
-      // Filter out problematic tracks - REMOVE ROOT BONE ROTATIONS
-      const tracks = animationData.tracks.map(trackData => {
-        // Remove ALL scale tracks
-        if (trackData.name.includes('.scale')) {
-          return null;
-        }
-        
-        // Remove root bone rotations that cause flipping
-if (trackData.name.includes('.quaternion')) {
-    const boneName = trackData.name.split('.')[0]; // Extract bone name
-    if (boneName.includes('Char_01') || boneName === 'Bone') {
-        return null;
-    }
-}
-        
-        return new THREE.KeyframeTrack(
-          trackData.name,
-          new Float32Array(trackData.times),
-          new Float32Array(trackData.values)
-        );
-      }).filter(track => track !== null);
-      
-      const clip = new THREE.AnimationClip(
-        animationData.name,
-        animationData.duration,
-        tracks
-      );
-      
-      console.log(`&#9889; JSON parsed and clip created in ${(performance.now() - parseStartTime).toFixed(2)}ms`);
-      
-      // Create new animation action
-      const newAction = mixer.clipAction(clip);
-      newAction.setLoop(THREE.LoopRepeat, Infinity);
-      
-      // Handle transitions between animations
-      if (previousAction && previousAction.isRunning()) {
-        console.log(`&#127917; Starting crossfade from previous action`);
-        
-        // KEEP THE PREVIOUS ACTION PLAYING during crossfade
-        newAction.play();
-        
-        // Use manual crossfade since crossFadeTo might not work as expected
-        newAction.setEffectiveWeight(0);
-        previousAction.setEffectiveWeight(1);
-        
-        // Gradually crossfade over TRANSITION_DURATION
-        let fadeStartTime = performance.now();
-        function doCrossfade() {
-          const elapsed = (performance.now() - fadeStartTime) / 1000;
-          const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
-          
-          newAction.setEffectiveWeight(progress);
-          previousAction.setEffectiveWeight(1 - progress);
-          
-          if (progress < 1) {
-            requestAnimationFrame(doCrossfade);
-          } else {
-            // Crossfade complete - stop the old action
-            previousAction.stop();
-            console.log(`&#9989; Crossfade completed`);
+            document.getElementById("loading").style.display = "none";
+            console.log(`&#9989; ${modelPath} loaded in container`);
+          },
+          (xhr) => {
+            const fileName = modelPath.split('/').pop();
+            document.getElementById("loading").textContent = `Loading ${fileName}... ${((xhr.loaded / xhr.total) * 100).toFixed(1)}%`;
+          },
+          (error) => {
+            console.error(`&#10060; Error loading ${modelPath}:`, error);
+            document.getElementById("loading").textContent = `Failed to load ${modelPath}`;
           }
+        );
+      }
+
+      let currentAction = null;
+      const TRANSITION_DURATION = 0.3;
+
+      function loadAnim(animName, modelName) {
+        console.log(`&#128260; Starting loadAnim for: ${animName}`);
+        
+        // Determine animation path based on model type
+        const isMixamoModel = MIXAMO_MODELS.some(mixamoModel => modelName.includes(mixamoModel));
+        const animationPath = isMixamoModel 
+          ? `animations/mixamo/${animName}.json`
+          : `animations/${animName}.json`;
+        
+        console.log(`&#128193; Loading animation from: ${animationPath}`);
+        
+        // Store reference to current action BEFORE starting the fetch
+        const previousAction = currentAction;
+        
+        // If we have a current action, log its state
+        if (previousAction) {
+          console.log(`&#128202; Previous action:`, {
+            isRunning: previousAction.isRunning(),
+            time: previousAction.time,
+            weight: previousAction.getEffectiveWeight()
+          });
         }
         
-        doCrossfade();
+        // Use cached fetch to avoid re-downloading
+        const startTime = performance.now();
         
-      } else {
-        // First animation or previous action not running
-        console.log(`&#127916; Playing new animation directly`);
-        newAction.play();
-        newAction.setEffectiveWeight(1);
+        fetch(animationPath)
+          .then(response => {
+            console.log(`&#128229; JSON fetch completed in ${(performance.now() - startTime).toFixed(2)}ms`);
+            if (!response.ok) {
+              throw new Error(`Failed to load ${animName}.json`);
+            }
+            return response.json();
+          })
+          .then(animationData => {
+            const parseStartTime = performance.now();
+            
+            // Filter out problematic tracks - REMOVE ROOT BONE ROTATIONS
+            const tracks = animationData.tracks.map(trackData => {
+              // Remove ALL scale tracks
+              if (trackData.name.includes('.scale')) {
+                return null;
+              }
+              
+              // Remove root bone rotations that cause flipping
+              if (trackData.name.includes('.quaternion')) {
+                const boneName = trackData.name.split('.')[0]; // Extract bone name
+                if (boneName.includes('Char_01') || boneName === 'Bone') {
+                  return null;
+                }
+              }
+              
+              return new THREE.KeyframeTrack(
+                trackData.name,
+                new Float32Array(trackData.times),
+                new Float32Array(trackData.values)
+              );
+            }).filter(track => track !== null);
+            
+            const clip = new THREE.AnimationClip(
+              animationData.name,
+              animationData.duration,
+              tracks
+            );
+            
+            console.log(`&#9889; JSON parsed and clip created in ${(performance.now() - parseStartTime).toFixed(2)}ms`);
+            
+            // Create new animation action
+            const newAction = mixer.clipAction(clip);
+            newAction.setLoop(THREE.LoopRepeat, Infinity);
+            
+            // Handle transitions between animations
+            if (previousAction && previousAction.isRunning()) {
+              console.log(`&#127917; Starting crossfade from previous action`);
+              
+              // KEEP THE PREVIOUS ACTION PLAYING during crossfade
+              newAction.play();
+              
+              // Use manual crossfade since crossFadeTo might not work as expected
+              newAction.setEffectiveWeight(0);
+              previousAction.setEffectiveWeight(1);
+              
+              // Gradually crossfade over TRANSITION_DURATION
+              let fadeStartTime = performance.now();
+              function doCrossfade() {
+                const elapsed = (performance.now() - fadeStartTime) / 1000;
+                const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
+                
+                newAction.setEffectiveWeight(progress);
+                previousAction.setEffectiveWeight(1 - progress);
+                
+                if (progress < 1) {
+                  requestAnimationFrame(doCrossfade);
+                } else {
+                  // Crossfade complete - stop the old action
+                  previousAction.stop();
+                  console.log(`&#9989; Crossfade completed`);
+                }
+              }
+              
+              doCrossfade();
+              
+            } else {
+              // First animation or previous action not running
+              console.log(`&#127916; Playing new animation directly`);
+              newAction.play();
+              newAction.setEffectiveWeight(1);
+            }
+            
+            // Update current action reference
+            currentAction = newAction;
+            
+            console.log(`&#9989; ${animName} animation fully loaded and playing`);
+            document.getElementById("instructions").innerHTML = `Bones performing ${animName} animation`;
+            
+          })
+          .catch(error => {
+            console.error(`&#10060; Error loading ${animName} animation:`, error);
+            document.getElementById("instructions").innerHTML = "Failed to load animation";
+          });
       }
-      
-      // Update current action reference
-      currentAction = newAction;
-      
-      console.log(`&#9989; ${animName} animation fully loaded and playing`);
-      document.getElementById("instructions").innerHTML = `Bones performing ${animName} animation`;
-      
-    })
-    .catch(error => {
-      console.error(`&#10060; Error loading ${animName} animation:`, error);
-      document.getElementById("instructions").innerHTML = "Failed to load animation";
-    });
-}
 
       setupControls();
       window.addEventListener("resize", onWindowResize);
