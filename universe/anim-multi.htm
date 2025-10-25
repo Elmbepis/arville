@@ -170,6 +170,14 @@
     // Detect if device is mobile/touch
     const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
+    // Camera boundaries to ensure walls/floor are always visible
+    const MOBILE_CAMERA_LIMITS = {
+      minX: -15,  // Reduced from -20
+      maxX: 15,   // Reduced from 20
+      minZ: -15,  // Reduced from -20
+      maxZ: 15    // Reduced from 20
+    };
+
     init();
     animate();
 
@@ -471,7 +479,9 @@
       let isMouseDown = false;
       let previousMouseX = 0;
 
-      const moveSpeed = 0.03;
+      // Different move speeds for mobile vs desktop
+      const moveSpeed = isMobile ? 0.015 : 0.03; // Reduced by 50% for mobile
+      const strafeSpeed = isMobile ? 0.008 : 0.03; // Significantly reduced for left/right on mobile
 
       // --- DESKTOP CONTROLS (Keep existing functionality) ---
       document.addEventListener("mousedown", (e) => {
@@ -636,8 +646,9 @@
         direction.x = Number(moveState.right) - Number(moveState.left);
         direction.normalize();
 
+        // Apply different speeds for forward/backward vs left/right on mobile
         if (moveState.forward || moveState.backward) velocity.z -= direction.z * moveSpeed;
-        if (moveState.left || moveState.right) velocity.x -= direction.x * moveSpeed;
+        if (moveState.left || moveState.right) velocity.x -= direction.x * (isMobile ? strafeSpeed : moveSpeed);
 
         const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
         const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
@@ -647,6 +658,20 @@
         camera.position.add(forward.multiplyScalar(velocity.z));
         camera.position.add(right.multiplyScalar(velocity.x));
         camera.position.y = EYE_HEIGHT;
+
+        // On mobile, enforce camera boundaries to keep walls/floor visible
+        if (isMobile) {
+          camera.position.x = THREE.MathUtils.clamp(
+            camera.position.x, 
+            MOBILE_CAMERA_LIMITS.minX, 
+            MOBILE_CAMERA_LIMITS.maxX
+          );
+          camera.position.z = THREE.MathUtils.clamp(
+            camera.position.z, 
+            MOBILE_CAMERA_LIMITS.minZ, 
+            MOBILE_CAMERA_LIMITS.maxZ
+          );
+        }
       };
     }
 
