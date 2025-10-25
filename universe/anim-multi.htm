@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Showroom - Sequential Animations</title>
+  <title>3D Showroom</title>
   <style>
     body {
       margin: 0;
@@ -11,17 +11,12 @@
       background: #000;
       font-family: Arial, sans-serif;
     }
-    #info, #instructions, #loading {
+    #instructions, #loading {
       position: absolute;
       width: 100%;
       text-align: center;
       color: white;
       z-index: 10;
-    }
-    #info {
-      top: 10px;
-      background: rgba(0,0,0,0.5);
-      padding: 5px;
     }
     #instructions {
       bottom: 20px;
@@ -98,37 +93,10 @@
       height: 100%;
       pointer-events: auto;
     }
-    
-    .control-hint {
-      position: absolute;
-      color: rgba(255,255,255,0.7);
-      font-size: 12px;
-      text-align: center;
-      pointer-events: none;
-    }
-    
-    #joystick-hint {
-      bottom: 220px;
-      left: 20px;
-      width: 120px;
-    }
-    
-    #camera-hint {
-      top: 50%;
-      right: 10%;
-      transform: translateY(-50%);
-    }
-    
-    #tap-hint {
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
   </style>
 </head>
 <body>
-  <div id="info">3D Showroom | WASD: Move | Mouse: Look | R: Reset | ESC: Exit | SPACE: Next Animation</div>
-  <div id="instructions">Character performing animations</div>
+  <div id="instructions"></div>
   <div id="loading">Loading model...</div>
   
   <!-- Mobile Controls - Only shown on mobile devices -->
@@ -136,14 +104,9 @@
     <div id="joystick-container">
       <div id="joystick-base"></div>
       <div id="joystick-handle"></div>
-      <div class="control-hint" id="joystick-hint">Move: Drag here</div>
     </div>
-    <div id="camera-control-area">
-      <div class="control-hint" id="camera-hint">Look: Drag here</div>
-    </div>
-    <div id="center-tap-area">
-      <div class="control-hint" id="tap-hint">Tap for next animation</div>
-    </div>
+    <div id="camera-control-area"></div>
+    <div id="center-tap-area"></div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -172,10 +135,10 @@
 
     // Camera boundaries to ensure walls/floor are always visible
     const MOBILE_CAMERA_LIMITS = {
-      minX: -15,  // Reduced from -20
-      maxX: 15,   // Reduced from 20
-      minZ: -15,  // Reduced from -20
-      maxZ: 15    // Reduced from 20
+      minX: -15,
+      maxX: 15,
+      minZ: -15,
+      maxZ: 15
     };
 
     init();
@@ -195,7 +158,6 @@
       // Show mobile controls only on mobile devices
       if (isMobile) {
         document.getElementById("mobile-controls").style.display = "block";
-        document.getElementById("info").textContent = "3D Showroom | Drag left: Move | Drag right: Look | Tap center: Next Animation";
         document.body.style.touchAction = "none";
       }
 
@@ -454,13 +416,8 @@
         currentAction.play();
       }
       
-      document.getElementById("instructions").innerHTML = 
-        `Playing: ${animName} (${currentAnimationIndex + 1}/${animationQueue.length})`;
-      
-      // Auto-advance after animation duration (minus transition time)
-      setTimeout(() => {
-        advanceToNextAnimation();
-      }, (clip.duration - TRANSITION_DURATION) * 1000);
+      // Remove instructions text completely
+      document.getElementById("instructions").innerHTML = "";
     }
 
     function advanceToNextAnimation() {
@@ -480,10 +437,10 @@
       let previousMouseX = 0;
 
       // Different move speeds for mobile vs desktop
-      const moveSpeed = isMobile ? 0.015 : 0.03; // Reduced by 50% for mobile
-      const strafeSpeed = isMobile ? 0.008 : 0.03; // Significantly reduced for left/right on mobile
+      const moveSpeed = isMobile ? 0.015 : 0.03;
+      const strafeSpeed = isMobile ? 0.008 : 0.03;
 
-      // --- DESKTOP CONTROLS (Keep existing functionality) ---
+      // --- DESKTOP CONTROLS ---
       document.addEventListener("mousedown", (e) => {
         isMouseDown = true;
         previousMouseX = e.clientX;
@@ -500,14 +457,14 @@
 
       document.addEventListener("keydown", (e) => {
         switch (e.code) {
-          case "KeyS": moveState.forward = true; break;
-          case "KeyW": moveState.backward = true; break;
+          // EXCHANGED: W now moves forward (toward model), S moves backward
+          case "KeyW": moveState.forward = true; break;
+          case "KeyS": moveState.backward = true; break;
           case "KeyD": moveState.left = true; break;
           case "KeyA": moveState.right = true; break;
           case "KeyR": resetCamera(); break;
           case "Space": 
             e.preventDefault();
-            // Manual advance to next animation
             if (!isTransitioning) {
               advanceToNextAnimation();
             }
@@ -516,8 +473,8 @@
       });
       document.addEventListener("keyup", (e) => {
         switch (e.code) {
-          case "KeyS": moveState.forward = false; break;
-          case "KeyW": moveState.backward = false; break;
+          case "KeyW": moveState.forward = false; break;
+          case "KeyS": moveState.backward = false; break;
           case "KeyD": moveState.left = false; break;
           case "KeyA": moveState.right = false; break;
         }
@@ -547,7 +504,6 @@
           const touchX = touch.clientX;
           const screenWidth = window.innerWidth;
           
-          // Determine which control area was touched
           if (touchX < screenWidth * 0.4) {
             // Left side - joystick control
             joystickActive = true;
@@ -587,7 +543,6 @@
           joystickActive = false;
           cameraTouchActive = false;
           resetJoystick();
-          // Reset all movement
           moveState.forward = moveState.backward = moveState.left = moveState.right = false;
         });
 
@@ -610,12 +565,13 @@
           joystickHandle.style.transform = `translate(${handleX}px, ${handleY}px)`;
           
           // Update movement state based on joystick position
-          const deadZone = 15; // Minimum distance to register movement
+          const deadZone = 15;
           
           if (limitedDistance > deadZone) {
-            // Forward/backward based on Y axis (inverted)
-            moveState.forward = deltaY < -deadZone;
-            moveState.backward = deltaY > deadZone;
+            // EXCHANGED: Up/down movement reversed
+            // Now: UP moves forward (toward model), DOWN moves backward
+            moveState.forward = deltaY > deadZone;    // UP moves forward
+            moveState.backward = deltaY < -deadZone;  // DOWN moves backward
             
             // Left/right based on X axis
             moveState.left = deltaX < -deadZone;
