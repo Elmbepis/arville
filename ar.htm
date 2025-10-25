@@ -84,6 +84,51 @@
 
     <script>
       (function () {
+        // ==================== CACHE MANAGER ====================
+        class ARModelCache {
+            constructor() {
+                this.cache = new Map();
+                this.loading = new Map();
+            }
+            
+            async loadModel(url) {
+                // Return cached model if available
+                if (this.cache.has(url)) {
+                    console.log('&#9989; Using cached model:', url);
+                    return this.cache.get(url);
+                }
+                
+                // Prevent duplicate downloads
+                if (this.loading.has(url)) {
+                    return this.loading.get(url);
+                }
+                
+                // Download and cache
+                console.log('&#128229; Downloading model:', url);
+                const promise = fetch(url)
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                        return response.arrayBuffer();
+                    })
+                    .then(data => {
+                        this.cache.set(url, data);
+                        this.loading.delete(url);
+                        return data;
+                    })
+                    .catch(error => {
+                        this.loading.delete(url);
+                        console.error('&#10060; Failed to load model:', url, error);
+                        throw error;
+                    });
+                    
+                this.loading.set(url, promise);
+                return promise;
+            }
+        }
+
+        // Initialize cache
+        const modelCache = new ARModelCache();
+
         const startButton = document.getElementById("start-button");
         const arScene = document.getElementById("ar-scene");
 
@@ -124,6 +169,12 @@
           { id: 'wolfie', modelId: 'wolfie-model', wrapperId: 'wolfie-wrapper', soundId: 'wolfie-sound' }
         ];
 
+        // Store original model URLs for caching
+        const modelUrls = {};
+        markers.forEach(markerConfig => {
+          modelUrls[markerConfig.modelId] = `AR/models/horror/${markerConfig.id}.glb`;
+        });
+
         markers.forEach(markerConfig => {
           const marker = document.querySelector(`#marker-${markerConfig.id}`);
           const model = document.querySelector(`#${markerConfig.modelId}`);
@@ -144,11 +195,10 @@
           soundWasBrieflyLost[markerConfig.soundId] = false;
 
           // Preload sound immediately
-// Preload sound immediately - use the sound element directly
-window.addEventListener('load', function() {
-  // Sounds will auto-preload with the preload attribute
-  // No need to call .load() method
-});
+          window.addEventListener('load', function() {
+            // Sounds will auto-preload with the preload attribute
+            // No need to call .load() method
+          });
 
           // Marker found / lost events
           marker.addEventListener("markerFound", () => {
@@ -185,13 +235,39 @@ window.addEventListener('load', function() {
             }, 1000);
           });
 
-          // Model loaded event
+          // Model loaded event - MODIFIED FOR CACHING
           model.addEventListener("model-loaded", (e) => {
             setupModelAnimations(markerConfig.modelId, e.detail.model);
           });
 
           // Store wrapper for orientation updates
           marker.wrapper = wrapper;
+
+          // INTERCEPT MODEL LOADING FOR CACHING
+          const originalSetAttribute = model.setAttribute.bind(model);
+          model.setAttribute = function(attr, value) {
+            if (attr === 'gltf-model' && value && !value.startsWith('blob:')) {
+              // Cache and load model
+              const modelUrl = value;
+              modelCache.loadModel(modelUrl)
+                .then(data => {
+                  const blob = new Blob([data]);
+                  const objectUrl = URL.createObjectURL(blob);
+                  originalSetAttribute('gltf-model', objectUrl);
+                  
+                  // Clean up Object URL after model loads
+                  model.addEventListener('model-loaded', () => {
+                    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+                  });
+                })
+                .catch(error => {
+                  console.error('Cache load failed, falling back to original:', error);
+                  originalSetAttribute('gltf-model', modelUrl);
+                });
+            } else {
+              originalSetAttribute(attr, value);
+            }
+          };
         });
 
         function detectOrientation() {

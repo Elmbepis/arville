@@ -32,267 +32,65 @@
       <a-entity light="type: ambient; color: #888; intensity: 1"></a-entity>
 
       <!-- Directional Light for front illumination -->
-      <a-entity light="type: directional; color: #FFFFFF; intensity: 1.5; position: 0 3 3" shadow></a-entity>
+      <a-entity light="type: directional; color: #FFFFFF; intensity: 1; position: 0 3 3" shadow></a-entity>
 
       <!-- Point Light for additional front fill -->
-      <a-entity light="type: point; color: #FFFFFF; intensity: 1.5; position: 0 2 2"></a-entity>
+      <a-entity light="type: point; color: #FFFFFF; intensity: 1; position: 0 2 2"></a-entity>
 
-      <!-- Vamp Marker -->
-      <a-marker type="pattern" url="AR/patts/mixamo/vamp.patt" id="marker-vamp">
-        <a-entity
-          id="vamp-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="vamp-model"
-            gltf-model="AR/models/mixamo/vamp.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="vamp-sound"
-          sound="src: AR/sounds/mixamo/vamp.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Frankie Marker -->
-      <a-marker type="pattern" url="AR/patts/mixamo/frankie.patt" id="marker-frankie">
-        <a-entity
-          id="frankie-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="frankie-model"
-            gltf-model="AR/models/mixamo/frankie.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="frankie-sound"
-          sound="src: AR/sounds/mixamo/frankie.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Zombie Marker -->
-      <a-marker type="pattern" url="AR/patts/mixamo/zombie.patt" id="marker-zombie">
-        <a-entity
-          id="zombie-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="zombie-model"
-            gltf-model="AR/models/mixamo/zombie.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="zombie-sound"
-          sound="src: AR/sounds/mixamo/zombie.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Devil Marker -->
-      <a-marker type="pattern" url="AR/patts/mixamo/devil.patt" id="marker-devil">
-        <a-entity
-          id="devil-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="devil-model"
-            gltf-model="AR/models/mixamo/devil.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="devil-sound"
-          sound="src: AR/sounds/mixamo/devil.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Bones Marker -->
-      <a-marker type="pattern" url="AR/patts/mixamo/bones.patt" id="marker-bones">
-        <a-entity
-          id="bones-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="bones-model"
-            gltf-model="AR/models/mixamo/bones.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="bones-sound"
-          sound="src: AR/sounds/mixamo/bones.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Scarecrow Marker -->
-      <a-marker type="pattern" url="AR/patts/mixamo/scarecrow.patt" id="marker-scarecrow">
-        <a-entity
-          id="scarecrow-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="scarecrow-model"
-            gltf-model="AR/models/mixamo/scarecrow.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="scarecrow-sound"
-          sound="src: AR/sounds/mixamo/scarecrow.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Clown Marker -->
-      <a-marker type="pattern" url="AR/patts/mixamo/clown.patt" id="marker-clown">
-        <a-entity
-          id="clown-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="clown-model"
-            gltf-model="AR/models/mixamo/clown.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="clown-sound"
-          sound="src: AR/sounds/mixamo/clown.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Teddy Marker -->
-      <a-marker type="pattern" url="AR/patts/mixamo/teddy.patt" id="marker-teddy">
-        <a-entity
-          id="teddy-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="teddy-model"
-            gltf-model="AR/models/mixamo/teddy.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="teddy-sound"
-          sound="src: AR/sounds/mixamo/teddy.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Pumpkin Marker -->
-      <a-marker type="pattern" url="AR/patts/mixamo/pumpkin.patt" id="marker-pumpkin">
-        <a-entity
-          id="pumpkin-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="pumpkin-model"
-            gltf-model="AR/models/mixamo/pumpkin.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="pumpkin-sound"
-          sound="src: AR/sounds/mixamo/pumpkin.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Witch Marker -->
-      <a-marker type="pattern" url="AR/patts/mixamo/witch.patt" id="marker-witch">
-        <a-entity
-          id="witch-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="witch-model"
-            gltf-model="AR/models/mixamo/witch.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="witch-sound"
-          sound="src: AR/sounds/mixamo/witch.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Zombina Marker -->
-      <a-marker type="pattern" url="AR/patts/mixamo/zombina.patt" id="marker-zombina">
-        <a-entity
-          id="zombina-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="zombina-model"
-            gltf-model="AR/models/mixamo/zombina.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="zombina-sound"
-          sound="src: AR/sounds/mixamo/zombina.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
-        ></a-entity>
-      </a-marker>
-
-      <!-- Wolfie Marker -->
-      <a-marker type="pattern" url="AR/patts/mixamo/wolfie.patt" id="marker-wolfie">
-        <a-entity
-          id="wolfie-wrapper"
-          position="0 0 0"
-          rotation="-90 0 0"
-          class="orientation-dependent"
-        >
-          <a-entity
-            id="wolfie-model"
-            gltf-model="AR/models/mixamo/wolfie.glb"
-            scale="4 4 4"
-            position="0 -0.6 0"
-          ></a-entity>
-        </a-entity>
-        <a-entity
-          id="wolfie-sound"
-          sound="src: AR/sounds/mixamo/wolfie.mp3; autoplay: false; loop: true; volume: 4; preload: auto"
-        ></a-entity>
-      </a-marker>
-
+      <!-- Markers will be generated here dynamically -->
+      
       <a-entity camera></a-entity>
     </a-scene>
 
     <script>
+      // Define all markers in a compact array
+      
+const markerDefinitions = [
+  { id: 'girl',   pattern: 'AR/patts/mixamo/girl.patt',     model: 'AR/models/mixamo/girl.glb',     sound: 'AR/sounds/mixamo/girl.mp3',     scale: '2 2 2', position: '0 -0.4 0' },
+  { id: 'mouse',  pattern: 'AR/patts/mixamo/mouse.patt',    model: 'AR/models/mixamo/mouse.glb',    sound: 'AR/sounds/mixamo/mouse.mp3',    scale: '0.3 0.15 0.3', position: '0 -0.5 0' },
+  { id: 'boy', pattern: 'AR/patts/mixamo/boy.patt',   model: 'AR/models/mixamo/boy.glb',   sound: 'AR/sounds/mixamo/boy.mp3',   scale: '0.5 0.5 0.5', position: '0 -0.4 0' },
+  { id: 'devil',  pattern: 'AR/patts/mixamo/devil.patt',    model: 'AR/models/mixamo/devil.glb',    sound: 'AR/sounds/mixamo/devil.mp3',    scale: '2 2 2', position: '0 -0.4 0' },
+  { id: 'bones',  pattern: 'AR/patts/mixamo/bones.patt',    model: 'AR/models/mixamo/bones.glb',    sound: 'AR/sounds/mixamo/bones.mp3',    scale: '2 2 2', position: '0 -0.4 0' },
+  { id: 'scarecrow', pattern: 'AR/patts/mixamo/scarecrow.patt', model: 'AR/models/mixamo/scarecrow.glb', sound: 'AR/sounds/mixamo/scarecrow.mp3', scale: '2 2 2', position: '0 -0.4 0' },
+  { id: 'clown',  pattern: 'AR/patts/mixamo/clown.patt',    model: 'AR/models/mixamo/clown.glb',    sound: 'AR/sounds/mixamo/clown.mp3',    scale: '2 2 2', position: '0 -0.4 0' },
+  { id: 'teddy',  pattern: 'AR/patts/mixamo/teddy.patt',    model: 'AR/models/mixamo/teddy.glb',    sound: 'AR/sounds/mixamo/teddy.mp3',    scale: '2 2 2', position: '0 -0.4 0' },
+  { id: 'pumpkin', pattern: 'AR/patts/mixamo/pumpkin.patt', model: 'AR/models/mixamo/pumpkin.glb',  sound: 'AR/sounds/mixamo/pumpkin.mp3',  scale: '2 2 2', position: '0 -0.4 0' },
+  { id: 'witch',  pattern: 'AR/patts/mixamo/witch.patt',    model: 'AR/models/mixamo/witch.glb',    sound: 'AR/sounds/mixamo/witch.mp3',    scale: '2 2 2', position: '0 -0.4 0' },
+  { id: 'zombina', pattern: 'AR/patts/mixamo/zombina.patt', model: 'AR/models/mixamo/zombina.glb',  sound: 'AR/sounds/mixamo/zombina.mp3',  scale: '2 2 2', position: '0 -0.4 0' },
+  { id: 'wolfie', pattern: 'AR/patts/mixamo/wolfie.patt',   model: 'AR/models/mixamo/wolfie.glb',   sound: 'AR/sounds/mixamo/wolfie.mp3',   scale: '2 2 2', position: '0 -0.4 0' }
+];
+
+// Generate all markers dynamically
+markerDefinitions.forEach(marker => {
+  const markerHTML = `
+    <a-marker type="pattern" url="${marker.pattern}" id="marker-${marker.id}">
+      <!-- Main container for positioning/rotation control -->
+      <a-entity id="${marker.id}-container" position="0 0.6 0" rotation="0 0 0">
+        <!-- Animation wrapper -->
+        <a-entity
+          id="${marker.id}-wrapper"
+          position="0 0 0"
+          rotation="-90 0 0"
+          class="orientation-dependent"
+        >
+          <!-- Model entity -->
+          <a-entity
+            id="${marker.id}-model"
+            gltf-model="${marker.model}"
+            scale="${marker.scale}"
+            position="${marker.position}"
+          ></a-entity>
+        </a-entity>
+      </a-entity>
+      <a-entity
+        id="${marker.id}-sound"
+        sound="src: ${marker.sound}; autoplay: false; loop: true; volume: 4; preload: auto"
+      ></a-entity>
+    </a-marker>
+  `;
+  document.querySelector('a-scene').insertAdjacentHTML('beforeend', markerHTML);
+});
+
       (function () {
         const startButton = document.getElementById("start-button");
         const arScene = document.getElementById("ar-scene");
@@ -304,7 +102,7 @@
         const mixerActiveStates = {};
         const animationStates = {}; // Track animation state for each model
         const soundTimeouts = {}; // Track sound timeouts for each marker
-        const soundWasBrieflyLost = {}; // NEW: Track if sound was only briefly lost
+        const soundWasBrieflyLost = {}; // Track if sound was only briefly lost
 
         // Orientation detection
         let currentOrientation = 'unknown';
@@ -318,66 +116,78 @@
           updateAllModelDimensions();
         });
 
-        // Setup all markers
-        const markers = [
-          { id: 'marker-vamp', modelId: 'vamp-model', wrapperId: 'vamp-wrapper', soundId: 'vamp-sound' },
-          { id: 'marker-frankie', modelId: 'frankie-model', wrapperId: 'frankie-wrapper', soundId: 'frankie-sound' },
-          { id: 'marker-zombie', modelId: 'zombie-model', wrapperId: 'zombie-wrapper', soundId: 'zombie-sound' },
-          { id: 'marker-devil', modelId: 'devil-model', wrapperId: 'devil-wrapper', soundId: 'devil-sound' },
-          { id: 'marker-bones', modelId: 'bones-model', wrapperId: 'bones-wrapper', soundId: 'bones-sound' },
-          { id: 'marker-scarecrow', modelId: 'scarecrow-model', wrapperId: 'scarecrow-wrapper', soundId: 'scarecrow-sound' },
-          { id: 'marker-clown', modelId: 'clown-model', wrapperId: 'clown-wrapper', soundId: 'clown-sound' },
-          { id: 'marker-teddy', modelId: 'teddy-model', wrapperId: 'teddy-wrapper', soundId: 'teddy-sound' },
-          { id: 'marker-pumpkin', modelId: 'pumpkin-model', wrapperId: 'pumpkin-wrapper', soundId: 'pumpkin-sound' },
-          { id: 'marker-witch', modelId: 'witch-model', wrapperId: 'witch-wrapper', soundId: 'witch-sound' },
-          { id: 'marker-zombina', modelId: 'zombina-model', wrapperId: 'zombina-wrapper', soundId: 'zombina-sound' },
-          { id: 'marker-wolfie', modelId: 'wolfie-model', wrapperId: 'wolfie-wrapper', soundId: 'wolfie-sound' }
-        ];
+        // Helper function to define animations per model
+        function getAnimationsForModel(modelName) {
+          const animationSets = {
+            girl: ['crisscross', 'floss', 'mj_shuffle', 'billy_bounce', 'toyman'],
+            mouse: ['crisscross' , 'chacha', 'cucaracha', 'billy_bounce2'],
+            boy: ['floss', 'floss', 'mj_shuffle', 'swim', 'push_step', 'chacha'],
+            devil: ['shuffle', 'crisscross', 'floss', 'toyman'],
+            bones: ['shuffle', 'crisscross', 'floss', 'toyman'],
+            scarecrow: ['shuffle', 'crisscross', 'floss', 'toyman'],
+            clown: ['shuffle', 'crisscross', 'floss', 'toyman'],
+            teddy: ['shuffle', 'crisscross', 'floss', 'toyman'],
+            pumpkin: ['shuffle', 'crisscross', 'floss', 'toyman'],
+            witch: ['shuffle', 'crisscross', 'floss', 'toyman'],
+            zombina: ['shuffle', 'crisscross', 'floss', 'toyman'],
+            wolfie: ['shuffle', 'crisscross', 'floss', 'toyman']
+          };
+          return animationSets[modelName] || ['shuffle', 'crisscross', 'floss', 'toyman'];
+        }
+
+        // Setup all markers - each with its own animation array
+        const markers = markerDefinitions.map(marker => ({
+          id: `marker-${marker.id}`,
+          modelId: `${marker.id}-model`,
+          wrapperId: `${marker.id}-wrapper`,
+          containerId: `${marker.id}-container`,
+          soundId: `${marker.id}-sound`,
+          modelName: marker.id,
+          animations: getAnimationsForModel(marker.id)
+        }));
 
         markers.forEach(markerConfig => {
           const marker = document.querySelector(`#${markerConfig.id}`);
           const model = document.querySelector(`#${markerConfig.modelId}`);
           const wrapper = document.querySelector(`#${markerConfig.wrapperId}`);
+          const container = document.querySelector(`#${markerConfig.containerId}`);
           const soundEl = document.querySelector(`#${markerConfig.soundId}`);
 
-          // Initialize animation state for this model
+          // Initialize animation state for this model with its custom animation array
           animationStates[markerConfig.modelId] = {
+            animationNames: markerConfig.animations,
             clips: [],
             currentClipIndex: 0,
             currentAction: null,
             nextAction: null,
             isTransitioning: false,
-            transitionDuration: 0.5
+            transitionDuration: 0.5,
+            modelName: markerConfig.modelName
           };
 
           // Initialize sound tracking
           soundWasBrieflyLost[markerConfig.soundId] = false;
 
-          // Preload sound immediately
-// Preload sound immediately - use the sound element directly
-window.addEventListener('load', function() {
-  // Sounds will auto-preload with the preload attribute
-  // No need to call .load() method
-});
-
           // Marker found / lost events
-          marker.addEventListener("markerFound", () => {
-            // Clear any pending stop timeout for this marker
-            if (soundTimeouts[markerConfig.id]) {
-              clearTimeout(soundTimeouts[markerConfig.id]);
-              soundTimeouts[markerConfig.id] = null;
-              // MARK: This means marker was only briefly lost (<1 second)
-              soundWasBrieflyLost[markerConfig.soundId] = true;
-            }
-            
-            // Start animations for this model
-            if (mixers[markerConfig.modelId]) {
-              mixerActiveStates[markerConfig.modelId] = true;
-            }
-            
-            // Play individual sound for this marker
-            playMarkerSound(markerConfig.soundId);
-          });
+marker.addEventListener("markerFound", () => {
+  // Clear any pending stop timeout for this marker
+  if (soundTimeouts[markerConfig.id]) {
+    clearTimeout(soundTimeouts[markerConfig.id]);
+    soundTimeouts[markerConfig.id] = null;
+    soundWasBrieflyLost[markerConfig.soundId] = true;
+  }
+  
+  // Start animations for this model
+  if (mixers[markerConfig.modelId]) {
+    mixerActiveStates[markerConfig.modelId] = true;
+  }
+  
+  // Fix male model orientation by adjusting container AND wrapper
+  fixModelOrientation(markerConfig.modelId, markerConfig.containerId, markerConfig.wrapperId);
+  
+  // Play individual sound for this marker
+  playMarkerSound(markerConfig.soundId);
+});
 
           marker.addEventListener("markerLost", () => {
             // Pause animations for this model
@@ -397,7 +207,7 @@ window.addEventListener('load', function() {
 
           // Model loaded event
           model.addEventListener("model-loaded", (e) => {
-            setupModelAnimations(markerConfig.modelId, e.detail.model);
+            setupModelAnimations(markerConfig.modelId, e.detail.model, markerConfig.modelName, markerConfig.animations);
           });
 
           // Store wrapper for orientation updates
@@ -405,20 +215,14 @@ window.addEventListener('load', function() {
         });
 
         function detectOrientation() {
-          // Method 1: Check window.orientation (deprecated but still widely supported)
           if (typeof window.orientation !== 'undefined') {
             currentOrientation = Math.abs(window.orientation) === 90 ? 'landscape' : 'portrait';
-          } 
-          // Method 2: Check screen dimensions
-          else if (window.screen && window.screen.orientation && window.screen.orientation.type) {
+          } else if (window.screen && window.screen.orientation && window.screen.orientation.type) {
             currentOrientation = window.screen.orientation.type.includes('landscape') ? 'landscape' : 'portrait';
-          }
-          // Method 3: Check window dimensions as fallback
-          else {
+          } else {
             currentOrientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
           }
           
-          // Update model dimensions when orientation changes
           if (arInitialized) {
             updateAllModelDimensions();
           }
@@ -440,24 +244,39 @@ window.addEventListener('load', function() {
           
           let scaleValue;
           if (currentOrientation === 'portrait') {
-            // PORTRAIT: Larger scale for better visibility
             scaleValue = '2 0.8 2';
           } else {
-            // LANDSCAPE: Smaller scale to fit better in wider view
             scaleValue = '1 1.8 1';
           }
           
           wrapper.setAttribute('scale', scaleValue);
         }
 
-        function setupModelAnimations(modelId, gltfObj) {
-          const clips = gltfObj.animations || (gltfObj && gltfObj.userData && gltfObj.userData.animations) || [];
-
-          if ((!clips || clips.length === 0) && gltfObj.children) {
-            clips = gltfObj.animations || [];
+        async function setupModelAnimations(modelId, gltfObj, modelName, animationNames) {
+          if (!AFRAME || !AFRAME.THREE) {
+            return;
           }
 
-          if (!AFRAME || !AFRAME.THREE || !clips || clips.length === 0) {
+          // Use the provided animation names array (completely independent of embedded animations)
+          console.log(`&#127916; Setting up animations for ${modelName}:`, animationNames);
+          
+          // Load external JSON animations
+          const loadedClips = [];
+          
+          for (const animName of animationNames) {
+            try {
+              const clip = await loadAnimationClip(modelName, animName, gltfObj);
+              if (clip) {
+                loadedClips.push(clip);
+                console.log(`&#9989; Loaded animation: ${animName} for ${modelName}`);
+              }
+            } catch (error) {
+              console.warn(`&#9888;&#65039; Failed to load animation ${animName} for ${modelName}:`, error);
+            }
+          }
+
+          if (loadedClips.length === 0) {
+            console.warn(`&#9888;&#65039; No animations loaded for ${modelName}`);
             return;
           }
 
@@ -465,7 +284,7 @@ window.addEventListener('load', function() {
           clocks[modelId] = new AFRAME.THREE.Clock();
           mixers[modelId] = new AFRAME.THREE.AnimationMixer(gltfObj);
           mixerActiveStates[modelId] = false;
-          animationStates[modelId].clips = clips;
+          animationStates[modelId].clips = loadedClips;
 
           // Start with the first animation
           startAnimationSequence(modelId);
@@ -495,6 +314,78 @@ window.addEventListener('load', function() {
           // Start loop
           if (!rafIds[modelId]) animateMixer();
         }
+
+async function loadAnimationClip(modelName, animName, gltfObj) {
+  return new Promise((resolve, reject) => {
+    const animationPath = `AR/animations/mixamo/${animName}.json`;
+    
+    console.log(`&#128193; Loading animation from: ${animationPath}`);
+    
+    fetch(animationPath)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Failed to load ${animName}.json`);
+        }
+        return response.json();
+      })
+      .then(animationData => {
+        // Filter out problematic tracks
+        const tracks = animationData.tracks.map(trackData => {
+          // Remove ALL scale tracks
+          if (trackData.name.includes('.scale')) {
+            console.log(`&#128683; Filtered out scale track: ${trackData.name}`);
+            return null;
+          }
+          
+// Remove ONLY the root bone rotations that cause flipping - DIFFERENT PER MODEL
+if (trackData.name.includes('.quaternion')) {
+  const boneName = trackData.name.split('.')[0];
+  
+  // Different filtering for different models
+  if (modelName === 'mouse') {
+    // Mouse needs spine bones filtered to prevent tilting
+    if (boneName === 'mixamorigHips' || boneName === 'mixamorigSpine2') {
+      console.log(`&#128045; Filtered out mouse bone: ${trackData.name}`);
+      return null;
+    }
+  } else {
+    // Other models only need hips filtered
+    if (boneName === 'mixamorigHips') {
+      console.log(`&#128683; Filtered out root bone: ${trackData.name}`);
+      return null;
+    }
+  }
+}          
+          return new AFRAME.THREE.KeyframeTrack(
+            trackData.name,
+            new Float32Array(trackData.times),
+            new Float32Array(trackData.values)
+          );
+        }).filter(track => track !== null);
+
+        // Debug: Show what bones remain
+        const remainingBones = tracks
+          .filter(track => track && track.name.includes('.quaternion'))
+          .map(track => track.name.split('.')[0])
+          .filter((name, index, array) => array.indexOf(name) === index);
+        
+        console.log(`&#9989; ${animName} - Remaining tracks: ${tracks.length}`);
+        console.log(`&#129460; Animating bones:`, remainingBones);
+        
+        const clip = new AFRAME.THREE.AnimationClip(
+          animName,
+          animationData.duration,
+          tracks
+        );
+        
+        resolve(clip);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+}
+
 
         function startAnimationSequence(modelId) {
           const state = animationStates[modelId];
@@ -537,8 +428,11 @@ window.addEventListener('load', function() {
           state.nextAction.setLoop(AFRAME.THREE.LoopOnce, 1);
           state.nextAction.clampWhenFinished = true;
           
-          // Crossfade from current to next
-          state.currentAction.crossFadeTo(state.nextAction, state.transitionDuration, false);
+          // Use a much shorter, less exaggerated crossfade
+          const quickTransitionDuration = 0.3;
+          
+          // Crossfade from current to next with minimal blending
+          state.currentAction.crossFadeTo(state.nextAction, quickTransitionDuration, false);
           state.nextAction.play();
           
           // Update current references
@@ -549,7 +443,7 @@ window.addEventListener('load', function() {
           // Reset transitioning flag after crossfade completes
           setTimeout(() => {
             state.isTransitioning = false;
-          }, state.transitionDuration * 1000);
+          }, quickTransitionDuration * 1000);
         }
 
         // Sound control functions for individual markers
@@ -558,13 +452,10 @@ window.addEventListener('load', function() {
           if (soundEl) {
             const soundComponent = soundEl.components.sound;
             if (soundComponent) {
-              // NEW: Only restart if the sound wasn't briefly lost
               if (soundWasBrieflyLost[soundId]) {
-                // Sound was only briefly lost - just ensure it's playing
                 soundComponent.playSound();
-                soundWasBrieflyLost[soundId] = false; // Reset the flag
+                soundWasBrieflyLost[soundId] = false;
               } else {
-                // Normal behavior: stop and restart from beginning
                 soundComponent.stopSound();
                 soundComponent.playSound();
               }
@@ -585,16 +476,13 @@ window.addEventListener('load', function() {
         // Set up orientation change listeners
         window.addEventListener('resize', detectOrientation);
         window.addEventListener('orientationchange', detectOrientation);
-        // Continuous checking for Android
         setInterval(detectOrientation, 1000);
 
         // Clean up on unload
         window.addEventListener("beforeunload", () => {
-          // Cancel all animation frames
           Object.values(rafIds).forEach(rafId => {
             if (rafId) cancelAnimationFrame(rafId);
           });
-          // Clear all sound timeouts
           Object.values(soundTimeouts).forEach(timeout => {
             if (timeout) clearTimeout(timeout);
           });
