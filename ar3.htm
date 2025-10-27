@@ -16,24 +16,10 @@
         padding: 12px 22px; font-size:18px; z-index:1000;
         background:#007bff; color:white; border:none; border-radius:8px; cursor:pointer;
       }
-      #loading-overlay {
-        position: fixed; top:0; left:0; width:100%; height:100%;
-        background: rgba(0,0,0,0.8); color: white; z-index: 9999;
-        display: flex; flex-direction: column; justify-content: center; align-items: center;
-        font-family: Arial, sans-serif;
-      }
-      #loading-progress { width: 80%; max-width: 300px; margin: 20px 0; }
-      #loading-text { margin: 10px 0; font-size: 16px; }
     </style>
   </head>
 
   <body>
-    <div id="loading-overlay">
-      <h2>&#128260; Preloading AR Experience</h2>
-      <progress id="loading-progress" value="0" max="100"></progress>
-      <div id="loading-text">Preparing markers and models...</div>
-    </div>
-
     <button id="start-button">Start AR Experience</button>
 
     <a-scene
@@ -46,10 +32,10 @@
       <a-entity light="type: ambient; color: #888; intensity: 1"></a-entity>
 
       <!-- Directional Light for front illumination -->
-      <a-entity light="type: directional; color: #FFFFFF; intensity: 1.5; position: 0 3 3" shadow></a-entity>
+      <a-entity light="type: directional; color: #FFFFFF; intensity: 1; position: 0 3 3" shadow></a-entity>
 
       <!-- Point Light for additional front fill -->
-      <a-entity light="type: point; color: #FFFFFF; intensity: 1.5; position: 0 2 2"></a-entity>
+      <a-entity light="type: point; color: #FFFFFF; intensity: 1; position: 0 2 2"></a-entity>
 
       <!-- Markers will be generated automatically by JavaScript -->
       <a-entity camera></a-entity>
@@ -65,18 +51,18 @@
             sounds: 'AR/sounds/mixamo'
           },
           markers: [
-          { id: 'girl',       scale: '2 2 2',     position: '0 -0.4 0' },
-          { id: 'boy',        scale: '0.7 0.5 0.7', position: '0 -0.4 0' },
-          { id: 'maria',      scale: '0.4 0.4 0.4',   position: '0 -0.4 0' },
-          { id: 'frankie',    scale: '0.3 0.15 0.3', position: '0 -0.5 0' },
-          { id: 'devil',      scale: '2 2 2',     position: '0 -0.4 0' },
-          { id: 'bones',      scale: '2 2 2',     position: '0 -0.4 0' },
-          { id: 'scarecrow',  scale: '2 2 2',     position: '0 -0.4 0' },
-          { id: 'clown',      scale: '2 2 2',     position: '0 -0.4 0' },
-          { id: 'pumpkin',    scale: '2 2 2',     position: '0 -0.4 0' },
-          { id: 'witch',      scale: '2 2 2',     position: '0 -0.4 0' },
-          { id: 'zombina',    scale: '2 2 2',     position: '0 -0.4 0' },
-          { id: 'wolfie',     scale: '2 2 2',     position: '0 -0.4 0' }
+            { id: 'jones',      scale: '0.7 0.55 0.7',  position: '0 -0.4 0' },
+            { id: 'abe',        scale: '0.7 0.6 0.7',   position: '0 -0.45 0' },
+            { id: 'maria',      scale: '0.6 0.57 0.6',  position: '0 -0.5 0' },
+            { id: 'uriel',      scale: '0.65 0.6 0.65', position: '0 -0.5 0' },
+            { id: 'paladin',    scale: '0.7 0.7 0.7',   position: '0 -0.5 0' },
+            { id: 'skelezomb',  scale: '0.7 0.7 0.7',   position: '0 -0.55 0' },
+            { id: 'kachu',      scale: '0.7 0.6 0.7',   position: '0 -0.5 0' },
+            { id: 'clown',      scale: '2 2 2',     position: '0 -0.4 0' },
+            { id: 'pumpkin',    scale: '2 2 2',     position: '0 -0.4 0' },
+            { id: 'witch',      scale: '2 2 2',     position: '0 -0.4 0' },
+            { id: 'zombina',    scale: '2 2 2',     position: '0 -0.4 0' },
+            { id: 'wolfie',     scale: '2 2 2',     position: '0 -0.4 0' }
           ],
           orientationScales: {
             portrait: '2 0.8 2',
@@ -89,23 +75,14 @@
           },
           animationSettings: {
             transitionDuration: 0.5
-          },
-          buffering: {
-            enabled: true,
-            preloadCount: 3, // Preload next 3 models when one is detected
-            bufferSize: 5, // Maximum number of models to keep in buffer
-            preloadSounds: true // Preload sounds aggressively
           }
         };
 
-        // ==================== AGGRESSIVE CACHE MANAGER ====================
+        // ==================== SIMPLE CACHE MANAGER ====================
         class ARModelCache {
           constructor() {
             this.cache = new Map();
             this.loading = new Map();
-            this.preloadQueue = new Set();
-            this.activePreloads = 0;
-            this.maxConcurrentPreloads = 2;
           }
           
           async loadModel(url) {
@@ -138,36 +115,6 @@
             this.loading.set(url, promise);
             return promise;
           }
-
-          // NEW: Aggressive preloading
-          async preloadModels(urls) {
-            const preloadPromises = urls.map(url => {
-              if (this.cache.has(url) || this.loading.has(url) || this.preloadQueue.has(url)) {
-                return Promise.resolve();
-              }
-              
-              this.preloadQueue.add(url);
-              return this.loadModel(url).catch(() => {}); // Silent fail for preloads
-            });
-            
-            return Promise.all(preloadPromises);
-          }
-
-          // NEW: Get models that should be preloaded based on current active marker
-          getPreloadCandidates(activeMarkerId, allMarkers) {
-            const activeIndex = allMarkers.findIndex(m => m.id === activeMarkerId);
-            if (activeIndex === -1) return [];
-            
-            const candidates = [];
-            // Preload next few models
-            for (let i = 1; i <= AR_CONFIG.buffering.preloadCount; i++) {
-              const nextIndex = (activeIndex + i) % allMarkers.length;
-              if (nextIndex !== activeIndex) {
-                candidates.push(allMarkers[nextIndex]);
-              }
-            }
-            return candidates;
-          }
         }
 
         // ==================== AR MANAGER CLASS ====================
@@ -184,70 +131,19 @@
             this.soundTimeouts = {};
             this.soundWasBrieflyLost = {};
             this.modelLoadedStates = {};
-            this.modelPreloadedStates = {};
             this.currentOrientation = 'unknown';
             this.arInitialized = false;
-            this.lastActiveMarker = null;
             
             this.startButton = document.getElementById("start-button");
             this.arScene = document.getElementById("ar-scene");
-            this.loadingOverlay = document.getElementById("loading-overlay");
-            this.loadingProgress = document.getElementById("loading-progress");
-            this.loadingText = document.getElementById("loading-text");
             
             this.init();
           }
           
-          async init() {
-            await this.preloadCriticalAssets();
+          init() {
             this.generateMarkers();
             this.setupMarkers();
             this.bindEvents();
-            this.hideLoadingScreen();
-          }
-
-          // NEW: Aggressive preloading of critical assets
-          async preloadCriticalAssets() {
-            if (!this.config.buffering.enabled) return;
-
-            console.log('&#128640; Starting aggressive preloading...');
-            
-            // Preload first few models immediately
-            const initialPreloads = this.config.markers.slice(0, 3);
-            const preloadUrls = initialPreloads.map(marker => 
-              `${this.config.basePaths.models}/${marker.id}.glb`
-            );
-
-            // Preload sounds if enabled
-            if (this.config.buffering.preloadSounds) {
-              const soundUrls = this.config.markers.map(marker =>
-                `${this.config.basePaths.sounds}/${marker.id}.mp3`
-              );
-              preloadUrls.push(...soundUrls);
-            }
-
-            let loaded = 0;
-            const total = preloadUrls.length;
-
-            for (const url of preloadUrls) {
-              try {
-                await this.modelCache.loadModel(url);
-                loaded++;
-                const progress = (loaded / total) * 100;
-                this.loadingProgress.value = progress;
-                this.loadingText.textContent = `Preloading assets... ${loaded}/${total}`;
-              } catch (error) {
-                console.log('&#9888;&#65039; Preload failed for:', url);
-                loaded++;
-              }
-            }
-          }
-
-          hideLoadingScreen() {
-            setTimeout(() => {
-              this.loadingOverlay.style.display = 'none';
-              console.log('&#9989; Preloading complete');
-            }, 500);
           }
           
           // ==================== MARKER GENERATION ====================
@@ -278,7 +174,6 @@
               scene.insertAdjacentHTML('beforeend', markerHTML);
               
               this.modelLoadedStates[marker.id] = false;
-              this.modelPreloadedStates[marker.id] = false;
             });
           }
           
@@ -330,20 +225,15 @@
             marker.wrapper = wrapper;
           }
           
-          // ==================== LAZY LOADING WITH AGGRESSIVE PRELOADING ====================
+          // ==================== SIMPLE LAZY LOADING ====================
           setupLazyLoading(markerConfig) {
             const marker = document.querySelector(`#marker-${markerConfig.id}`);
             const modelContainer = document.querySelector(`#${markerConfig.modelId}`);
             
             const onMarkerFound = () => {
-              // Track last active marker for preloading
-              this.lastActiveMarker = markerConfig.id;
-              
-              // Trigger aggressive preloading
-              this.triggerAggressivePreloading(markerConfig.id);
-              
+              // Load model only when its marker is scanned
               if (!this.modelLoadedStates[markerConfig.id]) {
-                console.log(`&#128260; First detection of ${markerConfig.id}, loading model...`);
+                console.log(`&#128260; Loading model for ${markerConfig.id}...`);
                 
                 const modelUrl = `${this.config.basePaths.models}/${markerConfig.id}.glb`;
                 this.modelCache.loadModel(modelUrl)
@@ -371,27 +261,6 @@
             };
             
             marker.addEventListener("markerFound", onMarkerFound);
-          }
-
-          // NEW: Aggressive preloading system
-          triggerAggressivePreloading(activeMarkerId) {
-            if (!this.config.buffering.enabled) return;
-
-            const candidates = this.modelCache.getPreloadCandidates(activeMarkerId, this.config.markers);
-            const urlsToPreload = [];
-            
-            candidates.forEach(candidate => {
-              if (!this.modelPreloadedStates[candidate.id]) {
-                const modelUrl = `${this.config.basePaths.models}/${candidate.id}.glb`;
-                urlsToPreload.push(modelUrl);
-                this.modelPreloadedStates[candidate.id] = true;
-              }
-            });
-
-            if (urlsToPreload.length > 0) {
-              console.log(`&#127919; Aggressive preloading:`, urlsToPreload.map(url => url.split('/').pop()));
-              this.modelCache.preloadModels(urlsToPreload);
-            }
           }
           
           // ==================== EVENT HANDLERS ====================
@@ -432,12 +301,6 @@
             if (marker && this.isMarkerVisible(marker)) {
               console.log(`&#127916; Starting animations immediately for ${markerId}`);
               this.mixerActiveStates[modelId] = true;
-              
-              // Force first animation to play immediately
-              const state = this.animationStates[modelId];
-              if (state.currentAction) {
-                state.currentAction.play();
-              }
             }
           }
           
@@ -518,8 +381,6 @@
             state.currentAction.clampWhenFinished = true;
             state.currentAction.play();
             state.isTransitioning = false;
-            
-            console.log(`&#9654;&#65039; Playing animation ${clipIndex} for ${modelId}`);
           }
           
           startNextAnimation(modelId) {
@@ -528,8 +389,6 @@
             
             state.isTransitioning = true;
             const nextClipIndex = (state.currentClipIndex + 1) % state.clips.length;
-            
-            console.log(`&#128260; Transitioning to animation ${nextClipIndex} for ${modelId}`);
             
             state.nextAction = this.mixers[modelId].clipAction(state.clips[nextClipIndex]);
             state.nextAction.reset();
