@@ -1,0 +1,52 @@
+// Booth 1 - Tech Corner with textures
+
+// Create booth container
+const boothGroup = new THREE.Group();
+boothGroup.name = 'booth-1';
+
+// Create cubicle with textures
+const cubicle = createCubicle(0, 0, 0, 8, 
+  'textures/booth1_wall.jpg',      // Wall texture
+  'textures/booth1_banner.png',    // Banner texture
+  {x: 4, y: 2},                    // Wall texture repeats
+  {x: 1, y: 1}                     // Banner texture repeats
+);
+
+// Create objects with textures
+const billboard = createBillboard(0, 0, -3, 2.0, 4.0, 1.5, 
+  'textures/company_logo.jpg',
+  {x: 1, y: 1}  // No tiling for logo
+);
+
+const signPost = createSignPost(3, 0, 2, 1.6, 1.5, 0.6, 
+  'textures/direction_arrow.png',
+  {x: 1, y: 1}  // No tiling for arrow
+);
+
+const table = createTable(0, 0, 0.5, 
+  'textures/wood_table.jpg',
+  {x: 2, y: 1}  // Tile wood texture 2x horizontally, 1x vertically
+);
+
+const staffChair = createChair(0, 0, -0.5, 0, 
+  'textures/fabric_blue.jpg',
+  {x: 2, y: 2}  // Tile fabric 2x2
+);
+
+const visitorChair1 = createChair(-1.2, 0, 1.2, Math.PI / 2, 
+  'textures/fabric_blue.jpg',
+  {x: 2, y: 2}  // Tile fabric 2x2
+);
+
+const visitorChair2 = createChair(1.2, 0, 1.2, -Math.PI / 2, 
+  'textures/fabric_blue.jpg',
+  {x: 2, y: 2}  // Tile fabric 2x2
+);
+
+// Add all objects to booth group
+boothGroup.add(cubicle, billboard, table, staffChair, visitorChair1, visitorChair2, signPost);
+
+// Add booth to scene
+scene.add(boothGroup);
+
+console.log("&#9989; Booth 1 loaded with textures");
