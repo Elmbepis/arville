@@ -54,17 +54,23 @@
     const EYE_HEIGHT = 1.7;
     let currentBooths = [];
 
-    // Get booths from URL parameters
-    function getBoothsFromURL() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const boothsParam = urlParams.get('booths');
-      
-      if (!boothsParam) {
-        return ['1']; // Default to booth 1
-      }
-      
-      return boothsParam.split(',').map(b => b.trim());
-    }
+// Define all possible booth positions for 40x90 room - 4 booths per side
+const BOOTH_POSITIONS = {
+  '1': new THREE.Vector3(-15, 0, -30),  // Left side, back
+  '2': new THREE.Vector3(-15, 0, -10),  // Left side, mid-back
+  '3': new THREE.Vector3(-15, 0, 10),   // Left side, mid-front
+  '4': new THREE.Vector3(-15, 0, 30),   // Left side, front
+  
+  '5': new THREE.Vector3(15, 0, -30),   // Right side, back
+  '6': new THREE.Vector3(15, 0, -10),   // Right side, mid-back
+  '7': new THREE.Vector3(15, 0, 10),    // Right side, mid-front
+  '8': new THREE.Vector3(15, 0, 30)     // Right side, front
+};
+
+// Simple function to get all booth IDs - no file checking
+function getAvailableBooths() {
+  return ['1', '2', '3', '4', '5', '6', '7', '8'];
+}
 
     init();
     animate();
@@ -105,35 +111,45 @@
     }
 
     function createRoom() {
-      const roomSize = 50;
+      const roomWidth = 40;  // Narrower
+      const roomDepth = 90;  // Longer
       const wallHeight = 10;
 
-      // Floor
+      // Floor - now 40x90
       const floorMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.3 });
-      const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, roomSize), floorMat);
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), floorMat);
       floor.rotation.x = -Math.PI / 2;
       scene.add(floor);
 
       // Walls
       const wallMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.6 });
       
-      const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomSize, wallHeight), wallMat);
-      backWall.position.set(0, wallHeight / 2, -roomSize / 2);
+      // Back wall (shorter - 40 units wide)
+      const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), wallMat);
+      backWall.position.set(0, wallHeight / 2, -roomDepth / 2);
       scene.add(backWall);
 
-      const leftWall = backWall.clone();
+      // Front wall (shorter - 40 units wide)
+      const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), wallMat);
+      frontWall.position.set(0, wallHeight / 2, roomDepth / 2);
+      frontWall.rotation.y = Math.PI; // Face inward
+      scene.add(frontWall);
+
+      // Left wall (longer - 90 units wide)
+      const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), wallMat);
       leftWall.rotation.y = Math.PI / 2;
-      leftWall.position.set(-roomSize / 2, wallHeight / 2, 0);
+      leftWall.position.set(-roomWidth / 2, wallHeight / 2, 0);
       scene.add(leftWall);
 
-      const rightWall = backWall.clone();
+      // Right wall (longer - 90 units wide)
+      const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), wallMat);
       rightWall.rotation.y = -Math.PI / 2;
-      rightWall.position.set(roomSize / 2, wallHeight / 2, 0);
+      rightWall.position.set(roomWidth / 2, wallHeight / 2, 0);
       scene.add(rightWall);
 
-      // Ceiling
+      // Ceiling - now 40x90
       const ceiling = new THREE.Mesh(
-        new THREE.PlaneGeometry(roomSize, roomSize),
+        new THREE.PlaneGeometry(roomWidth, roomDepth),
         new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.9 })
       );
       ceiling.rotation.x = Math.PI / 2;
@@ -144,7 +160,7 @@
     function loadObjectCreator() {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'obj_create.js'; // FIXED: Changed from .htm to .js
+        script.src = 'obj_create.js';
         script.onload = function() {
           // Initialize texture loader AFTER obj_create.js is loaded
           const textureLoader = new THREE.TextureLoader();
@@ -159,78 +175,57 @@
     }
 
     async function loadBooths() {
-      const boothIds = getBoothsFromURL();
       const loadingDiv = document.getElementById('loading');
       
+      // Get all booth IDs
+      const boothIds = getAvailableBooths();
+      const loadedBooths = [];
+      
+      loadingDiv.textContent = `Loading ${boothIds.length} booth locations...`;
+      
+      // Try to load each booth
       for (const boothId of boothIds) {
         loadingDiv.textContent = `Loading booth ${boothId}...`;
-        await loadBoothContent(boothId);
+        try {
+          await loadBoothContent(boothId);
+          loadedBooths.push(boothId);
+        } catch (error) {
+          // Booth file doesn't exist - create empty space
+          console.log(`Booth ${boothId} not available - leaving empty`);
+        }
       }
       
       loadingDiv.style.display = 'none';
       document.getElementById('instructions').textContent = 
-        `Loaded booths: ${boothIds.join(', ')} | Use WASD to move and mouse to look around`;
+        `Loaded ${loadedBooths.length} booth(s) | Use WASD to move and mouse to look around`;
     }
 
     async function loadBoothContent(boothId) {
-      try {
-        // Create script element to load booth content
+      return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = `booth${boothId}.js`; // FIXED: Changed from .htm to .js
+        script.src = `booth${boothId}.js`;
         
-        await new Promise((resolve, reject) => {
-          script.onload = resolve;
-          script.onerror = reject;
-          document.head.appendChild(script);
-        });
-
-        // Position the booth in the hall
-        positionBooth(boothId);
+        script.onload = () => {
+          // Position the booth in the hall
+          positionBooth(boothId);
+          currentBooths.push(boothId);
+          console.log(`&#9989; Booth ${boothId} loaded successfully`);
+          resolve();
+        };
         
-        currentBooths.push(boothId);
-        console.log(`&#9989; Booth ${boothId} loaded successfully`);
+        script.onerror = () => {
+          reject(new Error(`Booth ${boothId} file not found`));
+        };
         
-      } catch (error) {
-        console.error(`&#10060; Failed to load booth ${boothId}:`, error);
-        createFallbackBooth(boothId);
-      }
+        document.head.appendChild(script);
+      });
     }
 
     function positionBooth(boothId) {
-      // Position booths around the hall
-      const positions = {
-        '1': new THREE.Vector3(-15, 0, -15),
-        '2': new THREE.Vector3(15, 0, -15),
-        '3': new THREE.Vector3(-15, 0, 15),
-        '4': new THREE.Vector3(15, 0, 15),
-        '5': new THREE.Vector3(0, 0, -20),
-        '6': new THREE.Vector3(-20, 0, 0),
-        '7': new THREE.Vector3(20, 0, 0),
-        '8': new THREE.Vector3(0, 0, 20)
-      };
-
       const boothGroup = scene.getObjectByName(`booth-${boothId}`);
-      if (boothGroup && positions[boothId]) {
-        boothGroup.position.copy(positions[boothId]);
+      if (boothGroup && BOOTH_POSITIONS[boothId]) {
+        boothGroup.position.copy(BOOTH_POSITIONS[boothId]);
       }
-    }
-
-    function createFallbackBooth(boothId) {
-      const fallbackGroup = new THREE.Group();
-      fallbackGroup.name = `booth-${boothId}`;
-      
-      const geometry = new THREE.BoxGeometry(4, 2, 4);
-      const material = new THREE.MeshStandardMaterial({ 
-        color: 0xff0000,
-        wireframe: true 
-      });
-      const cube = new THREE.Mesh(geometry, material);
-      
-      fallbackGroup.add(cube);
-      scene.add(fallbackGroup);
-      positionBooth(boothId);
-      
-      currentBooths.push(boothId);
     }
 
     // --- Updated Movement controls with up-down tilt ---
@@ -245,7 +240,7 @@
       let previousMouseY = 0;
 
       const moveSpeed = 0.03;
-      const MAX_PITCH = 15 * (Math.PI / 180); // 20 degrees in radians
+      const MAX_PITCH = 15 * (Math.PI / 180);
 
       document.addEventListener("mousedown", (e) => {
         isMouseDown = true;
@@ -268,7 +263,7 @@
         
         // Vertical rotation (pitch) with limits
         pitch -= deltaY * 0.002;
-        pitch = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, pitch)); // Clamp to ±20 degrees
+        pitch = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, pitch));
         
         // Apply rotations to camera
         camera.rotation.set(pitch, yaw, 0, 'YXZ');
