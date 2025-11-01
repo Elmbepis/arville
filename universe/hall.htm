@@ -98,11 +98,9 @@ function getAvailableBooths() {
       dirLight.position.set(5, 10, 7.5);
       scene.add(dirLight);
 
-      // Create room
-      createRoom();
-      
-      // First load obj_create, then load booths
+      // First load obj_create, then create room and load booths
       loadObjectCreator().then(() => {
+        createRoom(); // Moved here to ensure textureLoader exists
         loadBooths();
       });
 
@@ -111,12 +109,30 @@ function getAvailableBooths() {
     }
 
     function createRoom() {
-      const roomWidth = 40;  // Narrower
-      const roomDepth = 90;  // Longer
+      const roomWidth = 40;
+      const roomDepth = 90;
       const wallHeight = 10;
 
-      // Floor - now 40x90
-      const floorMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.3 });
+      // Floor - with texture using the initialized textureLoader
+      let floorMat;
+      if (textureLoader) {
+        const floorTexture = textureLoader.load('./textures/hall-floor.jpg');
+        floorTexture.wrapS = THREE.RepeatWrapping;
+        floorTexture.wrapT = THREE.RepeatWrapping;
+        floorTexture.repeat.set(8, 18);
+        
+        floorMat = new THREE.MeshStandardMaterial({ 
+          map: floorTexture,
+          roughness: 0.3 
+        });
+      } else {
+        // Fallback if textureLoader not available
+        floorMat = new THREE.MeshStandardMaterial({ 
+          color: 0x555555, 
+          roughness: 0.3 
+        });
+      }
+
       const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), floorMat);
       floor.rotation.x = -Math.PI / 2;
       scene.add(floor);
@@ -157,22 +173,22 @@ function getAvailableBooths() {
       scene.add(ceiling);
     }
 
-    function loadObjectCreator() {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = 'obj_create.js';
-        script.onload = function() {
-          // Initialize texture loader AFTER obj_create.js is loaded
-          const textureLoader = new THREE.TextureLoader();
-          if (window.initObjectTextures) {
-            window.initObjectTextures(textureLoader);
-          }
-          resolve();
-        };
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-    }
+function loadObjectCreator() {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'obj_create.js?v=' + Date.now(); // Use current timestamp
+    script.onload = function() {
+      // Initialize texture loader AFTER obj_create.js is loaded
+      const textureLoader = new THREE.TextureLoader();
+      if (window.initObjectTextures) {
+        window.initObjectTextures(textureLoader);
+      }
+      resolve();
+    };
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
 
     async function loadBooths() {
       const loadingDiv = document.getElementById('loading');

@@ -213,7 +213,13 @@ function createChair(x = 0, y = 0, z = 0, rotationY = 0, texturePath = null, tex
 }
 
 // Create cubicle with texture support
-function createCubicle(x = 0, y = 0, z = 0, size = 6, wallTexturePath = null, bannerTexturePath = null, wallTextureRepeats = {x: 4, y: 2}, bannerTextureRepeats = {x: 1, y: 1}) {
+function createCubicle(x = 0, y = 0, z = 0, size = 6, wallTexturePath = null, bannerTexturePath = null, poleTexturePath = null, floorTexturePath = null) {
+  console.log('&#128260; createCubicle called with:');
+  console.log('  - wallTexturePath:', wallTexturePath);
+  console.log('  - bannerTexturePath:', bannerTexturePath); 
+  console.log('  - poleTexturePath:', poleTexturePath);
+  console.log('  - floorTexturePath:', floorTexturePath);
+  
   const cubicleGroup = new THREE.Group();
   cubicleGroup.name = 'cubicle';
 
@@ -225,31 +231,37 @@ function createCubicle(x = 0, y = 0, z = 0, size = 6, wallTexturePath = null, ba
   // Wall material - with texture if provided
   let wallMaterial;
   if (wallTexturePath && textureLoader) {
-    const texture = textureLoader.load(wallTexturePath);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(wallTextureRepeats.x, wallTextureRepeats.y);
+    const texture = textureLoader.load(wallTexturePath, 
+      function loaded() { console.log('&#9989; Wall texture loaded:', wallTexturePath); },
+      function progress() { },
+      function error(err) { console.error('&#10060; Failed to load wall texture:', wallTexturePath, err); }
+    );
+    // No repeating for single images
     wallMaterial = new THREE.MeshStandardMaterial({ 
       map: texture,
       roughness: 0.8
     });
   } else {
+    console.log('&#9888;&#65039; Using fallback wall material for path:', wallTexturePath);
     wallMaterial = new THREE.MeshStandardMaterial({ color: 0x2E86AB });
   }
 
   // Banner material - with texture if provided
   let bannerMaterial;
   if (bannerTexturePath && textureLoader) {
-    const texture = textureLoader.load(bannerTexturePath);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(bannerTextureRepeats.x, bannerTextureRepeats.y);
+    const texture = textureLoader.load(bannerTexturePath, 
+      function loaded() { console.log('&#9989; Banner texture loaded:', bannerTexturePath); },
+      function progress() { },
+      function error(err) { console.error('&#10060; Failed to load banner texture:', bannerTexturePath, err); }
+    );
+    // No repeating for single images
     bannerMaterial = new THREE.MeshStandardMaterial({ 
       map: texture,
       emissive: 0x333333,
       emissiveIntensity: 0.1
     });
   } else {
+    console.log('&#9888;&#65039; Using fallback banner material for path:', bannerTexturePath);
     bannerMaterial = new THREE.MeshStandardMaterial({ 
       color: 0x2E86AB,
       emissive: 0x2E86AB,
@@ -257,17 +269,54 @@ function createCubicle(x = 0, y = 0, z = 0, size = 6, wallTexturePath = null, ba
     });
   }
 
-  // Pole material
-  const poleMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+  // Pole material - with texture if provided
+  let poleMaterial;
+  if (poleTexturePath && textureLoader) {
+    const texture = textureLoader.load(poleTexturePath, 
+      function loaded() { console.log('&#9989; Pole texture loaded:', poleTexturePath); },
+      function progress() { },
+      function error(err) { console.error('&#10060; Failed to load pole texture:', poleTexturePath, err); }
+    );
+    // No repeating for single images
+    poleMaterial = new THREE.MeshStandardMaterial({ 
+      map: texture,
+      roughness: 0.7
+    });
+  } else {
+    console.log('&#9888;&#65039; Using fallback pole material for path:', poleTexturePath);
+    poleMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+  }
 
-  // Floor material
-  const floorMaterial = new THREE.MeshStandardMaterial({ 
-    color: 0x666666, 
-    roughness: 0.8 
-  });
+  // Floor material - with texture if provided
+  let floorMaterial;
+  if (floorTexturePath && textureLoader) {
+    const texture = textureLoader.load(floorTexturePath, 
+      function loaded() { console.log('&#9989; Floor texture loaded:', floorTexturePath); },
+      function progress() { },
+      function error(err) { console.error('&#10060; Failed to load floor texture:', floorTexturePath, err); }
+    );
+    // No repeating for single images
+    floorMaterial = new THREE.MeshStandardMaterial({ 
+    map: texture,
+    roughness: 0.9,
+    metalness: 0.0
+      
+    });
+  } else {
+    console.log('&#9888;&#65039; Using fallback floor material for path:', floorTexturePath);
+    floorMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x666666, 
+    roughness: 0.9,
+    metalness: 0.0
+      
+    });
+  }
 
   // Rope material
   const ropeMaterial = new THREE.MeshStandardMaterial({ color: 0xCCCCCC });
+
+  // Horizontal bar material
+  const barMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
 
   // Create 4 corner poles
   const poleGeometry = new THREE.CylinderGeometry(poleRadius, poleRadius, poleHeight, 16);
@@ -295,28 +344,34 @@ function createCubicle(x = 0, y = 0, z = 0, size = 6, wallTexturePath = null, ba
   boothFloor.rotation.x = -Math.PI / 2;
   boothFloor.position.y = 0.01;
 
-  // Create front header/banner
-  const bannerWidth = size;
+  // Create horizontal bar across front poles
+  const barGeometry = new THREE.CylinderGeometry(0.03, 0.03, size, 8);
+  const horizontalBar = new THREE.Mesh(barGeometry, barMaterial);
+  horizontalBar.position.set(0, poleHeight - 0.15, halfSize);
+  horizontalBar.rotation.z = Math.PI / 2;
+
+  // Create front header/banner - HALF WIDTH
+  const bannerWidth = size * 0.5; // Half the cubicle width
   const bannerHeight = 0.6;
   const bannerGeometry = new THREE.BoxGeometry(bannerWidth, bannerHeight, 0.05);
   const banner = new THREE.Mesh(bannerGeometry, bannerMaterial);
-  banner.position.set(0, poleHeight - bannerHeight/2, halfSize);
+  banner.position.set(0, poleHeight - bannerHeight/2, halfSize + 0.03);
 
   // Create banner support ropes
-  const ropeGeometry = new THREE.CylinderGeometry(0.01, 0.01, 0.3, 8);
+  const ropeGeometry = new THREE.CylinderGeometry(0.01, 0.01, 0.2, 8);
   
   const leftRope = new THREE.Mesh(ropeGeometry, ropeMaterial);
-  leftRope.position.set(-bannerWidth/2, poleHeight - 0.15, halfSize - 0.1);
-  leftRope.rotation.z = Math.PI / 8;
+  leftRope.position.set(-bannerWidth/2, poleHeight - 0.1, halfSize);
+  leftRope.rotation.z = Math.PI / 6;
   
   const rightRope = new THREE.Mesh(ropeGeometry, ropeMaterial);
-  rightRope.position.set(bannerWidth/2, poleHeight - 0.15, halfSize - 0.1);
-  rightRope.rotation.z = -Math.PI / 8;
+  rightRope.position.set(bannerWidth/2, poleHeight - 0.1, halfSize);
+  rightRope.rotation.z = -Math.PI / 6;
 
   // Add all components to cubicle group
   cubicleGroup.add(
     backLeftPole, backRightPole, frontLeftPole, frontRightPole,
-    backWall, boothFloor, banner, leftRope, rightRope
+    backWall, boothFloor, horizontalBar, banner, leftRope, rightRope
   );
 
   cubicleGroup.position.set(x, y, z);
