@@ -120,7 +120,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <script>
-    let scene, camera, renderer;
+    let scene, camera, renderer, textureLoader;
     const clock = new THREE.Clock();
     const EYE_HEIGHT = 1.7;
     let currentBooths = [];
@@ -136,23 +136,23 @@
       maxZ: 42
     };
 
-// Define all possible booth positions for 40x90 room - 4 booths per side
-const BOOTH_POSITIONS = {
-  '1': new THREE.Vector3(-15, 0, -30),  // Left side, back
-  '2': new THREE.Vector3(-15, 0, -10),  // Left side, mid-back
-  '3': new THREE.Vector3(-15, 0, 10),   // Left side, mid-front
-  '4': new THREE.Vector3(-15, 0, 30),   // Left side, front
-  
-  '5': new THREE.Vector3(15, 0, -30),   // Right side, back
-  '6': new THREE.Vector3(15, 0, -10),   // Right side, mid-back
-  '7': new THREE.Vector3(15, 0, 10),    // Right side, mid-front
-  '8': new THREE.Vector3(15, 0, 30)     // Right side, front
-};
+    // Define all possible booth positions for 40x90 room - 4 booths per side
+    const BOOTH_POSITIONS = {
+      '1': new THREE.Vector3(-15, 0, -30),  // Left side, back
+      '2': new THREE.Vector3(-15, 0, -10),  // Left side, mid-back
+      '3': new THREE.Vector3(-15, 0, 10),   // Left side, mid-front
+      '4': new THREE.Vector3(-15, 0, 30),   // Left side, front
+      
+      '5': new THREE.Vector3(15, 0, -30),   // Right side, back
+      '6': new THREE.Vector3(15, 0, -10),   // Right side, mid-back
+      '7': new THREE.Vector3(15, 0, 10),    // Right side, mid-front
+      '8': new THREE.Vector3(15, 0, 30)     // Right side, front
+    };
 
-// Simple function to get all booth IDs - no file checking
-function getAvailableBooths() {
-  return ['1', '2', '3', '4', '5', '6', '7', '8'];
-}
+    // Simple function to get all booth IDs - no file checking
+    function getAvailableBooths() {
+      return ['1', '2', '3', '4', '5', '6', '7', '8'];
+    }
 
     init();
     animate();
@@ -172,7 +172,11 @@ function getAvailableBooths() {
       if (isMobile) {
         document.getElementById("mobile-controls").style.display = "block";
         document.body.style.touchAction = "none";
+        console.log("&#128241; Mobile controls enabled");
       }
+
+      // Initialize texture loader
+      textureLoader = new THREE.TextureLoader();
 
       // Lighting
       const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
@@ -188,7 +192,7 @@ function getAvailableBooths() {
 
       // First load obj_create, then create room and load booths
       loadObjectCreator().then(() => {
-        createRoom(); // Moved here to ensure textureLoader exists
+        createRoom();
         loadBooths();
       });
 
@@ -196,111 +200,110 @@ function getAvailableBooths() {
       window.addEventListener("resize", onWindowResize);
     }
 
-function createRoom() {
-  const roomWidth = 40;
-  const roomDepth = 90;
-  const wallHeight = 10;
+    function createRoom() {
+      const roomWidth = 40;
+      const roomDepth = 90;
+      const wallHeight = 10;
 
-  // Floor - with texture using the initialized textureLoader
-  let floorMat;
-  if (textureLoader) {
-    const floorTexture = textureLoader.load('./textures/hall-floor.jpg');
-    floorTexture.wrapS = THREE.RepeatWrapping;
-    floorTexture.wrapT = THREE.RepeatWrapping;
-    floorTexture.repeat.set(8, 18);
-    
-    // Use Lambert material for completely non-reflective surface
-    floorMat = new THREE.MeshLambertMaterial({ 
-      map: floorTexture
-    });
-  } else {
-    // Fallback if textureLoader not available
-    floorMat = new THREE.MeshLambertMaterial({ 
-      color: 0x555555
-    });
-  }
+      // Floor - with texture using the initialized textureLoader
+      let floorMat;
+      if (textureLoader) {
+        const floorTexture = textureLoader.load('./textures/hall-floor.jpg');
+        floorTexture.wrapS = THREE.RepeatWrapping;
+        floorTexture.wrapT = THREE.RepeatWrapping;
+        floorTexture.repeat.set(8, 18);
+        
+        // Use Lambert material for completely non-reflective surface
+        floorMat = new THREE.MeshLambertMaterial({ 
+          map: floorTexture
+        });
+      } else {
+        // Fallback if textureLoader not available
+        floorMat = new THREE.MeshLambertMaterial({ 
+          color: 0x555555
+        });
+      }
 
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), floorMat);
-  floor.rotation.x = -Math.PI / 2;
-  scene.add(floor);
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      scene.add(floor);
 
-  // Walls with texture - CORRECTED VERSION
-  let wallMat;
-  if (textureLoader) {
-    const wallTexture = textureLoader.load('./textures/hall-walls1.jpg', 
-      function loaded() { 
-        console.log('&#9989; Hall wall texture loaded successfully'); 
-      },
-      function progress() { },
-      function error(err) { 
-        console.error('&#10060; Failed to load hall wall texture, using fallback color');
+      // Walls with texture - CORRECTED VERSION
+      let wallMat;
+      if (textureLoader) {
+        const wallTexture = textureLoader.load('./textures/hall-walls1.jpg', 
+          function loaded() { 
+            console.log('&#9989; Hall wall texture loaded successfully'); 
+          },
+          function progress() { },
+          function error(err) { 
+            console.error('&#10060; Failed to load hall wall texture, using fallback color');
+            wallMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.6 });
+          }
+        );
+        
+        // Only set up texture properties if load was successful
+        wallTexture.wrapS = THREE.RepeatWrapping;
+        wallTexture.wrapT = THREE.RepeatWrapping;
+        wallTexture.repeat.set(4, 2); // Adjust repeat based on your texture
+        
+        wallMat = new THREE.MeshStandardMaterial({ 
+          map: wallTexture,
+          roughness: 0.8
+        });
+      } else {
+        console.log('&#9888;&#65039; Texture loader not available, using fallback wall color');
         wallMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.6 });
       }
-    );
-    
-    // Only set up texture properties if load was successful
-    wallTexture.wrapS = THREE.RepeatWrapping;
-    wallTexture.wrapT = THREE.RepeatWrapping;
-    wallTexture.repeat.set(4, 2); // Adjust repeat based on your texture
-    
-    wallMat = new THREE.MeshStandardMaterial({ 
-      map: wallTexture,
-      roughness: 0.8
-    });
-  } else {
-    console.log('&#9888;&#65039; Texture loader not available, using fallback wall color');
-    wallMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.6 });
-  }
-  
-  // Back wall (shorter - 40 units wide)
-  const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), wallMat);
-  backWall.position.set(0, wallHeight / 2, -roomDepth / 2);
-  scene.add(backWall);
+      
+      // Back wall (shorter - 40 units wide)
+      const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), wallMat);
+      backWall.position.set(0, wallHeight / 2, -roomDepth / 2);
+      scene.add(backWall);
 
-  // Front wall (shorter - 40 units wide)
-  const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), wallMat);
-  frontWall.position.set(0, wallHeight / 2, roomDepth / 2);
-  frontWall.rotation.y = Math.PI; // Face inward
-  scene.add(frontWall);
+      // Front wall (shorter - 40 units wide)
+      const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), wallMat);
+      frontWall.position.set(0, wallHeight / 2, roomDepth / 2);
+      frontWall.rotation.y = Math.PI; // Face inward
+      scene.add(frontWall);
 
-  // Left wall (longer - 90 units wide)
-  const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), wallMat);
-  leftWall.rotation.y = Math.PI / 2;
-  leftWall.position.set(-roomWidth / 2, wallHeight / 2, 0);
-  scene.add(leftWall);
+      // Left wall (longer - 90 units wide)
+      const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), wallMat);
+      leftWall.rotation.y = Math.PI / 2;
+      leftWall.position.set(-roomWidth / 2, wallHeight / 2, 0);
+      scene.add(leftWall);
 
-  // Right wall (longer - 90 units wide)
-  const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), wallMat);
-  rightWall.rotation.y = -Math.PI / 2;
-  rightWall.position.set(roomWidth / 2, wallHeight / 2, 0);
-  scene.add(rightWall);
+      // Right wall (longer - 90 units wide)
+      const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), wallMat);
+      rightWall.rotation.y = -Math.PI / 2;
+      rightWall.position.set(roomWidth / 2, wallHeight / 2, 0);
+      scene.add(rightWall);
 
-  // Ceiling - now 40x90
-  const ceiling = new THREE.Mesh(
-    new THREE.PlaneGeometry(roomWidth, roomDepth),
-    new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.9 })
-  );
-  ceiling.rotation.x = Math.PI / 2;
-  ceiling.position.y = wallHeight;
-  scene.add(ceiling);
-}
+      // Ceiling - now 40x90
+      const ceiling = new THREE.Mesh(
+        new THREE.PlaneGeometry(roomWidth, roomDepth),
+        new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.9 })
+      );
+      ceiling.rotation.x = Math.PI / 2;
+      ceiling.position.y = wallHeight;
+      scene.add(ceiling);
+    }
 
-function loadObjectCreator() {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'obj_create.js?v=' + Date.now(); // Use current timestamp
-    script.onload = function() {
-      // Initialize texture loader AFTER obj_create.js is loaded
-      const textureLoader = new THREE.TextureLoader();
-      if (window.initObjectTextures) {
-        window.initObjectTextures(textureLoader);
-      }
-      resolve();
-    };
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-}
+    function loadObjectCreator() {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'obj_create.js?v=' + Date.now();
+        script.onload = function() {
+          console.log('&#9989; obj_create.js loaded successfully');
+          resolve();
+        };
+        script.onerror = function(error) {
+          console.error('&#10060; Failed to load obj_create.js:', error);
+          reject(error);
+        };
+        document.head.appendChild(script);
+      });
+    }
 
     async function loadBooths() {
       const loadingDiv = document.getElementById('loading');
@@ -325,7 +328,7 @@ function loadObjectCreator() {
       
       loadingDiv.style.display = 'none';
       document.getElementById('instructions').textContent = 
-        `Loaded ${loadedBooths.length} booth(s) | Use WASD to move and mouse to look around`;
+        `Loaded ${loadedBooths.length} booth(s) | ${isMobile ? 'Use touch controls' : 'Use WASD to move and mouse to look around'}`;
     }
 
     async function loadBoothContent(boothId) {
@@ -428,12 +431,21 @@ function loadObjectCreator() {
         const cameraControlArea = document.getElementById('camera-control-area');
         const centerTapArea = document.getElementById('center-tap-area');
         
-        const joystickRect = joystickContainer.getBoundingClientRect();
-        const joystickCenter = {
-          x: joystickRect.left + joystickRect.width / 2,
-          y: joystickRect.top + joystickRect.height / 2
-        };
+        // Get initial joystick center position
+        let joystickCenter = { x: 0, y: 0 };
         const maxJoystickDistance = 35;
+
+        function updateJoystickCenter() {
+          const joystickRect = joystickContainer.getBoundingClientRect();
+          joystickCenter = {
+            x: joystickRect.left + joystickRect.width / 2,
+            y: joystickRect.top + joystickRect.height / 2
+          };
+        }
+
+        // Update joystick center on load and resize
+        updateJoystickCenter();
+        window.addEventListener('resize', updateJoystickCenter);
 
         // Touch start handler
         document.addEventListener('touchstart', (e) => {
@@ -445,6 +457,7 @@ function loadObjectCreator() {
           if (touchX < screenWidth * 0.4) {
             // Left side - joystick control
             joystickActive = true;
+            updateJoystickCenter(); // Update center in case of resize
             updateJoystick(touch);
           } else if (touchX > screenWidth * 0.6) {
             // Right side - camera control
@@ -505,8 +518,8 @@ function loadObjectCreator() {
           
           if (limitedDistance > deadZone) {
             // UP moves forward, DOWN moves backward
-            moveState.forward = deltaY > deadZone;    // UP moves forward
-            moveState.backward = deltaY < -deadZone;  // DOWN moves backward
+            moveState.forward = deltaY < -deadZone;    // UP moves forward
+            moveState.backward = deltaY > deadZone;    // DOWN moves backward
             
             // Left/right controls
             moveState.left = deltaX > deadZone;    // RIGHT moves left
@@ -520,6 +533,8 @@ function loadObjectCreator() {
           joystickHandle.style.transform = 'translate(0, 0)';
           moveState.forward = moveState.backward = moveState.left = moveState.right = false;
         }
+
+        console.log("&#127918; Mobile touch controls initialized");
       }
 
       function resetCamera() {
@@ -528,6 +543,7 @@ function loadObjectCreator() {
         yaw = 0;
         pitch = 0;
         velocity.set(0, 0, 0);
+        console.log("&#128247; Camera reset");
       }
 
       camera.userData.update = function () {
