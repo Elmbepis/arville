@@ -93,8 +93,7 @@ function createFloorMaterial(texturePath, defaultColor, textureRepeats = {x: 2, 
 // Create billboard at specified position with customizable height, display area, and texture
 function createBillboard(x = 0, y = 0, z = 0, totalHeight = 2.2, displayWidth = 3.2, displayHeight = 1.2, 
                         displayTexturePath = null, postTexturePath = null, 
-                        displayTextureRepeats = {x: 1, y: 1}, postTextureRepeats = {x: 1, y: 1},
-                        rotationY = 0) {  // Added rotation parameter around Y-axis (perpendicular to floor)
+                        displayTextureRepeats = {x: 1, y: 1}, postTextureRepeats = {x: 1, y: 1}) {
   const billboardGroup = new THREE.Group();
   billboardGroup.name = 'billboard';
 
@@ -113,7 +112,7 @@ function createBillboard(x = 0, y = 0, z = 0, totalHeight = 2.2, displayWidth = 
 
   // Left post - positioned at left edge of billboard
   const leftPost = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.04, 0.04, postHeight, 12),
+    new THREE.CylinderGeometry(0.08, 0.08, postHeight, 16),
     postMaterial
   );
   leftPost.position.set(-postOffset, postHeight / 2, 0);
@@ -131,98 +130,45 @@ function createBillboard(x = 0, y = 0, z = 0, totalHeight = 2.2, displayWidth = 
 
   billboardGroup.add(leftPost, rightPost, billboard);
   billboardGroup.position.set(x, y, z);
-  
-  // Apply rotation around Y-axis (axis perpendicular to floor)
-  billboardGroup.rotation.y = rotationY;
-  
   return billboardGroup;
 }
 
 
-// Create sign post with texture support - FIXED VERSION
+// Create sign post with texture support
 function createSignPost(x = 0, y = 0, z = 0, totalHeight = 1.8, displayWidth = 1.0, displayHeight = 0.5, 
-                       frontTexturePath = null, backTexturePath = null, poleTexturePath = null,
-                       rotationY = 0) {
+                       signTexturePath = null, poleTexturePath = null,
+                       signTextureRepeats = {x: 1, y: 1}, poleTextureRepeats = {x: 1, y: 1}) {
   const signPostGroup = new THREE.Group();
   signPostGroup.name = 'signpost';
 
-  const poleHeight = totalHeight - displayHeight;
+  const poleHeight = totalHeight;
   const signDisplayHeight = displayHeight;
   const signDisplayWidth = displayWidth;
 
-  // Pole material
-  let poleMaterial;
-  if (poleTexturePath && textureLoader) {
-    const poleTexture = textureLoader.load(poleTexturePath);
-    poleMaterial = new THREE.MeshStandardMaterial({ 
-      map: poleTexture,
-      roughness: 0.8
-    });
-  } else {
-    poleMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
-  }
+  // Pole material - with texture if provided
+  const poleMaterial = createTexturedMaterial(poleTexturePath, 0x654321, poleTextureRepeats);
 
-  // Front sign - use DoubleSide so it's visible from both directions
-  let frontMaterial;
-  if (frontTexturePath && textureLoader) {
-    const frontTexture = textureLoader.load(frontTexturePath);
-    frontMaterial = new THREE.MeshStandardMaterial({ 
-      map: frontTexture,
-      side: THREE.DoubleSide, // FIX: Make it visible from both sides
-      roughness: 0.7
-    });
-  } else {
-    frontMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0xF18F01,
-      side: THREE.DoubleSide // FIX: Make it visible from both sides
-    });
-  }
-
-  // Back sign - use DoubleSide so it's visible from both directions
-  let backMaterial;
-  const backTextureToUse = backTexturePath || frontTexturePath;
-  if (backTextureToUse && textureLoader) {
-    const backTexture = textureLoader.load(backTextureToUse);
-    backMaterial = new THREE.MeshStandardMaterial({ 
-      map: backTexture,
-      side: THREE.DoubleSide, // FIX: Make it visible from both sides
-      roughness: 0.7
-    });
-  } else {
-    backMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0xF18F01,
-      side: THREE.DoubleSide // FIX: Make it visible from both sides
-    });
-  }
-
-  // Create two separate planes for front and back - FIXED POSITIONS
-  const frontSign = new THREE.Mesh(
-    new THREE.PlaneGeometry(signDisplayWidth, signDisplayHeight),
-    frontMaterial
-  );
-  frontSign.position.set(0, poleHeight + (signDisplayHeight / 2), 0.02); // FIX: Increased Z position
-
-  const backSign = new THREE.Mesh(
-    new THREE.PlaneGeometry(signDisplayWidth, signDisplayHeight),
-    backMaterial
-  );
-  backSign.position.set(0, poleHeight + (signDisplayHeight / 2), -0.02); // FIX: Increased Z position
-  backSign.rotation.y = Math.PI; // FIX: Rotate back sign to face opposite direction
+  // Sign material - with texture if provided
+  const signMaterial = createTexturedMaterial(signTexturePath, 0xF18F01, signTextureRepeats);
 
   // Main pole
   const pole = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.03, 0.03, poleHeight, 16),
+    new THREE.CylinderGeometry(0.05, 0.05, poleHeight, 16),
     poleMaterial
   );
   pole.position.y = poleHeight / 2;
 
-  signPostGroup.add(pole, frontSign, backSign);
+  // Rectangular sign
+  const sign = new THREE.Mesh(
+    new THREE.BoxGeometry(signDisplayWidth, signDisplayHeight, 0.03),
+    signMaterial
+  );
+  sign.position.set(0, poleHeight - (signDisplayHeight / 2), 0.05);
+
+  signPostGroup.add(pole, sign);
   signPostGroup.position.set(x, y, z);
-  signPostGroup.rotation.y = rotationY;
-  
   return signPostGroup;
 }
-
 
 // Create table with texture support
 function createTable(x = 0, y = 0, z = 0, 
@@ -530,8 +476,6 @@ function createFloorArea(x = 0, y = 0, z = 0, width = 10, depth = 10, texturePat
   floorGroup.position.set(x, y, z);
   return floorGroup;
 }
-
-
 
 // Export the init function
 window.initObjectTextures = initTextureLoader;
