@@ -162,6 +162,12 @@
     }
 
     init();
+    
+console.log("isMobile:", isMobile);
+if (isMobile) {
+  document.getElementById("mobile-controls").style.display = "block";
+  document.getElementById("mobile-controls").style.background = "rgba(255,0,0,0.1)";
+}    
     animate();
 
     function init() {
