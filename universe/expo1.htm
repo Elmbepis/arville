@@ -11,7 +11,9 @@
       background: #000;
       font-family: Arial, sans-serif;
     }
-    #info, #instructions {
+    
+    /* Hide ALL messages on mobile */
+    #info, #instructions, #loading {
       position: absolute;
       width: 100%;
       text-align: center;
@@ -29,7 +31,6 @@
       padding: 10px;
     }
     #loading {
-      position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
@@ -49,7 +50,7 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
-      z-index: 5;
+      z-index: 20; /* Higher z-index to be above everything */
     }
     
     #joystick-container {
@@ -64,23 +65,25 @@
     #joystick-base {
       width: 80px;
       height: 80px;
-      background: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.3);
       border-radius: 50%;
       position: absolute;
-      border: 2px solid rgba(255,255,255,0.5);
+      border: 2px solid rgba(255,255,255,0.7);
       top: 20px;
       left: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
     
     #joystick-handle {
       width: 40px;
       height: 40px;
-      background: rgba(255,255,255,0.7);
+      background: rgba(255,255,255,0.9);
       border-radius: 50%;
       position: absolute;
       top: 40px;
       left: 40px;
       transition: transform 0.1s;
+      box-shadow: 0 0 5px rgba(0,0,0,0.5);
     }
     
     #camera-control-area {
@@ -90,6 +93,8 @@
       width: 40%;
       height: 100%;
       pointer-events: auto;
+      /* Add visual feedback for debugging */
+      /* background: rgba(255,0,0,0.1); */
     }
     
     #center-tap-area {
@@ -99,6 +104,8 @@
       width: 20%;
       height: 100%;
       pointer-events: auto;
+      /* Add visual feedback for debugging */
+      /* background: rgba(0,255,0,0.1); */
     }
   </style>
 </head>
@@ -171,8 +178,11 @@
       // Show mobile controls only on mobile devices
       if (isMobile) {
         document.getElementById("mobile-controls").style.display = "block";
+        // HIDE ALL MESSAGES ON MOBILE
+        document.getElementById("info").style.display = "none";
+        document.getElementById("instructions").style.display = "none";
         document.body.style.touchAction = "none";
-        console.log("&#128241; Mobile controls enabled");
+        console.log("&#128241; Mobile controls enabled - all messages hidden");
       }
 
       // Initialize texture loader
@@ -327,8 +337,13 @@
       }
       
       loadingDiv.style.display = 'none';
-      document.getElementById('instructions').textContent = 
-        `Loaded ${loadedBooths.length} booth(s) | ${isMobile ? 'Use touch controls' : 'Use WASD to move and mouse to look around'}`;
+      // Don't show instructions on mobile
+      if (!isMobile) {
+        document.getElementById('instructions').textContent = 
+          `Loaded ${loadedBooths.length} booth(s) | Use WASD to move and mouse to look around`;
+      } else {
+        document.getElementById('instructions').style.display = 'none';
+      }
     }
 
     async function loadBoothContent(boothId) {
@@ -425,6 +440,8 @@
       if (isMobile) {
         let joystickActive = false;
         let cameraTouchActive = false;
+        let startTouch = null;
+        
         const joystickBase = document.getElementById('joystick-base');
         const joystickHandle = document.getElementById('joystick-handle');
         const joystickContainer = document.getElementById('joystick-container');
@@ -441,10 +458,11 @@
             x: joystickRect.left + joystickRect.width / 2,
             y: joystickRect.top + joystickRect.height / 2
           };
+          console.log("&#127918; Joystick center updated:", joystickCenter);
         }
 
         // Update joystick center on load and resize
-        updateJoystickCenter();
+        setTimeout(updateJoystickCenter, 100); // Small delay to ensure DOM is ready
         window.addEventListener('resize', updateJoystickCenter);
 
         // Touch start handler
@@ -452,20 +470,27 @@
           e.preventDefault();
           const touch = e.touches[0];
           const touchX = touch.clientX;
+          const touchY = touch.clientY;
           const screenWidth = window.innerWidth;
+          
+          console.log("&#128070; Touch started at:", touchX, touchY);
           
           if (touchX < screenWidth * 0.4) {
             // Left side - joystick control
             joystickActive = true;
-            updateJoystickCenter(); // Update center in case of resize
+            startTouch = { x: touchX, y: touchY };
+            updateJoystickCenter();
             updateJoystick(touch);
+            console.log("&#127918; Joystick activated");
           } else if (touchX > screenWidth * 0.6) {
             // Right side - camera control
             cameraTouchActive = true;
             previousMouseX = touchX;
+            console.log("&#128247; Camera control activated");
           } else {
             // Center - tap for reset camera
             resetCamera();
+            console.log("&#128247; Camera reset via center tap");
           }
         });
 
@@ -489,8 +514,10 @@
 
         // Touch end handler
         document.addEventListener('touchend', (e) => {
+          console.log("&#128721; Touch ended");
           joystickActive = false;
           cameraTouchActive = false;
+          startTouch = null;
           resetJoystick();
           moveState.forward = moveState.backward = moveState.left = moveState.right = false;
         });
@@ -524,6 +551,8 @@
             // Left/right controls
             moveState.left = deltaX > deadZone;    // RIGHT moves left
             moveState.right = deltaX < -deadZone;  // LEFT moves right
+            
+            console.log(`&#127918; Joystick: F${moveState.forward} B${moveState.backward} L${moveState.left} R${moveState.right}`);
           } else {
             moveState.forward = moveState.backward = moveState.left = moveState.right = false;
           }
