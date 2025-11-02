@@ -49,9 +49,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <script>
-    // Define the path to the universe folder
-    const UNIVERSE_PATH = 'universe/';
-    
     let scene, camera, renderer;
     const clock = new THREE.Clock();
     const EYE_HEIGHT = 1.7;
@@ -105,6 +102,11 @@
       loadObjectCreator().then(() => {
         createRoom(); // Moved here to ensure textureLoader exists
         loadBooths();
+      }).catch((error) => {
+        console.error('Failed to load object creator:', error);
+        // Fallback: create room without textures and load booths
+        createRoom();
+        loadBooths();
       });
 
       setupControls();
@@ -118,18 +120,28 @@
 
       // Floor - with texture using the initialized textureLoader
       let floorMat;
-      if (textureLoader) {
-        const floorTexture = textureLoader.load(UNIVERSE_PATH + 'textures/hall-floor.jpg');
-        floorTexture.wrapS = THREE.RepeatWrapping;
-        floorTexture.wrapT = THREE.RepeatWrapping;
-        floorTexture.repeat.set(8, 18);
-        
-        // Use Lambert material for completely non-reflective surface
-        floorMat = new THREE.MeshLambertMaterial({ 
-          map: floorTexture
-        });
+      if (window.textureLoader) {
+        try {
+          // CORRECTED PATH: textures are in universe/textures/
+          const floorTexture = window.textureLoader.load('universe/textures/hall-floor.jpg');
+          floorTexture.wrapS = THREE.RepeatWrapping;
+          floorTexture.wrapT = THREE.RepeatWrapping;
+          floorTexture.repeat.set(8, 18);
+          
+          // Use Lambert material for completely non-reflective surface
+          floorMat = new THREE.MeshLambertMaterial({ 
+            map: floorTexture
+          });
+          console.log('&#10003; Floor texture loaded successfully');
+        } catch (error) {
+          console.error('&#10007; Failed to load floor texture, using fallback:', error);
+          floorMat = new THREE.MeshLambertMaterial({ 
+            color: 0x555555
+          });
+        }
       } else {
         // Fallback if textureLoader not available
+        console.log('Texture loader not available, using fallback floor color');
         floorMat = new THREE.MeshLambertMaterial({ 
           color: 0x555555
         });
@@ -141,27 +153,23 @@
 
       // Walls with texture - CORRECTED VERSION
       let wallMat;
-      if (textureLoader) {
-        const wallTexture = textureLoader.load(UNIVERSE_PATH + 'textures/hall-walls1.jpg', 
-          function loaded() { 
-            console.log('&#9989; Hall wall texture loaded successfully'); 
-          },
-          function progress() { },
-          function error(err) { 
-            console.error('&#10060; Failed to load hall wall texture, using fallback color');
-            wallMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.6 });
-          }
-        );
-        
-        // Only set up texture properties if load was successful
-        wallTexture.wrapS = THREE.RepeatWrapping;
-        wallTexture.wrapT = THREE.RepeatWrapping;
-        wallTexture.repeat.set(4, 2); // Adjust repeat based on your texture
-        
-        wallMat = new THREE.MeshStandardMaterial({ 
-          map: wallTexture,
-          roughness: 0.8
-        });
+      if (window.textureLoader) {
+        try {
+          // CORRECTED PATH: textures are in universe/textures/
+          const wallTexture = window.textureLoader.load('universe/textures/hall-walls1.jpg');
+          wallTexture.wrapS = THREE.RepeatWrapping;
+          wallTexture.wrapT = THREE.RepeatWrapping;
+          wallTexture.repeat.set(4, 2); // Adjust repeat based on your texture
+          
+          wallMat = new THREE.MeshStandardMaterial({ 
+            map: wallTexture,
+            roughness: 0.8
+          });
+          console.log('&#10003; Hall wall texture loaded successfully');
+        } catch (error) {
+          console.error('&#10007; Failed to load hall wall texture, using fallback color:', error);
+          wallMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.6 });
+        }
       } else {
         console.log('&#9888;&#65039; Texture loader not available, using fallback wall color');
         wallMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.6 });
@@ -203,16 +211,25 @@
     function loadObjectCreator() {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = UNIVERSE_PATH + 'obj_create.js?v=' + Date.now(); // Use current timestamp
+        script.src = 'universe/obj_create.js?v=' + Date.now();
+        
         script.onload = function() {
+          console.log('&#10003; obj_create.js loaded successfully');
           // Initialize texture loader AFTER obj_create.js is loaded
-          const textureLoader = new THREE.TextureLoader();
+          if (!window.textureLoader) {
+            window.textureLoader = new THREE.TextureLoader();
+          }
           if (window.initObjectTextures) {
-            window.initObjectTextures(textureLoader);
+            window.initObjectTextures(window.textureLoader);
           }
           resolve();
         };
-        script.onerror = reject;
+        
+        script.onerror = function() {
+          console.error('&#10007; Failed to load obj_create.js');
+          reject(new Error('Failed to load object creator script'));
+        };
+        
         document.head.appendChild(script);
       });
     }
@@ -246,13 +263,14 @@
     async function loadBoothContent(boothId) {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = UNIVERSE_PATH + `booth${boothId}.js`;
+        // CORRECTED PATH: booth files are in universe/ folder
+        script.src = `universe/booth${boothId}.js`;
         
         script.onload = () => {
           // Position the booth in the hall
           positionBooth(boothId);
           currentBooths.push(boothId);
-          console.log(`&#9989; Booth ${boothId} loaded successfully`);
+          console.log(`&#10003; Booth ${boothId} loaded successfully`);
           resolve();
         };
         
@@ -331,7 +349,7 @@
       });
 
       function resetCamera() {
-        camera.position.set(0, EYE_HEIGHT, 5);
+        camera.position.set(0, EYE_HEIGHT, 41);
         camera.rotation.set(0, 0, 0);
         yaw = 0;
         pitch = 0;

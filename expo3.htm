@@ -120,21 +120,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <script>
-    let scene, camera, renderer, textureLoader;
+    let scene, camera, renderer;
     const clock = new THREE.Clock();
     const EYE_HEIGHT = 1.7;
     let currentBooths = [];
-
-    // EXACT SAME MOBILE DETECTION AS WORKING CODE
-    const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-
-    // Camera boundaries to ensure walls/floor are always visible
-    const MOBILE_CAMERA_LIMITS = {
-      minX: -18,
-      maxX: 18,
-      minZ: -42,
-      maxZ: 42
-    };
 
     // Define all possible booth positions for 40x90 room - 4 booths per side
     const BOOTH_POSITIONS = {
@@ -148,6 +137,17 @@
       '7': new THREE.Vector3(15, 0, 10),    // Right side, mid-front
       '8': new THREE.Vector3(15, 0, 30)     // Right side, front
     };
+
+    // Camera boundaries to ensure walls/floor are always visible
+    const MOBILE_CAMERA_LIMITS = {
+      minX: -18,
+      maxX: 18,
+      minZ: -42,
+      maxZ: 42
+    };
+
+    // Detect if device is mobile/touch
+    const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
     // Simple function to get all booth IDs - no file checking
     function getAvailableBooths() {
@@ -168,17 +168,11 @@
       renderer.setClearColor(0x202020);
       document.body.appendChild(renderer.domElement);
 
-      // EXACT SAME MOBILE CONTROLS SETUP AS WORKING CODE
+      // Show mobile controls only on mobile devices
       if (isMobile) {
         document.getElementById("mobile-controls").style.display = "block";
         document.body.style.touchAction = "none";
-        // HIDE MESSAGES ON MOBILE
-        document.getElementById("info").style.display = "none";
-        document.getElementById("instructions").style.display = "none";
       }
-
-      // Initialize texture loader
-      textureLoader = new THREE.TextureLoader();
 
       // Lighting
       const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
@@ -194,6 +188,11 @@
 
       // First load obj_create, then create room and load booths
       loadObjectCreator().then(() => {
+        createRoom(); // Moved here to ensure textureLoader exists
+        loadBooths();
+      }).catch((error) => {
+        console.error('Failed to load object creator:', error);
+        // Fallback: create room without textures and load booths
         createRoom();
         loadBooths();
       });
@@ -209,18 +208,28 @@
 
       // Floor - with texture using the initialized textureLoader
       let floorMat;
-      if (textureLoader) {
-        const floorTexture = textureLoader.load('./textures/hall-floor.jpg');
-        floorTexture.wrapS = THREE.RepeatWrapping;
-        floorTexture.wrapT = THREE.RepeatWrapping;
-        floorTexture.repeat.set(8, 18);
-        
-        // Use Lambert material for completely non-reflective surface
-        floorMat = new THREE.MeshLambertMaterial({ 
-          map: floorTexture
-        });
+      if (window.textureLoader) {
+        try {
+          // CORRECTED PATH: textures are in universe/textures/
+          const floorTexture = window.textureLoader.load('universe/textures/hall-floor.jpg');
+          floorTexture.wrapS = THREE.RepeatWrapping;
+          floorTexture.wrapT = THREE.RepeatWrapping;
+          floorTexture.repeat.set(8, 18);
+          
+          // Use Lambert material for completely non-reflective surface
+          floorMat = new THREE.MeshLambertMaterial({ 
+            map: floorTexture
+          });
+          console.log('&#10003; Floor texture loaded successfully');
+        } catch (error) {
+          console.error('&#10007; Failed to load floor texture, using fallback:', error);
+          floorMat = new THREE.MeshLambertMaterial({ 
+            color: 0x555555
+          });
+        }
       } else {
         // Fallback if textureLoader not available
+        console.log('Texture loader not available, using fallback floor color');
         floorMat = new THREE.MeshLambertMaterial({ 
           color: 0x555555
         });
@@ -232,27 +241,23 @@
 
       // Walls with texture - CORRECTED VERSION
       let wallMat;
-      if (textureLoader) {
-        const wallTexture = textureLoader.load('./textures/hall-walls1.jpg', 
-          function loaded() { 
-            console.log('&#9989; Hall wall texture loaded successfully'); 
-          },
-          function progress() { },
-          function error(err) { 
-            console.error('&#10060; Failed to load hall wall texture, using fallback color');
-            wallMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.6 });
-          }
-        );
-        
-        // Only set up texture properties if load was successful
-        wallTexture.wrapS = THREE.RepeatWrapping;
-        wallTexture.wrapT = THREE.RepeatWrapping;
-        wallTexture.repeat.set(4, 2); // Adjust repeat based on your texture
-        
-        wallMat = new THREE.MeshStandardMaterial({ 
-          map: wallTexture,
-          roughness: 0.8
-        });
+      if (window.textureLoader) {
+        try {
+          // CORRECTED PATH: textures are in universe/textures/
+          const wallTexture = window.textureLoader.load('universe/textures/hall-walls1.jpg');
+          wallTexture.wrapS = THREE.RepeatWrapping;
+          wallTexture.wrapT = THREE.RepeatWrapping;
+          wallTexture.repeat.set(4, 2); // Adjust repeat based on your texture
+          
+          wallMat = new THREE.MeshStandardMaterial({ 
+            map: wallTexture,
+            roughness: 0.8
+          });
+          console.log('&#10003; Hall wall texture loaded successfully');
+        } catch (error) {
+          console.error('&#10007; Failed to load hall wall texture, using fallback color:', error);
+          wallMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.6 });
+        }
       } else {
         console.log('&#9888;&#65039; Texture loader not available, using fallback wall color');
         wallMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.6 });
@@ -294,15 +299,25 @@
     function loadObjectCreator() {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'obj_create.js?v=' + Date.now();
+        script.src = 'universe/obj_create.js?v=' + Date.now();
+        
         script.onload = function() {
-          console.log('&#9989; obj_create.js loaded successfully');
+          console.log('&#10003; obj_create.js loaded successfully');
+          // Initialize texture loader AFTER obj_create.js is loaded
+          if (!window.textureLoader) {
+            window.textureLoader = new THREE.TextureLoader();
+          }
+          if (window.initObjectTextures) {
+            window.initObjectTextures(window.textureLoader);
+          }
           resolve();
         };
-        script.onerror = function(error) {
-          console.error('&#10060; Failed to load obj_create.js:', error);
-          reject(error);
+        
+        script.onerror = function() {
+          console.error('&#10007; Failed to load obj_create.js');
+          reject(new Error('Failed to load object creator script'));
         };
+        
         document.head.appendChild(script);
       });
     }
@@ -329,23 +344,21 @@
       }
       
       loadingDiv.style.display = 'none';
-      // Only show instructions on desktop
-      if (!isMobile) {
-        document.getElementById('instructions').textContent = 
-          `Loaded ${loadedBooths.length} booth(s) | Use WASD to move and mouse to look around`;
-      }
+      document.getElementById('instructions').textContent = 
+        `Loaded ${loadedBooths.length} booth(s) | Use WASD to move and mouse to look around`;
     }
 
     async function loadBoothContent(boothId) {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = `booth${boothId}.js`;
+        // CORRECTED PATH: booth files are in universe/ folder
+        script.src = `universe/booth${boothId}.js`;
         
         script.onload = () => {
           // Position the booth in the hall
           positionBooth(boothId);
           currentBooths.push(boothId);
-          console.log(`&#9989; Booth ${boothId} loaded successfully`);
+          console.log(`&#10003; Booth ${boothId} loaded successfully`);
           resolve();
         };
         
@@ -364,7 +377,6 @@
       }
     }
 
-    // --- Updated Movement controls with EXACT SAME MOBILE IMPLEMENTATION ---
     function setupControls() {
       const moveState = { forward: false, backward: false, left: false, right: false };
       const velocity = new THREE.Vector3();
@@ -375,7 +387,7 @@
       let previousMouseX = 0;
       let previousMouseY = 0;
 
-      // Different move speeds for mobile vs desktop - SAME AS WORKING CODE
+      // Different move speeds for mobile vs desktop
       const moveSpeed = isMobile ? 0.015 : 0.03;
       const strafeSpeed = isMobile ? 0.008 : 0.03;
       const MAX_PITCH = 15 * (Math.PI / 180);
@@ -410,23 +422,23 @@
 
       document.addEventListener("keydown", (e) => {
         switch (e.code) {
-          case "KeyS": moveState.forward = true; break;
-          case "KeyW": moveState.backward = true; break;
-          case "KeyD": moveState.left = true; break;
-          case "KeyA": moveState.right = true; break;
+          case "KeyW": moveState.forward = true; break;
+          case "KeyS": moveState.backward = true; break;
+          case "KeyA": moveState.left = true; break;
+          case "KeyD": moveState.right = true; break;
           case "KeyR": resetCamera(); break;
         }
       });
       document.addEventListener("keyup", (e) => {
         switch (e.code) {
-          case "KeyS": moveState.forward = false; break;
-          case "KeyW": moveState.backward = false; break;
-          case "KeyD": moveState.left = false; break;
-          case "KeyA": moveState.right = false; break;
+          case "KeyW": moveState.forward = false; break;
+          case "KeyS": moveState.backward = false; break;
+          case "KeyA": moveState.left = false; break;
+          case "KeyD": moveState.right = false; break;
         }
       });
 
-      // --- MOBILE TOUCH CONTROLS (EXACT SAME IMPLEMENTATION AS WORKING CODE) ---
+      // --- MOBILE TOUCH CONTROLS (Only setup if mobile) ---
       if (isMobile) {
         let joystickActive = false;
         let cameraTouchActive = false;
@@ -443,7 +455,7 @@
         };
         const maxJoystickDistance = 35;
 
-        // Touch start handler - SAME AS WORKING CODE
+        // Touch start handler
         document.addEventListener('touchstart', (e) => {
           e.preventDefault();
           const touch = e.touches[0];
@@ -459,12 +471,12 @@
             cameraTouchActive = true;
             previousMouseX = touchX;
           } else {
-            // Center - tap for reset camera (changed from next animation)
-            resetCamera();
+            // Center - tap for next animation (if applicable)
+            // Could be used for interactions in the future
           }
         });
 
-        // Touch move handler - SAME AS WORKING CODE
+        // Touch move handler
         document.addEventListener('touchmove', (e) => {
           e.preventDefault();
           const touch = e.touches[0];
@@ -482,7 +494,7 @@
           }
         });
 
-        // Touch end handler - SAME AS WORKING CODE
+        // Touch end handler
         document.addEventListener('touchend', (e) => {
           joystickActive = false;
           cameraTouchActive = false;
@@ -490,7 +502,6 @@
           moveState.forward = moveState.backward = moveState.left = moveState.right = false;
         });
 
-        // EXACT SAME updateJoystick FUNCTION FROM WORKING CODE
         function updateJoystick(touch) {
           const touchX = touch.clientX;
           const touchY = touch.clientY;
@@ -513,13 +524,13 @@
           const deadZone = 15;
           
           if (limitedDistance > deadZone) {
-            // UP moves forward (toward model), DOWN moves backward
-            moveState.forward = deltaY > deadZone;    // UP moves forward
-            moveState.backward = deltaY < -deadZone;  // DOWN moves backward
+            // UP moves forward, DOWN moves backward
+            moveState.forward = deltaY < -deadZone;    // UP moves forward
+            moveState.backward = deltaY > deadZone;    // DOWN moves backward
             
-            // INTERCHANGED: Left/right controls swapped
-            moveState.left = deltaX > deadZone;    // RIGHT moves left
-            moveState.right = deltaX < -deadZone;  // LEFT moves right
+            // Standard left/right controls
+            moveState.left = deltaX < -deadZone;    // LEFT moves left
+            moveState.right = deltaX > deadZone;    // RIGHT moves right
           } else {
             moveState.forward = moveState.backward = moveState.left = moveState.right = false;
           }
@@ -532,7 +543,7 @@
       }
 
       function resetCamera() {
-        camera.position.set(0, EYE_HEIGHT, 5);
+        camera.position.set(0, EYE_HEIGHT, 41);
         camera.rotation.set(0, 0, 0);
         yaw = 0;
         pitch = 0;
