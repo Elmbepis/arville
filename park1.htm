@@ -169,22 +169,22 @@ const AREA_POSITIONS = {
   '1d': new THREE.Vector3(60, 0, -150),   // Right-back
   
   // Left side, front row (positive Z)  
-  '2a': new THREE.Vector3(-60, 0, -50),   // Left-front
-  '2b': new THREE.Vector3(-20, 0, -50),   // Left-center-front
-  '2c': new THREE.Vector3(20, 0, -50),    // Right-center-front
-  '2d': new THREE.Vector3(60, 0, -50),    // Right-front
+  '1e': new THREE.Vector3(-60, 0, -50),   // Left-front
+  '1f': new THREE.Vector3(-20, 0, -50),   // Left-center-front
+  '1g': new THREE.Vector3(20, 0, -50),    // Right-center-front
+  '1h': new THREE.Vector3(60, 0, -50),    // Right-front
   
   // Right side, back row (negative Z)
-  '3a': new THREE.Vector3(-60, 0, 50),    // Left-back
-  '3b': new THREE.Vector3(-20, 0, 50),    // Left-center-back
-  '3c': new THREE.Vector3(20, 0, 50),     // Right-center-back
-  '3d': new THREE.Vector3(60, 0, 50),     // Right-back
+  '1i': new THREE.Vector3(-60, 0, 50),    // Left-back
+  '1j': new THREE.Vector3(-20, 0, 50),    // Left-center-back
+  '1k': new THREE.Vector3(20, 0, 50),     // Right-center-back
+  '1m': new THREE.Vector3(60, 0, 50),     // Right-back
   
   // Right side, front row (positive Z)
-  '4a': new THREE.Vector3(-60, 0, 150),   // Left-front
-  '4b': new THREE.Vector3(-20, 0, 150),   // Left-center-front
-  '4c': new THREE.Vector3(20, 0, 150),    // Right-center-front
-  '4d': new THREE.Vector3(60, 0, 150)     // Right-front
+  '1n': new THREE.Vector3(-60, 0, 150),   // Left-front
+  '1o': new THREE.Vector3(-20, 0, 150),   // Left-center-front
+  '1p': new THREE.Vector3(20, 0, 150),    // Right-center-front
+  '1q': new THREE.Vector3(60, 0, 150)     // Right-front
 };
 
 
@@ -201,7 +201,7 @@ const AREA_POSITIONS = {
 
     // Simple function to get all area IDs
     function getAvailableAreas() {
-      return ['1a', '1b', '1c', '1d'];
+      return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '1i'];
     }
 
     init();
@@ -211,7 +211,8 @@ const AREA_POSITIONS = {
       scene = new THREE.Scene();
 
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(-20, 7, -100); // Start in area 1a
+      camera.position.set(-20, 7, 20); // Start in area 1a
+      camera.rotation.set(0, 90 * Math.PI / 180, 0);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -672,7 +673,7 @@ const AREA_POSITIONS = {
       }
 
       function resetCamera() {
-        camera.position.set(-20, EYE_HEIGHT, -60); // Reset to area 1a
+        camera.position.set(0, EYE_HEIGHT, 0); // Reset to area 1a
         camera.rotation.set(0, 0, 0);
         yaw = 0;
         pitch = 0;
