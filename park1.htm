@@ -154,7 +154,7 @@
     const clock = new THREE.Clock();
     const EYE_HEIGHT = 1.7;
     let currentAreas = [];
-
+    
     // Park dimensions
     const PARK_WIDTH = 200;
     const PARK_DEPTH = 400;
@@ -180,11 +180,17 @@ const AREA_POSITIONS = {
   '1k': new THREE.Vector3(20, 0, 50),     // Right-center-back
   '1m': new THREE.Vector3(60, 0, 50),     // Right-back
   
+  '1n': new THREE.Vector3(-60, 0, 100),   // Left-middle
+  '1o': new THREE.Vector3(-20, 0, 100),   // Left-center-middle
+  '1p': new THREE.Vector3(20, 0, 100),    // Right-center-middle
+  '1q': new THREE.Vector3(60, 0, 100),    // Right-middle  
+  
   // Right side, front row (positive Z)
-  '1n': new THREE.Vector3(-60, 0, 150),   // Left-front
-  '1o': new THREE.Vector3(-20, 0, 150),   // Left-center-front
-  '1p': new THREE.Vector3(20, 0, 150),    // Right-center-front
-  '1q': new THREE.Vector3(60, 0, 150)     // Right-front
+  '1r': new THREE.Vector3(-60, 0, 150),   // Left-front
+  '1s': new THREE.Vector3(-20, 0, 150),   // Left-center-front
+  '1t': new THREE.Vector3(20, 0, 150),    // Right-center-front
+  '1u': new THREE.Vector3(60, 0, 150),     // Right-front
+  
 };
 
 
@@ -201,7 +207,7 @@ const AREA_POSITIONS = {
 
     // Simple function to get all area IDs
     function getAvailableAreas() {
-      return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '1i'];
+      return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '1i', '1j', '1k', '1m', '1p', '1r', '1s', '1t'];
     }
 
     init();
@@ -211,8 +217,8 @@ const AREA_POSITIONS = {
       scene = new THREE.Scene();
 
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(-20, 7, 20); // Start in area 1a
-      camera.rotation.set(0, 90 * Math.PI / 180, 0);
+      camera.position.set(-0, 7, 60); // Start in area 1a
+      camera.rotation.set(0, -160 * Math.PI / 180, 0);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -477,8 +483,8 @@ const AREA_POSITIONS = {
       let previousMouseY = 0;
 
       // Different move speeds for mobile vs desktop
-      const moveSpeed = isMobile ? 0.015 : 0.03;
-      const strafeSpeed = isMobile ? 0.008 : 0.03;
+      const moveSpeed = isMobile ? 0.03 : 0.06;
+      const strafeSpeed = isMobile ? 0.0096 : 0.036;
       const MAX_PITCH = 15 * (Math.PI / 180);
 
       // --- DESKTOP CONTROLS ---
