@@ -160,45 +160,54 @@
     const PARK_DEPTH = 400;
     const AREA_SIZE = 40;
 
-    // Define all park area positions - 8 on left, 8 on right
 const AREA_POSITIONS = {
-  // Left side, back row (negative Z)
+  // Left side, back row (negative Z) - KEEP ORIGINAL
   '1a': new THREE.Vector3(-60, 0, -150),  // Left-back
   '1b': new THREE.Vector3(-20, 0, -150),  // Left-center-back  
   '1c': new THREE.Vector3(20, 0, -150),   // Right-center-back
   '1d': new THREE.Vector3(60, 0, -150),   // Right-back
   
-  // Left side, front row (positive Z)  
-  '1e': new THREE.Vector3(-60, 0, -50),   // Left-front
-  '1f': new THREE.Vector3(-20, 0, -50),   // Left-center-front
-  '1g': new THREE.Vector3(20, 0, -50),    // Right-center-front
-  '1h': new THREE.Vector3(60, 0, -50),    // Right-front
+  // Left side, front row (positive Z) - MOVE CLOSER TO BACK
+  '1e': new THREE.Vector3(-60, 0, -100),   // Left-front
+  '1f': new THREE.Vector3(-20, 0, -100),   // Left-center-front
+  '1g': new THREE.Vector3(20, 0, -100),    // Right-center-front
+  '1h': new THREE.Vector3(60, 0, -100),    // Right-front
   
-  // NEW: Middle row to fill the gap at Z = 0
-  '1v': new THREE.Vector3(-60, 0, 0),    // Left-middle
-  '1w': new THREE.Vector3(-20, 0, 0),    // Left-center-middle
-  '1x': new THREE.Vector3(20, 0, 0),     // Right-center-middle
-  '1y': new THREE.Vector3(60, 0, 0),     // Right-middle
+  // NEW: Middle row - MOVE CLOSER TO BACK
+  '1v': new THREE.Vector3(-60, 0, -50),    // Left-middle
+  '1w': new THREE.Vector3(-20, 0, -50),    // Left-center-middle
+  '1x': new THREE.Vector3(20, 0, -50),     // Right-center-middle
+  '1y': new THREE.Vector3(60, 0, -50),     // Right-middle
   
-  // Right side, back row (negative Z)
+  // ACTIVITY AREA SUB-AREAS - a1 to a8
+  '1a1': new THREE.Vector3(-60, 0, -20),    // Back-left activity area
+  '1a2': new THREE.Vector3(-20, 0, -20),    // Back-center activity area
+  '1a3': new THREE.Vector3(20, 0, -20),     // Back-right activity area
+  '1a4': new THREE.Vector3(60, 0, -20),     // Back-far-right activity area
+  
+  '1a5': new THREE.Vector3(-60, 0, 20),     // Front-left activity area
+  '1a6': new THREE.Vector3(-20, 0, 20),     // Front-center activity area
+  '1a7': new THREE.Vector3(20, 0, 20),      // Front-right activity area
+  '1a8': new THREE.Vector3(60, 0, 20),      // Front-far-right activity area
+    
+  // Right side, back row (negative Z) - MOVE TO FRONT OF ACTIVITY AREA
   '1i': new THREE.Vector3(-60, 0, 50),    // Left-back
   '1j': new THREE.Vector3(-20, 0, 50),    // Left-center-back
   '1k': new THREE.Vector3(20, 0, 50),     // Right-center-back
   '1m': new THREE.Vector3(60, 0, 50),     // Right-back
   
+  // KEEP ORIGINAL - Right side middle
   '1n': new THREE.Vector3(-60, 0, 100),   // Left-middle
   '1o': new THREE.Vector3(-20, 0, 100),   // Left-center-middle
   '1p': new THREE.Vector3(20, 0, 100),    // Right-center-middle
   '1q': new THREE.Vector3(60, 0, 100),    // Right-middle  
   
-  // Right side, front row (positive Z)
+  // KEEP ORIGINAL - Right side, front row (positive Z)
   '1r': new THREE.Vector3(-60, 0, 150),   // Left-front
   '1s': new THREE.Vector3(-20, 0, 150),   // Left-center-front
   '1t': new THREE.Vector3(20, 0, 150),    // Right-center-front
-  '1u': new THREE.Vector3(60, 0, 150),     // Right-front
-  
+  '1u': new THREE.Vector3(60, 0, 150),    // Right-front
 };
-
 
     // Camera boundaries for the park
     const MOBILE_CAMERA_LIMITS = {
@@ -213,7 +222,7 @@ const AREA_POSITIONS = {
 
     // Simple function to get all area IDs
     function getAvailableAreas() {
-      return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '1i', '1j', '1k', '1m', '1n', '1o', '1p', '1q', '1r', '1s', '1t', '1v', '1w', '1x', '1y'];
+      return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '1i', '1j', '1k', '1m', '1n', '1o', '1p', '1q', '1r', '1s', '1t', '1v', '1w', '1x', '1y']
     }
 
     init();
@@ -223,8 +232,8 @@ const AREA_POSITIONS = {
       scene = new THREE.Scene();
 
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(40, 7, 40); // Start in area 1a
-      camera.rotation.set(0, 0 * Math.PI / 180, 0);
+      camera.position.set(50, 7, 40); // Start in area 1a
+      camera.rotation.set(0, 15 * Math.PI / 180, 0);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -295,38 +304,105 @@ const AREA_POSITIONS = {
           groundMat.map = grassTexture;
           groundMat.needsUpdate = true;
           
-          console.log('&#10003; Grass texture loaded with sharp tiling - repeat:', repeatX, repeatY);
+          console.log('&#9989; Grass texture loaded with sharp tiling - repeat:', repeatX, repeatY);
         } catch (error) {
-          console.error('&#10007; Failed to load grass texture:', error);
+          console.error('&#10060; Failed to load grass texture:', error);
         }
       }
       
-      // Add area markers to visualize the 16 sections
-      createAreaMarkers();
-    }
-    
-    function createAreaMarkers() {
-      // Create subtle markers to show the 16 areas
-      const markerMat = new THREE.MeshBasicMaterial({ 
-        color: 0xffffff, 
-        transparent: true, 
-        opacity: 0.1,
-        wireframe: true
-      });
+      // Create oval activity area in the blank space
+      createOvalActivityArea();
       
-      for (let x = -PARK_WIDTH/2 + AREA_SIZE/2; x < PARK_WIDTH/2; x += AREA_SIZE) {
-        for (let z = -PARK_DEPTH/2 + AREA_SIZE/2; z < PARK_DEPTH/2; z += AREA_SIZE) {
-          const marker = new THREE.Mesh(
-            new THREE.PlaneGeometry(AREA_SIZE-2, AREA_SIZE-2),
-            markerMat
-          );
-          marker.rotation.x = -Math.PI / 2;
-          marker.position.set(x, 0.01, z);
-          scene.add(marker);
-        }
+      console.log('&#9989; Park base created successfully');
+    }
+
+
+function createOvalActivityArea() {
+  console.log('&#128260; Creating activity area with proper frame...');
+  
+  const activityWidth = 90;
+  const activityLength = 50;
+  const activityHeight = 0.1;
+  const activityPosition = new THREE.Vector3(0, activityHeight, 0);
+  
+  // Create activity area material - SAME APPROACH AS PATHWAY
+  const activityMat = new THREE.MeshLambertMaterial({ 
+    color: 0x888888 // Default gray color (fallback)
+  });
+  
+  // Try to load activity texture - SAME APPROACH AS PATHWAY
+  if (window.textureLoader) {
+    try {
+      const activityTexture = window.textureLoader.load('universe/textures/play-area.jpg');
+      activityTexture.wrapS = THREE.RepeatWrapping;
+      activityTexture.wrapT = THREE.RepeatWrapping;
+      activityTexture.repeat.set(8, 8); // Same tiling as pathway
+      activityMat.map = activityTexture;
+      console.log('&#9989; Activity area texture loaded successfully');
+    } catch (error) {
+      console.error('&#10060; Failed to load activity area texture, using fallback:', error);
+      
+      // Try concrete as fallback (same as pathway)
+      try {
+        const concreteTexture = window.textureLoader.load('universe/textures/concrete.jpg');
+        concreteTexture.wrapS = THREE.RepeatWrapping;
+        concreteTexture.wrapT = THREE.RepeatWrapping;
+        concreteTexture.repeat.set(8, 8);
+        activityMat.map = concreteTexture;
+        console.log('&#9989; Using concrete texture as fallback for activity area');
+      } catch (fallbackError) {
+        console.error('&#10060; All texture fallbacks failed, using default color');
       }
     }
-    
+  }
+  
+  // Create the activity area
+  const activityGeometry = new THREE.PlaneGeometry(activityWidth, activityLength);
+  const activityArea = new THREE.Mesh(activityGeometry, activityMat);
+  activityArea.rotation.x = -Math.PI / 2;
+  activityArea.position.copy(activityPosition);
+  activityArea.name = 'activity-area';
+  scene.add(activityArea);
+  
+  // --- FIXED: Create a rectangular FRAME instead of covering plane ---
+  const frameThickness = 0.4; // thickness of the frame
+  const frameHeight = 0.06; // slightly above the activity area
+
+  const halfW = activityWidth / 2;
+  const halfL = activityLength / 2;
+
+  const horizGeom = new THREE.BoxGeometry(activityWidth + frameThickness * 2, frameHeight, frameThickness);
+  const vertGeom  = new THREE.BoxGeometry(frameThickness, frameHeight, activityLength + frameThickness * 2);
+
+  const frameMat = new THREE.MeshLambertMaterial({
+    color: 0x222222,
+    side: THREE.DoubleSide
+  });
+
+  // top bar (along +Z)
+  const topBar = new THREE.Mesh(horizGeom, frameMat);
+  topBar.position.set(activityPosition.x, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z + halfL + frameThickness / 2);
+  scene.add(topBar);
+
+  // bottom bar (along -Z)
+  const bottomBar = new THREE.Mesh(horizGeom, frameMat);
+  bottomBar.position.set(activityPosition.x, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z - halfL - frameThickness / 2);
+  scene.add(bottomBar);
+
+  // left bar (along -X)
+  const leftBar = new THREE.Mesh(vertGeom, frameMat);
+  leftBar.position.set(activityPosition.x - halfW - frameThickness / 2, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z);
+  scene.add(leftBar);
+
+  // right bar (along +X)
+  const rightBar = new THREE.Mesh(vertGeom, frameMat);
+  rightBar.position.set(activityPosition.x + halfW + frameThickness / 2, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z);
+  scene.add(rightBar);
+
+  console.log('&#127959;&#65039; Activity area created with proper frame at:', activityPosition);
+}
+
+
     function createOvalPathway() {
       // Create an oval pathway around the park
       const pathwayWidth = 8; // Width of the pathway
@@ -349,9 +425,9 @@ const AREA_POSITIONS = {
           concreteTexture.wrapT = THREE.RepeatWrapping;
           concreteTexture.repeat.set(8, 8); // Adjust tiling for better appearance
           concreteMat.map = concreteTexture;
-          console.log('&#10003; Concrete texture loaded for pathway');
+          console.log('&#9989; Concrete texture loaded for pathway');
         } catch (error) {
-          console.error('&#10007; Failed to load concrete texture, using default color:', error);
+          console.error('&#10060; Failed to load concrete texture, using default color:', error);
         }
       }
       
@@ -376,7 +452,7 @@ const AREA_POSITIONS = {
       // Add the pathway to the scene
       scene.add(pathway);
       
-      console.log('&#128205; Oval pathway created around the park');
+      console.log('&#128739;&#65039; Oval pathway created around the park');
     }
 
     function loadObjectCreator() {
