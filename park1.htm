@@ -232,8 +232,8 @@ const AREA_POSITIONS = {
       scene = new THREE.Scene();
 
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(50, 7, 40); // Start in area 1a
-      camera.rotation.set(0, 15 * Math.PI / 180, 0);
+      camera.position.set(0, 7, 0); // Start in area 1a
+      camera.rotation.set(0, 0 * Math.PI / 180, 0);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -512,7 +512,7 @@ function createOvalActivityArea() {
     async function loadAreaContent(areaId) {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = `universe/park${areaId}.js`;
+        script.src = `universe/park-areas/park${areaId}.js`;
         
         script.onload = () => {
           // Wait a frame to ensure the area group is created
