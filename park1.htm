@@ -322,7 +322,7 @@ function createOvalActivityArea() {
   
   const activityWidth = 90;
   const activityLength = 50;
-  const activityHeight = 0.1;
+  const activityHeight = 0.01;
   const activityPosition = new THREE.Vector3(0, activityHeight, 0);
   
   // Create activity area material - SAME APPROACH AS PATHWAY
@@ -336,7 +336,7 @@ function createOvalActivityArea() {
       const activityTexture = window.textureLoader.load('universe/textures/play-area.jpg');
       activityTexture.wrapS = THREE.RepeatWrapping;
       activityTexture.wrapT = THREE.RepeatWrapping;
-      activityTexture.repeat.set(8, 8); // Same tiling as pathway
+      activityTexture.repeat.set(16, 16); // Same tiling as pathway
       activityMat.map = activityTexture;
       console.log('&#9989; Activity area texture loaded successfully');
     } catch (error) {
@@ -365,8 +365,8 @@ function createOvalActivityArea() {
   scene.add(activityArea);
   
   // --- FIXED: Create a rectangular FRAME instead of covering plane ---
-  const frameThickness = 0.4; // thickness of the frame
-  const frameHeight = 0.06; // slightly above the activity area
+  const frameThickness = 0.1; // thickness of the frame
+  const frameHeight = 0.01; // slightly above the activity area
 
   const halfW = activityWidth / 2;
   const halfL = activityLength / 2;
