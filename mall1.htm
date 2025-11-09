@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Virtual Shopping Mall</title>
+  <title>Arville Virtual Shopping Mall</title>
   <style>
     body {
       margin: 0;
@@ -88,8 +88,8 @@
     const MOBILE_CAMERA_LIMITS = {
       minX: -MALL_WIDTH/2,
       maxX: MALL_WIDTH/2,
-      minZ: -MALL_DEPTH/2,
-      maxZ: MALL_DEPTH/2
+      minZ: -MALL_DEPTH/2+4,
+      maxZ: MALL_DEPTH/2+1
     };
 
     // Detect if device is mobile/touch
@@ -121,7 +121,7 @@
     // Get available stores
     function getAvailableStores() {
       return [
-        '11', '12', '23', '24'
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24'
       ];
     }
 
