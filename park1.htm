@@ -101,28 +101,9 @@
       pointer-events: auto;
     }
     
-    /* Flight Controls */
+    /* Flight Controls - HIDDEN */
     #flight-controls {
-      position: absolute;
-      top: 60px;
-      right: 10px;
-      z-index: 100;
-    }
-    
-    #fly-up, #fly-down {
-      display: block;
-      margin: 5px;
-      padding: 10px;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    
-    #fly-up:hover, #fly-down:hover {
-      background: rgba(0,0,0,0.9);
+      display: none; /* Hide the flight controls */
     }
   </style>
 </head>
@@ -131,7 +112,7 @@
   <div id="instructions">Loading park...</div>
   <div id="loading">Loading park areas...</div>
   
-  <!-- Flight Controls -->
+  <!-- Flight Controls - HIDDEN -->
   <div id="flight-controls">
     <button id="fly-up">Fly Up (Q)</button>
     <button id="fly-down">Fly Down (E)</button>
@@ -152,7 +133,7 @@
   <script>
     let scene, camera, renderer;
     const clock = new THREE.Clock();
-    const EYE_HEIGHT = 1.7;
+    const EYE_HEIGHT = 7;
     let currentAreas = [];
     
     // Park dimensions
@@ -266,11 +247,13 @@ const AREA_POSITIONS = {
       loadObjectCreator().then(() => {
         createPark();
         createOvalPathway();
+        createRoads(); // Add roads to the scene
         loadAreas();
       }).catch((error) => {
         console.error('Failed to load object creator:', error);
         createPark();
         createOvalPathway();
+        createRoads(); // Add roads to the scene
         loadAreas();
       });
 
@@ -316,92 +299,90 @@ const AREA_POSITIONS = {
       console.log('&#9989; Park base created successfully');
     }
 
-
-function createOvalActivityArea() {
-  console.log('&#128260; Creating activity area with proper frame...');
-  
-  const activityWidth = 90;
-  const activityLength = 50;
-  const activityHeight = 0.01;
-  const activityPosition = new THREE.Vector3(0, activityHeight, 0);
-  
-  // Create activity area material - SAME APPROACH AS PATHWAY
-  const activityMat = new THREE.MeshLambertMaterial({ 
-    color: 0x888888 // Default gray color (fallback)
-  });
-  
-  // Try to load activity texture - SAME APPROACH AS PATHWAY
-  if (window.textureLoader) {
-    try {
-      const activityTexture = window.textureLoader.load('universe/textures/play-area.jpg');
-      activityTexture.wrapS = THREE.RepeatWrapping;
-      activityTexture.wrapT = THREE.RepeatWrapping;
-      activityTexture.repeat.set(16, 16); // Same tiling as pathway
-      activityMat.map = activityTexture;
-      console.log('&#9989; Activity area texture loaded successfully');
-    } catch (error) {
-      console.error('&#10060; Failed to load activity area texture, using fallback:', error);
+    function createOvalActivityArea() {
+      console.log('&#128260; Creating activity area with proper frame...');
       
-      // Try concrete as fallback (same as pathway)
-      try {
-        const concreteTexture = window.textureLoader.load('universe/textures/concrete.jpg');
-        concreteTexture.wrapS = THREE.RepeatWrapping;
-        concreteTexture.wrapT = THREE.RepeatWrapping;
-        concreteTexture.repeat.set(8, 8);
-        activityMat.map = concreteTexture;
-        console.log('&#9989; Using concrete texture as fallback for activity area');
-      } catch (fallbackError) {
-        console.error('&#10060; All texture fallbacks failed, using default color');
+      const activityWidth = 90;
+      const activityLength = 40;
+      const activityHeight = 0.02;
+      const activityPosition = new THREE.Vector3(0, activityHeight, 0);
+      
+      // Create activity area material - SAME APPROACH AS PATHWAY
+      const activityMat = new THREE.MeshLambertMaterial({ 
+        color: 0x888888 // Default gray color (fallback)
+      });
+      
+      // Try to load activity texture - SAME APPROACH AS PATHWAY
+      if (window.textureLoader) {
+        try {
+          const activityTexture = window.textureLoader.load('universe/textures/play-area.jpg');
+          activityTexture.wrapS = THREE.RepeatWrapping;
+          activityTexture.wrapT = THREE.RepeatWrapping;
+          activityTexture.repeat.set(16, 16); // Same tiling as pathway
+          activityMat.map = activityTexture;
+          console.log('&#9989; Activity area texture loaded successfully');
+        } catch (error) {
+          console.error('&#10060; Failed to load activity area texture, using fallback:', error);
+          
+          // Try concrete as fallback (same as pathway)
+          try {
+            const concreteTexture = window.textureLoader.load('universe/textures/concrete.jpg');
+            concreteTexture.wrapS = THREE.RepeatWrapping;
+            concreteTexture.wrapT = THREE.RepeatWrapping;
+            concreteTexture.repeat.set(8, 8);
+            activityMat.map = concreteTexture;
+            console.log('&#9989; Using concrete texture as fallback for activity area');
+          } catch (fallbackError) {
+            console.error('&#10060; All texture fallbacks failed, using default color');
+          }
+        }
       }
+      
+      // Create the activity area
+      const activityGeometry = new THREE.PlaneGeometry(activityWidth, activityLength);
+      const activityArea = new THREE.Mesh(activityGeometry, activityMat);
+      activityArea.rotation.x = -Math.PI / 2;
+      activityArea.position.copy(activityPosition);
+      activityArea.name = 'activity-area';
+      scene.add(activityArea);
+      
+      // --- FIXED: Create a rectangular FRAME instead of covering plane ---
+      const frameThickness = 0.1; // thickness of the frame
+      const frameHeight = 0.01; // slightly above the activity area
+
+      const halfW = activityWidth / 2;
+      const halfL = activityLength / 2;
+
+      const horizGeom = new THREE.BoxGeometry(activityWidth + frameThickness * 2, frameHeight, frameThickness);
+      const vertGeom  = new THREE.BoxGeometry(frameThickness, frameHeight, activityLength + frameThickness * 2);
+
+      const frameMat = new THREE.MeshLambertMaterial({
+        color: 0x222222,
+        side: THREE.DoubleSide
+      });
+
+      // top bar (along +Z)
+      const topBar = new THREE.Mesh(horizGeom, frameMat);
+      topBar.position.set(activityPosition.x, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z + halfL + frameThickness / 2);
+      scene.add(topBar);
+
+      // bottom bar (along -Z)
+      const bottomBar = new THREE.Mesh(horizGeom, frameMat);
+      bottomBar.position.set(activityPosition.x, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z - halfL - frameThickness / 2);
+      scene.add(bottomBar);
+
+      // left bar (along -X)
+      const leftBar = new THREE.Mesh(vertGeom, frameMat);
+      leftBar.position.set(activityPosition.x - halfW - frameThickness / 2, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z);
+      scene.add(leftBar);
+
+      // right bar (along +X)
+      const rightBar = new THREE.Mesh(vertGeom, frameMat);
+      rightBar.position.set(activityPosition.x + halfW + frameThickness / 2, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z);
+      scene.add(rightBar);
+
+      console.log('&#127959;&#65039; Activity area created with proper frame at:', activityPosition);
     }
-  }
-  
-  // Create the activity area
-  const activityGeometry = new THREE.PlaneGeometry(activityWidth, activityLength);
-  const activityArea = new THREE.Mesh(activityGeometry, activityMat);
-  activityArea.rotation.x = -Math.PI / 2;
-  activityArea.position.copy(activityPosition);
-  activityArea.name = 'activity-area';
-  scene.add(activityArea);
-  
-  // --- FIXED: Create a rectangular FRAME instead of covering plane ---
-  const frameThickness = 0.1; // thickness of the frame
-  const frameHeight = 0.01; // slightly above the activity area
-
-  const halfW = activityWidth / 2;
-  const halfL = activityLength / 2;
-
-  const horizGeom = new THREE.BoxGeometry(activityWidth + frameThickness * 2, frameHeight, frameThickness);
-  const vertGeom  = new THREE.BoxGeometry(frameThickness, frameHeight, activityLength + frameThickness * 2);
-
-  const frameMat = new THREE.MeshLambertMaterial({
-    color: 0x222222,
-    side: THREE.DoubleSide
-  });
-
-  // top bar (along +Z)
-  const topBar = new THREE.Mesh(horizGeom, frameMat);
-  topBar.position.set(activityPosition.x, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z + halfL + frameThickness / 2);
-  scene.add(topBar);
-
-  // bottom bar (along -Z)
-  const bottomBar = new THREE.Mesh(horizGeom, frameMat);
-  bottomBar.position.set(activityPosition.x, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z - halfL - frameThickness / 2);
-  scene.add(bottomBar);
-
-  // left bar (along -X)
-  const leftBar = new THREE.Mesh(vertGeom, frameMat);
-  leftBar.position.set(activityPosition.x - halfW - frameThickness / 2, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z);
-  scene.add(leftBar);
-
-  // right bar (along +X)
-  const rightBar = new THREE.Mesh(vertGeom, frameMat);
-  rightBar.position.set(activityPosition.x + halfW + frameThickness / 2, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z);
-  scene.add(rightBar);
-
-  console.log('&#127959;&#65039; Activity area created with proper frame at:', activityPosition);
-}
-
 
     function createOvalPathway() {
       // Create an oval pathway around the park
@@ -455,6 +436,112 @@ function createOvalActivityArea() {
       console.log('&#128739;&#65039; Oval pathway created around the park');
     }
 
+
+function createRoads() {
+    // Create roads along the major and minor axes of the oval pathway
+    const roadWidth = 8; // Same width as the pathway
+    const roadHeight = 0.049; // Slightly lower than activity area to be underneath it
+    
+    // Oval dimensions (same as pathway)
+    const ovalWidth = PARK_WIDTH - 40;
+    const ovalDepth = PARK_DEPTH - 60;
+    
+    // Activity area dimensions (for cutting out roads underneath)
+    const activityWidth = 90;
+    const activityLength = 50;
+    
+    // Create DIFFERENT materials for major and minor axis roads
+    const majorAxisRoadMat = new THREE.MeshLambertMaterial({ 
+        color: 0x707070 // Default concrete color
+    });
+    
+    const minorAxisRoadMat = new THREE.MeshLambertMaterial({ 
+        color: 0x707070 // Default concrete color
+    });
+    
+    // Try to load concrete texture with DIFFERENT TILING for each road
+    if (window.textureLoader) {
+        try {
+            // MAJOR AXIS ROAD TEXTURE (horizontal road) - more repetition along length
+            const majorAxisTexture = window.textureLoader.load('universe/textures/concrete2.jpg');
+            majorAxisTexture.wrapS = THREE.RepeatWrapping;
+            majorAxisTexture.wrapT = THREE.RepeatWrapping;
+            majorAxisTexture.repeat.set(8, 2); // More tiling along X-axis (length)
+            majorAxisRoadMat.map = majorAxisTexture;
+            
+            // MINOR AXIS ROAD TEXTURE (vertical road) - more repetition along length  
+            const minorAxisTexture = window.textureLoader.load('universe/textures/concrete2.jpg');
+            minorAxisTexture.wrapS = THREE.RepeatWrapping;
+            minorAxisTexture.wrapT = THREE.RepeatWrapping;
+            minorAxisTexture.repeat.set(4, 32); // More tiling along Z-axis (length)
+            minorAxisRoadMat.map = minorAxisTexture;
+            
+            console.log('&#9989; Different texture tiling applied to major and minor axis roads');
+        } catch (error) {
+            console.error('&#10060; Failed to load concrete texture for roads, using default color:', error);
+        }
+    }
+    
+    // Create road along the major axis (horizontal, X-axis) - CUT OUT UNDER ACTIVITY AREA
+    const majorAxisRoadLength = ovalWidth;
+    
+    // Create the major axis road in two segments - EXTENDED to reach activity area edges
+    // Each segment should extend from the park edge to the activity area edge
+    const majorSegmentLength = (majorAxisRoadLength - activityWidth) / 2;
+    
+    // Left segment of major axis road (before activity area)
+    const leftMajorSegmentGeometry = new THREE.PlaneGeometry(majorSegmentLength, roadWidth);
+    const leftMajorSegment = new THREE.Mesh(leftMajorSegmentGeometry, majorAxisRoadMat);
+    leftMajorSegment.rotation.x = -Math.PI / 2;
+    leftMajorSegment.position.y = roadHeight;
+    // Position so the right edge of this segment touches the left edge of activity area
+    leftMajorSegment.position.x = -(activityWidth / 2 + majorSegmentLength / 2);
+    leftMajorSegment.position.z = 0;
+    scene.add(leftMajorSegment);
+    
+    // Right segment of major axis road (after activity area)
+    const rightMajorSegmentGeometry = new THREE.PlaneGeometry(majorSegmentLength, roadWidth);
+    const rightMajorSegment = new THREE.Mesh(rightMajorSegmentGeometry, majorAxisRoadMat);
+    rightMajorSegment.rotation.x = -Math.PI / 2;
+    rightMajorSegment.position.y = roadHeight;
+    // Position so the left edge of this segment touches the right edge of activity area
+    rightMajorSegment.position.x = majorSegmentLength / 2 + activityWidth / 2;
+    rightMajorSegment.position.z = 0;
+    scene.add(rightMajorSegment);
+    
+    // Create road along the minor axis (vertical, Z-axis) - CUT OUT UNDER ACTIVITY AREA
+    const minorAxisRoadLength = ovalDepth;
+    
+    // Create the minor axis road in two segments - EXTENDED to reach activity area edges
+    // Each segment should extend from the park edge to the activity area edge
+    const minorSegmentLength = (minorAxisRoadLength - activityLength) / 2;
+    
+    // Bottom segment of minor axis road (before activity area)
+    const bottomMinorSegmentGeometry = new THREE.PlaneGeometry(roadWidth, minorSegmentLength);
+    const bottomMinorSegment = new THREE.Mesh(bottomMinorSegmentGeometry, minorAxisRoadMat);
+    bottomMinorSegment.rotation.x = -Math.PI / 2;
+    bottomMinorSegment.position.y = roadHeight;
+    bottomMinorSegment.position.x = 0;
+    // Position so the top edge of this segment touches the bottom edge of activity area
+    bottomMinorSegment.position.z = -(minorSegmentLength / 2 + activityLength / 2) + 5;
+    scene.add(bottomMinorSegment);
+    
+    // Top segment of minor axis road (after activity area)
+    const topMinorSegmentGeometry = new THREE.PlaneGeometry(roadWidth, minorSegmentLength);
+    const topMinorSegment = new THREE.Mesh(topMinorSegmentGeometry, minorAxisRoadMat);
+    topMinorSegment.rotation.x = -Math.PI / 2;
+    topMinorSegment.position.y = roadHeight;
+    topMinorSegment.position.x = 0;
+    // Position so the bottom edge of this segment touches the top edge of activity area
+    topMinorSegment.position.z = minorSegmentLength / 2 + activityLength / 2 - 5;
+    scene.add(topMinorSegment);
+    
+    console.log('&#128739;&#65039; Roads created with extended segments reaching activity area edges');
+    console.log(`Major axis segments: ${majorSegmentLength.toFixed(1)} units each`);
+    console.log(`Minor axis segments: ${minorSegmentLength.toFixed(1)} units each`);
+}
+
+
     function loadObjectCreator() {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -503,7 +590,7 @@ function createOvalActivityArea() {
       loadingDiv.style.display = 'none';
       if (!isMobile) {
         document.getElementById('instructions').textContent = 
-          `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | Q/E: Fly | R: Reset`;
+          `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | R: Reset`;
       } else {
         document.getElementById('instructions').style.display = 'none';
       }
@@ -620,28 +707,7 @@ function createOvalActivityArea() {
         }
       });
 
-      // Flight control buttons
-      document.getElementById('fly-up').addEventListener('mousedown', () => moveState.up = true);
-      document.getElementById('fly-up').addEventListener('mouseup', () => moveState.up = false);
-      document.getElementById('fly-up').addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        moveState.up = true;
-      });
-      document.getElementById('fly-up').addEventListener('touchend', (e) => {
-        e.preventDefault();
-        moveState.up = false;
-      });
-      
-      document.getElementById('fly-down').addEventListener('mousedown', () => moveState.down = true);
-      document.getElementById('fly-down').addEventListener('mouseup', () => moveState.down = false);
-      document.getElementById('fly-down').addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        moveState.down = true;
-      });
-      document.getElementById('fly-down').addEventListener('touchend', (e) => {
-        e.preventDefault();
-        moveState.down = false;
-      });
+      // Flight control buttons - REMOVED
 
       // --- MOBILE TOUCH CONTROLS (Only setup if mobile) ---
       if (isMobile) {
