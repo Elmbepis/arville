@@ -520,7 +520,7 @@
           color: 0xffffff,
           transparent: true,
           transmission: 0.6,         // Lower transmission = more frosted
-          opacity: 0.6,              // More visible
+          opacity: 0.4,              // More visible
           roughness: 0.8,            // High roughness = frosted appearance
           metalness: 0.0,            // No metallic
           clearcoat: 0.3,
@@ -631,28 +631,28 @@ function createSideWalls() {
   const textureLoader = new THREE.TextureLoader();
   
   const sideWallTextures = [
-    'universe/textures/stores/1sidewall1.jpg',
-    'universe/textures/stores/1sidewall2.jpg',
-    'universe/textures/stores/1sidewall3.jpg',
-    'universe/textures/stores/1sidewall4.jpg',
-    'universe/textures/stores/1sidewall5.jpg',
-    'universe/textures/stores/1sidewall6.jpg',
-    'universe/textures/stores/1sidewall7.jpg',
-    'universe/textures/stores/1sidewall8.jpg',
-    'universe/textures/stores/1sidewall9.jpg',
-    'universe/textures/stores/1sidewall10.jpg',
-    'universe/textures/stores/1sidewall11.jpg',
-    'universe/textures/stores/1sidewall12.jpg',
-    'universe/textures/stores/1sidewall13.jpg',
-    'universe/textures/stores/1sidewall14.jpg',
-    'universe/textures/stores/1sidewall15.jpg',
-    'universe/textures/stores/1sidewall16.jpg',
-    'universe/textures/stores/1sidewall17.jpg',
-    'universe/textures/stores/1sidewall18.jpg',
-    'universe/textures/stores/1sidewall19.jpg',
-    'universe/textures/stores/1sidewall20.jpg',
-    'universe/textures/stores/1sidewall21.jpg',
-    'universe/textures/stores/1sidewall22.jpg'
+    'universe/textures/stores/1sidewalla.jpg',
+    'universe/textures/stores/1sidewallb.jpg',
+    'universe/textures/stores/1sidewallc.jpg',
+    'universe/textures/stores/1sidewalld.jpg',
+    'universe/textures/stores/1sidewalle.jpg',
+    'universe/textures/stores/1sidewallf.jpg',
+    'universe/textures/stores/1sidewalla.jpg',
+    'universe/textures/stores/1sidewallb.jpg',
+    'universe/textures/stores/1sidewallc.jpg',
+    'universe/textures/stores/1sidewalld.jpg',
+    'universe/textures/stores/1sidewalle.jpg',
+    'universe/textures/stores/1sidewallf.jpg',
+    'universe/textures/stores/1sidewalla.jpg',
+    'universe/textures/stores/1sidewallb.jpg',
+    'universe/textures/stores/1sidewallc.jpg',
+    'universe/textures/stores/1sidewalld.jpg',
+    'universe/textures/stores/1sidewalle.jpg',
+    'universe/textures/stores/1sidewallf.jpg',
+    'universe/textures/stores/1sidewalla.jpg',
+    'universe/textures/stores/1sidewallb.jpg',
+    'universe/textures/stores/1sidewallc.jpg',
+    'universe/textures/stores/1sidewalld.jpg'
   ];
 
   const wallHeight = 7.5;
@@ -677,7 +677,7 @@ function createSideWalls() {
         (texture) => {
           texture.wrapS = THREE.RepeatWrapping;
           texture.wrapT = THREE.RepeatWrapping;
-          texture.repeat.set(2, 1);
+          texture.repeat.set(8, 4);
           resolve(texture);
         },
         undefined,
@@ -688,7 +688,7 @@ function createSideWalls() {
             (fallbackTexture) => {
               fallbackTexture.wrapS = THREE.RepeatWrapping;
               fallbackTexture.wrapT = THREE.RepeatWrapping;
-              fallbackTexture.repeat.set(2, 1);
+              fallbackTexture.repeat.set(8, 4);
               resolve(fallbackTexture);
               console.log(`&#9989; Using default texture for side wall ${wallNum}`);
             },
@@ -713,7 +713,7 @@ function createSideWalls() {
     // Load the individual texture with fallback to default
     loadTextureWithFallback(
       sideWallTextures[wallIndex],
-      'universe/textures/stores/1sidewall22.jpg',
+      'universe/textures/stores/1sidewalla.jpg',
       wallIndex + 1
     ).then(texture => {
       if (texture) {
@@ -769,7 +769,7 @@ function createSideWalls() {
     // Load the individual texture with fallback to default
     loadTextureWithFallback(
       sideWallTextures[wallIndex],
-      'universe/textures/stores/1sidewall22.jpg',
+      'universe/textures/stores/1sidewalla.jpg',
       wallIndex + 1
     ).then(texture => {
       if (texture) {
