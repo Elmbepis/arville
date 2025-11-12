@@ -764,21 +764,21 @@ function animate() {
     requestAnimationFrame(animate);
     const delta = clock.getDelta();
     
-    if (camera.userData.update) camera.userData.update(); // Keep WASD controls
+    if (camera.userData.update) camera.userData.update();
     
-    // Update which models should be animated (this just controls timeScale)
+    // Update animation priorities (pauses distant models)
     if (window.animationController) {
         window.animationController.update(camera);
     }
     
-    // Your existing animation update (this handles the actual animation progression)
-    if (window.glbModelMixers && window.glbModelMixers.length > 0) {
-        window.glbModelMixers.forEach(mixer => {
-            mixer.update(delta);
-        });
+    // UPDATE ANIMATIONS ONLY ONCE HERE
+    if (window.updateAllAnimations) {
+        window.updateAllAnimations(delta);
     }
     
     renderer.render(scene, camera);
-}  </script>
+}
+
+</script>
 </body>
 </html>
