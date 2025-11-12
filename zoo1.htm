@@ -766,10 +766,16 @@ function animate() {
     
     if (camera.userData.update) camera.userData.update(); // Keep WASD controls
     
-    // Add this one line for animation controller
+    // Update which models should be animated (this just controls timeScale)
     if (window.animationController) {
         window.animationController.update(camera);
-        window.animationController.updateMixers(delta); // Use the delta from your clock
+    }
+    
+    // Your existing animation update (this handles the actual animation progression)
+    if (window.glbModelMixers && window.glbModelMixers.length > 0) {
+        window.glbModelMixers.forEach(mixer => {
+            mixer.update(delta);
+        });
     }
     
     renderer.render(scene, camera);
