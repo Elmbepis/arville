@@ -150,7 +150,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="universe/js/GLTFLoader.js"></script>
-
+  <script src="universe/js/animation-controller.js"></script>
   <script>
     let scene, camera, renderer;
     const clock = new THREE.Clock();
@@ -760,12 +760,19 @@ function createRectangularPathway() {
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    function animate() {
-      requestAnimationFrame(animate);
-      const delta = clock.getDelta();
-      if (camera.userData.update) camera.userData.update();
-      renderer.render(scene, camera);
+function animate() {
+    requestAnimationFrame(animate);
+    const delta = clock.getDelta();
+    
+    if (camera.userData.update) camera.userData.update(); // Keep WASD controls
+    
+    // Add this one line for animation controller
+    if (window.animationController) {
+        window.animationController.update(camera);
+        window.animationController.updateMixers(delta); // Use the delta from your clock
     }
-  </script>
+    
+    renderer.render(scene, camera);
+}  </script>
 </body>
 </html>
