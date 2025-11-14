@@ -19,6 +19,12 @@ window.animationAudioMappings = {
     // Cheetah mappings
     'cheetah': {
         'Fight Idle': 'universe/sounds/zoo/cheetah.mp3'
+    },
+    
+    // Leopard mappings
+    'leopard': {
+        'Roarning': 'universe/sounds/zoo/leopard1.mp3',
+        'Attack Right Paw': 'universe/sounds/zoo/leopard2.mp3'
     }
     
     // Add new animal mappings here as needed
