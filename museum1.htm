@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arville Virtual Exhibit Hall</title>
+  <title>Arville Virtual Museum</title>
   <style>
     body {
       margin: 0;
@@ -103,9 +103,9 @@
   </style>
 </head>
 <body>
-  <div id="info">Virtual Exhibit Hall | WASD: Move | Mouse: Look Around | R: Reset Position</div>
-  <div id="instructions">Loading exhibit hall...</div>
-  <div id="loading">Loading booths...</div>
+  <div id="info">Virtual Museum | WASD: Move | Mouse: Look Around | R: Reset Position</div>
+  <div id="instructions">Loading museum...</div>
+  <div id="loading">Preparing venue...</div>
   
   <!-- Mobile Controls - Only shown on mobile devices -->
   <div id="mobile-controls">
@@ -122,43 +122,41 @@
   <script>
     let scene, camera, renderer;
     const clock = new THREE.Clock();
-    const EYE_HEIGHT = 1.7;
-    let currentBooths = [];
+    const EYE_HEIGHT = 3;
 
-    // Define all possible booth positions for 30x80 room - 6 booths per side
-    const BOOTH_POSITIONS = {
-      // Left side booths (6 total) - moved closer to center (x from -12 to -10)
-      '1': new THREE.Vector3(-10, 0, -30),
-      '2': new THREE.Vector3(-10, 0, -18),
-      '3': new THREE.Vector3(-10, 0, -6),
-      '4': new THREE.Vector3(-10, 0, 6),
-      '5': new THREE.Vector3(-10, 0, 18),
-      '6': new THREE.Vector3(-10, 0, 30),
-      
-      // Right side booths (6 total) - moved closer to center (x from 12 to 10)
-      '7': new THREE.Vector3(10, 0, -30),
-      '8': new THREE.Vector3(10, 0, -18),
-      '9': new THREE.Vector3(10, 0, -6),
-      '10': new THREE.Vector3(10, 0, 6),
-      '11': new THREE.Vector3(10, 0, 18),
-      '12': new THREE.Vector3(10, 0, 30)
-    };
-
-    // Camera boundaries for 30x80 room
+    // UPDATED: Camera boundaries for 30x80 room divided into sections
     const CAMERA_BOUNDARIES = {
-      minX: -13,  // Left wall boundary
-      maxX: 13,   // Right wall boundary
-      minZ: -38,  // Back wall boundary
-      maxZ: 38    // Front wall boundary
+      minX: -14,  // Left wall boundary
+      maxX: 14,   // Right wall boundary
+      minZ: -39,  // Back wall boundary
+      maxZ: 39    // Front wall boundary
     };
+
+    // UPDATED: Area positions for 8 equal sections in 30x80 room
+    const AREA_POSITIONS = {
+      // Row 1 (Back sections) - Z = -30
+      '1a': new THREE.Vector3(-11.25, 0, -30),  // Covers X: -15 to -7.5, Z: -40 to -20
+      '1b': new THREE.Vector3(-3.75, 0, -30),   // Covers X: -7.5 to 0, Z: -40 to -20
+      '1c': new THREE.Vector3(3.75, 0, -30),    // Covers X: 0 to 7.5, Z: -40 to -20
+      '1d': new THREE.Vector3(11.25, 0, -30),   // Covers X: 7.5 to 15, Z: -40 to -20
+      
+      // Row 2 (Front sections) - Z = 30
+      '1e': new THREE.Vector3(-11.25, 0, 30),   // Covers X: -15 to -7.5, Z: 20 to 40
+      '1f': new THREE.Vector3(-3.75, 0, 30),    // Covers X: -7.5 to 0, Z: 20 to 40
+      '1g': new THREE.Vector3(3.75, 0, 30),     // Covers X: 0 to 7.5, Z: 20 to 40
+      '1h': new THREE.Vector3(11.25, 0, 30)     // Covers X: 7.5 to 15, Z: 20 to 40
+    };
+
+    // Simple function to get all area IDs
+    function getAvailableAreas() {
+      return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h'];
+    }
+
+    // Track loaded areas
+    let currentAreas = [];
 
     // Detect if device is mobile/touch
     const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-
-    // Simple function to get all booth IDs - no file checking
-    function getAvailableBooths() {
-      return ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-    }
 
     init();
     animate();
@@ -210,17 +208,23 @@
       dirLight4.position.set(0, 12, 30);  // Front side, pointing toward BACK wall
       scene.add(dirLight4);
 
-      // First load obj_create, then create room and load booths
-      loadObjectCreator().then(() => {
-        createRoom(); // Moved here to ensure textureLoader exists
-        loadBooths();
-      }).catch((error) => {
-        console.error('Failed to load object creator:', error);
-        // Fallback: create room without textures and load booths
-        createRoom();
-        loadBooths();
-      });
+      // Initialize texture loader and create room
+      if (!window.textureLoader) {
+        window.textureLoader = new THREE.TextureLoader();
+      }
       
+      createRoom();
+
+      // FIXED: Load object creator and then areas
+      loadObjectCreator().then(() => {
+        console.log('&#9989; Object creator loaded, now loading areas...');
+        return loadAreas();
+      }).catch((error) => {
+        console.error('&#10060; Failed to load object creator:', error);
+        // Fallback: try to load areas anyway
+        loadAreas();
+      });
+
       setupControls();
       window.addEventListener("resize", onWindowResize);
     }
@@ -235,7 +239,7 @@
       if (window.textureLoader) {
         try {
           // CORRECTED PATH: textures are in universe/textures/
-          const floorTexture = window.textureLoader.load('universe/textures/hall-floor.jpg');
+          const floorTexture = window.textureLoader.load('universe/textures/museum1-floor.jpg');
           floorTexture.wrapS = THREE.RepeatWrapping;
           floorTexture.wrapT = THREE.RepeatWrapping;
           floorTexture.repeat.set(8, 18);
@@ -244,9 +248,9 @@
           floorMat = new THREE.MeshLambertMaterial({ 
             map: floorTexture
           });
-          console.log('&#10003; Floor texture loaded successfully');
+          console.log('&#9989; Floor texture loaded successfully');
         } catch (error) {
-          console.error('&#10007; Failed to load floor texture, using fallback:', error);
+          console.error('&#10060; Failed to load floor texture, using fallback:', error);
           floorMat = new THREE.MeshLambertMaterial({ 
             color: 0x555555
           });
@@ -268,19 +272,19 @@
       if (window.textureLoader) {
         try {
           // CORRECTED PATH: textures are in universe/textures/
-          const wallTexture = window.textureLoader.load('universe/textures/hall-walls1.jpg');
+          const wallTexture = window.textureLoader.load('universe/textures/museum1-walls.jpg');
           wallTexture.wrapS = THREE.RepeatWrapping;
           wallTexture.wrapT = THREE.RepeatWrapping;
-          wallTexture.repeat.set(32, 8); // Adjust repeat based on your texture
+          wallTexture.repeat.set(64, 8); // Adjust repeat based on your texture
           
           wallMat = new THREE.MeshStandardMaterial({ 
             map: wallTexture,
             roughness: 0.8,
             side: THREE.DoubleSide  // FIX: Make walls double-sided
           });
-          console.log('&#10003; Hall wall texture loaded successfully');
+          console.log('&#9989; Hall wall texture loaded successfully');
         } catch (error) {
-          console.error('&#10007; Failed to load hall wall texture, using fallback color:', error);
+          console.error('&#10060; Failed to load hall wall texture, using fallback color:', error);
           wallMat = new THREE.MeshStandardMaterial({ 
             color: 0xaaaaaa, 
             roughness: 0.6,
@@ -323,18 +327,18 @@
       let ceilingMat;
       if (window.textureLoader) {
         try {
-          const ceilingTexture = window.textureLoader.load('universe/textures/expo1_ceiling.jpg');
+          const ceilingTexture = window.textureLoader.load('universe/textures/museum1-ceiling.jpg');
           ceilingTexture.wrapS = THREE.RepeatWrapping;
           ceilingTexture.wrapT = THREE.RepeatWrapping;
-          ceilingTexture.repeat.set(16, 36); // Adjust repeat based on your ceiling texture
+          ceilingTexture.repeat.set(12, 27); // Adjust repeat based on your ceiling texture
           
           ceilingMat = new THREE.MeshStandardMaterial({ 
             map: ceilingTexture,
             roughness: 0.9
           });
-          console.log('&#10003; Ceiling texture loaded successfully');
+          console.log('&#9989; Ceiling texture loaded successfully');
         } catch (error) {
-          console.error('&#10007; Failed to load ceiling texture, using fallback:', error);
+          console.error('&#10060; Failed to load ceiling texture, using fallback:', error);
           ceilingMat = new THREE.MeshStandardMaterial({ 
             color: 0xdddddd, 
             roughness: 0.9 
@@ -355,15 +359,15 @@
       ceiling.position.y = wallHeight;
       scene.add(ceiling);
     }
-
+          
     function loadObjectCreator() {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'universe/obj_create.js?v=' + Date.now();
+        script.src = 'universe/obj_create_room.js?v=' + Date.now();
         
         script.onload = function() {
-          console.log('&#10003; obj_create.js loaded successfully');
-          // Initialize texture loader AFTER obj_create.js is loaded
+          console.log('&#9989; obj_create_room.js loaded successfully');
+          // Initialize texture loader AFTER obj_create_room.js is loaded
           if (!window.textureLoader) {
             window.textureLoader = new THREE.TextureLoader();
           }
@@ -374,71 +378,90 @@
         };
         
         script.onerror = function() {
-          console.error('&#10007; Failed to load obj_create.js');
+          console.error('&#10060; Failed to load obj_create_room.js');
           reject(new Error('Failed to load object creator script'));
         };
         
         document.head.appendChild(script);
       });
     }
+    
 
-    async function loadBooths() {
+    async function loadAreas() {
       const loadingDiv = document.getElementById('loading');
       
-      // Get all booth IDs
-      const boothIds = getAvailableBooths();
-      const loadedBooths = [];
+      // Get all area IDs
+      const areaIds = getAvailableAreas();
+      const loadedAreas = [];
       
-      loadingDiv.textContent = `Loading ${boothIds.length} booth locations...`;
+      loadingDiv.textContent = `Loading ${areaIds.length} museum areas...`;
       
-      // Try to load each booth
-      for (const boothId of boothIds) {
-        loadingDiv.textContent = `Loading booth ${boothId}...`;
+      // Try to load each area
+      for (const areaId of areaIds) {
+        loadingDiv.textContent = `Loading area ${areaId}...`;
         try {
-          await loadBoothContent(boothId);
-          loadedBooths.push(boothId);
+          await loadAreaContent(areaId);
+          loadedAreas.push(areaId);
         } catch (error) {
-          // Booth file doesn't exist - create empty space
-          console.log(`Booth ${boothId} not available - leaving empty`);
+          console.log(`Area ${areaId} not available - leaving empty`);
         }
       }
       
       loadingDiv.style.display = 'none';
-      // Hide instructions on mobile, show on desktop
       if (!isMobile) {
         document.getElementById('instructions').textContent = 
-          `Loaded ${loadedBooths.length} booth(s) | Use WASD to move and mouse to look around`;
+          `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | R: Reset`;
       } else {
         document.getElementById('instructions').style.display = 'none';
       }
+      
+      console.log(`&#127881; Museum loaded with ${loadedAreas.length} areas:`, loadedAreas);
     }
 
-    async function loadBoothContent(boothId) {
+    async function loadAreaContent(areaId) {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        // CORRECTED PATH: booth files are in universe/ folder
-        script.src = `universe/trade-booths/booth${boothId}.js`;
+        // FIXED: Correct path to area files
+        script.src = `universe/museum-sections/museum${areaId}.js`;
         
         script.onload = () => {
-          // Position the booth in the hall
-          positionBooth(boothId);
-          currentBooths.push(boothId);
-          console.log(`&#10003; Booth ${boothId} loaded successfully`);
-          resolve();
+          // Wait a frame to ensure the area group is created
+          setTimeout(() => {
+            // FIXED: Look for correct group name (museum1a, not museum-1a)
+            const areaGroup = scene.getObjectByName(`museum${areaId}`);
+            if (areaGroup) {
+              console.log(`&#9989; Found area group: museum${areaId} with ${areaGroup.children.length} children`);
+              positionArea(areaId);
+              currentAreas.push(areaId);
+              console.log(`&#9989; Area ${areaId} loaded successfully`);
+              resolve();
+            } else {
+              console.error(`&#10060; Area group museum${areaId} not found after loading script`);
+              reject(new Error(`Area group not found: museum${areaId}`));
+            }
+          }, 0);
         };
         
         script.onerror = () => {
-          reject(new Error(`Booth ${boothId} file not found`));
+          reject(new Error(`Area ${areaId} file not found`));
         };
         
         document.head.appendChild(script);
       });
     }
 
-    function positionBooth(boothId) {
-      const boothGroup = scene.getObjectByName(`booth-${boothId}`);
-      if (boothGroup && BOOTH_POSITIONS[boothId]) {
-        boothGroup.position.copy(BOOTH_POSITIONS[boothId]);
+    function positionArea(areaId) {
+      const areaGroup = scene.getObjectByName(`museum${areaId}`);
+      if (areaGroup && AREA_POSITIONS[areaId]) {
+        const areaPosition = AREA_POSITIONS[areaId];
+        areaGroup.position.copy(areaPosition);
+        console.log(`&#128205; Positioned area ${areaId} at:`, areaPosition);
+        console.log(`&#128205; Area group has ${areaGroup.children.length} children`);
+        
+        // Force update of world matrices
+        areaGroup.updateMatrixWorld(true);
+      } else {
+        console.error(`&#10060; Could not position area ${areaId}`);
       }
     }
 
@@ -474,7 +497,7 @@
         previousMouseX = e.clientX;
         previousMouseY = e.clientY;
         
-        // Horizontal rotation (yaw) - FIXED: now works in both directions
+        // Horizontal rotation (yaw)
         yaw -= deltaX * 0.002;
         
         // Vertical rotation (pitch) with limits
