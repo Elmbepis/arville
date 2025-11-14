@@ -164,6 +164,16 @@
     const ZOO_DEPTH = 400;
     const AREA_SIZE = 40;
 
+    // Camera boundaries for the park - APPLY TO BOTH DESKTOP AND MOBILE
+    const CAMERA_LIMITS = {
+      minX: -ZOO_WIDTH/2 + 5,  // 5 units buffer from edge
+      maxX: ZOO_WIDTH/2 - 5,
+      minZ: -ZOO_DEPTH/2 + 5,
+      maxZ: ZOO_DEPTH/2 - 5,
+      minY: 0.5,   // Minimum height (can't go underground)
+      maxY: 100    // Maximum flying height
+    };
+
 const AREA_POSITIONS = {
   // Row 1 (Back row) - Z = -150
   '1a': new THREE.Vector3(-75, 0, -150),  // Covers X: -100 to -50, Z: -200 to -100
@@ -721,6 +731,14 @@ function createRectangularPathway() {
         velocity.set(0, 0, 0);
       }
 
+      // Function to enforce camera boundaries
+      function enforceCameraBoundaries() {
+        // Apply boundaries to all platforms
+        camera.position.x = THREE.MathUtils.clamp(camera.position.x, CAMERA_LIMITS.minX, CAMERA_LIMITS.maxX);
+        camera.position.z = THREE.MathUtils.clamp(camera.position.z, CAMERA_LIMITS.minZ, CAMERA_LIMITS.maxZ);
+        camera.position.y = THREE.MathUtils.clamp(camera.position.y, CAMERA_LIMITS.minY, CAMERA_LIMITS.maxY);
+      }
+
       camera.userData.update = function () {
         velocity.x -= velocity.x * 0.25;
         velocity.z -= velocity.z * 0.25;
@@ -744,6 +762,9 @@ function createRectangularPathway() {
         camera.position.add(forward.multiplyScalar(velocity.z));
         camera.position.add(right.multiplyScalar(velocity.x));
         camera.position.y += velocity.y; // Apply vertical movement
+        
+        // Enforce camera boundaries for ALL platforms
+        enforceCameraBoundaries();
         
         // Keep minimum height but allow flying high
         camera.position.y = Math.max(0.5, camera.position.y);

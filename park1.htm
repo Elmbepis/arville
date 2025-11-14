@@ -140,7 +140,18 @@
     const PARK_WIDTH = 200;
     const PARK_DEPTH = 400;
     const AREA_SIZE = 40;
-
+    
+    // Camera boundaries for the park - APPLY TO BOTH DESKTOP AND MOBILE
+    const CAMERA_LIMITS = {
+      minX: -PARK_WIDTH/2 + 5,  // 5 units buffer from edge
+      maxX: PARK_WIDTH/2 - 5,
+      minZ: -PARK_DEPTH/2 + 5,
+      maxZ: PARK_DEPTH/2 - 5,
+      minY: 0.5,   // Minimum height (can't go underground)
+      maxY: 100    // Maximum flying height
+    };
+    
+    
 const AREA_POSITIONS = {
   // Left side, back row (negative Z) - KEEP ORIGINAL
   '1a': new THREE.Vector3(-60, 0, -150),  // Left-back
@@ -189,14 +200,6 @@ const AREA_POSITIONS = {
   '1t': new THREE.Vector3(20, 0, 150),    // Right-center-front
   '1u': new THREE.Vector3(60, 0, 150),    // Right-front
 };
-
-    // Camera boundaries for the park
-    const MOBILE_CAMERA_LIMITS = {
-      minX: -PARK_WIDTH/2,
-      maxX: PARK_WIDTH/2,
-      minZ: -PARK_DEPTH/2,
-      maxZ: PARK_DEPTH/2
-    };
 
     // Detect if device is mobile/touch
     const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
@@ -300,7 +303,7 @@ const AREA_POSITIONS = {
     }
 
     function createOvalActivityArea() {
-      console.log('&#128260; Creating activity area with proper frame...');
+      console.log('&#128295; Creating activity area with proper frame...');
       
       const activityWidth = 90;
       const activityLength = 40;
@@ -381,7 +384,7 @@ const AREA_POSITIONS = {
       rightBar.position.set(activityPosition.x + halfW + frameThickness / 2, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z);
       scene.add(rightBar);
 
-      console.log('&#127959;&#65039; Activity area created with proper frame at:', activityPosition);
+      console.log('&#128736;&#65039; Activity area created with proper frame at:', activityPosition);
     }
 
     function createOvalPathway() {
@@ -548,7 +551,7 @@ function createRoads() {
         script.src = 'universe/obj_create_park.js?v=' + Date.now();
         
         script.onload = function() {
-          console.log('&#10003; obj_create_park.js loaded successfully');
+          console.log('&#9989; obj_create_park.js loaded successfully');
           if (!window.textureLoader) {
             window.textureLoader = new THREE.TextureLoader();
           }
@@ -559,7 +562,7 @@ function createRoads() {
         };
         
         script.onerror = function() {
-          console.error('&#10007; Failed to load obj_create_park.js');
+          console.error('&#10060; Failed to load obj_create_park.js');
           reject(new Error('Failed to load object creator script'));
         };
         
@@ -609,7 +612,7 @@ function createRoads() {
               console.log(`&#9989; Found area group: area-${areaId} with ${areaGroup.children.length} children`);
               positionArea(areaId);
               currentAreas.push(areaId);
-              console.log(`&#10003; Area ${areaId} loaded successfully`);
+              console.log(`&#9989; Area ${areaId} loaded successfully`);
               resolve();
             } else {
               console.error(`&#10060; Area group area-${areaId} not found after loading script`);
@@ -834,6 +837,14 @@ function createRoads() {
         velocity.set(0, 0, 0);
       }
 
+      // Function to enforce camera boundaries
+      function enforceCameraBoundaries() {
+        // Apply boundaries to all platforms
+        camera.position.x = THREE.MathUtils.clamp(camera.position.x, CAMERA_LIMITS.minX, CAMERA_LIMITS.maxX);
+        camera.position.z = THREE.MathUtils.clamp(camera.position.z, CAMERA_LIMITS.minZ, CAMERA_LIMITS.maxZ);
+        camera.position.y = THREE.MathUtils.clamp(camera.position.y, CAMERA_LIMITS.minY, CAMERA_LIMITS.maxY);
+      }
+
       camera.userData.update = function () {
         velocity.x -= velocity.x * 0.25;
         velocity.z -= velocity.z * 0.25;
@@ -858,14 +869,8 @@ function createRoads() {
         camera.position.add(right.multiplyScalar(velocity.x));
         camera.position.y += velocity.y; // Apply vertical movement
         
-        // Keep minimum height but allow flying high
-        camera.position.y = Math.max(0.5, camera.position.y);
-
-        // On mobile, enforce camera boundaries (except vertical)
-        if (isMobile) {
-          camera.position.x = THREE.MathUtils.clamp(camera.position.x, MOBILE_CAMERA_LIMITS.minX, MOBILE_CAMERA_LIMITS.maxX);
-          camera.position.z = THREE.MathUtils.clamp(camera.position.z, MOBILE_CAMERA_LIMITS.minZ, MOBILE_CAMERA_LIMITS.maxZ);
-        }
+        // Enforce camera boundaries for ALL platforms
+        enforceCameraBoundaries();
       };
     }
 
