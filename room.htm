@@ -118,6 +118,8 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="universe/js/GLTFLoader.js"></script>
+  <script src="universe/js/animation-controller.js"></script>
   <script src="universe/js/navigation.js"></script>
 
   <script>
@@ -152,8 +154,6 @@
       scene = new THREE.Scene();
 
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      // UPDATED: Camera start position for 40x50 room
-      camera.position.set(-19, EYE_HEIGHT, 24);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -185,20 +185,21 @@
       dirLight3.position.set(0, 15, 0);
       scene.add(dirLight3);
       
-      // Initialize texture loader and create room
+      // Initialize texture loader
       if (!window.textureLoader) {
         window.textureLoader = new THREE.TextureLoader();
       }
       
-      createRoom();
+      // Create basic room structure (without textures)
+      createRoomStructure();
 
       // Get room number from URL parameter
       const roomNumber = getRoomNumber();
       console.log(`&#128269; Loading room ${roomNumber} from URL parameter`);
 
-      // NEW: Load object creator and then room objects
+      // Load object creator and then room objects (which will now handle room textures)
       loadObjectCreator().then(() => {
-        console.log(`&#9989; Object creator loaded, now loading room ${roomNumber} objects...`);
+        console.log(`&#9989; Object creator loaded, now loading room ${roomNumber} objects and textures...`);
         return loadRoomObjects(roomNumber);
       }).catch((error) => {
         console.error('&#10060; Failed to load object creator:', error);
@@ -248,142 +249,71 @@
       camera.position.y = EYE_HEIGHT;
     }
 
-    function createRoom() {
+    // UPDATED: Create only the basic room structure without textures
+    function createRoomStructure() {
       // UPDATED: Room dimensions for 40x50
       const roomWidth = 40;
       const roomDepth = 50;
       const wallHeight = 16;
 
-      // Floor - with texture using the initialized textureLoader
-      let floorMat;
-      if (window.textureLoader) {
-        try {
-          // CORRECTED PATH: textures are in universe/textures/
-          const floorTexture = window.textureLoader.load('universe/textures/room1-floor.jpg');
-          floorTexture.wrapS = THREE.RepeatWrapping;
-          floorTexture.wrapT = THREE.RepeatWrapping;
-          // UPDATED: Texture repeat for 40x50 room
-          floorTexture.repeat.set(25, 25);
-          
-          // Use Lambert material for completely non-reflective surface
-          floorMat = new THREE.MeshLambertMaterial({ 
-            map: floorTexture
-          });
-          console.log('&#9989; Floor texture loaded successfully');
-        } catch (error) {
-          console.error('&#10060; Failed to load floor texture, using fallback:', error);
-          floorMat = new THREE.MeshLambertMaterial({ 
-            color: 0x555555
-          });
-        }
-      } else {
-        // Fallback if textureLoader not available
-        console.log('Texture loader not available, using fallback floor color');
-        floorMat = new THREE.MeshLambertMaterial({ 
-          color: 0x555555
-        });
-      }
+      // Create basic placeholder materials (will be replaced by room-specific textures)
+      const placeholderMat = new THREE.MeshLambertMaterial({ 
+        color: 0x888888,
+        transparent: true,
+        opacity: 0.3
+      });
 
-      const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), floorMat);
+      const placeholderWallMat = new THREE.MeshLambertMaterial({ 
+        color: 0xaaaaaa,
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.DoubleSide
+      });
+
+      // Floor - placeholder (will be textured by room file)
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), placeholderMat);
       floor.rotation.x = -Math.PI / 2;
+      floor.name = 'room-floor';
       scene.add(floor);
 
-      // Walls with texture - IMPROVED: Double-sided materials
-      let wallMat;
-      if (window.textureLoader) {
-        try {
-          // CORRECTED PATH: textures are in universe/textures/
-          const wallTexture = window.textureLoader.load('universe/textures/room1-walls.jpg');
-          wallTexture.wrapS = THREE.RepeatWrapping;
-          wallTexture.wrapT = THREE.RepeatWrapping;
-          // UPDATED: Texture repeat for 40x50 room
-          wallTexture.repeat.set(8, 2);
-          
-          wallMat = new THREE.MeshStandardMaterial({ 
-            map: wallTexture,
-            roughness: 0.8,
-            side: THREE.DoubleSide  // FIX: Make walls double-sided
-          });
-          console.log('&#9989; Hall wall texture loaded successfully');
-        } catch (error) {
-          console.error('&#10060; Failed to load hall wall texture, using fallback color:', error);
-          wallMat = new THREE.MeshStandardMaterial({ 
-            color: 0xaaaaaa, 
-            roughness: 0.6,
-            side: THREE.DoubleSide  // FIX: Make fallback walls double-sided too
-          });
-        }
-      } else {
-        console.log('&#9888;&#65039; Texture loader not available, using fallback wall color');
-        wallMat = new THREE.MeshStandardMaterial({ 
-          color: 0xaaaaaa, 
-          roughness: 0.6,
-          side: THREE.DoubleSide  // FIX: Make fallback walls double-sided too
-        });
-      }
-      
-      // Back wall (40 units wide)
-      const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), wallMat);
+      // Walls - placeholders (will be textured by room file)
+      const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), placeholderWallMat);
       backWall.position.set(0, wallHeight / 2, -roomDepth / 2);
+      backWall.name = 'room-back-wall';
       scene.add(backWall);
 
-      // Front wall (40 units wide)
-      const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), wallMat);
+      const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), placeholderWallMat);
       frontWall.position.set(0, wallHeight / 2, roomDepth / 2);
       frontWall.rotation.y = Math.PI; // Face inward
+      frontWall.name = 'room-front-wall';
       scene.add(frontWall);
 
-      // Left wall (50 units wide)
-      const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), wallMat);
+      const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), placeholderWallMat);
       leftWall.rotation.y = Math.PI / 2;
       leftWall.position.set(-roomWidth / 2, wallHeight / 2, 0);
+      leftWall.name = 'room-left-wall';
       scene.add(leftWall);
 
-      // Right wall (50 units wide)
-      const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), wallMat);
+      const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), placeholderWallMat);
       rightWall.rotation.y = -Math.PI / 2;
       rightWall.position.set(roomWidth / 2, wallHeight / 2, 0);
+      rightWall.name = 'room-right-wall';
       scene.add(rightWall);
 
-      // Ceiling - with texture
-      let ceilingMat;
-      if (window.textureLoader) {
-        try {
-          const ceilingTexture = window.textureLoader.load('universe/textures/room1-ceiling.jpg');
-          ceilingTexture.wrapS = THREE.RepeatWrapping;
-          ceilingTexture.wrapT = THREE.RepeatWrapping;
-          // UPDATED: Texture repeat for 40x50 room
-          ceilingTexture.repeat.set(4, 5);
-          
-          ceilingMat = new THREE.MeshStandardMaterial({ 
-            map: ceilingTexture,
-            roughness: 0.9
-          });
-          console.log('&#9989; Ceiling texture loaded successfully');
-        } catch (error) {
-          console.error('&#10060; Failed to load ceiling texture, using fallback:', error);
-          ceilingMat = new THREE.MeshStandardMaterial({ 
-            color: 0xdddddd, 
-            roughness: 0.9 
-          });
-        }
-      } else {
-        ceilingMat = new THREE.MeshStandardMaterial({ 
-          color: 0xdddddd, 
-          roughness: 0.9 
-        });
-      }
-
+      // Ceiling - placeholder (will be textured by room file)
       const ceiling = new THREE.Mesh(
         new THREE.PlaneGeometry(roomWidth, roomDepth),
-        ceilingMat
+        placeholderMat
       );
       ceiling.rotation.x = Math.PI / 2;
       ceiling.position.y = wallHeight;
+      ceiling.name = 'room-ceiling';
       scene.add(ceiling);
+
+      console.log('&#9989; Basic room structure created (awaiting room-specific textures)');
     }
 
-    // NEW: Load object creator
+    // Function to load object creator
     function loadObjectCreator() {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -413,7 +343,7 @@
     // UPDATED: Load room objects from file based on room number
     function loadRoomObjects(roomNumber) {
       const loadingDiv = document.getElementById('loading');
-      loadingDiv.textContent = `Loading room ${roomNumber} objects...`;
+      loadingDiv.textContent = `Loading room ${roomNumber} objects and textures...`;
 
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -426,7 +356,13 @@
               document.getElementById('instructions').textContent = 
                 `Room ${roomNumber} ready | Use WASD to move and mouse to look around`;
             }
-            console.log(`&#9989; Room ${roomNumber} objects loaded successfully`);
+            console.log(`&#9989; Room ${roomNumber} objects and textures loaded successfully`);
+            
+            // Fix animations after room objects are loaded
+            setTimeout(() => {
+              fixAllAnimations();
+            }, 1000);
+            
             resolve();
           }, 0);
         };
@@ -437,12 +373,64 @@
             document.getElementById('instructions').textContent = 
               `Room ${roomNumber} ready (no objects) | Use WASD to move and mouse to look around`;
           }
-          console.log(`&#8505;&#65039; No room ${roomNumber} objects file found - room is empty`);
-          resolve(); // Don't reject, just continue with empty room
+          console.log(`&#8505;&#65039; No room ${roomNumber} objects file found - room has basic structure only`);
+          
+          // Fix animations even if no room objects
+          setTimeout(() => {
+            fixAllAnimations();
+          }, 1000);
+          
+          resolve(); // Don't reject, just continue with basic room
         };
         
         document.head.appendChild(script);
       });
+    }
+
+    // NEW: Helper function for room files to apply textures to room structures
+    window.applyRoomTexture = function(meshName, texturePath, repeatX = 1, repeatY = 1) {
+      const mesh = scene.getObjectByName(meshName);
+      if (mesh && window.textureLoader) {
+        try {
+          const texture = window.textureLoader.load(texturePath);
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(repeatX, repeatY);
+          
+          mesh.material = new THREE.MeshLambertMaterial({ 
+            map: texture,
+            side: mesh.material.side // Preserve double-sided setting for walls
+          });
+          console.log(`&#9989; Applied texture to ${meshName}: ${texturePath}`);
+        } catch (error) {
+          console.error(`&#10060; Failed to apply texture to ${meshName}:`, error);
+        }
+      } else {
+        console.warn(`&#9888;&#65039; Mesh ${meshName} not found or texture loader not available`);
+      }
+    };
+
+    // NEW: Fix animation looping for all GLB models
+    function fixAllAnimations() {
+      let fixedCount = 0;
+      scene.traverse((child) => {
+        if (child.userData?.animations) {
+          const animData = child.userData.animations;
+          
+          // Fix all animations to loop properly
+          animData.actions.forEach((action, name) => {
+            action.setLoop(THREE.LoopRepeat);
+            action.clampWhenFinished = false;
+          });
+          
+          fixedCount++;
+          console.log(`&#9989; Fixed animations for: ${child.name}`);
+        }
+      });
+      
+      if (fixedCount > 0) {
+        console.log(`&#127917; Fixed animations for ${fixedCount} model(s)`);
+      }
     }
 
     function onWindowResize() {
@@ -454,7 +442,20 @@
     function animate() {
       requestAnimationFrame(animate);
       const delta = clock.getDelta();
+      
+      // Update navigation controls
       if (camera.userData.update) camera.userData.update();
+      
+      // Update animation priorities (pauses distant models)
+      if (window.animationController) {
+        window.animationController.update(camera);
+      }
+      
+      // Update all animations
+      if (window.updateAllAnimations) {
+        window.updateAllAnimations(delta);
+      }
+      
       renderer.render(scene, camera);
     }
   </script>

@@ -212,25 +212,25 @@ function setupControls(camera, EYE_HEIGHT, placeWidth, placeDepth, speedMultipli
         }
     }
 
-    function resetCamera() {
-        if (INITIAL_CAMERA_POSITION && INITIAL_CAMERA_ROTATION) {
-            // Reset to the stored initial position and rotation
-            camera.position.copy(INITIAL_CAMERA_POSITION);
-            camera.rotation.copy(INITIAL_CAMERA_ROTATION);
-            
-            // Also reset yaw and pitch to match the initial rotation
-            yaw = INITIAL_CAMERA_ROTATION.y;
-            pitch = INITIAL_CAMERA_ROTATION.x;
-        } else {
-            // Fallback to original behavior if initial values aren't set
-            camera.position.set(0, EYE_HEIGHT, 0);
-            camera.rotation.set(0, 0, 0);
-            yaw = 0;
-            pitch = 0;
-        }
+function resetCamera() {
+    if (window.ROOM_INITIAL_POSITION && window.ROOM_INITIAL_ROTATION) {
+        // Reset to the stored room-specific position and rotation
+        camera.position.copy(window.ROOM_INITIAL_POSITION);
+        camera.rotation.copy(window.ROOM_INITIAL_ROTATION);
         
-        velocity.set(0, 0, 0);
+        // Also reset yaw and pitch to match the initial rotation
+        yaw = window.ROOM_INITIAL_ROTATION.y;
+        pitch = window.ROOM_INITIAL_ROTATION.x;
+    } else {
+        // Fallback to original behavior if room-specific values aren't set
+        camera.position.set(0, EYE_HEIGHT, 0);
+        camera.rotation.set(0, 0, 0);
+        yaw = 0;
+        pitch = 0;
     }
+    
+    velocity.set(0, 0, 0);
+}
 
     // Function to enforce camera boundaries
     function enforceCameraBoundaries() {
