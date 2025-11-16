@@ -6,6 +6,10 @@ const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 // Camera boundaries will be set by the main HTML file
 let CAMERA_LIMITS = null;
 
+// Store initial camera position and rotation
+let INITIAL_CAMERA_POSITION = null;
+let INITIAL_CAMERA_ROTATION = null;
+
 function setupControls(camera, EYE_HEIGHT, placeWidth, placeDepth, speedMultiplier = 1.0) {
     // Set camera limits based on provided dimensions
     CAMERA_LIMITS = {
@@ -30,6 +34,15 @@ function setupControls(camera, EYE_HEIGHT, placeWidth, placeDepth, speedMultipli
     const moveSpeed = (isMobile ? 0.05 : 0.1) * speedMultiplier;
     const strafeSpeed = (isMobile ? 0.012 : 0.042) * speedMultiplier;
     const MAX_PITCH = 15 * (Math.PI / 180);
+    
+    // Store initial camera position and rotation if not already set
+    if (!INITIAL_CAMERA_POSITION) {
+        INITIAL_CAMERA_POSITION = camera.position.clone();
+        INITIAL_CAMERA_ROTATION = camera.rotation.clone();
+        // Also store initial yaw and pitch values
+        yaw = camera.rotation.y;
+        pitch = camera.rotation.x;
+    }
     
     // --- DESKTOP CONTROLS ---
     document.addEventListener("mousedown", (e) => {
@@ -200,10 +213,22 @@ function setupControls(camera, EYE_HEIGHT, placeWidth, placeDepth, speedMultipli
     }
 
     function resetCamera() {
-        camera.position.set(0, EYE_HEIGHT, 0); // Reset to area 1a
-        camera.rotation.set(0, 0, 0);
-        yaw = 0;
-        pitch = 0;
+        if (INITIAL_CAMERA_POSITION && INITIAL_CAMERA_ROTATION) {
+            // Reset to the stored initial position and rotation
+            camera.position.copy(INITIAL_CAMERA_POSITION);
+            camera.rotation.copy(INITIAL_CAMERA_ROTATION);
+            
+            // Also reset yaw and pitch to match the initial rotation
+            yaw = INITIAL_CAMERA_ROTATION.y;
+            pitch = INITIAL_CAMERA_ROTATION.x;
+        } else {
+            // Fallback to original behavior if initial values aren't set
+            camera.position.set(0, EYE_HEIGHT, 0);
+            camera.rotation.set(0, 0, 0);
+            yaw = 0;
+            pitch = 0;
+        }
+        
         velocity.set(0, 0, 0);
     }
 

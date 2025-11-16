@@ -118,22 +118,32 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="universe/js/navigation.js"></script>
 
   <script>
     let scene, camera, renderer;
     const clock = new THREE.Clock();
     const EYE_HEIGHT = 5.5;
 
+    // Museum dimensions for navigation
+    const PLACE_WIDTH = 40;
+    const PLACE_DEPTH = 50;
+
     // UPDATED: Camera boundaries for 40x50 room
-    const CAMERA_BOUNDARIES = {
+    const MUSEUM_CAMERA_LIMITS = {
       minX: -19,  // Left wall boundary
       maxX: 19,   // Right wall boundary
       minZ: -24,  // Back wall boundary
       maxZ: 24    // Front wall boundary
     };
 
-    // Detect if device is mobile/touch
-    const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    // Function to get URL parameter
+    function getRoomNumber() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomNum = urlParams.get('num');
+      // Default to room1 if no parameter or invalid parameter
+      return roomNum && !isNaN(roomNum) && roomNum > 0 ? roomNum : '1';
+    }
 
     init();
     animate();
@@ -143,20 +153,15 @@
 
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
       // UPDATED: Camera start position for 40x50 room
-      camera.position.set(0, EYE_HEIGHT, 0);
+      camera.position.set(-19, EYE_HEIGHT, 24);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setClearColor(0x202020);
       document.body.appendChild(renderer.domElement);
 
-      // Show mobile controls only on mobile devices and hide all messages
-      if (isMobile) {
-        document.getElementById("mobile-controls").style.display = "block";
-        document.getElementById("info").style.display = "none";
-        document.getElementById("instructions").style.display = "none";
-        document.body.style.touchAction = "none";
-      }
+      // Initialize mobile controls using the shared navigation.js
+      initMobileControls();
 
       // IMPROVED LIGHTING - Balanced from multiple directions
       const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
@@ -187,18 +192,60 @@
       
       createRoom();
 
+      // Get room number from URL parameter
+      const roomNumber = getRoomNumber();
+      console.log(`&#128269; Loading room ${roomNumber} from URL parameter`);
+
       // NEW: Load object creator and then room objects
       loadObjectCreator().then(() => {
-        console.log('&#9989; Object creator loaded, now loading room objects...');
-        return loadRoomObjects();
+        console.log(`&#9989; Object creator loaded, now loading room ${roomNumber} objects...`);
+        return loadRoomObjects(roomNumber);
       }).catch((error) => {
         console.error('&#10060; Failed to load object creator:', error);
         // Fallback: try to load room objects anyway
-        loadRoomObjects();
+        loadRoomObjects(roomNumber);
       });
 
-      setupControls();
+      // Use the shared navigation controls - pass PLACE dimensions with slower speed for indoor navigation
+      setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
+      
+      // OVERRIDE: Replace the navigation.js boundary enforcement with museum-specific boundaries
+      overrideNavigationBoundaries();
+      
       window.addEventListener("resize", onWindowResize);
+    }
+
+    // OVERRIDE FUNCTION: Replace navigation.js boundary enforcement with museum-specific boundaries
+    function overrideNavigationBoundaries() {
+      // Store the original update function
+      const originalUpdate = camera.userData.update;
+      
+      // Replace with museum-specific boundaries
+      camera.userData.update = function() {
+        // Call the original navigation update to get movement
+        originalUpdate.call(this);
+        
+        // Now apply museum-specific boundaries
+        applyMuseumBoundaries();
+      };
+    }
+
+    // MUSEUM-SPECIFIC BOUNDARIES
+    function applyMuseumBoundaries() {
+      // Apply museum-specific camera boundaries (different from navigation.js)
+      camera.position.x = THREE.MathUtils.clamp(
+        camera.position.x, 
+        MUSEUM_CAMERA_LIMITS.minX, 
+        MUSEUM_CAMERA_LIMITS.maxX
+      );
+      camera.position.z = THREE.MathUtils.clamp(
+        camera.position.z, 
+        MUSEUM_CAMERA_LIMITS.minZ, 
+        MUSEUM_CAMERA_LIMITS.maxZ
+      );
+      
+      // Keep camera at eye height
+      camera.position.y = EYE_HEIGHT;
     }
 
     function createRoom() {
@@ -363,23 +410,23 @@
       });
     }
 
-    // NEW: Load room objects from single file
-    function loadRoomObjects() {
+    // UPDATED: Load room objects from file based on room number
+    function loadRoomObjects(roomNumber) {
       const loadingDiv = document.getElementById('loading');
-      loadingDiv.textContent = 'Loading room objects...';
+      loadingDiv.textContent = `Loading room ${roomNumber} objects...`;
 
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'universe/rooms/room1.js';
+        script.src = `universe/rooms/room${roomNumber}.js`;
         
         script.onload = () => {
           setTimeout(() => {
             loadingDiv.style.display = 'none';
             if (!isMobile) {
               document.getElementById('instructions').textContent = 
-                'Room ready | Use WASD to move and mouse to look around';
+                `Room ${roomNumber} ready | Use WASD to move and mouse to look around`;
             }
-            console.log('&#9989; Room objects loaded successfully');
+            console.log(`&#9989; Room ${roomNumber} objects loaded successfully`);
             resolve();
           }, 0);
         };
@@ -388,237 +435,14 @@
           loadingDiv.style.display = 'none';
           if (!isMobile) {
             document.getElementById('instructions').textContent = 
-              'Room ready (no objects) | Use WASD to move and mouse to look around';
+              `Room ${roomNumber} ready (no objects) | Use WASD to move and mouse to look around`;
           }
-          console.log('&#8505;&#65039; No room objects file found - room is empty');
+          console.log(`&#8505;&#65039; No room ${roomNumber} objects file found - room is empty`);
           resolve(); // Don't reject, just continue with empty room
         };
         
         document.head.appendChild(script);
       });
-    }
-
-    function setupControls() {
-      const moveState = { forward: false, backward: false, left: false, right: false };
-      const velocity = new THREE.Vector3();
-      const direction = new THREE.Vector3();
-      let yaw = 0;
-      let pitch = 0;
-      let isMouseDown = false;
-      let previousMouseX = 0;
-      let previousMouseY = 0;
-
-      // Different move speeds for mobile vs desktop
-      const moveSpeed = isMobile ? 0.015 : 0.03;
-      const strafeSpeed = isMobile ? 0.008 : 0.03;
-      const MAX_PITCH = 15 * (Math.PI / 180);
-
-      // --- DESKTOP CONTROLS - SWAPPED W/S ---
-      document.addEventListener("mousedown", (e) => {
-        isMouseDown = true;
-        previousMouseX = e.clientX;
-        previousMouseY = e.clientY;
-      });
-      document.addEventListener("mouseup", () => (isMouseDown = false));
-
-      document.addEventListener("mousemove", (e) => {
-        if (!isMouseDown) return;
-        
-        const deltaX = e.clientX - previousMouseX;
-        const deltaY = e.clientY - previousMouseY;
-        
-        previousMouseX = e.clientX;
-        previousMouseY = e.clientY;
-        
-        // Horizontal rotation (yaw)
-        yaw -= deltaX * 0.002;
-        
-        // Vertical rotation (pitch) with limits
-        pitch -= deltaY * 0.002;
-        pitch = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, pitch));
-        
-        // Apply rotations to camera
-        camera.rotation.set(pitch, yaw, 0, 'YXZ');
-      });
-
-      document.addEventListener("keydown", (e) => {
-        switch (e.code) {
-          // SWAPPED: W now moves backward, S moves forward
-          case "KeyS": moveState.forward = true; break;
-          case "KeyW": moveState.backward = true; break;
-          case "KeyD": moveState.left = true; break;
-          case "KeyA": moveState.right = true; break;
-          case "KeyR": resetCamera(); break;
-        }
-      });
-      document.addEventListener("keyup", (e) => {
-        switch (e.code) {
-          case "KeyS": moveState.forward = false; break;
-          case "KeyW": moveState.backward = false; break;
-          case "KeyD": moveState.left = false; break;
-          case "KeyA": moveState.right = false; break;
-        }
-      });
-
-      // --- MOBILE TOUCH CONTROLS (Only setup if mobile) ---
-      if (isMobile) {
-        let joystickActive = false;
-        let cameraTouchActive = false;
-        const joystickBase = document.getElementById('joystick-base');
-        const joystickHandle = document.getElementById('joystick-handle');
-        const joystickContainer = document.getElementById('joystick-container');
-        const cameraControlArea = document.getElementById('camera-control-area');
-        const centerTapArea = document.getElementById('center-tap-area');
-        
-        const joystickRect = joystickContainer.getBoundingClientRect();
-        const joystickCenter = {
-          x: joystickRect.left + joystickRect.width / 2,
-          y: joystickRect.top + joystickRect.height / 2
-        };
-        const maxJoystickDistance = 35;
-
-        // Touch start handler
-        document.addEventListener('touchstart', (e) => {
-          e.preventDefault();
-          const touch = e.touches[0];
-          const touchX = touch.clientX;
-          const touchY = touch.clientY;
-          
-          // Check if touch is within the circular joystick area only
-          const joystickRect = joystickContainer.getBoundingClientRect();
-          const joystickCenterX = joystickRect.left + joystickRect.width / 2;
-          const joystickCenterY = joystickRect.top + joystickRect.height / 2;
-          
-          const distanceFromCenter = Math.sqrt(
-            Math.pow(touchX - joystickCenterX, 2) + 
-            Math.pow(touchY - joystickCenterY, 2)
-          );
-          
-          // Only activate joystick if touch is within the circular base (40px radius)
-          if (distanceFromCenter <= 40) {
-            joystickActive = true;
-            updateJoystick(touch);
-          } else if (touchX > window.innerWidth * 0.6) {
-            // Right side - camera control only (rotation)
-            cameraTouchActive = true;
-            previousMouseX = touchX;
-          }
-        });
-
-        // Touch move handler
-        document.addEventListener('touchmove', (e) => {
-          e.preventDefault();
-          const touch = e.touches[0];
-          const touchX = touch.clientX;
-          const touchY = touch.clientY;
-          
-          if (joystickActive) {
-            // Check if finger is still in joystick area during movement
-            const joystickRect = joystickContainer.getBoundingClientRect();
-            const distanceFromCenter = Math.sqrt(
-              Math.pow(touchX - (joystickRect.left + joystickRect.width / 2), 2) + 
-              Math.pow(touchY - (joystickRect.top + joystickRect.height / 2), 2)
-            );
-            
-            // If finger left joystick area, deactivate it
-            if (distanceFromCenter > 40) {
-              joystickActive = false;
-              resetJoystick();
-            } else {
-              updateJoystick(touch);
-            }
-          }
-          
-          if (cameraTouchActive) {
-            const deltaX = touch.clientX - previousMouseX;
-            previousMouseX = touch.clientX;
-            yaw -= deltaX * 0.002;
-            camera.rotation.y = yaw;
-          }
-        });
-
-        function updateJoystick(touch) {
-          const touchX = touch.clientX;
-          const touchY = touch.clientY;
-          
-          const deltaX = touchX - joystickCenter.x;
-          const deltaY = touchY - joystickCenter.y;
-          
-          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-          const angle = Math.atan2(deltaY, deltaX);
-          
-          const limitedDistance = Math.min(distance, maxJoystickDistance);
-          
-          // Update joystick handle position
-          const handleX = limitedDistance * Math.cos(angle);
-          const handleY = limitedDistance * Math.sin(angle);
-          
-          joystickHandle.style.transform = `translate(${handleX}px, ${handleY}px)`;
-          
-          // Update movement state based on joystick position
-          const deadZone = 15;
-          
-          if (limitedDistance > deadZone) {
-            // SWAPPED: UP moves backward, DOWN moves forward
-            moveState.forward = deltaY > deadZone;    // DOWN moves forward
-            moveState.backward = deltaY < -deadZone;  // UP moves backward
-            
-            // REVERSED: Left/right controls swapped
-            moveState.left = deltaX > deadZone;    // RIGHT moves left
-            moveState.right = deltaX < -deadZone;  // LEFT moves right
-          } else {
-            moveState.forward = moveState.backward = moveState.left = moveState.right = false;
-          }
-        }
-
-        function resetJoystick() {
-          joystickHandle.style.transform = 'translate(0, 0)';
-          moveState.forward = moveState.backward = moveState.left = moveState.right = false;
-        }
-      }
-
-      // UPDATED: Reset camera position for 40x50 room
-      function resetCamera() {
-        camera.position.set(12, EYE_HEIGHT, 23);
-        camera.rotation.set(0, 0, 0);
-        yaw = 0;
-        pitch = 0;
-        velocity.set(0, 0, 0);
-      }
-
-      camera.userData.update = function () {
-        velocity.x -= velocity.x * 0.25;
-        velocity.z -= velocity.z * 0.25;
-
-        direction.z = Number(moveState.forward) - Number(moveState.backward);
-        direction.x = Number(moveState.right) - Number(moveState.left);
-        direction.normalize();
-
-        // Apply different speeds for forward/backward vs left/right on mobile
-        if (moveState.forward || moveState.backward) velocity.z -= direction.z * moveSpeed;
-        if (moveState.left || moveState.right) velocity.x -= direction.x * (isMobile ? strafeSpeed : moveSpeed);
-
-        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-        forward.y = 0; right.y = 0;
-        forward.normalize(); right.normalize();
-
-        camera.position.add(forward.multiplyScalar(velocity.z));
-        camera.position.add(right.multiplyScalar(velocity.x));
-        camera.position.y = EYE_HEIGHT;
-
-        // Enforce camera boundaries for ALL devices (desktop and mobile)
-        camera.position.x = THREE.MathUtils.clamp(
-          camera.position.x, 
-          CAMERA_BOUNDARIES.minX, 
-          CAMERA_BOUNDARIES.maxX
-        );
-        camera.position.z = THREE.MathUtils.clamp(
-          camera.position.z, 
-          CAMERA_BOUNDARIES.minZ, 
-          CAMERA_BOUNDARIES.maxZ
-        );
-      };
     }
 
     function onWindowResize() {
