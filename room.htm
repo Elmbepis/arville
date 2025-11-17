@@ -40,21 +40,22 @@
       z-index: 100;
     }
     
-    /* Debug Console - Only shown on mobile */
+    /* Debug Console - Completely invisible on mobile */
     #debug-console {
       position: absolute;
       top: 60px;
       left: 10px;
       width: 300px;
       height: 200px;
-      background: rgba(0,0,0,0.9);
-      color: lime;
+      background: rgba(0,0,0,0); /* Completely transparent */
+      color: rgba(0,0,0,0); /* Completely transparent text */
       padding: 10px;
       font-size: 12px;
       z-index: 1000;
       overflow-y: auto;
-      border: 1px solid lime;
+      border: 1px solid rgba(0,0,0,0); /* Invisible border */
       display: none;
+      pointer-events: none; /* Prevent interaction */
     }
     
     /* Mobile Controls - Hidden by default */
@@ -140,13 +141,13 @@
     const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     let debugEnabled = isMobileDevice;
     
-    // DEBUG FUNCTION - Only active on mobile
+    // DEBUG FUNCTION - Only active on mobile but completely invisible
     function debugLog(message) {
       if (!debugEnabled) return;
       
       const timestamp = new Date().toLocaleTimeString();
       const debugMessage = `[${timestamp}] ${message}`;
-      console.log(debugMessage);
+      console.log(debugMessage); // Still logs to console for debugging
       
       const debugConsole = document.getElementById('debug-console');
       if (debugConsole) {
@@ -164,13 +165,13 @@
       }
     }
 
-    // Show debug console only on mobile
+    // Show debug console only on mobile (but it's invisible)
     if (isMobileDevice) {
       const debugConsole = document.getElementById('debug-console');
       if (debugConsole) {
         debugConsole.style.display = 'block';
       }
-      debugLog('Mobile device detected - debug enabled');
+      debugLog('Mobile device detected - debug enabled (invisible)');
     }
 
     // Global error handler
