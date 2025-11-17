@@ -146,8 +146,11 @@
       return roomNum && !isNaN(roomNum) && roomNum > 0 ? roomNum : '1';
     }
 
-    init();
-    animate();
+    // FIX: Wait for everything to be ready before starting
+    window.addEventListener('DOMContentLoaded', function() {
+      // Small delay to ensure all scripts are parsed
+      setTimeout(init, 100);
+    });
 
     function init() {
       scene = new THREE.Scene();
@@ -162,8 +165,10 @@
       renderer.setClearColor(0x202020);
       document.body.appendChild(renderer.domElement);
 
-      // Initialize mobile controls
-      initMobileControls();
+      // FIX: Check if mobile controls function exists before calling
+      if (typeof initMobileControls === 'function') {
+        initMobileControls();
+      }
 
       // Lighting setup
       const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
@@ -196,29 +201,38 @@
       // Get room number from URL parameter
       const roomNumber = getRoomNumber();
 
-      // Load object creator and room objects
-      loadObjectCreator().then(() => {
-        loadRoomObjects(roomNumber);
-      }).catch((error) => {
-        // Continue even if object creator fails
-        loadRoomObjects(roomNumber);
-      });
+      // FIX: Add small delay before loading objects to ensure everything is ready
+      setTimeout(() => {
+        loadObjectCreator().then(() => {
+          loadRoomObjects(roomNumber);
+        }).catch((error) => {
+          // Continue even if object creator fails
+          loadRoomObjects(roomNumber);
+        });
+      }, 200);
 
-      // Setup navigation controls
-      setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
-      overrideNavigationBoundaries();
+      // FIX: Check if setupControls exists before calling
+      if (typeof setupControls === 'function') {
+        setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
+        overrideNavigationBoundaries();
+      }
       
       window.addEventListener("resize", onWindowResize);
+      
+      // Start animation loop
+      animate();
     }
 
     // Override navigation boundaries with museum-specific ones
     function overrideNavigationBoundaries() {
-      const originalUpdate = camera.userData.update;
-      
-      camera.userData.update = function() {
-        if (originalUpdate) originalUpdate.call(this);
-        applyMuseumBoundaries();
-      };
+      if (camera.userData && camera.userData.update) {
+        const originalUpdate = camera.userData.update;
+        
+        camera.userData.update = function() {
+          if (originalUpdate) originalUpdate.call(this);
+          applyMuseumBoundaries();
+        };
+      }
     }
 
     function applyMuseumBoundaries() {
@@ -364,7 +378,9 @@
       requestAnimationFrame(animate);
       const delta = clock.getDelta();
       
-      if (camera.userData.update) camera.userData.update();
+      if (camera.userData && camera.userData.update) {
+        camera.userData.update();
+      }
       
       if (window.animationController) {
         window.animationController.update(camera);
