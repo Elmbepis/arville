@@ -143,20 +143,10 @@
     // Minimal debug function
     function debugLog(message) {
       if (!debugEnabled) return;
-      
       const debugConsole = document.getElementById('debug-console');
       if (debugConsole) {
         debugConsole.innerHTML += message + '<br>';
         debugConsole.scrollTop = debugConsole.scrollHeight;
-      }
-    }
-
-    // Disable debugging after scene loads
-    function disableDebugging() {
-      debugEnabled = false;
-      const debugConsole = document.getElementById('debug-console');
-      if (debugConsole) {
-        debugConsole.style.display = 'none';
       }
     }
 
@@ -171,7 +161,15 @@
   </script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    debugLog('Three.js loaded');
+  </script>
+
   <script src="universe/js/GLTFLoader.js"></script>
+  <script>
+    debugLog('GLTFLoader loaded');
+  </script>
+
   <script src="universe/js/animation-controller.js"></script>
   <script src="universe/js/navigation.js"></script>
 
@@ -197,7 +195,7 @@
     animate();
 
     function init() {
-      debugLog('Init start');
+      debugLog('Creating scene...');
       
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -222,13 +220,13 @@
       scene.add(hemiLight);
       scene.add(new THREE.AmbientLight(0xffffff, 0.8));
 
-      debugLog('Creating room');
       createRoomStructure();
 
       const roomNumber = getRoomNumber();
 
-      debugLog('Loading objects');
+      debugLog('Loading object creator...');
       loadObjectCreator().then(() => {
+        debugLog('Loading room objects...');
         loadRoomObjects(roomNumber);
       }).catch(() => {
         loadRoomObjects(roomNumber);
@@ -297,8 +295,6 @@
       ceiling.position.y = wallHeight;
       ceiling.name = 'room-ceiling';
       scene.add(ceiling);
-
-      debugLog('Room ready');
     }
 
     function loadObjectCreator() {
@@ -328,8 +324,9 @@
           if (!window.isMobile) {
             document.getElementById('instructions').textContent = `Room ${roomNumber} ready | Use WASD to move and mouse to look around`;
           }
-          debugLog('Complete');
-          setTimeout(disableDebugging, 500);
+          // Hide debug console after loading
+          const debugConsole = document.getElementById('debug-console');
+          if (debugConsole) debugConsole.style.display = 'none';
         }, 100);
       };
       
@@ -338,7 +335,9 @@
         if (!window.isMobile) {
           document.getElementById('instructions').textContent = `Room ${roomNumber} ready (no objects) | Use WASD to move and mouse to look around`;
         }
-        setTimeout(disableDebugging, 500);
+        // Hide debug console even if room file fails
+        const debugConsole = document.getElementById('debug-console');
+        if (debugConsole) debugConsole.style.display = 'none';
       };
       
       document.head.appendChild(script);
