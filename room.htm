@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Arville Virtual Movie Museum</title>
+
   <style>
     body {
       margin: 0;
@@ -11,6 +12,7 @@
       background: #000;
       font-family: Arial, sans-serif;
     }
+
     #info, #instructions {
       position: absolute;
       width: 100%;
@@ -18,20 +20,13 @@
       color: white;
       z-index: 10;
     }
-    #info {
-      top: 10px;
-      background: rgba(0,0,0,0.5);
-      padding: 5px;
-    }
-    #instructions {
-      bottom: 20px;
-      background: rgba(0,0,0,0.7);
-      padding: 10px;
-    }
+
+    #info { top: 10px; background: rgba(0,0,0,0.5); padding: 5px; }
+    #instructions { bottom: 20px; background: rgba(0,0,0,0.7); padding: 10px; }
+
     #loading {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       background: rgba(0,0,0,0.8);
       color: white;
@@ -39,93 +34,61 @@
       border-radius: 10px;
       z-index: 100;
     }
-    
-    /* Debug Console - Only shown on mobile */
-    #debug-console {
-      position: absolute;
-      top: 60px;
-      left: 10px;
-      width: 300px;
-      height: 200px;
-      background: rgba(0,0,0,0.9);
-      color: lime;
-      padding: 10px;
-      font-size: 12px;
-      z-index: 1000;
-      overflow-y: auto;
-      border: 1px solid lime;
-      display: none;
-    }
-    
-    /* Mobile Controls - Hidden by default */
+
+    /* MOBILE CONTROLS */
     #mobile-controls {
       display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
       pointer-events: none;
       z-index: 5;
     }
-    
+
     #joystick-container {
       position: absolute;
-      bottom: 100px;
-      left: 20px;
-      width: 120px;
-      height: 120px;
+      bottom: 100px; left: 20px;
+      width: 120px; height: 120px;
       pointer-events: auto;
     }
-    
+
     #joystick-base {
-      width: 80px;
-      height: 80px;
+      width: 80px; height: 80px;
       background: rgba(255,255,255,0.2);
       border-radius: 50%;
-      position: absolute;
       border: 2px solid rgba(255,255,255,0.5);
-      top: 20px;
-      left: 20px;
+      position: absolute; top: 20px; left: 20px;
     }
-    
+
     #joystick-handle {
-      width: 40px;
-      height: 40px;
+      width: 40px; height: 40px;
       background: rgba(255,255,255,0.7);
       border-radius: 50%;
-      position: absolute;
-      top: 40px;
-      left: 40px;
+      position: absolute; top: 40px; left: 40px;
       transition: transform 0.1s;
     }
-    
+
     #camera-control-area {
       position: absolute;
-      top: 0;
-      right: 0;
-      width: 40%;
-      height: 100%;
+      top: 0; right: 0;
+      width: 40%; height: 100%;
       pointer-events: auto;
     }
-    
+
     #center-tap-area {
       position: absolute;
-      top: 0;
-      left: 40%;
-      width: 20%;
-      height: 100%;
+      top: 0; left: 40%;
+      width: 20%; height: 100%;
       pointer-events: auto;
     }
   </style>
 </head>
+
 <body>
   <div id="info">Virtual Museum | WASD: Move | Mouse: Look Around | R: Reset Position</div>
   <div id="instructions">Loading museum...</div>
   <div id="loading">Preparing venue...</div>
-  <div id="debug-console">DEBUG CONSOLE:<br></div>
-  
-  <!-- Mobile Controls - Only shown on mobile devices -->
+
+  <!-- MOBILE CONTROLS -->
   <div id="mobile-controls">
     <div id="joystick-container">
       <div id="joystick-base"></div>
@@ -135,320 +98,243 @@
     <div id="center-tap-area"></div>
   </div>
 
-  <script>
-    // Only enable debugging on mobile
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    let debugEnabled = isMobileDevice;
-    
-    // DEBUG FUNCTION - Only active on mobile
-    function debugLog(message) {
-      if (!debugEnabled) return;
-      
-      const timestamp = new Date().toLocaleTimeString();
-      const debugMessage = `[${timestamp}] ${message}`;
-      console.log(debugMessage);
-      
-      const debugConsole = document.getElementById('debug-console');
-      if (debugConsole) {
-        debugConsole.innerHTML += debugMessage + '<br>';
-        debugConsole.scrollTop = debugConsole.scrollHeight;
-      }
-    }
-
-    // Function to disable debugging (called after scene loads)
-    function disableDebugging() {
-      debugEnabled = false;
-      const debugConsole = document.getElementById('debug-console');
-      if (debugConsole) {
-        debugConsole.style.display = 'none';
-      }
-    }
-
-    // Show debug console only on mobile
-    if (isMobileDevice) {
-      const debugConsole = document.getElementById('debug-console');
-      if (debugConsole) {
-        debugConsole.style.display = 'block';
-      }
-      debugLog('Mobile device detected - debug enabled');
-    }
-
-    // Global error handler
-    window.addEventListener('error', function(e) {
-      debugLog(`Error: ${e.message}`);
-    });
-
-    debugLog('Starting initialization...');
-  </script>
-
+  <!-- LIBRARIES -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script>
-    debugLog('Three.js loaded');
-  </script>
-
   <script src="universe/js/GLTFLoader.js"></script>
-  <script>
-    debugLog('GLTFLoader loaded');
-  </script>
-
   <script src="universe/js/animation-controller.js"></script>
   <script src="universe/js/navigation.js"></script>
 
-  <script>
-    let scene, camera, renderer;
-    const clock = new THREE.Clock();
-    const EYE_HEIGHT = 5.5;
+<script>
+/* =====================================================
+     GLOBAL VARIABLES
+===================================================== */
+let scene, camera, renderer;
+const clock = new THREE.Clock();
+const EYE_HEIGHT = 5.5;
 
-    // Museum dimensions for navigation
-    const PLACE_WIDTH = 40;
-    const PLACE_DEPTH = 50;
+const PLACE_WIDTH = 40;
+const PLACE_DEPTH = 50;
 
-    // Camera boundaries for 40x50 room
-    const MUSEUM_CAMERA_LIMITS = {
-      minX: -19,  // Left wall boundary
-      maxX: 19,   // Right wall boundary
-      minZ: -24,  // Back wall boundary
-      maxZ: 24    // Front wall boundary
+const LIMITS = {
+  minX: -19,
+  maxX: 19,
+  minZ: -24,
+  maxZ: 24
+};
+
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+/* =====================================================
+     ENTRY POINT
+===================================================== */
+
+window.addEventListener("DOMContentLoaded", () => {
+  init();
+  animate();
+});
+
+/* =====================================================
+     INITIALIZATION
+===================================================== */
+function init() {
+  // --- Scene ---
+  scene = new THREE.Scene();
+
+  // --- Camera ---
+  camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+  );
+
+  // --- Renderer ---
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x202020);
+  document.body.appendChild(renderer.domElement);
+
+  // --- Mobile Controls ---
+  if (isMobile) {
+    document.getElementById("mobile-controls").style.display = "block";
+    initMobileControls();  // guaranteed existing from navigation.js
+  }
+
+  // --- Lighting ---
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+  hemi.position.set(0, 20, 0);
+  scene.add(hemi);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+
+  // --- Additional light sources ---
+  addDirectionalLight(10, 15, 10, 0.6);
+  addDirectionalLight(-10, 15, -10, 0.4);
+  addDirectionalLight(0, 15, 0, 0.3);
+
+  if (!window.textureLoader) {
+    window.textureLoader = new THREE.TextureLoader();
+  }
+
+  createRoomStructure();
+
+  const roomNum = getRoomNumber();
+
+  // Load object builder, then load room
+  loadObjectCreator()
+    .then(() => loadRoomObjects(roomNum))
+    .catch(() => loadRoomObjects(roomNum));
+
+  // Player navigation
+  setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
+  overrideNavBoundaries();
+
+  window.addEventListener("resize", onWindowResize);
+}
+
+/* =====================================================
+     ROOM LOADING
+===================================================== */
+function loadObjectCreator() {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "universe/obj_create_room.js?v=" + Date.now();
+
+    s.onload = () => resolve();
+    s.onerror = () => reject();
+
+    document.head.appendChild(s);
+  });
+}
+
+function loadRoomObjects(num) {
+  return new Promise((resolve) => {
+    const loading = document.getElementById("loading");
+    loading.textContent = `Loading room ${num}...`;
+
+    const s = document.createElement("script");
+    s.src = `universe/rooms/room${num}.js`;
+
+    s.onload = () => {
+      loading.style.display = "none";
+      document.getElementById("instructions").textContent =
+        `Room ${num} ready | WASD + Mouse`;
+      resolve();
     };
 
-    // Function to get URL parameter
-    function getRoomNumber() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const roomNum = urlParams.get('num');
-      return roomNum && !isNaN(roomNum) && roomNum > 0 ? roomNum : '1';
-    }
-
-    init();
-    animate();
-
-    function init() {
-      debugLog('Creating scene...');
-      scene = new THREE.Scene();
-
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-      debugLog('Creating renderer...');
-      try {
-        renderer = new THREE.WebGLRenderer({ 
-          antialias: true,
-          powerPreference: "high-performance"
-        });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setClearColor(0x202020);
-        document.body.appendChild(renderer.domElement);
-        debugLog('Renderer created');
-      } catch (e) {
-        debugLog(`Renderer failed: ${e.message}`);
-        return;
-      }
-
-      debugLog('Initializing mobile controls...');
-      try {
-        initMobileControls();
-      } catch (e) {
-        debugLog(`Mobile controls failed: ${e.message}`);
-      }
-
-      // Lighting setup
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
-      hemiLight.position.set(0, 20, 0);
-      scene.add(hemiLight);
-
-      const ambient = new THREE.AmbientLight(0xffffff, 0.8);
-      scene.add(ambient);
-
-      debugLog('Creating room structure...');
-      createRoomStructure();
-
-      const roomNumber = getRoomNumber();
-
-      debugLog('Loading object creator...');
-      loadObjectCreator().then(() => {
-        debugLog('Loading room objects...');
-        loadRoomObjects(roomNumber);
-      }).catch((error) => {
-        debugLog('Object creator failed, continuing...');
-        loadRoomObjects(roomNumber);
-      });
-
-      debugLog('Setting up controls...');
-      setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
-      overrideNavigationBoundaries();
-      
-      window.addEventListener("resize", onWindowResize);
-    }
-
-    function overrideNavigationBoundaries() {
-      const originalUpdate = camera.userData.update;
-      
-      camera.userData.update = function() {
-        if (originalUpdate) originalUpdate.call(this);
-        applyMuseumBoundaries();
-      };
-    }
-
-    function applyMuseumBoundaries() {
-      camera.position.x = THREE.MathUtils.clamp(camera.position.x, MUSEUM_CAMERA_LIMITS.minX, MUSEUM_CAMERA_LIMITS.maxX);
-      camera.position.z = THREE.MathUtils.clamp(camera.position.z, MUSEUM_CAMERA_LIMITS.minZ, MUSEUM_CAMERA_LIMITS.maxZ);
-      camera.position.y = EYE_HEIGHT;
-    }
-
-    function createRoomStructure() {
-      const roomWidth = 40;
-      const roomDepth = 50;
-      const wallHeight = 16;
-
-      const placeholderMat = new THREE.MeshLambertMaterial({ 
-        color: 0x888888,
-        transparent: true,
-        opacity: 0.3
-      });
-
-      const placeholderWallMat = new THREE.MeshLambertMaterial({ 
-        color: 0xaaaaaa,
-        transparent: true,
-        opacity: 0.3,
-        side: THREE.DoubleSide
-      });
-
-      // Floor
-      const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), placeholderMat);
-      floor.rotation.x = -Math.PI / 2;
-      floor.name = 'room-floor';
-      scene.add(floor);
-
-      // Walls
-      const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), placeholderWallMat);
-      backWall.position.set(0, wallHeight / 2, -roomDepth / 2);
-      backWall.name = 'room-back-wall';
-      scene.add(backWall);
-
-      const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), placeholderWallMat);
-      frontWall.position.set(0, wallHeight / 2, roomDepth / 2);
-      frontWall.rotation.y = Math.PI;
-      frontWall.name = 'room-front-wall';
-      scene.add(frontWall);
-
-      const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), placeholderWallMat);
-      leftWall.rotation.y = Math.PI / 2;
-      leftWall.position.set(-roomWidth / 2, wallHeight / 2, 0);
-      leftWall.name = 'room-left-wall';
-      scene.add(leftWall);
-
-      const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), placeholderWallMat);
-      rightWall.rotation.y = -Math.PI / 2;
-      rightWall.position.set(roomWidth / 2, wallHeight / 2, 0);
-      rightWall.name = 'room-right-wall';
-      scene.add(rightWall);
-
-      // Ceiling
-      const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), placeholderMat);
-      ceiling.rotation.x = Math.PI / 2;
-      ceiling.position.y = wallHeight;
-      ceiling.name = 'room-ceiling';
-      scene.add(ceiling);
-
-      debugLog('Room structure created');
-    }
-
-    function loadObjectCreator() {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = 'universe/obj_create_room.js?v=' + Date.now();
-        
-        script.onload = function() {
-          if (!window.textureLoader) {
-            window.textureLoader = new THREE.TextureLoader();
-          }
-          if (window.initObjectTextures) {
-            window.initObjectTextures(window.textureLoader);
-          }
-          resolve();
-        };
-        
-        script.onerror = function() {
-          reject(new Error('Failed to load object creator script'));
-        };
-        
-        document.head.appendChild(script);
-      });
-    }
-
-    function loadRoomObjects(roomNumber) {
-      const loadingDiv = document.getElementById('loading');
-      loadingDiv.textContent = `Loading room ${roomNumber}...`;
-
-      const script = document.createElement('script');
-      script.src = `universe/rooms/room${roomNumber}.js`;
-      
-      script.onload = () => {
-        setTimeout(() => {
-          loadingDiv.style.display = 'none';
-          if (!window.isMobile) {
-            document.getElementById('instructions').textContent = 
-              `Room ${roomNumber} ready | Use WASD to move and mouse to look around`;
-          }
-          debugLog('Room loaded - disabling debug');
-          
-          // Disable debugging after successful load
-          setTimeout(disableDebugging, 500);
-        }, 100);
-      };
-      
-      script.onerror = () => {
-        loadingDiv.style.display = 'none';
-        if (!window.isMobile) {
-          document.getElementById('instructions').textContent = 
-            `Room ${roomNumber} ready (no objects) | Use WASD to move and mouse to look around`;
-        }
-        // Still disable debugging
-        setTimeout(disableDebugging, 500);
-      };
-      
-      document.head.appendChild(script);
-    }
-
-    window.applyRoomTexture = function(meshName, texturePath, repeatX = 1, repeatY = 1) {
-      const mesh = scene.getObjectByName(meshName);
-      if (mesh && window.textureLoader) {
-        try {
-          const texture = window.textureLoader.load(texturePath);
-          texture.wrapS = THREE.RepeatWrapping;
-          texture.wrapT = THREE.RepeatWrapping;
-          texture.repeat.set(repeatX, repeatY);
-          
-          mesh.material = new THREE.MeshLambertMaterial({ 
-            map: texture,
-            side: mesh.material.side
-          });
-        } catch (error) {
-          console.error('Failed to apply texture:', error);
-        }
-      }
+    s.onerror = () => {
+      loading.style.display = "none";
+      document.getElementById("instructions").textContent =
+        `Room ${num} loaded (empty)`;
+      resolve();
     };
 
-    function onWindowResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
+    document.head.appendChild(s);
+  });
+}
 
-    function animate() {
-      requestAnimationFrame(animate);
-      const delta = clock.getDelta();
-      
-      if (camera.userData.update) camera.userData.update();
-      
-      if (window.animationController) {
-        window.animationController.update(camera);
-      }
-      
-      if (window.updateAllAnimations) {
-        window.updateAllAnimations(delta);
-      }
-      
-      renderer.render(scene, camera);
+/* =====================================================
+     ROOM SHAPE
+===================================================== */
+function createRoomStructure() {
+  const W = 40, D = 50, H = 16;
+
+  const mat = new THREE.MeshLambertMaterial({ color: 0x888888, opacity: 0.3, transparent: true });
+  const matWall = new THREE.MeshLambertMaterial({ color: 0xaaaaaa, opacity: 0.3, transparent: true, side: THREE.DoubleSide });
+
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), mat);
+  floor.rotation.x = -Math.PI/2;
+  floor.name = "room-floor";
+  scene.add(floor);
+
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(W, H), matWall);
+  back.position.set(0, H/2, -D/2);
+  back.name = "room-back-wall";
+  scene.add(back);
+
+  const front = new THREE.Mesh(new THREE.PlaneGeometry(W, H), matWall);
+  front.position.set(0, H/2, D/2);
+  front.rotation.y = Math.PI;
+  front.name = "room-front-wall";
+  scene.add(front);
+
+  const left = new THREE.Mesh(new THREE.PlaneGeometry(D, H), matWall);
+  left.rotation.y = Math.PI/2;
+  left.position.set(-W/2, H/2, 0);
+  left.name = "room-left-wall";
+  scene.add(left);
+
+  const right = new THREE.Mesh(new THREE.PlaneGeometry(D, H), matWall);
+  right.rotation.y = -Math.PI/2;
+  right.position.set(W/2, H/2, 0);
+  right.name = "room-right-wall";
+  scene.add(right);
+
+  const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(W, D), mat);
+  ceiling.rotation.x = Math.PI/2;
+  ceiling.position.y = H;
+  ceiling.name = "room-ceiling";
+  scene.add(ceiling);
+}
+
+/* =====================================================
+     HELPERS
+===================================================== */
+function addDirectionalLight(x, y, z, intensity) {
+  const l = new THREE.DirectionalLight(0xffffff, intensity);
+  l.position.set(x, y, z);
+  scene.add(l);
+}
+
+function getRoomNumber() {
+  const p = new URLSearchParams(window.location.search);
+  const n = p.get("num");
+  return n && !isNaN(n) && n > 0 ? n : "1";
+}
+
+function overrideNavBoundaries() {
+  const original = camera.userData.update;
+
+  camera.userData.update = function () {
+    if (typeof original === "function") {
+      original.call(camera);
     }
-  </script>
+    applyBoundaries();
+  };
+}
+
+function applyBoundaries() {
+  camera.position.x = THREE.MathUtils.clamp(camera.position.x, LIMITS.minX, LIMITS.maxX);
+  camera.position.z = THREE.MathUtils.clamp(camera.position.z, LIMITS.minZ, LIMITS.maxZ);
+  camera.position.y = EYE_HEIGHT;
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+/* =====================================================
+     ANIMATE LOOP
+===================================================== */
+function animate() {
+  requestAnimationFrame(animate);
+
+  const delta = clock.getDelta();
+
+  if (camera.userData.update) camera.userData.update();
+
+  if (window.animationController) {
+    window.animationController.update(camera);
+  }
+
+  if (window.updateAllAnimations) {
+    window.updateAllAnimations(delta);
+  }
+
+  renderer.render(scene, camera);
+}
+</script>
 </body>
 </html>
