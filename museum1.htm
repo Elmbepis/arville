@@ -40,23 +40,6 @@
       z-index: 100;
     }
     
-    /* Debug Console - Visible for debugging */
-    #debug-console {
-      position: absolute;
-      top: 60px;
-      left: 10px;
-      width: 300px;
-      height: 200px;
-      background: rgba(0,0,0,0.9);
-      color: lime;
-      padding: 10px;
-      font-size: 12px;
-      z-index: 1000;
-      overflow-y: auto;
-      border: 1px solid lime;
-      display: block;
-    }
-    
     /* Mobile Controls - Hidden by default */
     #mobile-controls {
       display: none;
@@ -123,7 +106,6 @@
   <div id="info">Virtual Museum | WASD: Move | Mouse: Look Around | R: Reset Position</div>
   <div id="instructions">Loading museum...</div>
   <div id="loading">Preparing venue...</div>
-  <div id="debug-console">DEBUG CONSOLE:<br></div>
   
   <!-- Mobile Controls - Only shown on mobile devices -->
   <div id="mobile-controls">
@@ -135,42 +117,8 @@
     <div id="center-tap-area"></div>
   </div>
 
-  <script>
-    // DEBUG FUNCTION - Log to console AND screen
-    function debugLog(message) {
-      const timestamp = new Date().toLocaleTimeString();
-      const debugMessage = `[${timestamp}] ${message}`;
-      console.log(debugMessage);
-      
-      const debugConsole = document.getElementById('debug-console');
-      if (debugConsole) {
-        debugConsole.innerHTML += debugMessage + '<br>';
-        debugConsole.scrollTop = debugConsole.scrollHeight;
-      }
-      
-      const loadingDiv = document.getElementById('loading');
-      if (loadingDiv) {
-        loadingDiv.textContent = message;
-      }
-    }
-
-    // Global error handler
-    window.addEventListener('error', function(e) {
-      debugLog(`&#10060; GLOBAL ERROR: ${e.message} at ${e.filename}:${e.lineno}`);
-    });
-
-    debugLog('1. Script starting...');
-  </script>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script>
-    debugLog('2. Three.js loaded: ' + (typeof THREE !== 'undefined'));
-  </script>
-
   <script src="universe/js/navigation.js"></script>
-  <script>
-    debugLog('3. navigation.js loaded: ' + (typeof setupControls !== 'undefined'));
-  </script>
 
   <script>
     let scene, camera, renderer;
@@ -192,87 +140,72 @@
     // UPDATED: Area positions for 8 equal sections in 30x80 room
     const AREA_POSITIONS = {
       // Row 1 (Back sections) - Z = -30
-      '1a': new THREE.Vector3(-11.25, 0, -30),
-      '1b': new THREE.Vector3(-3.75, 0, -30),
-      '1c': new THREE.Vector3(3.75, 0, -30),
-      '1d': new THREE.Vector3(11.25, 0, -30),
+      '1a': new THREE.Vector3(-11.25, 0, -30),  // Covers X: -15 to -7.5, Z: -40 to -20
+      '1b': new THREE.Vector3(-3.75, 0, -30),   // Covers X: -7.5 to 0, Z: -40 to -20
+      '1c': new THREE.Vector3(3.75, 0, -30),    // Covers X: 0 to 7.5, Z: -40 to -20
+      '1d': new THREE.Vector3(11.25, 0, -30),   // Covers X: 7.5 to 15, Z: -40 to -20
       
       // Row 2 (Front sections) - Z = 30
-      '1e': new THREE.Vector3(-11.25, 0, 30),
-      '1f': new THREE.Vector3(-3.75, 0, 30),
-      '1g': new THREE.Vector3(3.75, 0, 30),
-      '1h': new THREE.Vector3(11.25, 0, 30)
+      '1e': new THREE.Vector3(-11.25, 0, 30),   // Covers X: -15 to -7.5, Z: 20 to 40
+      '1f': new THREE.Vector3(-3.75, 0, 30),    // Covers X: -7.5 to 0, Z: 20 to 40
+      '1g': new THREE.Vector3(3.75, 0, 30),     // Covers X: 0 to 7.5, Z: 20 to 40
+      '1h': new THREE.Vector3(11.25, 0, 30)     // Covers X: 7.5 to 15, Z: 20 to 40
     };
 
     // Simple function to get all area IDs
     function getAvailableAreas() {
-      return ['1a', '1e', ];
+      return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h'];
     }
 
     // Track loaded areas
     let currentAreas = [];
 
-    debugLog('4. Starting init()...');
     init();
-    debugLog('20. init() completed, starting animate()...');
     animate();
 
     function init() {
-      debugLog('5. init() - Creating scene...');
       scene = new THREE.Scene();
-      debugLog('6. init() - Scene created');
 
-      debugLog('7. init() - Creating camera...');
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
       camera.position.set(0, EYE_HEIGHT, 41.5);
-      debugLog('8. init() - Camera created');
 
-      debugLog('9. init() - Creating renderer...');
-      try {
-        renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setClearColor(0x202020);
-        document.body.appendChild(renderer.domElement);
-        debugLog('10. init() - Renderer created and added to DOM');
-      } catch (e) {
-        debugLog(`&#10060; init() - Renderer failed: ${e.message}`);
-        return;
-      }
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x202020);
+      document.body.appendChild(renderer.domElement);
       
-      window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 41.5);
+	  window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 41.5);
       window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0 * Math.PI / 180, 0, 'YXZ');
   
-      debugLog('11. init() - Initializing mobile controls...');
-      try {
-        initMobileControls();
-        debugLog('12. init() - Mobile controls initialized');
-      } catch (e) {
-        debugLog(`&#10060; init() - Mobile controls failed: ${e.message}`);
-      }
+      // Initialize mobile controls using the shared navigation.js
+      initMobileControls();
 
-      debugLog('13. init() - Setting up lighting...');
       // IMPROVED LIGHTING - Balanced from multiple directions
       const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.9);
-      hemiLight.position.set(0, 20, 0);
+      hemiLight.position.set(0, 20, 0);  // Centered above
       scene.add(hemiLight);
 
-      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+      // Increased ambient light for more even illumination
+      const ambient = new THREE.AmbientLight(0xffffff, 0.6);  // Slightly brighter
       scene.add(ambient);
 
+      // Balanced directional lights for left and right walls
       const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.6);
-      dirLight1.position.set(30, 12, 0);
+      dirLight1.position.set(30, 12, 0);  // Right side, pointing toward LEFT wall
       scene.add(dirLight1);
 
       const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.6);
-      dirLight2.position.set(-30, 12, 0);
+      dirLight2.position.set(-30, 12, 0); // Left side, pointing toward RIGHT wall
       scene.add(dirLight2);
 
+      // Front wall lighting
       const dirLight3 = new THREE.DirectionalLight(0xffffff, 0.6);
-      dirLight3.position.set(0, 12, -30);
+      dirLight3.position.set(0, 12, -30); // Back side, pointing toward FRONT wall
       scene.add(dirLight3);
 
+      // Back wall lighting
       const dirLight4 = new THREE.DirectionalLight(0xffffff, 0.6);
-      dirLight4.position.set(0, 12, 30);
+      dirLight4.position.set(0, 12, 30);  // Front side, pointing toward BACK wall
       scene.add(dirLight4);
 
       // Initialize texture loader and create room
@@ -280,21 +213,22 @@
         window.textureLoader = new THREE.TextureLoader();
       }
       
-      debugLog('14. init() - Creating room structure...');
       createRoom();
 
-      debugLog('15. init() - Loading object creator...');
+      // FIXED: Load object creator and then areas
       loadObjectCreator().then(() => {
-        debugLog('16. init() - Object creator loaded, now loading areas...');
+        console.log('&#9989; Object creator loaded, now loading areas...');
         return loadAreas();
       }).catch((error) => {
-        debugLog(`&#10060; init() - Object creator failed: ${error.message}`);
-        debugLog('16. init() - Continuing without object creator...');
+        console.error('&#10060; Failed to load object creator:', error);
+        // Fallback: try to load areas anyway
         loadAreas();
       });
 
-      debugLog('17. init() - Setting up controls and boundaries...');
+      // Use the shared navigation controls - pass PLACE dimensions with slower speed for indoor navigation
       setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
+      
+      // OVERRIDE: Replace the navigation.js boundary enforcement with museum-specific boundaries
       overrideNavigationBoundaries();
       
       window.addEventListener("resize", onWindowResize);
@@ -302,17 +236,22 @@
 
     // OVERRIDE FUNCTION: Replace navigation.js boundary enforcement with museum-specific boundaries
     function overrideNavigationBoundaries() {
-      debugLog('overrideNavigationBoundaries() - Setting up museum boundaries');
+      // Store the original update function
       const originalUpdate = camera.userData.update;
       
+      // Replace with museum-specific boundaries
       camera.userData.update = function() {
-        if (originalUpdate) originalUpdate.call(this);
+        // Call the original navigation update to get movement
+        originalUpdate.call(this);
+        
+        // Now apply museum-specific boundaries
         applyMuseumBoundaries();
       };
     }
 
     // MUSEUM-SPECIFIC BOUNDARIES
     function applyMuseumBoundaries() {
+      // Apply museum-specific camera boundaries (different from navigation.js)
       camera.position.x = THREE.MathUtils.clamp(
         camera.position.x, 
         MUSEUM_CAMERA_LIMITS.minX, 
@@ -323,11 +262,12 @@
         MUSEUM_CAMERA_LIMITS.minZ, 
         MUSEUM_CAMERA_LIMITS.maxZ
       );
+      
+      // Keep camera at eye height
       camera.position.y = EYE_HEIGHT;
     }
 
     function createRoom() {
-      debugLog('createRoom() - Starting...');
       const roomWidth = 30;
       const roomDepth = 80;
       const wallHeight = 10;
@@ -336,23 +276,26 @@
       let floorMat;
       if (window.textureLoader) {
         try {
+          // CORRECTED PATH: textures are in universe/textures/
           const floorTexture = window.textureLoader.load('universe/textures/museum1-floor.jpg');
           floorTexture.wrapS = THREE.RepeatWrapping;
           floorTexture.wrapT = THREE.RepeatWrapping;
           floorTexture.repeat.set(8, 18);
           
+          // Use Lambert material for completely non-reflective surface
           floorMat = new THREE.MeshLambertMaterial({ 
             map: floorTexture
           });
-          debugLog('createRoom() - Floor texture loaded successfully');
+          console.log('&#9989; Floor texture loaded successfully');
         } catch (error) {
-          debugLog(`&#10060; createRoom() - Failed to load floor texture: ${error.message}`);
+          console.error('&#10060; Failed to load floor texture, using fallback:', error);
           floorMat = new THREE.MeshLambertMaterial({ 
             color: 0x555555
           });
         }
       } else {
-        debugLog('createRoom() - Texture loader not available, using fallback floor color');
+        // Fallback if textureLoader not available
+        console.log('Texture loader not available, using fallback floor color');
         floorMat = new THREE.MeshLambertMaterial({ 
             color: 0x555555
           });
@@ -362,56 +305,57 @@
       floor.rotation.x = -Math.PI / 2;
       scene.add(floor);
 
-      // Walls with texture
+      // Walls with texture - IMPROVED: Double-sided materials
       let wallMat;
       if (window.textureLoader) {
         try {
+          // CORRECTED PATH: textures are in universe/textures/
           const wallTexture = window.textureLoader.load('universe/textures/museum1-walls.jpg');
           wallTexture.wrapS = THREE.RepeatWrapping;
           wallTexture.wrapT = THREE.RepeatWrapping;
-          wallTexture.repeat.set(64, 8);
+          wallTexture.repeat.set(64, 8); // Adjust repeat based on your texture
           
           wallMat = new THREE.MeshStandardMaterial({ 
             map: wallTexture,
             roughness: 0.8,
-            side: THREE.DoubleSide
+            side: THREE.DoubleSide  // FIX: Make walls double-sided
           });
-          debugLog('createRoom() - Hall wall texture loaded successfully');
+          console.log('&#9989; Hall wall texture loaded successfully');
         } catch (error) {
-          debugLog(`&#10060; createRoom() - Failed to load hall wall texture: ${error.message}`);
+          console.error('&#10060; Failed to load hall wall texture, using fallback color:', error);
           wallMat = new THREE.MeshStandardMaterial({ 
             color: 0xaaaaaa, 
             roughness: 0.6,
-            side: THREE.DoubleSide
+            side: THREE.DoubleSide  // FIX: Make fallback walls double-sided too
           });
         }
       } else {
-        debugLog('createRoom() - Texture loader not available, using fallback wall color');
+        console.log('&#9888;&#65039; Texture loader not available, using fallback wall color');
         wallMat = new THREE.MeshStandardMaterial({ 
           color: 0xaaaaaa, 
           roughness: 0.6,
-          side: THREE.DoubleSide
+          side: THREE.DoubleSide  // FIX: Make fallback walls double-sided too
         });
       }
       
-      // Back wall
+      // Back wall (shorter - 40 units wide)
       const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), wallMat);
       backWall.position.set(0, wallHeight / 2, -roomDepth / 2);
       scene.add(backWall);
 
-      // Front wall
+      // Front wall (shorter - 40 units wide)
       const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), wallMat);
       frontWall.position.set(0, wallHeight / 2, roomDepth / 2);
-      frontWall.rotation.y = Math.PI;
+      frontWall.rotation.y = Math.PI; // Face inward
       scene.add(frontWall);
 
-      // Left wall
+      // Left wall (longer - 90 units wide)
       const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), wallMat);
       leftWall.rotation.y = Math.PI / 2;
       leftWall.position.set(-roomWidth / 2, wallHeight / 2, 0);
       scene.add(leftWall);
 
-      // Right wall
+      // Right wall (longer - 90 units wide)
       const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), wallMat);
       rightWall.rotation.y = -Math.PI / 2;
       rightWall.position.set(roomWidth / 2, wallHeight / 2, 0);
@@ -424,15 +368,15 @@
           const ceilingTexture = window.textureLoader.load('universe/textures/museum1-ceiling.jpg');
           ceilingTexture.wrapS = THREE.RepeatWrapping;
           ceilingTexture.wrapT = THREE.RepeatWrapping;
-          ceilingTexture.repeat.set(12, 27);
+          ceilingTexture.repeat.set(12, 27); // Adjust repeat based on your ceiling texture
           
           ceilingMat = new THREE.MeshStandardMaterial({ 
             map: ceilingTexture,
             roughness: 0.9
           });
-          debugLog('createRoom() - Ceiling texture loaded successfully');
+          console.log('&#9989; Ceiling texture loaded successfully');
         } catch (error) {
-          debugLog(`&#10060; createRoom() - Failed to load ceiling texture: ${error.message}`);
+          console.error('&#10060; Failed to load ceiling texture, using fallback:', error);
           ceilingMat = new THREE.MeshStandardMaterial({ 
             color: 0xdddddd, 
             roughness: 0.9 
@@ -452,18 +396,16 @@
       ceiling.rotation.x = Math.PI / 2;
       ceiling.position.y = wallHeight;
       scene.add(ceiling);
-
-      debugLog('createRoom() - Room structure completed - 6 surfaces created');
     }
           
     function loadObjectCreator() {
-      debugLog('loadObjectCreator() - Starting...');
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = 'universe/obj_create_room.js?v=' + Date.now();
         
         script.onload = function() {
-          debugLog('loadObjectCreator() - Script loaded successfully');
+          console.log('&#9989; obj_create_room.js loaded successfully');
+          // Initialize texture loader AFTER obj_create_room.js is loaded
           if (!window.textureLoader) {
             window.textureLoader = new THREE.TextureLoader();
           }
@@ -474,7 +416,7 @@
         };
         
         script.onerror = function() {
-          debugLog('&#10060; loadObjectCreator() - Script failed to load');
+          console.error('&#10060; Failed to load obj_create_room.js');
           reject(new Error('Failed to load object creator script'));
         };
         
@@ -484,7 +426,6 @@
     
 
     async function loadAreas() {
-      debugLog('loadAreas() - Starting...');
       const loadingDiv = document.getElementById('loading');
       
       // Get all area IDs
@@ -500,47 +441,46 @@
           await loadAreaContent(areaId);
           loadedAreas.push(areaId);
         } catch (error) {
-          debugLog(`loadAreas() - Area ${areaId} not available - leaving empty`);
+          console.log(`Area ${areaId} not available - leaving empty`);
         }
       }
       
       loadingDiv.style.display = 'none';
-      if (!window.isMobile) {
+      if (!isMobile) {
         document.getElementById('instructions').textContent = 
           `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | R: Reset`;
       } else {
         document.getElementById('instructions').style.display = 'none';
       }
       
-      debugLog(`loadAreas() - Museum loaded with ${loadedAreas.length} areas`);
-      debugLog('&#9989; Museum loading complete!');
+      console.log(`&#127881; Museum loaded with ${loadedAreas.length} areas:`, loadedAreas);
     }
 
     async function loadAreaContent(areaId) {
-      debugLog(`loadAreaContent(${areaId}) - Starting...`);
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
+        // FIXED: Correct path to area files
         script.src = `universe/museum-sections/museum${areaId}.js`;
         
         script.onload = () => {
-          debugLog(`loadAreaContent(${areaId}) - Script loaded successfully`);
+          // Wait a frame to ensure the area group is created
           setTimeout(() => {
+            // FIXED: Look for correct group name (museum1a, not museum-1a)
             const areaGroup = scene.getObjectByName(`museum${areaId}`);
             if (areaGroup) {
-              debugLog(`loadAreaContent(${areaId}) - Found area group with ${areaGroup.children.length} children`);
+              console.log(`&#9989; Found area group: museum${areaId} with ${areaGroup.children.length} children`);
               positionArea(areaId);
               currentAreas.push(areaId);
-              debugLog(`loadAreaContent(${areaId}) - Area loaded successfully`);
+              console.log(`&#9989; Area ${areaId} loaded successfully`);
               resolve();
             } else {
-              debugLog(`&#10060; loadAreaContent(${areaId}) - Area group not found after loading script`);
+              console.error(`&#10060; Area group museum${areaId} not found after loading script`);
               reject(new Error(`Area group not found: museum${areaId}`));
             }
           }, 0);
         };
         
         script.onerror = () => {
-          debugLog(`loadAreaContent(${areaId}) - Script not found`);
           reject(new Error(`Area ${areaId} file not found`));
         };
         
@@ -549,15 +489,17 @@
     }
 
     function positionArea(areaId) {
-      debugLog(`positionArea(${areaId}) - Positioning area...`);
       const areaGroup = scene.getObjectByName(`museum${areaId}`);
       if (areaGroup && AREA_POSITIONS[areaId]) {
         const areaPosition = AREA_POSITIONS[areaId];
         areaGroup.position.copy(areaPosition);
-        debugLog(`positionArea(${areaId}) - Positioned at: ${areaPosition.x}, ${areaPosition.y}, ${areaPosition.z}`);
+        console.log(`&#128205; Positioned area ${areaId} at:`, areaPosition);
+        console.log(`&#128205; Area group has ${areaGroup.children.length} children`);
+        
+        // Force update of world matrices
         areaGroup.updateMatrixWorld(true);
       } else {
-        debugLog(`&#10060; positionArea(${areaId}) - Could not position area`);
+        console.error(`&#10060; Could not position area ${areaId}`);
       }
     }
 
@@ -565,7 +507,6 @@
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-      debugLog('onWindowResize() - Window resized');
     }
 
     function animate() {
@@ -574,8 +515,6 @@
       if (camera.userData.update) camera.userData.update();
       renderer.render(scene, camera);
     }
-
-    debugLog('21. All functions defined, execution continuing...');
   </script>
 </body>
 </html>
