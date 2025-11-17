@@ -40,6 +40,23 @@
       z-index: 100;
     }
     
+    /* Debug Console */
+    #debug-console {
+      position: absolute;
+      top: 60px;
+      left: 10px;
+      width: 300px;
+      height: 200px;
+      background: rgba(0,0,0,0.9);
+      color: lime;
+      padding: 10px;
+      font-size: 12px;
+      z-index: 1000;
+      overflow-y: auto;
+      border: 1px solid lime;
+      display: block;
+    }
+    
     /* Mobile Controls - Hidden by default */
     #mobile-controls {
       display: none;
@@ -106,6 +123,7 @@
   <div id="info">Virtual Museum | WASD: Move | Mouse: Look Around | R: Reset Position</div>
   <div id="instructions">Loading museum...</div>
   <div id="loading">Preparing venue...</div>
+  <div id="debug-console">DEBUG CONSOLE:<br></div>
   
   <!-- Mobile Controls - Only shown on mobile devices -->
   <div id="mobile-controls">
@@ -117,10 +135,52 @@
     <div id="center-tap-area"></div>
   </div>
 
+  <script>
+    // DEBUG FUNCTION - Log to console AND screen
+    function debugLog(message) {
+      const timestamp = new Date().toLocaleTimeString();
+      const debugMessage = `[${timestamp}] ${message}`;
+      console.log(debugMessage);
+      
+      const debugConsole = document.getElementById('debug-console');
+      if (debugConsole) {
+        debugConsole.innerHTML += debugMessage + '<br>';
+        debugConsole.scrollTop = debugConsole.scrollHeight;
+      }
+      
+      const loadingDiv = document.getElementById('loading');
+      if (loadingDiv) {
+        loadingDiv.textContent = message;
+      }
+    }
+
+    // Global error handler
+    window.addEventListener('error', function(e) {
+      debugLog(`&#10060; GLOBAL ERROR: ${e.message} at ${e.filename}:${e.lineno}`);
+    });
+
+    debugLog('1. Script starting...');
+  </script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    debugLog('2. Three.js loaded: ' + (typeof THREE !== 'undefined'));
+  </script>
+
   <script src="universe/js/GLTFLoader.js"></script>
+  <script>
+    debugLog('3. GLTFLoader loaded: ' + (typeof GLTFLoader !== 'undefined'));
+  </script>
+
   <script src="universe/js/animation-controller.js"></script>
+  <script>
+    debugLog('4. animation-controller loaded');
+  </script>
+
   <script src="universe/js/navigation.js"></script>
+  <script>
+    debugLog('5. navigation.js loaded: ' + (typeof setupControls !== 'undefined'));
+  </script>
 
   <script>
     let scene, camera, renderer;
@@ -131,7 +191,7 @@
     const PLACE_WIDTH = 40;
     const PLACE_DEPTH = 50;
 
-    // UPDATED: Camera boundaries for 40x50 room
+    // Camera boundaries for 40x50 room
     const MUSEUM_CAMERA_LIMITS = {
       minX: -19,  // Left wall boundary
       maxX: 19,   // Right wall boundary
@@ -143,122 +203,117 @@
     function getRoomNumber() {
       const urlParams = new URLSearchParams(window.location.search);
       const roomNum = urlParams.get('num');
-      // Default to room1 if no parameter or invalid parameter
-      return roomNum && !isNaN(roomNum) && roomNum > 0 ? roomNum : '1';
+      const result = roomNum && !isNaN(roomNum) && roomNum > 0 ? roomNum : '1';
+      debugLog(`6. Room number from URL: ${result}`);
+      return result;
     }
 
+    // FIXED: Don't redeclare isMobile - use the one from navigation.js
+    debugLog(`7. Mobile detection: ${window.isMobile} (${navigator.userAgent.substring(0, 50)}...)`);
+
+    // Check WebGL support
+    function checkWebGLSupport() {
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        const supported = !!gl;
+        debugLog(`8. WebGL support: ${supported}`);
+        return supported;
+      } catch (e) {
+        debugLog(`8. WebGL support: FALSE - ${e.message}`);
+        return false;
+      }
+    }
+
+    debugLog('9. Starting init()...');
     init();
+    debugLog('23. init() completed, starting animate()...');
     animate();
 
     function init() {
+      debugLog('10. init() - Creating scene...');
       scene = new THREE.Scene();
+      debugLog('11. init() - Scene created');
 
+      debugLog('12. init() - Creating camera...');
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      debugLog('13. init() - Camera created');
 
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setClearColor(0x202020);
-      document.body.appendChild(renderer.domElement);
+      debugLog('14. init() - Creating renderer...');
+      try {
+        renderer = new THREE.WebGLRenderer({ 
+          antialias: true,
+          powerPreference: "high-performance"
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x202020);
+        document.body.appendChild(renderer.domElement);
+        debugLog('15. init() - Renderer created and added to DOM');
+      } catch (e) {
+        debugLog(`&#10060; init() - Renderer failed: ${e.message}`);
+        return;
+      }
 
-      // Initialize mobile controls using the shared navigation.js
-      initMobileControls();
+      debugLog('16. init() - Initializing mobile controls...');
+      try {
+        initMobileControls();
+        debugLog('17. init() - Mobile controls initialized');
+      } catch (e) {
+        debugLog(`&#10060; init() - Mobile controls failed: ${e.message}`);
+      }
 
-      // IMPROVED LIGHTING - Balanced from multiple directions
+      debugLog('18. init() - Setting up lighting...');
       const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
       hemiLight.position.set(0, 20, 0);
       scene.add(hemiLight);
 
-      // Increased ambient light for more even illumination
       const ambient = new THREE.AmbientLight(0xffffff, 0.8);
       scene.add(ambient);
 
-      // Multiple directional lights from different angles for balanced lighting
-      const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.6);
-      dirLight1.position.set(10, 15, 10);
-      scene.add(dirLight1);
-
-      const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
-      dirLight2.position.set(-10, 15, -10);
-      scene.add(dirLight2);
-
-      const dirLight3 = new THREE.DirectionalLight(0xffffff, 0.3);
-      dirLight3.position.set(0, 15, 0);
-      scene.add(dirLight3);
-      
-      // Initialize texture loader
-      if (!window.textureLoader) {
-        window.textureLoader = new THREE.TextureLoader();
-      }
-      
-      // Create basic room structure (without textures)
+      debugLog('19. init() - Creating room structure...');
       createRoomStructure();
 
-      // Get room number from URL parameter
       const roomNumber = getRoomNumber();
-      console.log(`Loading room ${roomNumber} from URL parameter`);
 
-      // SIMPLIFIED: Just create the basic room structure
-      console.log(`Basic room ${roomNumber} structure created - objects skipped`);
+      debugLog('20. init() - Loading object creator...');
+      loadObjectCreator().then(() => {
+        debugLog('21. init() - Object creator loaded, loading room objects...');
+        loadRoomObjects(roomNumber);
+      }).catch((error) => {
+        debugLog(`&#10060; init() - Object creator failed: ${error.message}`);
+        debugLog('21. init() - Continuing without object creator...');
+        loadRoomObjects(roomNumber);
+      });
 
-      // Hide loading and show instructions immediately
-      setTimeout(() => {
-        document.getElementById('loading').style.display = 'none';
-        if (!isMobile) {
-          document.getElementById('instructions').textContent = 
-            `Room ${roomNumber} ready | Use WASD to move and mouse to look around`;
-        }
-      }, 500);
-
-      // Use the shared navigation controls - pass PLACE dimensions with slower speed for indoor navigation
+      debugLog('22. init() - Setting up controls and boundaries...');
       setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
-      
-      // OVERRIDE: Replace the navigation.js boundary enforcement with museum-specific boundaries
       overrideNavigationBoundaries();
       
       window.addEventListener("resize", onWindowResize);
     }
 
-    // OVERRIDE FUNCTION: Replace navigation.js boundary enforcement with museum-specific boundaries
     function overrideNavigationBoundaries() {
-      // Store the original update function
+      debugLog('overrideNavigationBoundaries() - Setting up museum boundaries');
       const originalUpdate = camera.userData.update;
       
-      // Replace with museum-specific boundaries
       camera.userData.update = function() {
-        // Call the original navigation update to get movement
-        originalUpdate.call(this);
-        
-        // Now apply museum-specific boundaries
+        if (originalUpdate) originalUpdate.call(this);
         applyMuseumBoundaries();
       };
     }
 
-    // MUSEUM-SPECIFIC BOUNDARIES
     function applyMuseumBoundaries() {
-      // Apply museum-specific camera boundaries (different from navigation.js)
-      camera.position.x = THREE.MathUtils.clamp(
-        camera.position.x, 
-        MUSEUM_CAMERA_LIMITS.minX, 
-        MUSEUM_CAMERA_LIMITS.maxX
-      );
-      camera.position.z = THREE.MathUtils.clamp(
-        camera.position.z, 
-        MUSEUM_CAMERA_LIMITS.minZ, 
-        MUSEUM_CAMERA_LIMITS.maxZ
-      );
-      
-      // Keep camera at eye height
+      camera.position.x = THREE.MathUtils.clamp(camera.position.x, MUSEUM_CAMERA_LIMITS.minX, MUSEUM_CAMERA_LIMITS.maxX);
+      camera.position.z = THREE.MathUtils.clamp(camera.position.z, MUSEUM_CAMERA_LIMITS.minZ, MUSEUM_CAMERA_LIMITS.maxZ);
       camera.position.y = EYE_HEIGHT;
     }
 
-    // UPDATED: Create only the basic room structure without textures
     function createRoomStructure() {
-      // UPDATED: Room dimensions for 40x50
+      debugLog('createRoomStructure() - Starting...');
       const roomWidth = 40;
       const roomDepth = 50;
       const wallHeight = 16;
 
-      // Create basic placeholder materials (will be replaced by room-specific textures)
       const placeholderMat = new THREE.MeshLambertMaterial({ 
         color: 0x888888,
         transparent: true,
@@ -272,13 +327,13 @@
         side: THREE.DoubleSide
       });
 
-      // Floor - placeholder (will be textured by room file)
+      // Create floor
       const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), placeholderMat);
       floor.rotation.x = -Math.PI / 2;
       floor.name = 'room-floor';
       scene.add(floor);
 
-      // Walls - placeholders (will be textured by room file)
+      // Create walls
       const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), placeholderWallMat);
       backWall.position.set(0, wallHeight / 2, -roomDepth / 2);
       backWall.name = 'room-back-wall';
@@ -286,7 +341,7 @@
 
       const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), placeholderWallMat);
       frontWall.position.set(0, wallHeight / 2, roomDepth / 2);
-      frontWall.rotation.y = Math.PI; // Face inward
+      frontWall.rotation.y = Math.PI;
       frontWall.name = 'room-front-wall';
       scene.add(frontWall);
 
@@ -302,44 +357,122 @@
       rightWall.name = 'room-right-wall';
       scene.add(rightWall);
 
-      // Ceiling - placeholder (will be textured by room file)
-      const ceiling = new THREE.Mesh(
-        new THREE.PlaneGeometry(roomWidth, roomDepth),
-        placeholderMat
-      );
+      // Create ceiling
+      const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), placeholderMat);
       ceiling.rotation.x = Math.PI / 2;
       ceiling.position.y = wallHeight;
       ceiling.name = 'room-ceiling';
       scene.add(ceiling);
 
-      console.log('Basic room structure created (awaiting room-specific textures)');
+      debugLog('createRoomStructure() - Completed - 6 surfaces created');
     }
+
+    function loadObjectCreator() {
+      debugLog('loadObjectCreator() - Starting...');
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'universe/obj_create_room.js?v=' + Date.now();
+        
+        script.onload = function() {
+          debugLog('loadObjectCreator() - Script loaded successfully');
+          if (!window.textureLoader) {
+            window.textureLoader = new THREE.TextureLoader();
+          }
+          if (window.initObjectTextures) {
+            window.initObjectTextures(window.textureLoader);
+          }
+          resolve();
+        };
+        
+        script.onerror = function() {
+          debugLog('&#10060; loadObjectCreator() - Script failed to load');
+          reject(new Error('Failed to load object creator script'));
+        };
+        
+        document.head.appendChild(script);
+      });
+    }
+
+    function loadRoomObjects(roomNumber) {
+      debugLog(`loadRoomObjects(${roomNumber}) - Starting...`);
+      const loadingDiv = document.getElementById('loading');
+      loadingDiv.textContent = `Loading room ${roomNumber}...`;
+
+      const script = document.createElement('script');
+      script.src = `universe/rooms/room${roomNumber}.js`;
+      
+      script.onload = () => {
+        debugLog(`loadRoomObjects(${roomNumber}) - Script loaded successfully`);
+        setTimeout(() => {
+          loadingDiv.style.display = 'none';
+          if (!window.isMobile) {
+            document.getElementById('instructions').textContent = 
+              `Room ${roomNumber} ready | Use WASD to move and mouse to look around`;
+          }
+          debugLog(`loadRoomObjects(${roomNumber}) - Room loading complete`);
+        }, 100);
+      };
+      
+      script.onerror = () => {
+        debugLog(`loadRoomObjects(${roomNumber}) - Script not found`);
+        loadingDiv.style.display = 'none';
+        if (!window.isMobile) {
+          document.getElementById('instructions').textContent = 
+            `Room ${roomNumber} ready (no objects) | Use WASD to move and mouse to look around`;
+        }
+      };
+      
+      document.head.appendChild(script);
+    }
+
+    window.applyRoomTexture = function(meshName, texturePath, repeatX = 1, repeatY = 1) {
+      debugLog(`applyRoomTexture() - Applying ${texturePath} to ${meshName}`);
+      const mesh = scene.getObjectByName(meshName);
+      if (mesh && window.textureLoader) {
+        try {
+          const texture = window.textureLoader.load(texturePath);
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(repeatX, repeatY);
+          
+          mesh.material = new THREE.MeshLambertMaterial({ 
+            map: texture,
+            side: mesh.material.side
+          });
+          debugLog(`applyRoomTexture() - Success: ${texturePath}`);
+        } catch (error) {
+          debugLog(`&#10060; applyRoomTexture() - Failed: ${error.message}`);
+        }
+      } else {
+        debugLog(`&#10060; applyRoomTexture() - Mesh not found or texture loader unavailable`);
+      }
+    };
 
     function onWindowResize() {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      debugLog('onWindowResize() - Window resized');
     }
 
     function animate() {
       requestAnimationFrame(animate);
       const delta = clock.getDelta();
       
-      // Update navigation controls
       if (camera.userData.update) camera.userData.update();
       
-      // Update animation priorities (pauses distant models)
       if (window.animationController) {
         window.animationController.update(camera);
       }
       
-      // Update all animations
       if (window.updateAllAnimations) {
         window.updateAllAnimations(delta);
       }
       
       renderer.render(scene, camera);
     }
+
+    debugLog('24. All functions defined, execution continuing...');
   </script>
 </body>
 </html>
