@@ -151,7 +151,6 @@
     animate();
 
     function init() {
-      // SIMPLIFIED: Basic Three.js setup first (like park code)
       scene = new THREE.Scene();
 
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -161,14 +160,15 @@
       renderer.setClearColor(0x202020);
       document.body.appendChild(renderer.domElement);
 
-      // MOBILE CONTROLS: Initialize EARLY like park code
+      // Initialize mobile controls using the shared navigation.js
       initMobileControls();
 
-      // SIMPLIFIED LIGHTING: Like park code
+      // IMPROVED LIGHTING - Balanced from multiple directions
       const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
       hemiLight.position.set(0, 20, 0);
       scene.add(hemiLight);
 
+      // Increased ambient light for more even illumination
       const ambient = new THREE.AmbientLight(0xffffff, 0.8);
       scene.add(ambient);
 
@@ -185,25 +185,34 @@
       dirLight3.position.set(0, 15, 0);
       scene.add(dirLight3);
       
-      // CREATE BASIC STRUCTURE FIRST (like park creates ground first)
+      // Initialize texture loader
+      if (!window.textureLoader) {
+        window.textureLoader = new THREE.TextureLoader();
+      }
+      
+      // Create basic room structure (without textures)
       createRoomStructure();
 
-      // GET ROOM NUMBER
+      // Get room number from URL parameter
       const roomNumber = getRoomNumber();
-      console.log(`Loading room ${roomNumber}`);
+      console.log(`Loading room ${roomNumber} from URL parameter`);
 
-      // SIMPLIFIED LOADING: Like park code - no complex promises
-      loadObjectCreator().then(() => {
-        console.log('Object creator loaded');
-        loadRoomObjects(roomNumber);
-      }).catch((error) => {
-        console.error('Failed to load object creator:', error);
-        // CONTINUE ANYWAY like park code does
-        loadRoomObjects(roomNumber);
-      });
+      // SIMPLIFIED: Just create the basic room structure
+      console.log(`Basic room ${roomNumber} structure created - objects skipped`);
 
-      // CONTROLS: Setup like park code
+      // Hide loading and show instructions immediately
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+        if (!isMobile) {
+          document.getElementById('instructions').textContent = 
+            `Room ${roomNumber} ready | Use WASD to move and mouse to look around`;
+        }
+      }, 500);
+
+      // Use the shared navigation controls - pass PLACE dimensions with slower speed for indoor navigation
       setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
+      
+      // OVERRIDE: Replace the navigation.js boundary enforcement with museum-specific boundaries
       overrideNavigationBoundaries();
       
       window.addEventListener("resize", onWindowResize);
@@ -305,88 +314,6 @@
 
       console.log('Basic room structure created (awaiting room-specific textures)');
     }
-
-    // Function to load object creator
-    function loadObjectCreator() {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = 'universe/obj_create_room.js?v=' + Date.now();
-        
-        script.onload = function() {
-          console.log('obj_create_room.js loaded successfully');
-          // Initialize texture loader AFTER obj_create_room.js is loaded
-          if (!window.textureLoader) {
-            window.textureLoader = new THREE.TextureLoader();
-          }
-          if (window.initObjectTextures) {
-            window.initObjectTextures(window.textureLoader);
-          }
-          resolve();
-        };
-        
-        script.onerror = function() {
-          console.error('Failed to load obj_create_room.js');
-          reject(new Error('Failed to load object creator script'));
-        };
-        
-        document.head.appendChild(script);
-      });
-    }
-
-    // SIMPLIFIED: Load room objects from file based on room number
-    function loadRoomObjects(roomNumber) {
-      const loadingDiv = document.getElementById('loading');
-      loadingDiv.textContent = `Loading room ${roomNumber}...`;
-
-      // SIMPLE SCRIPT LOADING like park code
-      const script = document.createElement('script');
-      script.src = `universe/rooms/room${roomNumber}.js`;
-      
-      script.onload = () => {
-        setTimeout(() => {
-          loadingDiv.style.display = 'none';
-          if (!isMobile) {
-            document.getElementById('instructions').textContent = 
-              `Room ${roomNumber} ready | Use WASD to move and mouse to look around`;
-          }
-          console.log(`Room ${roomNumber} loaded`);
-        }, 100);
-      };
-      
-      script.onerror = () => {
-        loadingDiv.style.display = 'none';
-        if (!isMobile) {
-          document.getElementById('instructions').textContent = 
-            `Room ${roomNumber} ready (no objects) | Use WASD to move and mouse to look around`;
-        }
-        console.log(`No room ${roomNumber} objects file found`);
-      };
-      
-      document.head.appendChild(script);
-    }
-
-    // NEW: Helper function for room files to apply textures to room structures
-    window.applyRoomTexture = function(meshName, texturePath, repeatX = 1, repeatY = 1) {
-      const mesh = scene.getObjectByName(meshName);
-      if (mesh && window.textureLoader) {
-        try {
-          const texture = window.textureLoader.load(texturePath);
-          texture.wrapS = THREE.RepeatWrapping;
-          texture.wrapT = THREE.RepeatWrapping;
-          texture.repeat.set(repeatX, repeatY);
-          
-          mesh.material = new THREE.MeshLambertMaterial({ 
-            map: texture,
-            side: mesh.material.side // Preserve double-sided setting for walls
-          });
-          console.log(`Applied texture to ${meshName}: ${texturePath}`);
-        } catch (error) {
-          console.error(`Failed to apply texture to ${meshName}:`, error);
-        }
-      } else {
-        console.warn(`Mesh ${meshName} not found or texture loader not available`);
-      }
-    };
 
     function onWindowResize() {
       camera.aspect = window.innerWidth / window.innerHeight;
