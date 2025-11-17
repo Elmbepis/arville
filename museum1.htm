@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Arville Virtual Museum</title>
-  const isMobile =
-  /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   <style>
     body {
       margin: 0;
@@ -103,14 +101,16 @@
       pointer-events: auto;
     }
   </style>
-</head>
+ <script>
+    // &#9989; CORRECT - JavaScript inside script tags
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  </script></head>
 <body>
   <div id="info">Virtual Museum | WASD: Move | Mouse: Look Around | R: Reset Position</div>
   <div id="instructions">Loading museum...</div>
   <div id="loading">Preparing venue...</div>
   
   <!-- Mobile Controls - Only shown on mobile devices -->
- 
   <div id="mobile-controls">
     <div id="joystick-container">
       <div id="joystick-base"></div>
