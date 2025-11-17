@@ -40,7 +40,7 @@
       z-index: 100;
     }
     
-    /* Debug Console - Will be removed after loading */
+    /* Debug Console - Only shown on mobile */
     #debug-console {
       position: absolute;
       top: 60px;
@@ -54,7 +54,7 @@
       z-index: 1000;
       overflow-y: auto;
       border: 1px solid lime;
-      display: block;
+      display: none;
     }
     
     /* Mobile Controls - Hidden by default */
@@ -136,9 +136,11 @@
   </div>
 
   <script>
-    let debugEnabled = true;
+    // Only enable debugging on mobile
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    let debugEnabled = isMobileDevice;
     
-    // DEBUG FUNCTION - Log to console AND screen
+    // DEBUG FUNCTION - Only active on mobile
     function debugLog(message) {
       if (!debugEnabled) return;
       
@@ -151,50 +153,46 @@
         debugConsole.innerHTML += debugMessage + '<br>';
         debugConsole.scrollTop = debugConsole.scrollHeight;
       }
-      
-      const loadingDiv = document.getElementById('loading');
-      if (loadingDiv) {
-        loadingDiv.textContent = message;
-      }
     }
 
-    // Function to disable debugging and remove debug console
+    // Function to disable debugging (called after scene loads)
     function disableDebugging() {
       debugEnabled = false;
       const debugConsole = document.getElementById('debug-console');
       if (debugConsole) {
         debugConsole.style.display = 'none';
       }
-      console.log('&#127919; Debugging disabled - scene is fully loaded');
+    }
+
+    // Show debug console only on mobile
+    if (isMobileDevice) {
+      const debugConsole = document.getElementById('debug-console');
+      if (debugConsole) {
+        debugConsole.style.display = 'block';
+      }
+      debugLog('Mobile device detected - debug enabled');
     }
 
     // Global error handler
     window.addEventListener('error', function(e) {
-      debugLog(`&#10060; GLOBAL ERROR: ${e.message} at ${e.filename}:${e.lineno}`);
+      debugLog(`Error: ${e.message}`);
     });
 
-    debugLog('1. Script starting...');
+    debugLog('Starting initialization...');
   </script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
-    debugLog('2. Three.js loaded: ' + (typeof THREE !== 'undefined'));
+    debugLog('Three.js loaded');
   </script>
 
   <script src="universe/js/GLTFLoader.js"></script>
   <script>
-    debugLog('3. GLTFLoader loaded: ' + (typeof GLTFLoader !== 'undefined'));
+    debugLog('GLTFLoader loaded');
   </script>
 
   <script src="universe/js/animation-controller.js"></script>
-  <script>
-    debugLog('4. animation-controller loaded');
-  </script>
-
   <script src="universe/js/navigation.js"></script>
-  <script>
-    debugLog('5. navigation.js loaded: ' + (typeof setupControls !== 'undefined'));
-  </script>
 
   <script>
     let scene, camera, renderer;
@@ -217,29 +215,19 @@
     function getRoomNumber() {
       const urlParams = new URLSearchParams(window.location.search);
       const roomNum = urlParams.get('num');
-      const result = roomNum && !isNaN(roomNum) && roomNum > 0 ? roomNum : '1';
-      debugLog(`6. Room number from URL: ${result}`);
-      return result;
+      return roomNum && !isNaN(roomNum) && roomNum > 0 ? roomNum : '1';
     }
 
-    // Use the isMobile from navigation.js
-    debugLog(`7. Mobile detection: ${window.isMobile} (${navigator.userAgent.substring(0, 50)}...)`);
-
-    debugLog('9. Starting init()...');
     init();
-    debugLog('23. init() completed, starting animate()...');
     animate();
 
     function init() {
-      debugLog('10. init() - Creating scene...');
+      debugLog('Creating scene...');
       scene = new THREE.Scene();
-      debugLog('11. init() - Scene created');
 
-      debugLog('12. init() - Creating camera...');
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      debugLog('13. init() - Camera created');
 
-      debugLog('14. init() - Creating renderer...');
+      debugLog('Creating renderer...');
       try {
         renderer = new THREE.WebGLRenderer({ 
           antialias: true,
@@ -248,21 +236,20 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(0x202020);
         document.body.appendChild(renderer.domElement);
-        debugLog('15. init() - Renderer created and added to DOM');
+        debugLog('Renderer created');
       } catch (e) {
-        debugLog(`&#10060; init() - Renderer failed: ${e.message}`);
+        debugLog(`Renderer failed: ${e.message}`);
         return;
       }
 
-      debugLog('16. init() - Initializing mobile controls...');
+      debugLog('Initializing mobile controls...');
       try {
         initMobileControls();
-        debugLog('17. init() - Mobile controls initialized');
       } catch (e) {
-        debugLog(`&#10060; init() - Mobile controls failed: ${e.message}`);
+        debugLog(`Mobile controls failed: ${e.message}`);
       }
 
-      debugLog('18. init() - Setting up lighting...');
+      // Lighting setup
       const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
       hemiLight.position.set(0, 20, 0);
       scene.add(hemiLight);
@@ -270,22 +257,21 @@
       const ambient = new THREE.AmbientLight(0xffffff, 0.8);
       scene.add(ambient);
 
-      debugLog('19. init() - Creating room structure...');
+      debugLog('Creating room structure...');
       createRoomStructure();
 
       const roomNumber = getRoomNumber();
 
-      debugLog('20. init() - Loading object creator...');
+      debugLog('Loading object creator...');
       loadObjectCreator().then(() => {
-        debugLog('21. init() - Object creator loaded, loading room objects...');
+        debugLog('Loading room objects...');
         loadRoomObjects(roomNumber);
       }).catch((error) => {
-        debugLog(`&#10060; init() - Object creator failed: ${error.message}`);
-        debugLog('21. init() - Continuing without object creator...');
+        debugLog('Object creator failed, continuing...');
         loadRoomObjects(roomNumber);
       });
 
-      debugLog('22. init() - Setting up controls and boundaries...');
+      debugLog('Setting up controls...');
       setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
       overrideNavigationBoundaries();
       
@@ -293,7 +279,6 @@
     }
 
     function overrideNavigationBoundaries() {
-      debugLog('overrideNavigationBoundaries() - Setting up museum boundaries');
       const originalUpdate = camera.userData.update;
       
       camera.userData.update = function() {
@@ -309,7 +294,6 @@
     }
 
     function createRoomStructure() {
-      debugLog('createRoomStructure() - Starting...');
       const roomWidth = 40;
       const roomDepth = 50;
       const wallHeight = 16;
@@ -327,13 +311,13 @@
         side: THREE.DoubleSide
       });
 
-      // Create floor
+      // Floor
       const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), placeholderMat);
       floor.rotation.x = -Math.PI / 2;
       floor.name = 'room-floor';
       scene.add(floor);
 
-      // Create walls
+      // Walls
       const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), placeholderWallMat);
       backWall.position.set(0, wallHeight / 2, -roomDepth / 2);
       backWall.name = 'room-back-wall';
@@ -357,24 +341,22 @@
       rightWall.name = 'room-right-wall';
       scene.add(rightWall);
 
-      // Create ceiling
+      // Ceiling
       const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), placeholderMat);
       ceiling.rotation.x = Math.PI / 2;
       ceiling.position.y = wallHeight;
       ceiling.name = 'room-ceiling';
       scene.add(ceiling);
 
-      debugLog('createRoomStructure() - Completed - 6 surfaces created');
+      debugLog('Room structure created');
     }
 
     function loadObjectCreator() {
-      debugLog('loadObjectCreator() - Starting...');
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = 'universe/obj_create_room.js?v=' + Date.now();
         
         script.onload = function() {
-          debugLog('loadObjectCreator() - Script loaded successfully');
           if (!window.textureLoader) {
             window.textureLoader = new THREE.TextureLoader();
           }
@@ -385,7 +367,6 @@
         };
         
         script.onerror = function() {
-          debugLog('&#10060; loadObjectCreator() - Script failed to load');
           reject(new Error('Failed to load object creator script'));
         };
         
@@ -394,7 +375,6 @@
     }
 
     function loadRoomObjects(roomNumber) {
-      debugLog(`loadRoomObjects(${roomNumber}) - Starting...`);
       const loadingDiv = document.getElementById('loading');
       loadingDiv.textContent = `Loading room ${roomNumber}...`;
 
@@ -402,39 +382,33 @@
       script.src = `universe/rooms/room${roomNumber}.js`;
       
       script.onload = () => {
-        debugLog(`loadRoomObjects(${roomNumber}) - Script loaded successfully`);
-        
-        // DISABLE DEBUGGING AFTER ROOM IS LOADED
         setTimeout(() => {
           loadingDiv.style.display = 'none';
           if (!window.isMobile) {
             document.getElementById('instructions').textContent = 
               `Room ${roomNumber} ready | Use WASD to move and mouse to look around`;
           }
-          debugLog(`loadRoomObjects(${roomNumber}) - Room loading complete - DISABLING DEBUG`);
+          debugLog('Room loaded - disabling debug');
           
-          // Remove debug console after scene is fully loaded
-          setTimeout(disableDebugging, 1000);
+          // Disable debugging after successful load
+          setTimeout(disableDebugging, 500);
         }, 100);
       };
       
       script.onerror = () => {
-        debugLog(`loadRoomObjects(${roomNumber}) - Script not found`);
         loadingDiv.style.display = 'none';
         if (!window.isMobile) {
           document.getElementById('instructions').textContent = 
             `Room ${roomNumber} ready (no objects) | Use WASD to move and mouse to look around`;
         }
-        
-        // Still disable debugging even if room file not found
-        setTimeout(disableDebugging, 1000);
+        // Still disable debugging
+        setTimeout(disableDebugging, 500);
       };
       
       document.head.appendChild(script);
     }
 
     window.applyRoomTexture = function(meshName, texturePath, repeatX = 1, repeatY = 1) {
-      debugLog(`applyRoomTexture() - Applying ${texturePath} to ${meshName}`);
       const mesh = scene.getObjectByName(meshName);
       if (mesh && window.textureLoader) {
         try {
@@ -447,12 +421,9 @@
             map: texture,
             side: mesh.material.side
           });
-          debugLog(`applyRoomTexture() - Success: ${texturePath}`);
         } catch (error) {
-          debugLog(`&#10060; applyRoomTexture() - Failed: ${error.message}`);
+          console.error('Failed to apply texture:', error);
         }
-      } else {
-        debugLog(`&#10060; applyRoomTexture() - Mesh not found or texture loader unavailable`);
       }
     };
 
@@ -460,7 +431,6 @@
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-      debugLog('onWindowResize() - Window resized');
     }
 
     function animate() {
@@ -479,8 +449,6 @@
       
       renderer.render(scene, camera);
     }
-
-    debugLog('24. All functions defined, execution continuing...');
   </script>
 </body>
 </html>
