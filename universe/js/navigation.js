@@ -95,189 +95,141 @@ function setupControls(camera, EYE_HEIGHT, placeWidth, placeDepth, speedMultipli
         }
     });
 
-    // --- MOBILE TOUCH CONTROLS (Only setup if mobile) ---
-    if (isMobile) {
-        let joystickActive = false;
-        let cameraTouchActive = false;
-        const joystickBase = document.getElementById('joystick-base');
-        const joystickHandle = document.getElementById('joystick-handle');
-        const joystickContainer = document.getElementById('joystick-container');
-        const cameraControlArea = document.getElementById('camera-control-area');
-        const centerTapArea = document.getElementById('center-tap-area');
-        
+// --- MOBILE TOUCH CONTROLS (Only setup if mobile) ---
+if (isMobile) {
+    let joystickActive = false;
+    let cameraTouchActive = false;
+    const joystickBase = document.getElementById('joystick-base');
+    const joystickHandle = document.getElementById('joystick-handle');
+    const joystickContainer = document.getElementById('joystick-container');
+    const cameraControlArea = document.getElementById('camera-control-area');
+    const centerTapArea = document.getElementById('center-tap-area');
+    
+    const maxJoystickDistance = 35;
+
+    // Function to get joystick center coordinates
+    function getJoystickCenter() {
         const joystickRect = joystickContainer.getBoundingClientRect();
-        const joystickCenter = {
+        return {
             x: joystickRect.left + joystickRect.width / 2,
             y: joystickRect.top + joystickRect.height / 2
         };
-        const maxJoystickDistance = 35;
+    }
 
-        // Touch start handler
-        document.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const touchX = touch.clientX;
-            const touchY = touch.clientY;
-            
-            // Check if touch is within the circular joystick area only
-            const joystickRect = joystickContainer.getBoundingClientRect();
-            const joystickCenterX = joystickRect.left + joystickRect.width / 2;
-            const joystickCenterY = joystickRect.top + joystickRect.height / 2;
-            
-            const distanceFromCenter = Math.sqrt(
-                Math.pow(touchX - joystickCenterX, 2) + 
-                Math.pow(touchY - joystickCenterY, 2)
-            );
-            
-            // Only activate joystick if touch is within the circular base (40px radius)
-            if (distanceFromCenter <= 40) {
-                joystickActive = true;
-                updateJoystick(touch);
-            } else if (touchX > window.innerWidth * 0.6) {
-                // Right side - camera control only (rotation)
-                cameraTouchActive = true;
-                previousMouseX = touchX;
-            }
-        });
+    // Function to reset joystick position
+    function resetJoystick() {
+        joystickHandle.style.transform = 'translate(0, 0)';
+        moveState.forward = moveState.backward = moveState.left = moveState.right = false;
+    }
 
-        // Touch move handler
-        document.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const touchX = touch.clientX;
-            const touchY = touch.clientY;
-            
-            if (joystickActive) {
-                // Check if finger is still in joystick area during movement
-                const joystickRect = joystickContainer.getBoundingClientRect();
-                const distanceFromCenter = Math.sqrt(
-                    Math.pow(touchX - (joystickRect.left + joystickRect.width / 2), 2) + 
-                    Math.pow(touchY - (joystickRect.top + joystickRect.height / 2), 2)
-                );
-                
-                // If finger left joystick area, deactivate it
-                if (distanceFromCenter > 40) {
-                    joystickActive = false;
-                    resetJoystick();
-                } else {
-                    updateJoystick(touch);
-                }
-            }
-            
-            if (cameraTouchActive) {
-                const deltaX = touch.clientX - previousMouseX;
-                previousMouseX = touch.clientX;
-                yaw -= deltaX * 0.002;
-                camera.rotation.y = yaw;
-            }
-        });
-
-        function updateJoystick(touch) {
-            const touchX = touch.clientX;
-            const touchY = touch.clientY;
-            
-            const deltaX = touchX - joystickCenter.x;
-            const deltaY = touchY - joystickCenter.y;
-            
-            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-            const angle = Math.atan2(deltaY, deltaX);
-            
-            const limitedDistance = Math.min(distance, maxJoystickDistance);
-            
-            // Update joystick handle position
-            const handleX = limitedDistance * Math.cos(angle);
-            const handleY = limitedDistance * Math.sin(angle);
-            
-            joystickHandle.style.transform = `translate(${handleX}px, ${handleY}px)`;
-            
-            // Update movement state based on joystick position
-            const deadZone = 15;
-            
-            if (limitedDistance > deadZone) {
-                // SWAPPED: UP moves backward, DOWN moves forward
-                moveState.forward = deltaY > deadZone;    // DOWN moves forward
-                moveState.backward = deltaY < -deadZone;  // UP moves backward
-                
-                // REVERSED: Left/right controls swapped
-                moveState.left = deltaX > deadZone;    // RIGHT moves left
-                moveState.right = deltaX < -deadZone;  // LEFT moves right
-            } else {
-                moveState.forward = moveState.backward = moveState.left = moveState.right = false;
-            }
-        }
-
-        function resetJoystick() {
-            joystickHandle.style.transform = 'translate(0, 0)';
+    // Function to update joystick movement
+    function updateJoystick(touch) {
+        const joystickCenter = getJoystickCenter();
+        const touchX = touch.clientX;
+        const touchY = touch.clientY;
+        
+        const deltaX = touchX - joystickCenter.x;
+        const deltaY = touchY - joystickCenter.y;
+        
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        const angle = Math.atan2(deltaY, deltaX);
+        
+        const limitedDistance = Math.min(distance, maxJoystickDistance);
+        
+        // Update joystick handle position
+        const handleX = limitedDistance * Math.cos(angle);
+        const handleY = limitedDistance * Math.sin(angle);
+        
+        joystickHandle.style.transform = `translate(${handleX}px, ${handleY}px)`;
+        
+        // Update movement state based on joystick position
+        const deadZone = 15;
+        
+        if (limitedDistance > deadZone) {
+            // CORRECTED DIRECTIONS:
+            // Forward = top side of joystick (negative deltaY)
+            // Right = right side of joystick (positive deltaX)
+            moveState.forward = deltaY < -deadZone;    // UP moves forward
+            moveState.backward = deltaY > deadZone;    // DOWN moves backward
+            moveState.right = deltaX > deadZone;       // RIGHT moves right
+            moveState.left = deltaX < -deadZone;       // LEFT moves left
+        } else {
             moveState.forward = moveState.backward = moveState.left = moveState.right = false;
         }
     }
 
-function resetCamera() {
-    if (window.ROOM_INITIAL_POSITION && window.ROOM_INITIAL_ROTATION) {
-        // Reset to the stored room-specific position and rotation
-        camera.position.copy(window.ROOM_INITIAL_POSITION);
-        camera.rotation.copy(window.ROOM_INITIAL_ROTATION);
+    // Function to check if touch is within joystick area
+    function isTouchInJoystickArea(touchX, touchY) {
+        const joystickCenter = getJoystickCenter();
+        const distanceFromCenter = Math.sqrt(
+            Math.pow(touchX - joystickCenter.x, 2) + 
+            Math.pow(touchY - joystickCenter.y, 2)
+        );
         
-        // Also reset yaw and pitch to match the initial rotation
-        yaw = window.ROOM_INITIAL_ROTATION.y;
-        pitch = window.ROOM_INITIAL_ROTATION.x;
-    } else {
-        // Fallback to original behavior if room-specific values aren't set
-        camera.position.set(0, EYE_HEIGHT, 0);
-        camera.rotation.set(0, 0, 0);
-        yaw = 0;
-        pitch = 0;
-    }
-    
-    velocity.set(0, 0, 0);
-}
-
-    // Function to enforce camera boundaries
-    function enforceCameraBoundaries() {
-        if (!CAMERA_LIMITS) return; // Don't enforce if limits not set
-        
-        // Apply boundaries to all platforms
-        camera.position.x = THREE.MathUtils.clamp(camera.position.x, CAMERA_LIMITS.minX, CAMERA_LIMITS.maxX);
-        camera.position.z = THREE.MathUtils.clamp(camera.position.z, CAMERA_LIMITS.minZ, CAMERA_LIMITS.maxZ);
-        camera.position.y = THREE.MathUtils.clamp(camera.position.y, CAMERA_LIMITS.minY, CAMERA_LIMITS.maxY);
+        return distanceFromCenter <= 40; // Within circular base radius
     }
 
-    camera.userData.update = function () {
-        velocity.x -= velocity.x * 0.25;
-        velocity.z -= velocity.z * 0.25;
-        velocity.y -= velocity.y * 0.25; // Vertical damping
-
-        direction.z = Number(moveState.forward) - Number(moveState.backward);
-        direction.x = Number(moveState.right) - Number(moveState.left);
-        direction.y = Number(moveState.up) - Number(moveState.down); // Vertical movement
-        direction.normalize();
-
-        // Apply different speeds for forward/backward vs left/right on mobile
-        if (moveState.forward || moveState.backward) velocity.z -= direction.z * moveSpeed;
-        if (moveState.left || moveState.right) velocity.x -= direction.x * (isMobile ? strafeSpeed : moveSpeed);
-        if (moveState.up || moveState.down) velocity.y -= direction.y * moveSpeed; // Vertical movement
-
-        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-        forward.y = 0; right.y = 0; // Keep horizontal movement horizontal
-        forward.normalize(); right.normalize();
-
-        camera.position.add(forward.multiplyScalar(velocity.z));
-        camera.position.add(right.multiplyScalar(velocity.x));
-        camera.position.y += velocity.y; // Apply vertical movement
+    // Touch start handler
+    document.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const touchX = touch.clientX;
+        const touchY = touch.clientY;
         
-        // Enforce camera boundaries for ALL platforms
-        enforceCameraBoundaries();
-    };
-}
+        // Check if touch is within the circular joystick area
+        if (isTouchInJoystickArea(touchX, touchY)) {
+            joystickActive = true;
+            updateJoystick(touch);
+        } else if (touchX > window.innerWidth * 0.6) {
+            // Right side - camera control only (rotation)
+            cameraTouchActive = true;
+            previousMouseX = touchX;
+        }
+    });
 
-// Initialize mobile controls display
-function initMobileControls() {
-    if (isMobile) {
-        document.getElementById("mobile-controls").style.display = "block";
-        document.getElementById("info").style.display = "none";
-        document.getElementById("instructions").style.display = "none";
-        document.getElementById("flight-controls").style.display = "none";
-        document.body.style.touchAction = "none";
-    }
-}
+    // Touch move handler
+    document.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const touchX = touch.clientX;
+        const touchY = touch.clientY;
+        
+        if (joystickActive) {
+            // Check if finger is still in joystick area during movement
+            if (isTouchInJoystickArea(touchX, touchY)) {
+                updateJoystick(touch);
+            } else {
+                // If finger left joystick area, deactivate it
+                joystickActive = false;
+                resetJoystick();
+            }
+        }
+        
+        if (cameraTouchActive) {
+            const deltaX = touch.clientX - previousMouseX;
+            previousMouseX = touch.clientX;
+            yaw -= deltaX * 0.002;
+            camera.rotation.y = yaw;
+        }
+    });
+
+    // Touch end handler
+    document.addEventListener('touchend', (e) => {
+        joystickActive = false;
+        cameraTouchActive = false;
+        resetJoystick();
+    });
+
+    // Touch cancel handler
+    document.addEventListener('touchcancel', (e) => {
+        joystickActive = false;
+        cameraTouchActive = false;
+        resetJoystick();
+    });
+
+    // Ensure joystick maintains size and position on orientation change
+    window.addEventListener('resize', () => {
+        // Force the joystick to reset and maintain its appearance
+        resetJoystick();
+    });
+}}
