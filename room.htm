@@ -151,6 +151,7 @@
     animate();
 
     function init() {
+      // SIMPLIFIED: Basic Three.js setup first (like park code)
       scene = new THREE.Scene();
 
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -160,15 +161,14 @@
       renderer.setClearColor(0x202020);
       document.body.appendChild(renderer.domElement);
 
-      // Initialize mobile controls using the shared navigation.js
+      // MOBILE CONTROLS: Initialize EARLY like park code
       initMobileControls();
 
-      // IMPROVED LIGHTING - Balanced from multiple directions
+      // SIMPLIFIED LIGHTING: Like park code
       const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
       hemiLight.position.set(0, 20, 0);
       scene.add(hemiLight);
 
-      // Increased ambient light for more even illumination
       const ambient = new THREE.AmbientLight(0xffffff, 0.8);
       scene.add(ambient);
 
@@ -185,32 +185,25 @@
       dirLight3.position.set(0, 15, 0);
       scene.add(dirLight3);
       
-      // Initialize texture loader
-      if (!window.textureLoader) {
-        window.textureLoader = new THREE.TextureLoader();
-      }
-      
-      // Create basic room structure (without textures)
+      // CREATE BASIC STRUCTURE FIRST (like park creates ground first)
       createRoomStructure();
 
-      // Get room number from URL parameter
+      // GET ROOM NUMBER
       const roomNumber = getRoomNumber();
-      console.log(`&#128269; Loading room ${roomNumber} from URL parameter`);
+      console.log(`Loading room ${roomNumber}`);
 
-      // Load object creator and then room objects (which will now handle room textures)
+      // SIMPLIFIED LOADING: Like park code - no complex promises
       loadObjectCreator().then(() => {
-        console.log(`&#9989; Object creator loaded, now loading room ${roomNumber} objects and textures...`);
-        return loadRoomObjects(roomNumber);
+        console.log('Object creator loaded');
+        loadRoomObjects(roomNumber);
       }).catch((error) => {
-        console.error('&#10060; Failed to load object creator:', error);
-        // Fallback: try to load room objects anyway
+        console.error('Failed to load object creator:', error);
+        // CONTINUE ANYWAY like park code does
         loadRoomObjects(roomNumber);
       });
 
-      // Use the shared navigation controls - pass PLACE dimensions with slower speed for indoor navigation
+      // CONTROLS: Setup like park code
       setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
-      
-      // OVERRIDE: Replace the navigation.js boundary enforcement with museum-specific boundaries
       overrideNavigationBoundaries();
       
       window.addEventListener("resize", onWindowResize);
@@ -310,7 +303,7 @@
       ceiling.name = 'room-ceiling';
       scene.add(ceiling);
 
-      console.log('&#9989; Basic room structure created (awaiting room-specific textures)');
+      console.log('Basic room structure created (awaiting room-specific textures)');
     }
 
     // Function to load object creator
@@ -320,7 +313,7 @@
         script.src = 'universe/obj_create_room.js?v=' + Date.now();
         
         script.onload = function() {
-          console.log('&#9989; obj_create_room.js loaded successfully');
+          console.log('obj_create_room.js loaded successfully');
           // Initialize texture loader AFTER obj_create_room.js is loaded
           if (!window.textureLoader) {
             window.textureLoader = new THREE.TextureLoader();
@@ -332,7 +325,7 @@
         };
         
         script.onerror = function() {
-          console.error('&#10060; Failed to load obj_create_room.js');
+          console.error('Failed to load obj_create_room.js');
           reject(new Error('Failed to load object creator script'));
         };
         
@@ -340,51 +333,36 @@
       });
     }
 
-    // UPDATED: Load room objects from file based on room number
+    // SIMPLIFIED: Load room objects from file based on room number
     function loadRoomObjects(roomNumber) {
       const loadingDiv = document.getElementById('loading');
-      loadingDiv.textContent = `Loading room ${roomNumber} objects and textures...`;
+      loadingDiv.textContent = `Loading room ${roomNumber}...`;
 
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = `universe/rooms/room${roomNumber}.js`;
-        
-        script.onload = () => {
-          setTimeout(() => {
-            loadingDiv.style.display = 'none';
-            if (!isMobile) {
-              document.getElementById('instructions').textContent = 
-                `Room ${roomNumber} ready | Use WASD to move and mouse to look around`;
-            }
-            console.log(`&#9989; Room ${roomNumber} objects and textures loaded successfully`);
-            
-            // Fix animations after room objects are loaded
-            setTimeout(() => {
-              fixAllAnimations();
-            }, 1000);
-            
-            resolve();
-          }, 0);
-        };
-        
-        script.onerror = () => {
+      // SIMPLE SCRIPT LOADING like park code
+      const script = document.createElement('script');
+      script.src = `universe/rooms/room${roomNumber}.js`;
+      
+      script.onload = () => {
+        setTimeout(() => {
           loadingDiv.style.display = 'none';
           if (!isMobile) {
             document.getElementById('instructions').textContent = 
-              `Room ${roomNumber} ready (no objects) | Use WASD to move and mouse to look around`;
+              `Room ${roomNumber} ready | Use WASD to move and mouse to look around`;
           }
-          console.log(`&#8505;&#65039; No room ${roomNumber} objects file found - room has basic structure only`);
-          
-          // Fix animations even if no room objects
-          setTimeout(() => {
-            fixAllAnimations();
-          }, 1000);
-          
-          resolve(); // Don't reject, just continue with basic room
-        };
-        
-        document.head.appendChild(script);
-      });
+          console.log(`Room ${roomNumber} loaded`);
+        }, 100);
+      };
+      
+      script.onerror = () => {
+        loadingDiv.style.display = 'none';
+        if (!isMobile) {
+          document.getElementById('instructions').textContent = 
+            `Room ${roomNumber} ready (no objects) | Use WASD to move and mouse to look around`;
+        }
+        console.log(`No room ${roomNumber} objects file found`);
+      };
+      
+      document.head.appendChild(script);
     }
 
     // NEW: Helper function for room files to apply textures to room structures
@@ -401,37 +379,14 @@
             map: texture,
             side: mesh.material.side // Preserve double-sided setting for walls
           });
-          console.log(`&#9989; Applied texture to ${meshName}: ${texturePath}`);
+          console.log(`Applied texture to ${meshName}: ${texturePath}`);
         } catch (error) {
-          console.error(`&#10060; Failed to apply texture to ${meshName}:`, error);
+          console.error(`Failed to apply texture to ${meshName}:`, error);
         }
       } else {
-        console.warn(`&#9888;&#65039; Mesh ${meshName} not found or texture loader not available`);
+        console.warn(`Mesh ${meshName} not found or texture loader not available`);
       }
     };
-
-    // NEW: Fix animation looping for all GLB models
-    function fixAllAnimations() {
-      let fixedCount = 0;
-      scene.traverse((child) => {
-        if (child.userData?.animations) {
-          const animData = child.userData.animations;
-          
-          // Fix all animations to loop properly
-          animData.actions.forEach((action, name) => {
-            action.setLoop(THREE.LoopRepeat);
-            action.clampWhenFinished = false;
-          });
-          
-          fixedCount++;
-          console.log(`&#9989; Fixed animations for: ${child.name}`);
-        }
-      });
-      
-      if (fixedCount > 0) {
-        console.log(`&#127917; Fixed animations for ${fixedCount} model(s)`);
-      }
-    }
 
     function onWindowResize() {
       camera.aspect = window.innerWidth / window.innerHeight;
