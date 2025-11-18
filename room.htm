@@ -215,7 +215,7 @@
     // Function to get URL parameter
     function getRoomNumber() {
       const urlParams = new URLSearchParams(window.location.search);
-      const roomNum = urlParams.get('num');
+      const roomNum = urlParams.get('id');
       return roomNum && !isNaN(roomNum) && roomNum > 0 ? roomNum : '1';
     }
 
