@@ -1133,7 +1133,7 @@ function setupMobileControls() {
     camera.userData.update = function() {
         // Handle mobile movement
         if (joystickActive && camera.userData.joystickDirection) {
-            const moveSpeed = 0.08;
+            const moveSpeed = 0.2;
             const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
             const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
             forward.y = 0; right.y = 0;
