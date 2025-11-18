@@ -23,11 +23,6 @@
       background: rgba(0,0,0,0.5);
       padding: 5px;
     }
-    #instructions {
-      bottom: 20px;
-      background: rgba(0,0,0,0.7);
-      padding: 10px;
-    }
     #loading {
       position: absolute;
       top: 50%;
@@ -95,7 +90,7 @@
 </head>
 <body>
   <div id="info">Virtual Shopping Mall | WASD: Move | Mouse: Look Around | R: Reset Position</div>
-  <div id="instructions">Loading mall...</div>
+  <div id="instructions"></div>
   <div id="loading">Creating mall structure...</div>
 
   <!-- Mobile Controls -->
@@ -311,18 +306,12 @@
         
         document.getElementById('loading').style.display = 'none';
         
-        if (loadedStores.length > 0) {
-          document.getElementById('instructions').textContent = 
-            `Mall loaded with ${storesPerSide * 2} stores (${loadedStores.length} with interiors)! Use WASD to move and mouse to look around`;
-        } else {
-          document.getElementById('instructions').textContent = 
-            `Mall loaded with ${storesPerSide * 2} stores! Use WASD to move and mouse to look around`;
-        }
+        // Clear the instructions div - no message displayed
+        document.getElementById('instructions').textContent = '';
 
         // Show mobile controls if on mobile device
         if (isMobile) {
           document.getElementById('mobile-controls').style.display = 'block';
-          document.getElementById('instructions').textContent += ' | Use virtual joystick to move and touch right side to look around';
         }
         
         // Final scene verification
@@ -354,8 +343,7 @@
         createSideWalls();
         
         document.getElementById('loading').style.display = 'none';
-        document.getElementById('instructions').textContent = 
-          `Mall loaded with basic structure! Use WASD to move and mouse to look around`;
+        document.getElementById('instructions').textContent = '';
       });
 
       setupControls();
