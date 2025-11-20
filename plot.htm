@@ -207,7 +207,7 @@
     // Safe initialization with error handling
     let scene, camera, renderer;
     const clock = new THREE.Clock();
-    const EYE_HEIGHT = 2.5;
+    const EYE_HEIGHT = 3.5;
 
     // Plot dimensions for navigation
     const PLOT_WIDTH = 40;
@@ -662,10 +662,10 @@ function startAudioSystem() {
             overrideNavigationBoundaries();
         }
         
-        camera.position.set(0, EYE_HEIGHT, PLOT_CAMERA_LIMITS.maxZ/2 + 2);
+        camera.position.set(0, EYE_HEIGHT, 41.5);
         camera.rotation.set(0, 0, 0);
         
-        window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, PLOT_CAMERA_LIMITS.maxZ/2 + 2);
+        window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 41.5);
     	window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0 * Math.PI / 180, 0, 'YXZ');
         
         window.addEventListener("resize", onWindowResize);
@@ -686,7 +686,6 @@ function startAudioSystem() {
         if (camera && typeof THREE.MathUtils !== 'undefined') {
             camera.position.x = THREE.MathUtils.clamp(camera.position.x, PLOT_CAMERA_LIMITS.minX, PLOT_CAMERA_LIMITS.maxX);
             camera.position.z = THREE.MathUtils.clamp(camera.position.z, PLOT_CAMERA_LIMITS.minZ, PLOT_CAMERA_LIMITS.maxZ);
-            camera.position.y = EYE_HEIGHT;
         }
     }
 
