@@ -51,19 +51,12 @@ $features = [
 
 	<div class='container mt-5'>
 		<h2 style='color: #8b0000; font-weight: 600; background-color: #f7f7f7; padding: 15px; border-radius: 5px; text-align: center;'>Package Description</h2>
-		<p class='mt-3 text-center'>The ARville Platinum Plan provides customized AR marketing and customer relationsip solutions to large businesses seeking to enhance their prestige and exclusivity.</p>
-	</div>"
-    <div class="container">
-        <div class="text-center mb-4">
-		   <h2 style='color: #8b0000; font-weight: 600; background-color: #f7f7f7; padding: 15px; border-radius: 5px; text-align: center;'>Package Features</h2>
-            <ul class="list-group text-start mt-3">
-                <?php foreach ($features as $feature) : ?>
-                    <li class="list-group-item">
-                        <strong><?php echo $feature['title']; ?>:</strong> <?php echo $feature['description']; ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
+		<p class='mt-3 text-center'>The ARville Platinum Plan elevates your brand by allowing you to own one of our most prestigious premier virtual destinations, such as a custom expo hall or convention center, which can serve as a dynamic destination for your customers. 
+		Use this space to showcase countless products, host  events, and create deep brand immersion for a global audience. Start building your legacy in the metaverse &mdash; secure your Platinum Plan now and transform how you connect with customers. 
+		Your competition is already exploring their options.
+
+</p>
+	</div><div class="container">
 
         <!-- Sign-Up Form -->
         <div class="card shadow-lg mt-5">

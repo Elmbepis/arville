@@ -1,11 +1,6 @@
 <?php
 // Define the page title and features
 $title = "Gold Package";
-$features = [
-    ["title" => "Essential AR Tools", "description" => "Get started with augmented reality for your business."],
-    ["title" => "Basic Analytics", "description" => "Track and measure your AR campaign performance effectively."],
-    ["title" => "Email Support", "description" => "Receive assistance via email for your inquiries and issues."]
-];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,19 +46,10 @@ $features = [
 
 	<div class='container mt-5'>
 		<h2 style='color: #8b0000; font-weight: 600; background-color: #f7f7f7; padding: 15px; border-radius: 5px; text-align: center;'>Package Description</h2>
-		<p class='mt-3 text-center'>The ARville Gold Plan contains all the AR tools needed to develop advanced AR capabilities that mainstream businesses need in order to maintain market leadership.</p>
-	</div>"
-    <div class="container">
-        <div class="text-center mb-4">
-		   <h2 style='color: #8b0000; font-weight: 600; background-color: #f7f7f7; padding: 15px; border-radius: 5px; text-align: center;'>Package Features</h2>
-            <ul class="list-group text-start mt-3">
-                <?php foreach ($features as $feature) : ?>
-                    <li class="list-group-item">
-                        <strong><?php echo $feature['title']; ?>:</strong> <?php echo $feature['description']; ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
+		<p class='mt-3 text-center'>The ARville Gold Plan gives you a premium AR or VR space &mdash; whether a private scene or a prominent booth in a grand large-scale virtual venue. It's the ideal solution for creating an immersive branded showroom, 
+		an exclusive VIP lounge, or hands-on interactive product demos. Go beyond the brochure and let your products speak for themselves. 
+		Claim your Gold Plan today and create a powerful, focused presence that captivates your most important audiences.</p>
+	</div><div class="container">
 
         <!-- Sign-Up Form -->
         <div class="card shadow-lg mt-5">

@@ -1,11 +1,6 @@
 <?php
 // Define the page title and features
 $title = "Silver Package";
-$features = [
-    ["title" => "Essential AR Tools", "description" => "Get started with augmented reality for your business."],
-    ["title" => "Basic Analytics", "description" => "Track and measure your AR campaign performance effectively."],
-    ["title" => "Email Support", "description" => "Receive assistance via email for your inquiries and issues."]
-];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,19 +46,10 @@ $features = [
 
 	<div class='container mt-5'>
 		<h2 style='color: #8b0000; font-weight: 600; background-color: #f7f7f7; padding: 15px; border-radius: 5px; text-align: center;'>Package Description</h2>
-		<p class='mt-3 text-center'>The ARville Silver Plan contains all the essential AR tools to develop basic AR-driven marketing and customer relationship tools that small businesses need in order to make a name, expand, and grow quickly.</p>
-	</div>"
-    <div class="container">
-        <div class="text-center mb-4">
-		   <h2 style='color: #8b0000; font-weight: 600; background-color: #f7f7f7; padding: 15px; border-radius: 5px; text-align: center;'>Package Features</h2>
-            <ul class="list-group text-start mt-3">
-                <?php foreach ($features as $feature) : ?>
-                    <li class="list-group-item">
-                        <strong><?php echo $feature['title']; ?>:</strong> <?php echo $feature['description']; ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
+		<p class='mt-3 text-center'>The ARville Silver Plan strategically positions your brand in the metaverse by providing three prominent placements for your key products or digital signages within high-traffic communal AR and VR environments. 
+		This is your entry point into XR marketing, perfect for running targeted campaigns, generating qualified leads, and building brand awareness where your audience already gathers. 
+		Launch your immersive marketing journey today &mdash; select your Silver Plan and start capturing attention immediately.</p>
+	</div><div class="container">
 
         <!-- Sign-Up Form -->
         <div class="card shadow-lg mt-5">
