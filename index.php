@@ -128,7 +128,7 @@ echo "        <div class='row g-4'>";
 $categories = [
     ["title" => "Hospitality and Tourism", "tagline" => "Enhance your travel experiences with XR-driven services.", "icon" => "icon-hospitality.jpg", "hoverIcon" => "icon-hospitality2.jpg", "link" => "cat-page.php?cat=hospitality"],
     ["title" => "Education and Development", "tagline" => "Empower your mind through XR.", "icon" => "icon-education.jpg", "hoverIcon" => "icon-education2.jpg", "link" => "cat-page.php?cat=education"],
-    ["title" => "Sports and Recreation", "tagline" => "Immerse yourself in passionate XR experiences.", "icon" => "icon-sports.jpg", "hoverIcon" => "icon-sports2.jpg", "link" => "cat-page.php?cat=sports"],
+    ["title" => "Sports and Recreation", "tagline" => "Get into sports or find entertainment with XR.", "icon" => "icon-sports.jpg", "hoverIcon" => "icon-sports2.jpg", "link" => "cat-page.php?cat=sports"],
     ["title" => "Electronics and Gadgets", "tagline" => "Acquaint yourself with tech products through XR.", "icon" => "icon-electronics.jpg", "hoverIcon" => "icon-electronics2.jpg", "link" => "cat-page.php?cat=electronics"],
     ["title" => "Style and Fashion", "tagline" => "Reinvent your look with XR.", "icon" => "icon-fashion.jpg", "hoverIcon" => "icon-fashion2.jpg", "link" => "cat-page.php?cat=fashion"],
     ["title" => "Beauty and Wellness", "tagline" => "Elevate your self-care through XR.", "icon" => "icon-beauty.jpg", "hoverIcon" => "icon-beauty2.jpg", "link" => "cat-page.php?cat=beauty"],

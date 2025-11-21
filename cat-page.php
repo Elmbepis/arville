@@ -122,7 +122,7 @@ echo "</header>";
 $categories2 = [
     "hospitality" => ["title" => "Hospitality and Tourism", "tagline" => "Enhance your travel experiences with  XR-driven services."],
     "education" => ["title" => "Education and Development", "tagline" => "Empower your mind through  XR."],
-    "sports" => ["title" => "Sports and Hobbies", "tagline" => "Immerse yourself in passionate  XR experiences."],
+    "sports" => ["title" => "Sports and Hobbies", "tagline" => "Get into sports or find entertainment with XR."],
     "electronics" => ["title" => "Electronics and Gadgets", "tagline" => "Acquaint yourself with tech products through  XR."],
     "fashion" => ["title" => "Style and Fashion", "tagline" => "Reinvent your look with  XR."],
     "beauty" => ["title" => "Beauty and Wellness", "tagline" => "Elevate your self-care through  XR."],
