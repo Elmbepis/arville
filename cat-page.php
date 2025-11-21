@@ -120,15 +120,15 @@ echo "</header>";
 // Category section
 
 $categories2 = [
-    "hospitality" => ["title" => "Hospitality and Tourism", "tagline" => "Enhance your travel experiences with AR-driven services."],
-    "education" => ["title" => "Education and Development", "tagline" => "Empower your mind through AR."],
-    "sports" => ["title" => "Sports and Hobbies", "tagline" => "Immerse yourself in passionate AR experiences."],
-    "electronics" => ["title" => "Electronics and Gadgets", "tagline" => "Acquaint yourself with tech products through AR."],
-    "fashion" => ["title" => "Style and Fashion", "tagline" => "Reinvent your look with AR."],
-    "beauty" => ["title" => "Beauty and Wellness", "tagline" => "Elevate your self-care through AR."],
-    "cars" => ["title" => "Cars and Car Accessories", "tagline" => "Immerse yourself in the glitz of showbiz with AR."],
-    "estate" => ["title" => "Real Estate", "tagline" => "Enjoy looking for property investments through AR."],
-    "gov" => ["title" => "Government and Public Service", "tagline" => "Find government information and assistance through AR."],
+    "hospitality" => ["title" => "Hospitality and Tourism", "tagline" => "Enhance your travel experiences with  XR-driven services."],
+    "education" => ["title" => "Education and Development", "tagline" => "Empower your mind through  XR."],
+    "sports" => ["title" => "Sports and Hobbies", "tagline" => "Immerse yourself in passionate  XR experiences."],
+    "electronics" => ["title" => "Electronics and Gadgets", "tagline" => "Acquaint yourself with tech products through  XR."],
+    "fashion" => ["title" => "Style and Fashion", "tagline" => "Reinvent your look with  XR."],
+    "beauty" => ["title" => "Beauty and Wellness", "tagline" => "Elevate your self-care through  XR."],
+    "cars" => ["title" => "Cars and Car Accessories", "tagline" => "Find upgrades and accessories for your car with XR."],
+    "estate" => ["title" => "Real Estate", "tagline" => "Enjoy looking for property investments through  XR."],
+    "gov" => ["title" => "Government and Public Service", "tagline" => "Find government information and assistance through  XR."],
 ];
 
 echo "<style>

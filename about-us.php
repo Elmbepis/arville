@@ -1,7 +1,7 @@
 <?php
 // Define the "About ARville" page content
 $title = "About ARville";
-$description = "ARville is an online ecosystem of businesses, consumers, and communities connected together by immersive AR experiences and innovative marketing and customer relationship tools. Below are our mission, vision, and the dedicated team that brings it all together.";
+$description = "ARville is an online ecosystem of businesses, consumers, and communities connected together by immersive web XR experiences and innovative marketing and customer relationship tools. Below are our mission, vision, and the dedicated team that brings it all together.";
 
 // Header section
 echo "<!DOCTYPE html>";
@@ -54,13 +54,13 @@ echo "</div>";
 // Section: Mission
 echo "<div class='container mt-5'>"; // Add container for centered content
 echo "    <h2 style='color: #8b0000; font-weight: 600; background-color: #f7f7f7; padding: 15px; border-radius: 5px; text-align: center;'>Our Mission</h2>";
-echo "    <p class='mt-3 text-center'>ARville is committed to revolutionizing how businesses and communities connect through cutting-edge AR technology. We strive to empower businesses, enrich consumer experiences, and create a vibrant ecosystem where technology enhances real-world interactions.</p>";
+echo "    <p class='mt-3 text-center'>ARville is committed to revolutionizing how businesses and communities connect through cutting-edge  XR technology. We strive to empower businesses, enrich consumer experiences, and create a vibrant ecosystem where technology enhances real-world interactions.</p>";
 echo "</div>";
 
 // Section: Vision
 echo "<div class='container mt-5'>"; // Add container for centered content
 echo "    <h2 style='color: #8b0000; font-weight: 600; background-color: #f7f7f7; padding: 15px; border-radius: 5px; text-align: center;'>Our Vision</h2>";
-echo "    <p class='mt-3 text-center'>Our vision is to establish ARville as a global leader in AR-powered ecosystems, fostering innovation and bridging the gap between businesses and their audiences. We aim to create a seamless, interactive, and inclusive digital landscape for everyone.</p>";
+echo "    <p class='mt-3 text-center'>Our vision is to establish ARville as a global leader in web XR-powered ecosystems, fostering innovation and bridging the gap between businesses and their audiences. We aim to create a seamless, interactive, and inclusive digital landscape for everyone.</p>";
 echo "</div>";
 
 echo "    </div>";

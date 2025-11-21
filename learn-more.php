@@ -1,7 +1,7 @@
 <?php
 
 $title = "What is ARville?";
-$description = "ARville is an online ecosystem of businesses, consumers, and communities connected together by immersive AR experiences and innovative marketing and customer relationship tools.";
+$description = "ARville is an online ecosystem of businesses, consumers, and communities connected together by immersive XR experiences and innovative marketing and customer relationship tools.";
 
 // Header section
 echo "<!DOCTYPE html>";
@@ -36,12 +36,12 @@ echo "        <div class='mt-5'></div>";
 echo "        <!-- Section: What Makes Us Unique -->";
 echo "        <div class='row text-start'>";
 echo "            <div class='col-lg-6 mb-4'>";
-echo "                <h3 style='border-top: 5px solid darkred; border-bottom: 5px solid darkred; padding: 10px 0;'>Immersive AR Experiences</h3>";
-echo "                <p>ARville harnesses the power of augmented reality (AR) to revolutionize customer engagement, making every interaction more dynamic and impactful. Businesses can showcase virtual product demonstrations, simulate real-world scenarios, and create fully interactive marketing campaigns that captivate their audiences. Whether it's allowing customers to visualize furniture in their homes or immersing them in a gamified shopping experience, AR bridges the gap between imagination and reality. These experiences not only leave a lasting impression but also foster deep brand loyalty and enhanced customer satisfaction.</p>";
+echo "                <h3 style='border-top: 5px solid darkred; border-bottom: 5px solid darkred; padding: 10px 0;'>Immersive XR Experiences</h3>";
+echo "                <p>ARville harnesses the power of extended reality (XR) to revolutionize customer engagement, making every interaction more dynamic and impactful. Businesses can showcase virtual product demonstrations, simulate real-world scenarios, and create fully interactive marketing campaigns that captivate their audiences. Whether it's allowing customers to visualize furniture in their homes or immersing them in a gamified shopping experience, XR bridges the gap between imagination and reality. These experiences not only leave a lasting impression but also foster deep brand loyalty and enhanced customer satisfaction.</p>";
 echo "            </div>";
 echo "            <div class='col-lg-6 mb-4'>";
 echo "                <h3 style='border-top: 5px solid darkred; border-bottom: 5px solid darkred; padding: 10px 0;'>Innovative Marketing Tools</h3>";
-echo "                <p>ARville provides businesses with state-of-the-art tools to implement and manage AR-driven marketing strategies effortlessly. Our platform enables companies to create customized AR campaigns, track their performance, and gain invaluable insights into customer preferences and behavior. These analytics empower businesses to refine their strategies in real time, ensuring maximum effectiveness and engagement. By offering a seamless blend of creativity and data-driven decision-making, ARville equips businesses to stay ahead in today's competitive marketplace.</p>";
+echo "                <p>ARville provides businesses with state-of-the-art tools to implement and manage XR-driven marketing strategies effortlessly. Our platform enables companies to create customized XR campaigns, track their performance, and gain invaluable insights into customer preferences and behavior. These analytics empower businesses to refine their strategies in real time, ensuring maximum effectiveness and engagement. By offering a seamless blend of creativity and data-driven decision-making, ARville equips businesses to stay ahead in today's competitive marketplace.</p>";
 echo "            </div>";
 echo "        </div>";
 
@@ -49,11 +49,11 @@ echo "        <!-- Section: Who We Serve -->";
 echo "        <div class='row text-start'>";
 echo "            <div class='col-lg-6 mb-4'>";
 echo "                <h3 style='border-top: 5px solid darkred; border-bottom: 5px solid darkred; padding: 10px 0;'>Value to Businesses</h3>";
-echo "                <p>ARville is designed to cater to businesses of all sizes, from innovative startups looking to make their mark to established enterprises aiming to enhance their brand presence. Our platform helps businesses stand out by offering unique AR experiences that attract and retain customers. By integrating AR into their operations, businesses can increase product visibility, foster meaningful interactions, and provide value-driven customer engagements. Whether it's an online retailer offering AR fitting rooms or a cafe using AR promotions, ARville helps businesses redefine how they connect with their audience.</p>";
+echo "                <p>ARville is designed to cater to businesses of all sizes, from innovative startups looking to make their mark to established enterprises aiming to enhance their brand presence. Our platform helps businesses stand out by offering unique XR experiences that attract and retain customers. By integrating XR into their operations, businesses can increase product visibility, foster meaningful interactions, and provide value-driven customer engagements. Whether it's an online retailer offering XR fitting rooms or a cafe using XR promotions, ARville helps businesses redefine how they connect with their audience.</p>";
 echo "            </div>";
 echo "            <div class='col-lg-6 mb-4'>";
 echo "                <h3 style='border-top: 5px solid darkred; border-bottom: 5px solid darkred; padding: 10px 0;'>Value to Consumers</h3>";
-echo "                <p>For consumers, ARville transforms everyday activities like shopping, learning, and entertainment into immersive and interactive experiences. Imagine exploring a virtual neighborhood to discover exclusive deals or engaging in an AR treasure hunt while shopping online. ARville makes it possible for customers to visualize products, participate in gamified activities, and enjoy a more personalized and engaging user journey. This level of convenience and interactivity not only enhances customer satisfaction but also turns routine activities into memorable adventures.</p>";
+echo "                <p>For consumers, ARville transforms everyday activities like shopping, learning, and entertainment into immersive and interactive experiences. Imagine exploring a virtual neighborhood to discover exclusive deals or engaging in an XR treasure hunt while shopping online. ARville makes it possible for customers to visualize products, participate in gamified activities, and enjoy a more personalized and engaging user journey. This level of convenience and interactivity not only enhances customer satisfaction but also turns routine activities into memorable adventures.</p>";
 echo "            </div>";
 echo "        </div>";
 
@@ -62,13 +62,13 @@ echo "        <div class='mt-3'>";
 echo "            <h2 style='color: #0447f3; font-weight: 600;'>Dynamic Features of ARville</h2>";
 echo "        <div class='mt-3'></div>";
 echo "            <ul class='list-group text-start'>";
-echo "                <li class='list-group-item'><strong>Quarterly Gamified Events:</strong> Participate in AR treasure hunts and thematic storylines that engage users with tenant-specific AR experiences.</li>";
-echo "                <li class='list-group-item'><strong>Annual ARville Convention or Concert:</strong> Explore virtual expos with 3D booths or enjoy AR-enhanced concerts sponsored by tenant businesses.</li>";
-echo "                <li class='list-group-item'><strong>Unified AR Branding:</strong> Experience cohesive branding with shared digital spaces and tenant AR experiences labeled 'Powered by ARville.'</li>";
-echo "                <li class='list-group-item'><strong>Centralized Rewards System:</strong> Earn and redeem AR points across tenants, boosting engagement and customer loyalty.</li>";
-echo "                <li class='list-group-item'><strong>Collaborative AR Experiences:</strong> Engage in joint promotions or story chains involving multiple tenants to create a shared AR narrative.</li>";
-echo "                <li class='list-group-item'><strong>Partnerships with High-Profile Events:</strong> Tie into major festivals or esports tournaments, leveraging AR to enhance visibility and user interaction.</li>";
-echo "                <li class='list-group-item'><strong>Community-Centric AR Events:</strong> Participate in AR-powered neighborhood tours or virtual art installations hosted by tenant businesses.</li>";
+echo "                <li class='list-group-item'><strong>Quarterly Gamified Events:</strong> Participate in XR treasure hunts and thematic storylines that engage users with tenant-specific XR experiences.</li>";
+echo "                <li class='list-group-item'><strong>Annual ARville Convention or Concert:</strong> Explore virtual expos with 3D booths or enjoy XR-enhanced concerts sponsored by tenant businesses.</li>";
+echo "                <li class='list-group-item'><strong>Unified XR Branding:</strong> Experience cohesive branding with shared digital spaces and tenant XR experiences labeled 'Powered by ARville.'</li>";
+echo "                <li class='list-group-item'><strong>Centralized Rewards System:</strong> Earn and redeem XR points across tenants, boosting engagement and customer loyalty.</li>";
+echo "                <li class='list-group-item'><strong>Collaborative XR Experiences:</strong> Engage in joint promotions or story chains involving multiple tenants to create a shared XR narrative.</li>";
+echo "                <li class='list-group-item'><strong>Partnerships with High-Profile Events:</strong> Tie into major festivals or esports tournaments, leveraging XR to enhance visibility and user interaction.</li>";
+echo "                <li class='list-group-item'><strong>Community-Centric XR Events:</strong> Participate in XR-powered neighborhood tours or virtual art installations hosted by tenant businesses.</li>";
 echo "                <li class='list-group-item'><strong>Measuring and Reinforcing Success:</strong> Use leaderboards, social media amplification, and event recaps to highlight engagement and tenant contributions.</li>";
 echo "            </ul>";
 echo "        </div>";

@@ -3,11 +3,9 @@
 $plans = [
     [
         "name" => "Silver Plan",
-        "price" => "&#8369;10,000",
+        "price" => "Starts at &#8369;2,000",
         "features" => [
-            "Essential AR tools",
-            "Basic analytics",
-            "Email support",
+            "Place three (3) products or signages in high-traffic communal AR or VR environments.",
         ],
         "cta" => "Sign Up",
         "link" => "signup-silver.php",
@@ -15,11 +13,9 @@ $plans = [
     ],
     [
         "name" => "Gold Plan",
-        "price" => "&#8369;20,000",
+        "price" => "Starts at &#8369;6,000",
         "features" => [
-            "Advanced AR tools",
-            "Gamification features",
-            "Priority support",
+            "Own an exclusive AR or VR scene or a booth in a large VR venue: perfect for a branded showroom, VIP lounge, or interactive product demo.",
         ],
         "cta" => "Sign Up",
         "link" => "signup-gold.php",
@@ -27,11 +23,9 @@ $plans = [
     ],
     [
         "name" => "Platinum Plan",
-        "price" => "&#8369;50,000",
+        "price" => "Starts at &#8369;30,000",
         "features" => [
-            "Tailored AR solutions",
-            "Comprehensive analytics",
-            "24/7 dedicated support",
+            "Own a grand, landmark VR environment like a virtual expo hall, convention center, museum, or mall to showcase a multitude of products, host events, and offer immersive brand experiences.",
         ],
         "cta" => "Sign Up",
         "link" => "signup-platinum.php",
@@ -48,6 +42,48 @@ echo "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 echo "    <title>Plans - Arville</title>";
 echo "    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>";
 echo "    <link rel='stylesheet' href='styles.css'>";
+echo "    <style>";
+echo "        .card {";
+echo "            transition: transform 0.3s ease, box-shadow 0.3s ease;";
+echo "            height: 100%;";
+echo "            display: flex;";
+echo "            flex-direction: column;";
+echo "        }";
+echo "        .card:hover {";
+echo "            transform: translateY(-5px);";
+echo "            box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;";
+echo "        }";
+echo "        .card-body {";
+echo "            display: flex;";
+echo "            flex-direction: column;";
+echo "            flex-grow: 1;";
+echo "        }";
+echo "        .card-body .btn {";
+echo "            margin-top: auto;";
+echo "            width: 80%;";
+echo "            align-self: center;";
+echo "        }";
+echo "        .border-gold {";
+echo "            border: 3px solid gold !important;";
+echo "        }";
+echo "        .border-lightblue {";
+echo "            border: 3px solid #add8e6 !important;";
+echo "        }";
+echo "        .border-gray {";
+echo "            border: 3px solid #dee2e6 !important;";
+echo "        }";
+echo "        .most-popular {";
+echo "            color: gold;";
+echo "            font-size: 1.1rem;";
+echo "            font-weight: bold;";
+echo "            margin-top: -0.5rem;";
+echo "            margin-bottom: 0.5rem;";
+echo "        }";
+echo "        .list-group-item {";
+echo "            border: none;";
+echo "            padding: 0.75rem 0;";
+echo "        }";
+echo "    </style>";
 echo "</head>";
 echo "<body>";
 
@@ -74,33 +110,33 @@ echo "</nav>";
 // Header Section
 echo "<header class='text-center py-5 bg-primary text-white'>";
 echo "    <h1>Choose the Plan That Fits Your Needs</h1>";
-echo "    <p class='lead'>Empowering your business with cutting-edge AR solutions.</p>";
+echo "    <p class='lead'>Empowering your business with cutting-edge XR solutions.</p>";
 echo "</header>";
 
 // Plans Section
 echo "<main class='py-5'>";
 echo "    <div class='container'>";
-echo "        <div class='row row-cols-1 row-cols-md-3 g-4'>";
+echo "        <div class='row row-cols-1 row-cols-md-3 g-4 align-items-stretch'>"; // Added align-items-stretch
 
 // Loop through the plans
 foreach ($plans as $plan) {
     $borderColor = $plan['highlight'] ? "border-gold" : ($plan['name'] === "Platinum Plan" ? "border-lightblue" : "border-gray");
-	$mostPopular = $plan['highlight'] ? "<p style='color: gold; font-size: 1.5rem; font-weight: bold; margin-top: -0.5rem; margin-bottom: 0.5 rem;'>(Most Popular)</p>" : "";
+    $mostPopular = $plan['highlight'] ? "<p class='most-popular'>(Most Popular)</p>" : "";
 
-    echo "<div class='col'>";
-    echo "    <div class='card $borderColor text-center shadow-sm'>";
+    echo "<div class='col d-flex'>"; // Added d-flex
+    echo "    <div class='card $borderColor text-center shadow-sm w-100'>"; // Added w-100
     echo "        <div class='card-header bg-primary text-white'>";
     echo "            <h1>{$plan['name']}</h1>";
     echo $mostPopular; // Add 'Most Popular' for Gold Plan
     echo "        </div>";
-    echo "        <div class='card-body'>";
+    echo "        <div class='card-body d-flex flex-column'>"; // Added d-flex flex-column
     echo "            <h3 class='card-title text-primary'>{$plan['price']}</h3>";
-    echo "            <ul class='list-group list-group-flush my-3'>";
+    echo "            <ul class='list-group list-group-flush my-3 flex-grow-1'>"; // Added flex-grow-1
     foreach ($plan['features'] as $feature) {
         echo "                <li class='list-group-item'>$feature</li>";
     }
     echo "            </ul>";
-    echo "            <a href='{$plan['link']}' class='btn btn-primary'>{$plan['cta']}</a>";
+    echo "            <a href='{$plan['link']}' class='btn btn-primary mt-auto'>{$plan['cta']}</a>"; // Added mt-auto
     echo "        </div>";
     echo "    </div>";
     echo "</div>";
