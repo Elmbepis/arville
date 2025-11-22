@@ -143,7 +143,7 @@
         
         // Museum dimensions for navigation
         const PLACE_WIDTH = 30;
-        const PLACE_DEPTH = 80;
+        const PLACE_DEPTH = 90;
 
         window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 48);
         window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0 * Math.PI / 180, 0, 'YXZ');
@@ -270,7 +270,7 @@
         async function createRoom() {
             const roomWidth = PLACE_WIDTH;
             const roomDepth = PLACE_DEPTH;
-            const wallHeight = 10;
+            const wallHeight = 11.5;
 
             try {
                 // Load textures using the configuration from main-textures.js
@@ -469,7 +469,7 @@
         function createRoomWithMaterials(materials) {
             const roomWidth = PLACE_WIDTH;
             const roomDepth = PLACE_DEPTH;
-            const wallHeight = 10;
+            const wallHeight = 11.5;
 
             // Floor
             const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), materials.floor);
