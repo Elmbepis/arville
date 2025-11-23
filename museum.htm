@@ -109,7 +109,6 @@
 </head>
 <body>
     <div id="info">Virtual Museum | WASD: Move | Mouse: Look Around | R: Reset Position</div>
-    <div id="instructions">Loading museum...</div>
     <div id="loading">Preparing venue...</div>
     
     <!-- Flight Controls - HIDDEN -->
@@ -193,7 +192,7 @@
             // Update title to show museum ID
             document.title = `Arville Virtual Museum #${museumId}`;
             document.getElementById('info').textContent = 
-                `Virtual Museum #${museumId} | WASD: Move | Mouse: Look Around | R: Reset Position`;
+                `Virtual Museum #${museumId} | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset`;
 
             // Lighting - balanced from multiple directions
             const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.9);
@@ -596,12 +595,6 @@
             }
             
             loadingDiv.style.display = 'none';
-            if (!isMobile) {
-                document.getElementById('instructions').textContent = 
-                    `Museum #${museumId} | Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | R: Reset`;
-            } else {
-                document.getElementById('instructions').style.display = 'none';
-            }
         }
 
         async function loadAreaContent(areaId) {
@@ -655,6 +648,18 @@
         function animate() {
             requestAnimationFrame(animate);
             const delta = clock.getDelta();
+            
+            // ENFORCE FLIGHT CEILING LIMIT - ONLY CHANGE MADE
+            const CEILING_HEIGHT = 10.0; // Slightly below actual ceiling
+            const MIN_HEIGHT = 0.5; // Minimum height above floor
+            
+            if (camera.position.y > CEILING_HEIGHT) {
+                camera.position.y = CEILING_HEIGHT;
+            }
+            if (camera.position.y < MIN_HEIGHT) {
+                camera.position.y = MIN_HEIGHT;
+            }
+            
             if (camera.userData.update) camera.userData.update();
             renderer.render(scene, camera);
         }
