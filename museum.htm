@@ -108,7 +108,7 @@
     </style>
 </head>
 <body>
-    <div id="info">Virtual Museum | WASD: Move | Mouse: Look Around | R: Reset Position</div>
+    <div id="info">Arville Virtual Museum #${museumId} | WASD: Move | Mouse: Look Around | R: Reset Position</div>
     <div id="loading">Preparing venue...</div>
     
     <!-- Flight Controls - HIDDEN -->
@@ -192,7 +192,7 @@
             // Update title to show museum ID
             document.title = `Arville Virtual Museum #${museumId}`;
             document.getElementById('info').textContent = 
-                `Virtual Museum #${museumId} | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset`;
+                `Arville Virtual Museum #${museumId} | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset`;
 
             // Lighting - balanced from multiple directions
             const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.9);
