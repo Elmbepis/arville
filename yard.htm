@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arville Virtual Yard</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #87CEEB; /* Sky blue background */
+      font-family: Arial, sans-serif;
+    }
+    #info, #instructions {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      color: white;
+      z-index: 10;
+    }
+    #info {
+      top: 10px;
+      background: rgba(0,0,0,0.5);
+      padding: 5px;
+    }
+    #instructions {
+      bottom: 20px;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+    }
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 100;
+    }
+    
+    /* Debug Console - Completely invisible on mobile */
+    #debug-console {
+      position: absolute;
+      top: 60px;
+      left: 10px;
+      width: 300px;
+      height: 200px;
+      background: rgba(0,0,0,0); /* Completely transparent */
+      color: rgba(0,0,0,0); /* Completely transparent text */
+      padding: 10px;
+      font-size: 12px;
+      z-index: 1000;
+      overflow-y: auto;
+      border: 1px solid rgba(0,0,0,0); /* Invisible border */
+      display: none;
+      pointer-events: none; /* Prevent interaction */
+    }
+    
+    /* Mobile Controls - Hidden by default */
+    #mobile-controls {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+    
+    #joystick-container {
+      position: absolute;
+      bottom: 100px;
+      left: 20px;
+      width: 120px;
+      height: 120px;
+      pointer-events: auto;
+    }
+    
+    #joystick-base {
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      position: absolute;
+      border: 2px solid rgba(255,255,255,0.5);
+      top: 20px;
+      left: 20px;
+    }
+    
+    #joystick-handle {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 50%;
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      transition: transform 0.1s;
+    }
+    
+    #camera-control-area {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40%;
+      height: 100%;
+      pointer-events: auto;
+    }
+    
+    #center-tap-area {
+      position: absolute;
+      top: 0;
+      left: 40%;
+      width: 20%;
+      height: 100%;
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">Arville Virtual Yard | WASD: Move | Mouse: Look Around | R: Reset Position</div>
+  <div id="loading">Preparing environment...</div>
+  <div id="debug-console">DEBUG CONSOLE:<br></div>
+  
+  <!-- Mobile Controls - Only shown on mobile devices -->
+  <div id="mobile-controls">
+    <div id="joystick-container">
+      <div id="joystick-base"></div>
+      <div id="joystick-handle"></div>
+    </div>
+    <div id="camera-control-area"></div>
+    <div id="center-tap-area"></div>
+  </div>
+
+  <script>
+    // Only enable debugging on mobile
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    let debugEnabled = isMobileDevice;
+    
+    // DEBUG FUNCTION - Only active on mobile but completely invisible
+    function debugLog(message) {
+      if (!debugEnabled) return;
+      
+      const timestamp = new Date().toLocaleTimeString();
+      const debugMessage = `[${timestamp}] ${message}`;
+      console.log(debugMessage);
+      
+      const debugConsole = document.getElementById('debug-console');
+      if (debugConsole) {
+        debugConsole.innerHTML += debugMessage + '<br>';
+        debugConsole.scrollTop = debugConsole.scrollHeight;
+      }
+    }
+
+    // Function to disable debugging (called after scene loads)
+    function disableDebugging() {
+      debugEnabled = false;
+      const debugConsole = document.getElementById('debug-console');
+      if (debugConsole) {
+        debugConsole.style.display = 'none';
+      }
+    }
+
+    // Show debug console only on mobile (but it's invisible)
+    if (isMobileDevice) {
+      const debugConsole = document.getElementById('debug-console');
+      if (debugConsole) {
+        debugConsole.style.display = 'block';
+      }
+      debugLog('Mobile device detected - debug enabled (invisible)');
+    }
+
+    // Global error handler
+    window.addEventListener('error', function(e) {
+      if (typeof debugLog === 'function') {
+        debugLog(`Error: ${e.message}`);
+      }
+      console.error('Global error:', e.message);
+    });
+
+    if (typeof debugLog === 'function') {
+      debugLog('Starting initialization...');
+    }
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    if (typeof debugLog === 'function') {
+      debugLog('Three.js loaded');
+    }
+  </script>
+
+  <script src="universe/js/GLTFLoader.js"></script>
+  <script>
+    if (typeof debugLog === 'function') {
+      debugLog('GLTFLoader loaded');
+    }
+  </script>
+
+  <script src="universe/js/animation-controller.js"></script>
+  <script src="universe/js/navigation.js"></script>
+
+  <script>
+    // Safe initialization with error handling
+    let scene, camera, renderer;
+    const clock = new THREE.Clock();
+    const EYE_HEIGHT = 3.5;
+
+    // Yard dimensions for navigation
+    const PLOT_WIDTH = 40;
+    const PLOT_DEPTH = 50;
+
+    // Camera boundaries for 40x50 yard
+    const PLOT_CAMERA_LIMITS = {
+      minX: -19,  // Left boundary
+      maxX: 19,   // Right boundary
+      minZ: -24,  // Back boundary
+      maxZ: 24    // Front boundary
+    };
+
+    // Global texture loader
+    let textureLoader;
+
+    // Audio system variables
+    window.audioContext = null;
+    window.audioListener = null;
+    window.audioBuffers = new Map();
+    window.activeSounds = new Map();
+    window.audioEnabled = false;
+
+    // Enhanced audio debugging system
+    window.queuedAudioCalls = [];
+
+    // Enhanced audio debugging
+    window.debugAudioSystem = function() {
+        console.log('&#128266; AUDIO SYSTEM DEBUG:');
+        console.log('  - Audio Enabled:', window.audioEnabled);
+        console.log('  - Audio Context:', window.audioContext ? window.audioContext.state : 'null');
+        console.log('  - Audio Listener:', window.audioListener ? 'exists' : 'null');
+        console.log('  - Active Sounds:', window.activeSounds.size);
+        console.log('  - Cached Buffers:', window.audioBuffers.size);
+        console.log('  - Queued Calls:', window.queuedAudioCalls.length);
+        
+        window.activeSounds.forEach((sound, name) => {
+            console.log(`    - ${name}: ${sound.isPlaying ? 'PLAYING' : 'NOT PLAYING'}`);
+        });
+    };
+
+    // Test function for console
+    window.testAudio = function() {
+        console.log('&#127925; Testing audio system...');
+        window.playAudio('AR/sounds/horror/clown.mp3', {
+            loop: false,
+            volume: 0.5,
+            name: 'test-audio'
+        });
+    };
+
+    // Function to get URL parameter
+    function getYardNumber() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const yardNum = urlParams.get('id');
+      return yardNum && !isNaN(yardNum) && yardNum > 0 ? yardNum : '1';
+    }
+
+    // Initialize audio system
+    function initAudioSystem() {
+        console.log('&#127925; Initializing audio system...');
+        
+        // Create audio context if it doesn't exist
+        if (!window.audioContext) {
+            try {
+                window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.log('&#9989; AudioContext created');
+            } catch (error) {
+                console.error('&#10060; AudioContext not supported:', error);
+                return false;
+            }
+        }
+        
+        // Create audio listener if it doesn't exist
+        if (!window.audioListener && camera) {
+            window.audioListener = new THREE.AudioListener();
+            camera.add(window.audioListener);
+            console.log('&#9989; AudioListener created');
+        }
+        
+        return true;
+    }
+
+    // Create audio start button (required for autoplay policies)
+    function createAudioButton() {
+        // Remove existing button if any
+        const existingButton = document.querySelector('#audio-start-button');
+        if (existingButton) {
+            existingButton.remove();
+        }
+        
+        const audioButton = document.createElement('button');
+        audioButton.id = 'audio-start-button';
+        audioButton.textContent = 'Click to Enable Audio';
+        audioButton.style.position = 'absolute';
+        audioButton.style.top = '60px';
+        audioButton.style.left = '50%';
+        audioButton.style.transform = 'translateX(-50%)';
+        audioButton.style.zIndex = '1000';
+        audioButton.style.padding = '10px 20px';
+        audioButton.style.background = 'rgba(0,0,0,0.7)';
+        audioButton.style.color = 'white';
+        audioButton.style.border = 'none';
+        audioButton.style.borderRadius = '5px';
+        audioButton.style.cursor = 'pointer';
+        audioButton.style.fontSize = '16px';
+        
+        audioButton.addEventListener('click', function() {
+            console.log('&#127925; Audio button clicked - enabling audio system');
+            startAudioSystem();
+            audioButton.remove();
+        });
+        
+        document.body.appendChild(audioButton);
+        console.log('&#9989; Audio button created');
+    }
+
+// Replace the startAudioSystem function with this corrected version:
+function startAudioSystem() {
+    console.log('&#127925; Starting audio system...');
+    
+    if (window.audioContext) {
+        if (window.audioContext.state === 'suspended') {
+            window.audioContext.resume().then(() => {
+                console.log('&#9989; AudioContext resumed');
+                window.audioEnabled = true;
+                
+                // CRITICAL FIX: Play queued audio after a brief delay to ensure context is ready
+                setTimeout(() => {
+                    if (window.queuedAudioCalls && window.queuedAudioCalls.length > 0) {
+                        console.log(`&#128266; Processing ${window.queuedAudioCalls.length} queued audio calls`);
+                        window.queuedAudioCalls.forEach(call => {
+                            console.log('&#128266; Playing queued audio:', call.audioPath);
+                            // Re-trigger the audio play with fresh call
+                            window.playAudio(call.audioPath, call.options);
+                        });
+                        window.queuedAudioCalls = [];
+                    }
+                }, 100);
+                
+                // Notify yard scripts that audio is ready
+                if (window.onAudioReady) {
+                    window.onAudioReady();
+                }
+                if (window.debugAudioSystem) {
+                    window.debugAudioSystem();
+                }
+            }).catch(error => {
+                console.error('&#10060; Failed to resume AudioContext:', error);
+            });
+        } else {
+            window.audioEnabled = true;
+            
+            // CRITICAL FIX: Play queued audio immediately for already-running context
+            setTimeout(() => {
+                if (window.queuedAudioCalls && window.queuedAudioCalls.length > 0) {
+                    console.log(`&#128266; Processing ${window.queuedAudioCalls.length} queued audio calls`);
+                    window.queuedAudioCalls.forEach(call => {
+                        console.log('&#128266; Playing queued audio:', call.audioPath);
+                        window.playAudio(call.audioPath, call.options);
+                    });
+                    window.queuedAudioCalls = [];
+                }
+            }, 100);
+            
+            // Notify yard scripts that audio is ready
+            if (window.onAudioReady) {
+                window.onAudioReady();
+            }
+            if (window.debugAudioSystem) {
+                window.debugAudioSystem();
+            }
+        }
+    }
+}
+
+    // Enhanced playAudio function
+    window.playAudio = function(audioPath, options = {}) {
+        const { loop = false, volume = 0.5, name = 'default', positional = false, position = null } = options;
+
+        console.log(`&#127925; Audio request: ${audioPath}, Enabled: ${window.audioEnabled}`);
+
+        // Check if audio is enabled
+        if (!window.audioEnabled) {
+            console.log(`&#9208;&#65039; Audio not enabled - queuing: ${audioPath}`);
+            if (window.queuedAudioCalls) {
+                window.queuedAudioCalls.push({ audioPath, options });
+            }
+            return null;
+        }
+
+        // Initialize audio system if not already done
+        if (!window.audioContext || !window.audioListener) {
+            console.warn('&#9888;&#65039; Audio system not initialized');
+            if (!initAudioSystem()) {
+                return null;
+            }
+        }
+
+        // Check if audio context needs to be resumed
+        if (window.audioContext.state === 'suspended') {
+            console.warn('&#9888;&#65039; AudioContext suspended');
+            createAudioButton();
+            if (window.queuedAudioCalls) {
+                window.queuedAudioCalls.push({ audioPath, options });
+            }
+            return null;
+        }
+
+        // Stop existing sound with same name if it exists
+        if (window.activeSounds && window.activeSounds.has(name)) {
+            window.activeSounds.get(name).stop();
+            window.activeSounds.delete(name);
+        }
+
+        // Check if buffer is already cached
+        if (window.audioBuffers && window.audioBuffers.has(audioPath)) {
+            console.log(`&#128266; Using cached audio: ${audioPath}`);
+            return createAndPlaySound(window.audioBuffers.get(audioPath), options);
+        }
+
+        console.log(`&#128229; Loading audio: ${audioPath}`);
+        
+        // Check if THREE.AudioLoader exists
+        if (typeof THREE.AudioLoader === 'undefined') {
+            console.error('&#10060; THREE.AudioLoader not available');
+            return null;
+        }
+
+        const audioLoader = new THREE.AudioLoader();
+        audioLoader.load(audioPath, 
+            function(buffer) {
+                console.log(`&#9989; Audio loaded: ${audioPath}`);
+                if (window.audioBuffers) {
+                    window.audioBuffers.set(audioPath, buffer);
+                }
+                createAndPlaySound(buffer, options);
+            },
+            function(xhr) {
+                if (xhr.lengthComputable) {
+                    console.log(`&#128229; Loading: ${Math.round((xhr.loaded / xhr.total) * 100)}%`);
+                }
+            },
+            function(error) {
+                console.error(`&#10060; Error loading: ${audioPath}`, error);
+            }
+        );
+        
+        return true;
+    };
+
+    // Helper function to create and play sound
+    function createAndPlaySound(buffer, options) {
+        const { loop, volume, name, positional, position } = options;
+
+        console.log(`&#128266; Creating sound: ${name}`);
+
+        // Check if required components exist
+        if (!window.audioListener || typeof THREE.Audio === 'undefined') {
+            console.error('&#10060; Audio components not available');
+            return null;
+        }
+
+        let sound;
+        
+        if (positional && position) {
+            // Create positional audio
+            if (typeof THREE.PositionalAudio === 'undefined') {
+                console.error('&#10060; THREE.PositionalAudio not available');
+                return null;
+            }
+            sound = new THREE.PositionalAudio(window.audioListener);
+            sound.position.set(position.x, position.y, position.z);
+            // Add to scene for positional audio
+            const audioGroup = new THREE.Group();
+            audioGroup.position.set(position.x, position.y, position.z);
+            audioGroup.add(sound);
+            if (scene) {
+                scene.add(audioGroup);
+            }
+            console.log(`&#128205; Positional audio at:`, position);
+        } else {
+            // Create non-positional audio
+            sound = new THREE.Audio(window.audioListener);
+            console.log(`&#128266; Non-positional audio created`);
+        }
+
+        sound.setBuffer(buffer);
+        sound.setLoop(loop);
+        sound.setVolume(volume);
+
+        try {
+            sound.play();
+            console.log(`&#9989; Successfully playing audio: ${name}`);
+            if (window.activeSounds) {
+                window.activeSounds.set(name, sound);
+            }
+            
+        } catch (error) {
+            console.error(`&#10060; Error playing audio ${name}:`, error);
+            if (window.audioContext) {
+                console.error('Audio context state:', window.audioContext.state);
+            }
+        }
+        
+        return sound;
+    }
+
+    // Global function to stop audio by name
+    window.stopAudio = function(name) {
+        if (window.activeSounds && window.activeSounds.has(name)) {
+            const sound = window.activeSounds.get(name);
+            sound.stop();
+            window.activeSounds.delete(name);
+            console.log(`&#9209;&#65039; Stopped audio: ${name}`);
+        }
+    };
+
+    // Global function to stop all audio
+    window.stopAllAudio = function() {
+        if (window.activeSounds) {
+            window.activeSounds.forEach((sound, name) => {
+                sound.stop();
+                console.log(`&#9209;&#65039; Stopped audio: ${name}`);
+            });
+            window.activeSounds.clear();
+        }
+    };
+
+    // Global function to set volume for specific audio
+    window.setAudioVolume = function(name, volume) {
+        if (window.activeSounds && window.activeSounds.has(name)) {
+            const sound = window.activeSounds.get(name);
+            sound.setVolume(volume);
+            console.log(`&#127898;&#65039; Set volume for ${name}: ${volume}`);
+        }
+    };
+
+    // Safe initialization
+    function safeInit() {
+        try {
+            init();
+        } catch (error) {
+            console.error('&#10060; Initialization failed:', error);
+            const loadingDiv = document.getElementById('loading');
+            if (loadingDiv) {
+                loadingDiv.innerHTML = 'Error loading environment. Please refresh.';
+                loadingDiv.style.background = 'rgba(255,0,0,0.8)';
+            }
+        }
+    }
+
+    // Main initialization
+    function init() {
+        if (typeof debugLog === 'function') {
+            debugLog('Creating scene...');
+        }
+        
+        // Check if THREE is available
+        if (typeof THREE === 'undefined') {
+            throw new Error('Three.js not loaded');
+        }
+
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        if (typeof debugLog === 'function') {
+            debugLog('Creating renderer...');
+        }
+        
+        try {
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                powerPreference: "high-performance"
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x87CEEB);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.body.appendChild(renderer.domElement);
+            
+            if (typeof debugLog === 'function') {
+                debugLog('Renderer created');
+            }
+        } catch (e) {
+            console.error('Renderer failed:', e);
+            if (typeof debugLog === 'function') {
+                debugLog(`Renderer failed: ${e.message}`);
+            }
+            return;
+        }
+
+        // Initialize texture loader
+        textureLoader = new THREE.TextureLoader();
+        window.textureLoader = textureLoader;
+
+        // Initialize audio system but don't enable it yet
+        initAudioSystem();
+        
+        // Create audio button for user interaction
+        createAudioButton();
+
+        // Lighting setup
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
+        hemiLight.position.set(0, 20, 0);
+        scene.add(hemiLight);
+
+        const ambient = new THREE.AmbientLight(0xffffff, 1.0);
+        scene.add(ambient);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        dirLight.position.set(50, 100, 50);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.camera.near = 0.5;
+        dirLight.shadow.camera.far = 500;
+        dirLight.shadow.camera.left = -50;
+        dirLight.shadow.camera.right = 50;
+        dirLight.shadow.camera.top = 50;
+        dirLight.shadow.camera.bottom = -50;
+        scene.add(dirLight);
+
+        if (typeof debugLog === 'function') {
+            debugLog('Creating yard structure...');
+        }
+        
+        createYardStructure();
+
+        const yardNumber = getYardNumber();
+
+        // Load object creator and yard objects
+        loadObjectCreator().then(() => {
+            if (typeof debugLog === 'function') {
+                debugLog('Loading yard objects...');
+            }
+            loadYardObjects(yardNumber);
+        }).catch((error) => {
+            console.warn('Object creator failed, continuing without it:', error);
+            if (typeof debugLog === 'function') {
+                debugLog('Object creator failed, continuing...');
+            }
+            loadYardObjects(yardNumber);
+        });
+
+        // Setup controls if available
+        if (typeof setupControls === 'function') {
+            if (typeof debugLog === 'function') {
+                debugLog('Setting up controls...');
+            }
+            setupControls(camera, EYE_HEIGHT, PLOT_WIDTH, PLOT_DEPTH, 0.3);
+            overrideNavigationBoundaries();
+        }
+        
+        camera.position.set(0, EYE_HEIGHT, 41.5);
+        camera.rotation.set(0, 0, 0);
+        
+        window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 41.5);
+    	window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0 * Math.PI / 180, 0, 'YXZ');
+        
+        window.addEventListener("resize", onWindowResize);
+    }
+
+    function overrideNavigationBoundaries() {
+        if (camera.userData && camera.userData.update) {
+            const originalUpdate = camera.userData.update;
+            
+            camera.userData.update = function() {
+                if (originalUpdate) originalUpdate.call(this);
+                applyYardBoundaries();
+            };
+        }
+    }
+
+    function applyYardBoundaries() {
+        if (camera && typeof THREE.MathUtils !== 'undefined') {
+            camera.position.x = THREE.MathUtils.clamp(camera.position.x, PLOT_CAMERA_LIMITS.minX, PLOT_CAMERA_LIMITS.maxX);
+            camera.position.z = THREE.MathUtils.clamp(camera.position.z, PLOT_CAMERA_LIMITS.minZ, PLOT_CAMERA_LIMITS.maxZ);
+        }
+    }
+
+    function createYardStructure() {
+        const yardWidth = 40;
+        const yardDepth = 50;
+
+        // Create ground with placeholder material
+        const groundGeometry = new THREE.PlaneGeometry(yardWidth, yardDepth);
+        const placeholderMaterial = new THREE.MeshLambertMaterial({ 
+            color: 0xaaaaaa
+        });
+
+        const ground = new THREE.Mesh(groundGeometry, placeholderMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.name = 'yard-ground';
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        if (typeof debugLog === 'function') {
+            debugLog('Yard structure created - waiting for grass texture from yard file');
+        }
+    }
+
+    // Enhanced texture application function
+    window.applyYardTexture = function(meshName, texturePath, repeatX = 8, repeatY = 8, brightness = 1.0, onLoadCallback = null) {
+        if (!scene || !textureLoader) {
+            console.warn('Scene or texture loader not available');
+            return false;
+        }
+
+        const mesh = scene.getObjectByName(meshName);
+        if (!mesh) {
+            console.warn(`Mesh "${meshName}" not found for texture application`);
+            return false;
+        }
+
+        if (typeof debugLog === 'function') {
+            debugLog(`Applying texture: ${texturePath} to ${meshName}`);
+        }
+
+        textureLoader.load(
+            texturePath,
+            function(texture) {
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                texture.repeat.set(repeatX, repeatY);
+                
+                mesh.material = new THREE.MeshLambertMaterial({ 
+                    map: texture,
+                    color: new THREE.Color(brightness, brightness, brightness),
+                    side: THREE.FrontSide
+                });
+                
+                mesh.material.needsUpdate = true;
+                
+                if (typeof debugLog === 'function') {
+                    debugLog(`Successfully applied texture: ${texturePath}`);
+                }
+                
+                if (onLoadCallback && typeof onLoadCallback === 'function') {
+                    onLoadCallback(mesh, texture);
+                }
+            },
+            function(xhr) {
+                if (xhr.lengthComputable) {
+                    const percentComplete = (xhr.loaded / xhr.total) * 100;
+                    if (typeof debugLog === 'function') {
+                        debugLog(`Loading texture: ${Math.round(percentComplete)}% loaded`);
+                    }
+                }
+            },
+            function(error) {
+                console.error(`Failed to load texture: ${texturePath}`, error);
+                if (typeof debugLog === 'function') {
+                    debugLog(`Texture load failed: ${texturePath}`);
+                }
+            }
+        );
+        
+        return true;
+    };
+
+    function loadObjectCreator() {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'universe/obj_create_park.js?v=' + Date.now();
+            
+            script.onload = function() {
+                if (window.initObjectTextures) {
+                    window.initObjectTextures(textureLoader);
+                }
+                resolve();
+            };
+            
+            script.onerror = function() {
+                reject(new Error('Failed to load object creator script'));
+            };
+            
+            document.head.appendChild(script);
+        });
+    }
+
+    function loadYardObjects(yardNumber) {
+        const loadingDiv = document.getElementById('loading');
+        if (loadingDiv) {
+            loadingDiv.textContent = `Loading yard ${yardNumber}...`;
+        }
+
+        const script = document.createElement('script');
+        script.src = `universe/yards/yard${yardNumber}.js`;
+        
+        script.onload = () => {
+            setTimeout(() => {
+                if (loadingDiv) {
+                    loadingDiv.style.display = 'none';
+                }
+                const instructions = document.getElementById('instructions');
+                if (instructions && !window.isMobile) {
+                    instructions.textContent = `Yard ${yardNumber} ready | Use WASD to move and mouse to look around`;
+                }
+                if (typeof debugLog === 'function') {
+                    debugLog('Yard loaded - disabling debug');
+                }
+                
+                setTimeout(disableDebugging, 500);
+            }, 100);
+        };
+        
+        script.onerror = () => {
+            if (loadingDiv) {
+                loadingDiv.style.display = 'none';
+            }
+            const instructions = document.getElementById('instructions');
+            if (instructions && !window.isMobile) {
+                instructions.textContent = `Yard ${yardNumber} ready (no objects) | Use WASD to move and mouse to look around`;
+            }
+            setTimeout(disableDebugging, 500);
+        };
+        
+        document.head.appendChild(script);
+    }
+
+    function onWindowResize() {
+        if (camera && renderer) {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+        
+        if (camera && camera.userData && camera.userData.update) {
+            camera.userData.update();
+        }
+        
+        if (window.animationController) {
+            window.animationController.update(camera);
+        }
+        
+        if (window.updateAllAnimations) {
+            window.updateAllAnimations(delta);
+        }
+        
+        if (renderer && scene && camera) {
+            renderer.render(scene, camera);
+        }
+    }
+
+    // Start the application
+    safeInit();
+    animate();
+  </script>
+</body>
+</html>
