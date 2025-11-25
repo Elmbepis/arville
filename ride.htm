@@ -174,6 +174,8 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="universe/js/GLTFLoader.js"></script>
+
   <script>
     // VR Ride functionality
     let isRideActive = false;
@@ -181,6 +183,7 @@
     let rideProgress = 0; // Progress along the path (0 to 1)
     let ovalPath = null; // Will store the oval path geometry
     let lookControlsEnabled = true; // Allow mouse look during ride
+    let groundMaterial = null; // Global reference to ground material for texture updates
     
     // Initialize VR Ride
     function initVRRide() {
@@ -267,9 +270,6 @@
       // Get position along the path
       const pathPoint = ovalPath.getPoint(rideProgress);
       
-      // Get tangent for orientation (facing direction)
-      const tangent = ovalPath.getTangent(rideProgress);
-      
       // Update camera position
       camera.position.copy(pathPoint);
       
@@ -281,68 +281,44 @@
   <script>
     let scene, camera, renderer;
     const clock = new THREE.Clock();
-    const EYE_HEIGHT = 7;
+    const EYE_HEIGHT = 2;
     let currentAreas = [];
+    let isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
-    // Park dimensions - renamed to PLACE for generic use
-    const PLACE_WIDTH = 200;
-    const PLACE_DEPTH = 400;
-    const AREA_SIZE = 40;
-    
-    // CAMERA_LIMITS is now defined in navigation.js
-    
+    // Park dimensions
+const PLACE_WIDTH = 200;    // Total width: -100 to +100
+const PLACE_DEPTH = 400;    // Total depth: -200 to +200  
+const AREA_SIZE = 50;       // Each area is 50x50 units
+
 const AREA_POSITIONS = {
-  // Left side, back row (negative Z) - KEEP ORIGINAL
-  '1a': new THREE.Vector3(-60, 0, -150),  // Left-back
-  '1b': new THREE.Vector3(-20, 0, -150),  // Left-center-back  
-  '1c': new THREE.Vector3(20, 0, -150),   // Right-center-back
-  '1d': new THREE.Vector3(60, 0, -150),   // Right-back
+  // Row 1 (Back row) - Z = -150
+  '1a': new THREE.Vector3(-75, 0, -150),  // Covers X: -100 to -50, Z: -175 to -125
+  '1b': new THREE.Vector3(-25, 0, -150),  // Covers X: -50 to 0, Z: -175 to -125
+  '1c': new THREE.Vector3(25, 0, -150),   // Covers X: 0 to 50, Z: -175 to -125
+  '1d': new THREE.Vector3(75, 0, -150),   // Covers X: 50 to 100, Z: -175 to -125
   
-  // Left side, front row (positive Z) - MOVE CLOSER TO BACK
-  '1e': new THREE.Vector3(-60, 0, -100),   // Left-front
-  '1f': new THREE.Vector3(-20, 0, -100),   // Left-center-front
-  '1g': new THREE.Vector3(20, 0, -100),    // Right-center-front
-  '1h': new THREE.Vector3(60, 0, -100),    // Right-front
+  // Row 2 - Z = -100
+  '1e': new THREE.Vector3(-75, 0, -100),  // Covers X: -100 to -50, Z: -125 to -75
+  '1f': new THREE.Vector3(-25, 0, -100),  // Covers X: -50 to 0, Z: -125 to -75
+  '1g': new THREE.Vector3(25, 0, -100),   // Covers X: 0 to 50, Z: -125 to -75
+  '1h': new THREE.Vector3(75, 0, -100),   // Covers X: 50 to 100, Z: -125 to -75
   
-  // NEW: Middle row - MOVE CLOSER TO BACK
-  '1v': new THREE.Vector3(-60, 0, -50),    // Left-middle
-  '1w': new THREE.Vector3(-20, 0, -50),    // Left-center-middle
-  '1x': new THREE.Vector3(20, 0, -50),     // Right-center-middle
-  '1y': new THREE.Vector3(60, 0, -50),     // Right-middle
+  // Row 3 - Z = -50
+  '1i': new THREE.Vector3(-75, 0, -50),   // Covers X: -100 to -50, Z: -75 to -25
+  '1j': new THREE.Vector3(-25, 0, -50),   // Covers X: -50 to 0, Z: -75 to -25
+  '1k': new THREE.Vector3(25, 0, -50),    // Covers X: 0 to 50, Z: -75 to -25
+  '1m': new THREE.Vector3(75, 0, -50),    // Covers X: 50 to 100, Z: -75 to -25
   
-  // ACTIVITY AREA SUB-AREAS - a1 to a8
-  '1a1': new THREE.Vector3(-60, 0, -20),    // Back-left activity area
-  '1a2': new THREE.Vector3(-20, 0, -20),    // Back-center activity area
-  '1a3': new THREE.Vector3(20, 0, -20),     // Back-right activity area
-  '1a4': new THREE.Vector3(60, 0, -20),     // Back-far-right activity area
-  
-  '1a5': new THREE.Vector3(-60, 0, 20),     // Front-left activity area
-  '1a6': new THREE.Vector3(-20, 0, 20),     // Front-center activity area
-  '1a7': new THREE.Vector3(20, 0, 20),      // Front-right activity area
-  '1a8': new THREE.Vector3(60, 0, 20),      // Front-far-right activity area
-    
-  // Right side, back row (negative Z) - MOVE TO FRONT OF ACTIVITY AREA
-  '1i': new THREE.Vector3(-60, 0, 50),    // Left-back
-  '1j': new THREE.Vector3(-20, 0, 50),    // Left-center-back
-  '1k': new THREE.Vector3(20, 0, 50),     // Right-center-back
-  '1m': new THREE.Vector3(60, 0, 50),     // Right-back
-  
-  // KEEP ORIGINAL - Right side middle
-  '1n': new THREE.Vector3(-60, 0, 100),   // Left-middle
-  '1o': new THREE.Vector3(-20, 0, 100),   // Left-center-middle
-  '1p': new THREE.Vector3(20, 0, 100),    // Right-center-middle
-  '1q': new THREE.Vector3(60, 0, 100),    // Right-middle  
-  
-  // KEEP ORIGINAL - Right side, front row (positive Z)
-  '1r': new THREE.Vector3(-60, 0, 150),   // Left-front
-  '1s': new THREE.Vector3(-20, 0, 150),   // Left-center-front
-  '1t': new THREE.Vector3(20, 0, 150),    // Right-center-front
-  '1u': new THREE.Vector3(60, 0, 150),    // Right-front
+  // Row 4 (Front row) - Z = 0
+  '1n': new THREE.Vector3(-75, 0, 0),     // Covers X: -100 to -50, Z: -25 to 25
+  '1o': new THREE.Vector3(-25, 0, 0),     // Covers X: -50 to 0, Z: -25 to 25
+  '1p': new THREE.Vector3(25, 0, 0),      // Covers X: 0 to 50, Z: -25 to 25
+  '1q': new THREE.Vector3(75, 0, 0)       // Covers X: 50 to 100, Z: -25 to 25
 };
 
     // Simple function to get all area IDs
     function getAvailableAreas() {
-      return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '1i', '1j', '1k', '1m', '1n', '1o', '1p', '1q', '1r', '1s', '1t', '1v', '1w', '1x', '1y']
+      return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '1i', '1j', '1k', '1m', '1n', '1o', '1p', '1q']
     }
 
     init();
@@ -351,9 +327,10 @@ const AREA_POSITIONS = {
     function init() {
       scene = new THREE.Scene();
 
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(0, 7, 0); // Start in area 1a
-      camera.rotation.set(0, 0 * Math.PI / 180, 0);
+	  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+	  camera.position.set(-60, 2, -150);
+  	  camera.rotation.set(0, 0 * Math.PI / 180, 0);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -379,12 +356,10 @@ const AREA_POSITIONS = {
       // First load obj_create_park, then create park and load areas
       loadObjectCreator().then(() => {
         createPark();
-        createRoads(); // Add roads to the scene
         loadAreas();
       }).catch((error) => {
         console.error('Failed to load object creator:', error);
         createPark();
-        createRoads(); // Add roads to the scene
         loadAreas();
       });
 
@@ -393,232 +368,66 @@ const AREA_POSITIONS = {
       window.addEventListener("resize", onWindowResize);
     }
 
-    function createPark() {
-      // Create grass ground with finely tiled texture
-      const groundMat = new THREE.MeshLambertMaterial({ 
-        color: 0x3a7d34 // Fallback color if texture fails to load
-      });
 
-      // Create the ground
-      const ground = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_WIDTH, PLACE_DEPTH), groundMat);
-      ground.rotation.x = -Math.PI / 2;
-      scene.add(ground);
+function createPark() {
+  // Create neutral ground material - white base lets texture colors show through
+  groundMaterial = new THREE.MeshLambertMaterial({ 
+    color: 0xFFFFFF // Pure white - neutral base for textures
+  });
 
-      // Load grass texture with fine tiling
-      if (window.textureLoader) {
-        try {
-          const grassTexture = window.textureLoader.load('universe/textures/grass1.jpg');
-          grassTexture.wrapS = THREE.RepeatWrapping;
-          grassTexture.wrapT = THREE.RepeatWrapping;
-          
-          // Fine tiling for sharp grass
-          const repeatX = PLACE_WIDTH / 12;   
-          const repeatY = PLACE_DEPTH / 24;  
-          grassTexture.repeat.set(repeatX, repeatY);
-          
-          groundMat.map = grassTexture;
-          groundMat.needsUpdate = true;
-          
-          console.log('&#9989; Grass texture loaded with sharp tiling - repeat:', repeatX, repeatY);
-        } catch (error) {
-          console.error('&#10060; Failed to load grass texture:', error);
-        }
-      }
+  // Create the ground
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_WIDTH, PLACE_DEPTH), groundMaterial);
+  ground.rotation.x = -Math.PI / 2;
+  ground.name = 'park-ground';
+  scene.add(ground);
+
+  // Load default neutral texture (could be grass, but with neutral coloring)
+  if (window.textureLoader) {
+    try {
+      const defaultTexture = window.textureLoader.load('universe/textures/grass1.jpg');
+      defaultTexture.wrapS = THREE.RepeatWrapping;
+      defaultTexture.wrapT = THREE.RepeatWrapping;
       
-      // Create oval activity area in the blank space
-      createOvalActivityArea();
+      // Fine tiling for texture
+      const repeatX = PLACE_WIDTH / 1;   
+      const repeatY = PLACE_DEPTH / 2;  
+      defaultTexture.repeat.set(repeatX, repeatY);
       
-      console.log('&#9989; Park base created successfully');
+      groundMaterial.map = defaultTexture;
+      groundMaterial.needsUpdate = true;
+      
+      console.log('&#9989; Default ground texture loaded with neutral base - repeat:', repeatX, repeatY);
+    } catch (error) {
+      console.error('&#10060; Failed to load default ground texture, using neutral white:', error);
     }
-
-    function createOvalActivityArea() {
-      console.log('&#128736;&#65039; Creating activity area with proper frame...');
-      
-      const activityWidth = 90;
-      const activityLength = 40;
-      const activityHeight = 0.02;
-      const activityPosition = new THREE.Vector3(0, activityHeight, 0);
-      
-      // Create activity area material - SAME APPROACH AS PATHWAY
-      const activityMat = new THREE.MeshLambertMaterial({ 
-        color: 0x888888 // Default gray color (fallback)
-      });
-      
-      // Try to load activity texture - SAME APPROACH AS PATHWAY
-      if (window.textureLoader) {
-        try {
-          const activityTexture = window.textureLoader.load('universe/textures/play-area.jpg');
-          activityTexture.wrapS = THREE.RepeatWrapping;
-          activityTexture.wrapT = THREE.RepeatWrapping;
-          activityTexture.repeat.set(16, 16); // Same tiling as pathway
-          activityMat.map = activityTexture;
-          console.log('&#9989; Activity area texture loaded successfully');
-        } catch (error) {
-          console.error('&#10060; Failed to load activity area texture, using fallback:', error);
-          
-          // Try concrete as fallback (same as pathway)
-          try {
-            const concreteTexture = window.textureLoader.load('universe/textures/concrete.jpg');
-            concreteTexture.wrapS = THREE.RepeatWrapping;
-            concreteTexture.wrapT = THREE.RepeatWrapping;
-            concreteTexture.repeat.set(8, 8);
-            activityMat.map = concreteTexture;
-            console.log('&#9989; Using concrete texture as fallback for activity area');
-          } catch (fallbackError) {
-            console.error('&#10060; All texture fallbacks failed, using default color');
-          }
-        }
-      }
-      
-      // Create the activity area
-      const activityGeometry = new THREE.PlaneGeometry(activityWidth, activityLength);
-      const activityArea = new THREE.Mesh(activityGeometry, activityMat);
-      activityArea.rotation.x = -Math.PI / 2;
-      activityArea.position.copy(activityPosition);
-      activityArea.name = 'activity-area';
-      scene.add(activityArea);
-      
-      // --- FIXED: Create a rectangular FRAME instead of covering plane ---
-      const frameThickness = 0.1; // thickness of the frame
-      const frameHeight = 0.01; // slightly above the activity area
-
-      const halfW = activityWidth / 2;
-      const halfL = activityLength / 2;
-
-      const horizGeom = new THREE.BoxGeometry(activityWidth + frameThickness * 2, frameHeight, frameThickness);
-      const vertGeom  = new THREE.BoxGeometry(frameThickness, frameHeight, activityLength + frameThickness * 2);
-
-      const frameMat = new THREE.MeshLambertMaterial({
-        color: 0x222222,
-        side: THREE.DoubleSide
-      });
-
-      // top bar (along +Z)
-      const topBar = new THREE.Mesh(horizGeom, frameMat);
-      topBar.position.set(activityPosition.x, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z + halfL + frameThickness / 2);
-      scene.add(topBar);
-
-      // bottom bar (along -Z)
-      const bottomBar = new THREE.Mesh(horizGeom, frameMat);
-      bottomBar.position.set(activityPosition.x, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z - halfL - frameThickness / 2);
-      scene.add(bottomBar);
-
-      // left bar (along -X)
-      const leftBar = new THREE.Mesh(vertGeom, frameMat);
-      leftBar.position.set(activityPosition.x - halfW - frameThickness / 2, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z);
-      scene.add(leftBar);
-
-      // right bar (along +X)
-      const rightBar = new THREE.Mesh(vertGeom, frameMat);
-      rightBar.position.set(activityPosition.x + halfW + frameThickness / 2, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z);
-      scene.add(rightBar);
-
-      console.log('&#128295; Activity area created with proper frame at:', activityPosition);
-    }
-
-function createRoads() {
-    // Create roads along the major and minor axes of the oval pathway
-    const roadWidth = 8; // Same width as the pathway
-    const roadHeight = 0.049; // Slightly lower than activity area to be underneath it
-    
-    // Oval dimensions (same as pathway)
-    const ovalWidth = PLACE_WIDTH - 40;
-    const ovalDepth = PLACE_DEPTH - 60;
-    
-    // Activity area dimensions (for cutting out roads underneath)
-    const activityWidth = 90;
-    const activityLength = 50;
-    
-    // Create DIFFERENT materials for major and minor axis roads
-    const majorAxisRoadMat = new THREE.MeshLambertMaterial({ 
-        color: 0x707070 // Default concrete color
-    });
-    
-    const minorAxisRoadMat = new THREE.MeshLambertMaterial({ 
-        color: 0x707070 // Default concrete color
-    });
-    
-    // Try to load concrete texture with DIFFERENT TILING for each road
-    if (window.textureLoader) {
-        try {
-            // MAJOR AXIS ROAD TEXTURE (horizontal road) - more repetition along length
-            const majorAxisTexture = window.textureLoader.load('universe/textures/concrete2.jpg');
-            majorAxisTexture.wrapS = THREE.RepeatWrapping;
-            majorAxisTexture.wrapT = THREE.RepeatWrapping;
-            majorAxisTexture.repeat.set(8, 2); // More tiling along X-axis (length)
-            majorAxisRoadMat.map = majorAxisTexture;
-            
-            // MINOR AXIS ROAD TEXTURE (vertical road) - more repetition along length  
-            const minorAxisTexture = window.textureLoader.load('universe/textures/concrete2.jpg');
-            minorAxisTexture.wrapS = THREE.RepeatWrapping;
-            minorAxisTexture.wrapT = THREE.RepeatWrapping;
-            minorAxisTexture.repeat.set(4, 32); // More tiling along Z-axis (length)
-            minorAxisRoadMat.map = minorAxisTexture;
-            
-            console.log('&#9989; Different texture tiling applied to major and minor axis roads');
-        } catch (error) {
-            console.error('&#10060; Failed to load concrete texture for roads, using default color:', error);
-        }
-    }
-    
-    // Create road along the major axis (horizontal, X-axis) - CUT OUT UNDER ACTIVITY AREA
-    const majorAxisRoadLength = ovalWidth;
-    
-    // Create the major axis road in two segments - EXTENDED to reach activity area edges
-    // Each segment should extend from the park edge to the activity area edge
-    const majorSegmentLength = (majorAxisRoadLength - activityWidth) / 2;
-    
-    // Left segment of major axis road (before activity area)
-    const leftMajorSegmentGeometry = new THREE.PlaneGeometry(majorSegmentLength, roadWidth);
-    const leftMajorSegment = new THREE.Mesh(leftMajorSegmentGeometry, majorAxisRoadMat);
-    leftMajorSegment.rotation.x = -Math.PI / 2;
-    leftMajorSegment.position.y = roadHeight;
-    // Position so the right edge of this segment touches the left edge of activity area
-    leftMajorSegment.position.x = -(activityWidth / 2 + majorSegmentLength / 2);
-    leftMajorSegment.position.z = 0;
-    scene.add(leftMajorSegment);
-    
-    // Right segment of major axis road (after activity area)
-    const rightMajorSegmentGeometry = new THREE.PlaneGeometry(majorSegmentLength, roadWidth);
-    const rightMajorSegment = new THREE.Mesh(rightMajorSegmentGeometry, majorAxisRoadMat);
-    rightMajorSegment.rotation.x = -Math.PI / 2;
-    rightMajorSegment.position.y = roadHeight;
-    // Position so the left edge of this segment touches the right edge of activity area
-    rightMajorSegment.position.x = majorSegmentLength / 2 + activityWidth / 2;
-    rightMajorSegment.position.z = 0;
-    scene.add(rightMajorSegment);
-    
-    // Create road along the minor axis (vertical, Z-axis) - CUT OUT UNDER ACTIVITY AREA
-    const minorAxisRoadLength = ovalDepth;
-    
-    // Create the minor axis road in two segments - EXTENDED to reach activity area edges
-    // Each segment should extend from the park edge to the activity area edge
-    const minorSegmentLength = (minorAxisRoadLength - activityLength) / 2;
-    
-    // Bottom segment of minor axis road (before activity area)
-    const bottomMinorSegmentGeometry = new THREE.PlaneGeometry(roadWidth, minorSegmentLength);
-    const bottomMinorSegment = new THREE.Mesh(bottomMinorSegmentGeometry, minorAxisRoadMat);
-    bottomMinorSegment.rotation.x = -Math.PI / 2;
-    bottomMinorSegment.position.y = roadHeight;
-    bottomMinorSegment.position.x = 0;
-    // Position so the top edge of this segment touches the bottom edge of activity area
-    bottomMinorSegment.position.z = -(minorSegmentLength / 2 + activityLength / 2) + 5;
-    scene.add(bottomMinorSegment);
-    
-    // Top segment of minor axis road (after activity area)
-    const topMinorSegmentGeometry = new THREE.PlaneGeometry(roadWidth, minorSegmentLength);
-    const topMinorSegment = new THREE.Mesh(topMinorSegmentGeometry, minorAxisRoadMat);
-    topMinorSegment.rotation.x = -Math.PI / 2;
-    topMinorSegment.position.y = roadHeight;
-    topMinorSegment.position.x = 0;
-    // Position so the bottom edge of this segment touches the top edge of activity area
-    topMinorSegment.position.z = minorSegmentLength / 2 + activityLength / 2 - 5;
-    scene.add(topMinorSegment);
-    
-    console.log('&#128739;&#65039; Roads created with extended segments reaching activity area edges');
-    console.log(`Major axis segments: ${majorSegmentLength.toFixed(1)} units each`);
-    console.log(`Minor axis segments: ${minorSegmentLength.toFixed(1)} units each`);
+  }
+  
+  console.log('&#9989; Park base created with neutral ground material');
 }
+
+// Function to update ground texture from ride files
+function updateGroundTexture(texturePath) {
+  if (!window.textureLoader || !groundMaterial) return;
+  
+  try {
+    const newTexture = window.textureLoader.load(texturePath);
+    newTexture.wrapS = THREE.RepeatWrapping;
+    newTexture.wrapT = THREE.RepeatWrapping;
+    
+    // Fine tiling for texture
+    const repeatX = PLACE_WIDTH / 12;   
+    const repeatY = PLACE_DEPTH / 24;  
+    newTexture.repeat.set(repeatX, repeatY);
+    
+    groundMaterial.map = newTexture;
+    groundMaterial.needsUpdate = true;
+    
+    console.log('&#9989; Updated ground texture:', texturePath);
+  } catch (error) {
+    console.error('&#10060; Failed to load ground texture:', texturePath, error);
+  }
+}
+
 
     function loadObjectCreator() {
       return new Promise((resolve, reject) => {
@@ -677,7 +486,8 @@ function createRoads() {
     async function loadAreaContent(areaId) {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = `universe/park-areas/park${areaId}.js`;
+        // Updated to use rides directory instead of park-areas
+        script.src = `universe/rides/ride${areaId}.js`;
         
         script.onload = () => {
           // Wait a frame to ensure the area group is created

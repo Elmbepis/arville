@@ -1,649 +1,553 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arville Virtual Exhibit Hall</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: #000;
-      font-family: Arial, sans-serif;
-    }
-    #info, #instructions {
-      position: absolute;
-      width: 100%;
-      text-align: center;
-      color: white;
-      z-index: 10;
-    }
-    #info {
-      top: 10px;
-      background: rgba(0,0,0,0.5);
-      padding: 5px;
-    }
-    #instructions {
-      bottom: 20px;
-      background: rgba(0,0,0,0.7);
-      padding: 10px;
-    }
-    #loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.8);
-      color: white;
-      padding: 20px;
-      border-radius: 10px;
-      z-index: 100;
-    }
-    
-    /* Mobile Controls - Hidden by default */
-    #mobile-controls {
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 5;
-    }
-    
-    #joystick-container {
-      position: absolute;
-      bottom: 100px;
-      left: 20px;
-      width: 120px;
-      height: 120px;
-      pointer-events: auto;
-    }
-    
-    #joystick-base {
-      width: 80px;
-      height: 80px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 50%;
-      position: absolute;
-      border: 2px solid rgba(255,255,255,0.5);
-      top: 20px;
-      left: 20px;
-    }
-    
-    #joystick-handle {
-      width: 40px;
-      height: 40px;
-      background: rgba(255,255,255,0.7);
-      border-radius: 50%;
-      position: absolute;
-      top: 40px;
-      left: 40px;
-      transition: transform 0.1s;
-    }
-    
-    #camera-control-area {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 40%;
-      height: 100%;
-      pointer-events: auto;
-    }
-    
-    #center-tap-area {
-      position: absolute;
-      top: 0;
-      left: 40%;
-      width: 20%;
-      height: 100%;
-      pointer-events: auto;
-    }
-    
-    /* Flight Controls - HIDDEN */
-    #flight-controls {
-      display: none; /* Hide the flight controls */
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arville Virtual Hall</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: Arial, sans-serif;
+        }
+        #info, #instructions {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            color: white;
+            z-index: 10;
+        }
+        #info {
+            top: 10px;
+            background: rgba(0,0,0,0.5);
+            padding: 5px;
+        }
+        #instructions {
+            bottom: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 100;
+        }
+        
+        /* Mobile Controls - Hidden by default */
+        #mobile-controls {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        #joystick-container {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            width: 120px;
+            height: 120px;
+            pointer-events: auto;
+        }
+        
+        #joystick-base {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            position: absolute;
+            border: 2px solid rgba(255,255,255,0.5);
+            top: 20px;
+            left: 20px;
+        }
+        
+        #joystick-handle {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 50%;
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            transition: transform 0.1s;
+        }
+        
+        #camera-control-area {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 40%;
+            height: 100%;
+            pointer-events: auto;
+        }
+        
+        #center-tap-area {
+            position: absolute;
+            top: 0;
+            left: 40%;
+            width: 20%;
+            height: 100%;
+            pointer-events: auto;
+        }
+        
+        /* Flight Controls - HIDDEN */
+        #flight-controls {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-  <div id="info">Virtual Exhibit Hall | WASD: Move | Mouse: Look Around | R: Reset Position</div>
-  <div id="instructions">Loading exhibit hall...</div>
-  <div id="loading">Loading booths...</div>
-  
-  <!-- Flight Controls - HIDDEN -->
-  <div id="flight-controls">
-    <button id="fly-up">Fly Up (Q)</button>
-    <button id="fly-down">Fly Down (E)</button>
-  </div>
-  
-  <!-- Mobile Controls - Only shown on mobile devices -->
-  <div id="mobile-controls">
-    <div id="joystick-container">
-      <div id="joystick-base"></div>
-      <div id="joystick-handle"></div>
-    </div>
-    <div id="camera-control-area"></div>
-    <div id="center-tap-area"></div>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="universe/js/navigation.js"></script>
-
-  <script>
-    let scene, camera, renderer;
-    const clock = new THREE.Clock();
-    const EYE_HEIGHT = 1.7;
-    let currentBooths = [];
-
-    // Get exhibit hall ID from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const hallId = urlParams.get('id') || '1'; // Default to hall 1 if no ID provided
+    <div id="info">Arville Virtual Hall #${hallId} | WASD: Move | Mouse: Look Around | R: Reset Position</div>
+    <div id="loading">Preparing venue...</div>
     
-    // Exhibit hall dimensions
-    const PLACE_WIDTH = 30;
-    const PLACE_DEPTH = 80;
+    <!-- Flight Controls - HIDDEN -->
+    <div id="flight-controls">
+        <button id="fly-up">Fly Up (Q)</button>
+        <button id="fly-down">Fly Down (E)</button>
+    </div>
+    
+    <!-- Mobile Controls - Only shown on mobile devices -->
+    <div id="mobile-controls">
+        <div id="joystick-container">
+            <div id="joystick-base"></div>
+            <div id="joystick-handle"></div>
+        </div>
+        <div id="camera-control-area"></div>
+        <div id="center-tap-area"></div>
+    </div>
 
-    window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 41.5);
-    window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0 * Math.PI / 180, 0, 'YXZ');
+    <script src="universe/js/three.min.js"></script>
+    <script src="universe/js/navigation.js"></script>
 
-    // Define all possible booth positions for 30x80 room - 6 booths per side
-    const BOOTH_POSITIONS = {
-      // Left side booths (6 total)
-      '1': new THREE.Vector3(-10, 0, -30),
-      '2': new THREE.Vector3(-10, 0, -18),
-      '3': new THREE.Vector3(-10, 0, -6),
-      '4': new THREE.Vector3(-10, 0, 6),
-      '5': new THREE.Vector3(-10, 0, 18),
-      '6': new THREE.Vector3(-10, 0, 30),
-      
-      // Right side booths (6 total)
-      '7': new THREE.Vector3(10, 0, -30),
-      '8': new THREE.Vector3(10, 0, -18),
-      '9': new THREE.Vector3(10, 0, -6),
-      '10': new THREE.Vector3(10, 0, 6),
-      '11': new THREE.Vector3(10, 0, 18),
-      '12': new THREE.Vector3(10, 0, 30)
-    };
-
-    // Simple function to get all booth IDs
-    function getAvailableBooths() {
-      return ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-    }
-
-    init();
-    animate();
-
-    function init() {
-      scene = new THREE.Scene();
-
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(0, EYE_HEIGHT, 41.5);
-
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setClearColor(0x202020);
-      document.body.appendChild(renderer.domElement);
-
-      // Initialize mobile controls using the shared navigation.js
-      initMobileControls();
-
-      // Update title to show hall ID
-      document.title = `Arville Virtual Exhibit Hall #${hallId}`;
-      document.getElementById('info').textContent = 
-        `Virtual Exhibit Hall #${hallId} | WASD: Move | Mouse: Look Around | R: Reset Position`;
-
-      // Lighting
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
-      hemiLight.position.set(0, 20, 0);
-      scene.add(hemiLight);
-
-      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-      scene.add(ambient);
-
-      const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
-      dirLight.position.set(5, 10, 7.5);
-      scene.add(dirLight);
-
-      // Load resources
-      loadResources().then(() => {
-        createRoom();
-        loadBooths();
-      }).catch((error) => {
-        console.error('Failed to load resources:', error);
-        createRoom();
-        loadBooths();
-      });
-
-      // Use the shared navigation controls - pass exhibit hall dimensions
-      setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.7);
-      window.addEventListener("resize", onWindowResize);
-    }
-
-    async function loadResources() {
-      // Load hall-specific main-textures configuration
-      await loadHallTextureConfig();
-      
-      // Load object creator
-      await loadObjectCreator();
-    }
-
-    function loadHallTextureConfig() {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = `universe/booths/${hallId}/main-textures.js`;
+    <script>
+        let scene, camera, renderer;
+        const clock = new THREE.Clock();
+        const EYE_HEIGHT = 1.7; // Changed from 3 to 1.7 for normal walking height
+        let currentBooths = []; // Changed from currentAreas
         
-        script.onload = function() {
-          console.log(`&#10003; main-textures.js loaded for hall ${hallId}`);
-          if (window.HALL_TEXTURES) {
-            console.log(`&#10003; Hall texture configuration loaded for hall ${hallId}`);
-            console.log('&#128203; Texture config:', window.HALL_TEXTURES);
-          } else {
-            console.warn(`&#9888; No HALL_TEXTURES configuration found for hall ${hallId}`);
-          }
-          resolve();
+        // Get hall ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const hallId = urlParams.get('id') || '1';
+        
+        // Hall dimensions for navigation
+        const PLACE_WIDTH = 30;
+        const PLACE_DEPTH = 80;
+
+        window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 41.5);
+        window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0 * Math.PI / 180, 0, 'YXZ');
+
+        // Booth positions for 12 booths (6 on each side)
+        const BOOTH_POSITIONS = {
+            // Left side booths (6 total)
+            '1': new THREE.Vector3(-10, 0, -30),
+            '2': new THREE.Vector3(-10, 0, -18),
+            '3': new THREE.Vector3(-10, 0, -6),
+            '4': new THREE.Vector3(-10, 0, 6),
+            '5': new THREE.Vector3(-10, 0, 18),
+            '6': new THREE.Vector3(-10, 0, 30),
+            
+            // Right side booths (6 total)
+            '7': new THREE.Vector3(10, 0, -30),
+            '8': new THREE.Vector3(10, 0, -18),
+            '9': new THREE.Vector3(10, 0, -6),
+            '10': new THREE.Vector3(10, 0, 6),
+            '11': new THREE.Vector3(10, 0, 18),
+            '12': new THREE.Vector3(10, 0, 30)
         };
-        
-        script.onerror = function() {
-          console.error(`&#10007; Failed to load main-textures.js for hall ${hallId}`);
-          // Don't set fallback textures here to avoid overriding hall-specific configs
-          resolve();
-        };
-        
-        document.head.appendChild(script);
-      });
-    }
 
-    async function createRoom() {
-      const roomWidth = PLACE_WIDTH;
-      const roomDepth = PLACE_DEPTH;
-      const wallHeight = 10;
-
-      try {
-        // Load textures using the configuration from main-textures.js
-        const materials = await loadHallMaterials();
-        createRoomWithMaterials(materials);
-      } catch (error) {
-        console.error('Failed to load hall materials, using fallback:', error);
-        createRoomWithDefaultMaterials();
-      }
-    }
-
-    async function loadHallMaterials() {
-      const materials = {};
-      
-      // Check if HALL_TEXTURES is available, otherwise use defaults
-      if (!window.HALL_TEXTURES) {
-        console.warn('&#9888; No HALL_TEXTURES configuration found, using default textures');
-        window.HALL_TEXTURES = {
-          floor: {
-            path: 'universe/textures/hall-floor.jpg',
-            repeat: { x: 8, y: 18 }
-          },
-          walls: {
-            path: 'universe/textures/hall-walls1.jpg',
-            repeat: { x: 8, y: 16 }
-          },
-          ceiling: {
-            path: 'universe/textures/expo1_ceiling.jpg',
-            repeat: { x: 16, y: 36 }
-          }
-        };
-      }
-      
-      const textureConfig = window.HALL_TEXTURES;
-      
-      // Load floor texture
-      try {
-        const floorTexture = await loadTexture(textureConfig.floor.path);
-        floorTexture.wrapS = THREE.RepeatWrapping;
-        floorTexture.wrapT = THREE.RepeatWrapping;
-        floorTexture.repeat.set(textureConfig.floor.repeat.x, textureConfig.floor.repeat.y);
-        materials.floor = new THREE.MeshLambertMaterial({ map: floorTexture });
-        console.log('&#10003; Floor texture loaded with repeat:', textureConfig.floor.repeat);
-      } catch (error) {
-        console.error('&#10007; Failed to load floor texture:', error);
-        materials.floor = new THREE.MeshLambertMaterial({ color: 0x555555 });
-      }
-
-      // Load wall textures - handle both single wall and individual wall configurations
-      if (textureConfig.walls.back && textureConfig.walls.front && 
-          textureConfig.walls.left && textureConfig.walls.right) {
-        // Individual wall textures
-        console.log('&#128260; Loading individual wall textures');
-        
-        try {
-          // Back wall
-          const backWallTexture = await loadTexture(textureConfig.walls.back.path);
-          backWallTexture.wrapS = THREE.RepeatWrapping;
-          backWallTexture.wrapT = THREE.RepeatWrapping;
-          backWallTexture.repeat.set(textureConfig.walls.back.repeat.x, textureConfig.walls.back.repeat.y);
-          backWallTexture.needsUpdate = true;
-          materials.walls_back = new THREE.MeshStandardMaterial({ 
-            map: backWallTexture,
-            roughness: 0.8
-          });
-          console.log('&#10003; Back wall texture loaded with repeat:', textureConfig.walls.back.repeat);
-        } catch (error) {
-          console.error('&#10007; Failed to load back wall texture:', error);
-          materials.walls_back = new THREE.MeshStandardMaterial({ 
-            color: 0xaaaaaa, 
-            roughness: 0.6 
-          });
+        // Simple function to get all booth IDs for this hall
+        function getAvailableBooths() { // Changed from getAvailableAreas
+            return ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
         }
 
-        // Front wall
-        try {
-          const frontWallTexture = await loadTexture(textureConfig.walls.front.path);
-          frontWallTexture.wrapS = THREE.RepeatWrapping;
-          frontWallTexture.wrapT = THREE.RepeatWrapping;
-          frontWallTexture.repeat.set(textureConfig.walls.front.repeat.x, textureConfig.walls.front.repeat.y);
-          frontWallTexture.needsUpdate = true;
-          materials.walls_front = new THREE.MeshStandardMaterial({ 
-            map: frontWallTexture,
-            roughness: 0.8
-          });
-          console.log('&#10003; Front wall texture loaded with repeat:', textureConfig.walls.front.repeat);
-        } catch (error) {
-          console.error('&#10007; Failed to load front wall texture:', error);
-          materials.walls_front = new THREE.MeshStandardMaterial({ 
-            color: 0xaaaaaa, 
-            roughness: 0.6 
-          });
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, EYE_HEIGHT, 41.5);
+            camera.rotation.set(0, 0 * Math.PI / 180, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x202020);
+            document.body.appendChild(renderer.domElement);
+
+            // Initialize mobile controls using the shared navigation.js
+            initMobileControls();
+
+            // Update title to show hall ID
+            document.title = `Arville Virtual Hall #${hallId}`;
+            document.getElementById('info').textContent = 
+                `Arville Virtual Hall #${hallId} | WASD: Move | Mouse: Look | R: Reset`;
+
+            // Lighting - balanced from multiple directions
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.9);
+            hemiLight.position.set(0, 20, 0);
+            scene.add(hemiLight);
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambient);
+
+            const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.6);
+            dirLight1.position.set(30, 12, 0);
+            scene.add(dirLight1);
+
+            const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.6);
+            dirLight2.position.set(-30, 12, 0);
+            scene.add(dirLight2);
+
+            const dirLight3 = new THREE.DirectionalLight(0xffffff, 0.6);
+            dirLight3.position.set(0, 12, -30);
+            scene.add(dirLight3);
+
+            const dirLight4 = new THREE.DirectionalLight(0xffffff, 0.6);
+            dirLight4.position.set(0, 12, 30);
+            scene.add(dirLight4);
+
+            // Load resources
+            loadResources().then(() => {
+                createRoom();
+                loadBooths(); // Changed from loadAreas
+            }).catch((error) => {
+                console.error('Failed to load resources:', error);
+                createRoom();
+                loadBooths(); // Changed from loadAreas
+            });
+
+            // Use the shared navigation controls
+            setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
+            window.addEventListener("resize", onWindowResize);
         }
 
-        // Left wall
-        try {
-          const leftWallTexture = await loadTexture(textureConfig.walls.left.path);
-          leftWallTexture.wrapS = THREE.RepeatWrapping;
-          leftWallTexture.wrapT = THREE.RepeatWrapping;
-          leftWallTexture.repeat.set(textureConfig.walls.left.repeat.x, textureConfig.walls.left.repeat.y);
-          leftWallTexture.needsUpdate = true;
-          materials.walls_left = new THREE.MeshStandardMaterial({ 
-            map: leftWallTexture,
-            roughness: 0.8
-          });
-          console.log('&#10003; Left wall texture loaded with repeat:', textureConfig.walls.left.repeat);
-        } catch (error) {
-          console.error('&#10007; Failed to load left wall texture:', error);
-          materials.walls_left = new THREE.MeshStandardMaterial({ 
-            color: 0xaaaaaa, 
-            roughness: 0.6 
-          });
+        async function loadResources() {
+            // Load hall-specific main-textures configuration
+            await loadHallTextureConfig();
+            
+            // Load object creator
+            await loadObjectCreator();
         }
 
-        // Right wall
-        try {
-          const rightWallTexture = await loadTexture(textureConfig.walls.right.path);
-          rightWallTexture.wrapS = THREE.RepeatWrapping;
-          rightWallTexture.wrapT = THREE.RepeatWrapping;
-          rightWallTexture.repeat.set(textureConfig.walls.right.repeat.x, textureConfig.walls.right.repeat.y);
-          rightWallTexture.needsUpdate = true;
-          materials.walls_right = new THREE.MeshStandardMaterial({ 
-            map: rightWallTexture,
-            roughness: 0.8
-          });
-          console.log('&#10003; Right wall texture loaded with repeat:', textureConfig.walls.right.repeat);
-        } catch (error) {
-          console.error('&#10007; Failed to load right wall texture:', error);
-          materials.walls_right = new THREE.MeshStandardMaterial({ 
-            color: 0xaaaaaa, 
-            roughness: 0.6 
-          });
+        function loadHallTextureConfig() {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = `universe/hall-sections/${hallId}/main-textures.js`;
+                
+                script.onload = function() {
+                    console.log(`&#9989; main-textures.js loaded for hall ${hallId}`);
+                    if (window.HALL_TEXTURES) {
+                        console.log(`&#9989; Hall texture configuration loaded for hall ${hallId}`);
+                        console.log('&#128195; Texture config:', window.HALL_TEXTURES);
+                    } else {
+                        console.warn(`&#9888;&#65039; No HALL_TEXTURES configuration found for hall ${hallId}`);
+                    }
+                    resolve();
+                };
+                
+                script.onerror = function() {
+                    console.error(`&#10060; Failed to load main-textures.js for hall ${hallId}`);
+                    resolve(); // Still resolve to continue loading
+                };
+                
+                document.head.appendChild(script);
+            });
         }
-      } else {
-        // Single wall texture for all walls
-        console.log('&#128260; Loading single wall texture for all walls');
-        try {
-          const wallTexture = await loadTexture(textureConfig.walls.path);
-          wallTexture.wrapS = THREE.RepeatWrapping;
-          wallTexture.wrapT = THREE.RepeatWrapping;
-          wallTexture.repeat.set(textureConfig.walls.repeat.x, textureConfig.walls.repeat.y);
-          wallTexture.needsUpdate = true;
-          materials.walls = new THREE.MeshStandardMaterial({ 
-            map: wallTexture,
-            roughness: 0.8
-          });
-          console.log('&#10003; Wall texture loaded with repeat:', textureConfig.walls.repeat);
-        } catch (error) {
-          console.error('&#10007; Failed to load wall texture:', error);
-          materials.walls = new THREE.MeshStandardMaterial({ 
-            color: 0xaaaaaa, 
-            roughness: 0.6 
-          });
-        }
-      }
 
-      // Load ceiling texture
-      try {
-        const ceilingTexture = await loadTexture(textureConfig.ceiling.path);
-        ceilingTexture.wrapS = THREE.RepeatWrapping;
-        ceilingTexture.wrapT = THREE.RepeatWrapping;
-        ceilingTexture.repeat.set(textureConfig.ceiling.repeat.x, textureConfig.ceiling.repeat.y);
-        materials.ceiling = new THREE.MeshStandardMaterial({ 
-          map: ceilingTexture,
-          roughness: 0.9
-        });
-        console.log('&#10003; Ceiling texture loaded with repeat:', textureConfig.ceiling.repeat);
-      } catch (error) {
-        console.error('&#10007; Failed to load ceiling texture:', error);
-        materials.ceiling = new THREE.MeshStandardMaterial({ 
-          color: 0xdddddd, 
-          roughness: 0.9 
-        });
-      }
-
-      return materials;
-    }
-
-    function loadTexture(path) {
-      return new Promise((resolve, reject) => {
-        if (!window.textureLoader) {
-          window.textureLoader = new THREE.TextureLoader();
-        }
-        
-        window.textureLoader.load(
-          path,
-          resolve,
-          undefined,
-          reject
-        );
-      });
-    }
-
-    function createRoomWithMaterials(materials) {
-      const roomWidth = PLACE_WIDTH;
-      const roomDepth = PLACE_DEPTH;
-      const wallHeight = 10;
-
-      // Floor
-      const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), materials.floor);
-      floor.rotation.x = -Math.PI / 2;
-      scene.add(floor);
-
-      // Walls - handle both individual and single wall materials
-      if (materials.walls_back && materials.walls_front && materials.walls_left && materials.walls_right) {
-        // Individual wall materials
-        const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), materials.walls_back);
-        backWall.position.set(0, wallHeight / 2, -roomDepth / 2);
-        scene.add(backWall);
-
-        const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), materials.walls_front);
-        frontWall.position.set(0, wallHeight / 2, roomDepth / 2);
-        frontWall.rotation.y = Math.PI;
-        scene.add(frontWall);
-
-        const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), materials.walls_left);
-        leftWall.rotation.y = Math.PI / 2;
-        leftWall.position.set(-roomWidth / 2, wallHeight / 2, 0);
-        scene.add(leftWall);
-
-        const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), materials.walls_right);
-        rightWall.rotation.y = -Math.PI / 2;
-        rightWall.position.set(roomWidth / 2, wallHeight / 2, 0);
-        scene.add(rightWall);
-      } else {
-        // Single wall material for all walls
-        const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), materials.walls);
-        backWall.position.set(0, wallHeight / 2, -roomDepth / 2);
-        scene.add(backWall);
-
-        const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), materials.walls);
-        frontWall.position.set(0, wallHeight / 2, roomDepth / 2);
-        frontWall.rotation.y = Math.PI;
-        scene.add(frontWall);
-
-        const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), materials.walls);
-        leftWall.rotation.y = Math.PI / 2;
-        leftWall.position.set(-roomWidth / 2, wallHeight / 2, 0);
-        scene.add(leftWall);
-
-        const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), materials.walls);
-        rightWall.rotation.y = -Math.PI / 2;
-        rightWall.position.set(roomWidth / 2, wallHeight / 2, 0);
-        scene.add(rightWall);
-      }
-
-      // Ceiling
-      const ceiling = new THREE.Mesh(
-        new THREE.PlaneGeometry(roomWidth, roomDepth),
-        materials.ceiling
-      );
-      ceiling.rotation.x = Math.PI / 2;
-      ceiling.position.y = wallHeight;
-      scene.add(ceiling);
-      
-      console.log(`&#10003; Room created for hall ${hallId}`);
-    }
-
-    function createRoomWithDefaultMaterials() {
-      const roomWidth = PLACE_WIDTH;
-      const roomDepth = PLACE_DEPTH;
-      const wallHeight = 10;
-
-      // Fallback materials with colors only
-      const materials = {
-        floor: new THREE.MeshLambertMaterial({ color: 0x555555 }),
-        walls: new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.6 }),
-        ceiling: new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.9 })
-      };
-
-      createRoomWithMaterials(materials);
-    }
-
-    function loadObjectCreator() {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = 'universe/obj_create.js?v=' + Date.now();
-        
-        script.onload = function() {
-          console.log('&#10003; obj_create.js loaded successfully');
-          if (!window.textureLoader) {
-            window.textureLoader = new THREE.TextureLoader();
-          }
-          if (window.initObjectTextures) {
-            window.initObjectTextures(window.textureLoader);
-          }
-          resolve();
-        };
-        
-        script.onerror = function() {
-          console.error('&#10007; Failed to load obj_create.js');
-          reject(new Error('Failed to load object creator script'));
-        };
-        
-        document.head.appendChild(script);
-      });
-    }
-
-    async function loadBooths() {
-      const loadingDiv = document.getElementById('loading');
-      
-      // Get all booth IDs
-      const boothIds = getAvailableBooths();
-      const loadedBooths = [];
-      
-      loadingDiv.textContent = `Loading ${boothIds.length} booth locations...`;
-      
-      // Try to load each booth
-      for (const boothId of boothIds) {
-        loadingDiv.textContent = `Loading booth ${boothId}...`;
-        try {
-          await loadBoothContent(boothId);
-          loadedBooths.push(boothId);
-        } catch (error) {
-          console.log(`Booth ${boothId} not available - leaving empty`);
-        }
-      }
-      
-      loadingDiv.style.display = 'none';
-      if (!isMobile) {
-        document.getElementById('instructions').textContent = 
-          `Hall #${hallId} | Loaded ${loadedBooths.length} booth(s) | WASD: Move | Mouse: Look | R: Reset`;
-      } else {
-        document.getElementById('instructions').style.display = 'none';
-      }
-    }
-
-    async function loadBoothContent(boothId) {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        // Load booth files from hall-specific folder
-        script.src = `universe/booths/${hallId}/booth${boothId}.js`;
-        
-        script.onload = () => {
-          // Wait a frame to ensure the booth group is created
-          setTimeout(() => {
-            const boothGroup = scene.getObjectByName(`booth-${boothId}`);
-            if (boothGroup) {
-              console.log(`&#10003; Found booth group: booth-${boothId} with ${boothGroup.children.length} children`);
-              positionBooth(boothId);
-              currentBooths.push(boothId);
-              console.log(`&#10003; Booth ${boothId} loaded successfully`);
-              resolve();
-            } else {
-              console.error(`&#10007; Booth group booth-${boothId} not found after loading script`);
-              reject(new Error(`Booth group not found: booth-${boothId}`));
+        async function createRoom() {
+            try {
+                // Load textures using the configuration from main-textures.js
+                const materials = await loadHallMaterials();
+                createRoomWithMaterials(materials);
+            } catch (error) {
+                console.error('Failed to load hall materials, using fallback:', error);
+                createRoomWithDefaultMaterials();
             }
-          }, 0);
-        };
-        
-        script.onerror = () => {
-          reject(new Error(`Booth ${boothId} file not found`));
-        };
-        
-        document.head.appendChild(script);
-      });
-    }
+        }
 
-    function positionBooth(boothId) {
-      const boothGroup = scene.getObjectByName(`booth-${boothId}`);
-      if (boothGroup && BOOTH_POSITIONS[boothId]) {
-        const boothPosition = BOOTH_POSITIONS[boothId];
-        boothGroup.position.copy(boothPosition);
-        console.log(`&#128205; Positioned booth ${boothId} at:`, boothPosition);
-        console.log(`&#128205; Booth group has ${boothGroup.children.length} children`);
-        
-        // Force update of world matrices
-        boothGroup.updateMatrixWorld(true);
-      } else {
-        console.error(`&#10007; Could not position booth ${boothId}`);
-      }
-    }
+        async function loadHallMaterials() {
+            const materials = {};
+            
+            // Check if HALL_TEXTURES is available, otherwise use defaults
+            if (!window.HALL_TEXTURES) {
+                console.warn('&#9888;&#65039; No HALL_TEXTURES configuration found, using default hall textures');
+                window.HALL_TEXTURES = {
+                    floor: {
+                        path: 'universe/textures/hall-floor.jpg',
+                        repeat: { x: 9, y: 18 }
+                    },
+                    walls: {
+                        path: 'universe/textures/hall-walls1.jpg',
+                        repeat: { x: 32, y: 4 }
+                    },
+                    ceiling: {
+                        path: 'universe/textures/expo1_ceiling.jpg',
+                        repeat: { x: 16, y: 32 }
+                    }
+                };
+            }
+            
+            const textureConfig = window.HALL_TEXTURES;
+            
+            // Load floor texture
+            try {
+                const floorTexture = await loadTexture(textureConfig.floor.path);
+                floorTexture.wrapS = THREE.RepeatWrapping;
+                floorTexture.wrapT = THREE.RepeatWrapping;
+                floorTexture.repeat.set(textureConfig.floor.repeat.x, textureConfig.floor.repeat.y);
+                materials.floor = new THREE.MeshLambertMaterial({ map: floorTexture });
+                console.log('&#9989; Floor texture loaded with repeat:', textureConfig.floor.repeat);
+            } catch (error) {
+                console.error('&#10060; Failed to load floor texture:', error);
+                materials.floor = new THREE.MeshLambertMaterial({ color: 0x888888 });
+            }
 
-    function onWindowResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
+            // Load wall texture
+            try {
+                const wallTexture = await loadTexture(textureConfig.walls.path);
+                wallTexture.wrapS = THREE.RepeatWrapping;
+                wallTexture.wrapT = THREE.RepeatWrapping;
+                wallTexture.repeat.set(textureConfig.walls.repeat.x, textureConfig.walls.repeat.y);
+                wallTexture.needsUpdate = true;
+                materials.walls = new THREE.MeshStandardMaterial({ 
+                    map: wallTexture,
+                    roughness: 0.8,
+                    side: THREE.DoubleSide
+                });
+                console.log('&#9989; Wall texture loaded with repeat:', textureConfig.walls.repeat);
+            } catch (error) {
+                console.error('&#10060; Failed to load wall texture:', error);
+                materials.walls = new THREE.MeshStandardMaterial({ 
+                    color: 0xeeeeee, 
+                    roughness: 0.6,
+                    side: THREE.DoubleSide
+                });
+            }
 
-    function animate() {
-      requestAnimationFrame(animate);
-      const delta = clock.getDelta();
-      if (camera.userData.update) camera.userData.update();
-      renderer.render(scene, camera);
-    }
-  </script>
+            // Load ceiling texture
+            try {
+                const ceilingTexture = await loadTexture(textureConfig.ceiling.path);
+                ceilingTexture.wrapS = THREE.RepeatWrapping;
+                ceilingTexture.wrapT = THREE.RepeatWrapping;
+                ceilingTexture.repeat.set(textureConfig.ceiling.repeat.x, textureConfig.ceiling.repeat.y);
+                materials.ceiling = new THREE.MeshStandardMaterial({ 
+                    map: ceilingTexture,
+                    roughness: 0.9
+                });
+                console.log('&#9989; Ceiling texture loaded with repeat:', textureConfig.ceiling.repeat);
+            } catch (error) {
+                console.error('&#10060; Failed to load ceiling texture:', error);
+                materials.ceiling = new THREE.MeshStandardMaterial({ 
+                    color: 0xdddddd, 
+                    roughness: 0.9 
+                });
+            }
+
+            return materials;
+        }
+
+        function loadTexture(path) {
+            return new Promise((resolve, reject) => {
+                if (!window.textureLoader) {
+                    window.textureLoader = new THREE.TextureLoader();
+                }
+                
+                window.textureLoader.load(
+                    path,
+                    resolve,
+                    undefined,
+                    reject
+                );
+            });
+        }
+
+        function createRoomWithMaterials(materials) {
+            const roomWidth = PLACE_WIDTH;
+            const roomDepth = PLACE_DEPTH;
+            const wallHeight = 11.5;
+
+            // Floor
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), materials.floor);
+            floor.rotation.x = -Math.PI / 2;
+            scene.add(floor);
+
+            // Walls
+            const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), materials.walls);
+            backWall.position.set(0, wallHeight / 2, -roomDepth / 2);
+            scene.add(backWall);
+
+            const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), materials.walls);
+            frontWall.position.set(0, wallHeight / 2, roomDepth / 2);
+            frontWall.rotation.y = Math.PI;
+            scene.add(frontWall);
+
+            const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), materials.walls);
+            leftWall.rotation.y = Math.PI / 2;
+            leftWall.position.set(-roomWidth / 2, wallHeight / 2, 0);
+            scene.add(leftWall);
+
+            const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), materials.walls);
+            rightWall.rotation.y = -Math.PI / 2;
+            rightWall.position.set(roomWidth / 2, wallHeight / 2, 0);
+            scene.add(rightWall);
+
+            // Ceiling
+            const ceiling = new THREE.Mesh(
+                new THREE.PlaneGeometry(roomWidth, roomDepth),
+                materials.ceiling
+            );
+            ceiling.rotation.x = Math.PI / 2;
+            ceiling.position.y = wallHeight;
+            scene.add(ceiling);
+            
+            console.log(`&#9989; Hall room created for hall ${hallId}`);
+        }
+
+        function createRoomWithDefaultMaterials() {
+            const roomWidth = PLACE_WIDTH;
+            const roomDepth = PLACE_DEPTH;
+            const wallHeight = 10;
+
+            // Fallback materials with colors only
+            const materials = {
+                floor: new THREE.MeshLambertMaterial({ color: 0x888888 }),
+                walls: new THREE.MeshStandardMaterial({ 
+                    color: 0xeeeeee, 
+                    roughness: 0.6,
+                    side: THREE.DoubleSide 
+                }),
+                ceiling: new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.9 })
+            };
+
+            createRoomWithMaterials(materials);
+        }
+
+        function loadObjectCreator() {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'universe/obj_create.js?v=' + Date.now();
+                
+                script.onload = function() {
+                    console.log('&#9989; Object creator loaded');
+                    if (!window.textureLoader) {
+                        window.textureLoader = new THREE.TextureLoader();
+                    }
+                    if (window.initObjectTextures) {
+                        window.initObjectTextures(window.textureLoader);
+                    }
+                    resolve();
+                };
+                
+                script.onerror = function() {
+                    console.error('&#10060; Failed to load object creator');
+                    reject(new Error('Failed to load object creator script'));
+                };
+                
+                document.head.appendChild(script);
+            });
+        }
+
+        async function loadBooths() { // Changed from loadAreas
+            const loadingDiv = document.getElementById('loading');
+            
+            // Get all booth IDs
+            const boothIds = getAvailableBooths(); // Changed from getAvailableAreas
+            const loadedBooths = [];
+            
+            loadingDiv.textContent = `Loading ${boothIds.length} booths...`;
+            
+            // Try to load each booth
+            for (const boothId of boothIds) {
+                loadingDiv.textContent = `Loading booth ${boothId}...`;
+                try {
+                    await loadBoothContent(boothId); // Changed from loadAreaContent
+                    loadedBooths.push(boothId);
+                } catch (error) {
+                    console.log(`Booth ${boothId} not available - leaving empty`);
+                }
+            }
+            
+            loadingDiv.style.display = 'none';
+            console.log(`&#9989; Loaded ${loadedBooths.length} booths`);
+        }
+
+        async function loadBoothContent(boothId) { // Changed from loadAreaContent
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = `universe/booths/${hallId}/booth${boothId}.js`;
+                
+                script.onload = () => {
+                    setTimeout(() => {
+                        // Look for booth group (booth files should create groups named 'booth-1', 'booth-2', etc.)
+                        const boothGroup = scene.getObjectByName(`booth-${boothId}`);
+                        if (boothGroup) {
+                            positionBooth(boothId); // Changed from positionArea
+                            currentBooths.push(boothId);
+                            console.log(`&#9989; Booth ${boothId} loaded successfully`);
+                            resolve();
+                        } else {
+                            console.error(`&#10060; Booth group booth-${boothId} not found after loading script`);
+                            reject(new Error(`Booth group not found: booth-${boothId}`));
+                        }
+                    }, 0);
+                };
+                
+                script.onerror = () => {
+                    reject(new Error(`Booth ${boothId} file not found`));
+                };
+                
+                document.head.appendChild(script);
+            });
+        }
+
+        function positionBooth(boothId) { // Changed from positionArea
+            const boothGroup = scene.getObjectByName(`booth-${boothId}`);
+            if (boothGroup && BOOTH_POSITIONS[boothId]) {
+                const boothPosition = BOOTH_POSITIONS[boothId];
+                boothGroup.position.copy(boothPosition);
+                console.log(`&#128205; Positioned booth ${boothId} at:`, boothPosition);
+                boothGroup.updateMatrixWorld(true);
+            } else {
+                console.error(`&#10060; Could not position booth ${boothId}`);
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            
+            // ENFORCE FLIGHT CEILING LIMIT
+            const CEILING_HEIGHT = 10.0; // Slightly below actual ceiling
+            const MIN_HEIGHT = 0.5; // Minimum height above floor
+            
+            if (camera.position.y > CEILING_HEIGHT) {
+                camera.position.y = CEILING_HEIGHT;
+            }
+            if (camera.position.y < MIN_HEIGHT) {
+                camera.position.y = MIN_HEIGHT;
+            }
+            
+            if (camera.userData.update) camera.userData.update();
+            renderer.render(scene, camera);
+        }
+    </script>
 </body>
 </html>
