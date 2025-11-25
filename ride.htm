@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arville Virtual Park - VR Ride</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #87CEEB;
+      font-family: Arial, sans-serif;
+    }
+    #info, #instructions {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      color: white;
+      z-index: 10;
+    }
+    #info {
+      top: 10px;
+      background: rgba(0,0,0,0.5);
+      padding: 5px;
+    }
+    #instructions {
+      bottom: 20px;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+    }
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 100;
+    }
+    
+    /* VR Ride Controls */
+    #ride-controls {
+      position: absolute;
+      top: 60px;
+      right: 10px;
+      z-index: 20;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+      border-radius: 5px;
+      color: white;
+    }
+    
+    #ride-controls button {
+      background: #4CAF50;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    
+    #ride-controls button:hover {
+      background: #45a049;
+    }
+    
+    #ride-controls button.stop {
+      background: #f44336;
+    }
+    
+    #ride-controls button.stop:hover {
+      background: #d32f2f;
+    }
+    
+    /* Mobile Controls - Hidden by default */
+    #mobile-controls {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+    
+    #joystick-container {
+      position: absolute;
+      bottom: 100px;
+      left: 20px;
+      width: 120px;
+      height: 120px;
+      pointer-events: auto;
+    }
+    
+    #joystick-base {
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      position: absolute;
+      border: 2px solid rgba(255,255,255,0.5);
+      top: 20px;
+      left: 20px;
+    }
+    
+    #joystick-handle {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 50%;
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      transition: transform 0.1s;
+    }
+    
+    #camera-control-area {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40%;
+      height: 100%;
+      pointer-events: auto;
+    }
+    
+    #center-tap-area {
+      position: absolute;
+      top: 0;
+      left: 40%;
+      width: 20%;
+      height: 100%;
+      pointer-events: auto;
+    }
+    
+    /* Flight Controls - HIDDEN */
+    #flight-controls {
+      display: none; /* Hide the flight controls */
+    }
+  </style>
+</head>
+<body>
+  <div id="info">Virtual Park VR Ride | Mouse: Look Around | Button: Start/Stop Ride</div>
+  <div id="instructions">Loading park...</div>
+  <div id="loading">Loading park areas...</div>
+  
+  <!-- VR Ride Controls -->
+  <div id="ride-controls">
+    <div>VR Ride Controls</div>
+    <button id="start-ride">Start Ride</button>
+    <button id="stop-ride" class="stop" style="display:none;">Stop Ride</button>
+  </div>
+  
+  <!-- Flight Controls - HIDDEN -->
+  <div id="flight-controls">
+    <button id="fly-up">Fly Up (Q)</button>
+    <button id="fly-down">Fly Down (E)</button>
+  </div>
+  
+  <!-- Mobile Controls - Only shown on mobile devices -->
+  <div id="mobile-controls">
+    <div id="joystick-container">
+      <div id="joystick-base"></div>
+      <div id="joystick-handle"></div>
+    </div>
+    <div id="camera-control-area"></div>
+    <div id="center-tap-area"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // VR Ride functionality
+    let isRideActive = false;
+    let rideSpeed = 0.5; // Speed of the ride
+    let rideProgress = 0; // Progress along the path (0 to 1)
+    let ovalPath = null; // Will store the oval path geometry
+    let lookControlsEnabled = true; // Allow mouse look during ride
+    
+    // Initialize VR Ride
+    function initVRRide() {
+      // Create the invisible oval path
+      createInvisibleOvalPath();
+      
+      // Set up ride controls
+      document.getElementById('start-ride').addEventListener('click', startRide);
+      document.getElementById('stop-ride').addEventListener('click', stopRide);
+      
+      // Update instructions
+      document.getElementById('instructions').textContent = 
+        'Click "Start Ride" to begin the VR tour. Use mouse to look around during the ride.';
+    }
+    
+    // Create the invisible oval path
+    function createInvisibleOvalPath() {
+      // Oval dimensions - slightly smaller than the park boundaries
+      const ovalWidth = PLACE_WIDTH - 40;
+      const ovalDepth = PLACE_DEPTH - 60;
+      
+      // Create a curve for the oval path
+      const curve = new THREE.EllipseCurve(
+        0, 0,            // ax, aY
+        ovalWidth / 2,   // xRadius
+        ovalDepth / 2,   // yRadius
+        0,               // aStartAngle
+        2 * Math.PI,     // aEndAngle
+        false,           // aClockwise
+        0                // aRotation
+      );
+      
+      // Get points along the curve
+      const points = curve.getPoints(100);
+      
+      // Convert to 3D points (y-coordinate is EYE_HEIGHT)
+      const pathPoints = points.map(point => 
+        new THREE.Vector3(point.x, EYE_HEIGHT, point.y)
+      );
+      
+      // Create a CatmullRomCurve3 for smooth movement
+      ovalPath = new THREE.CatmullRomCurve3(pathPoints);
+      ovalPath.closed = true;
+      
+      console.log('&#128260; Invisible oval path created for VR ride');
+    }
+    
+    // Start the VR ride
+    function startRide() {
+      isRideActive = true;
+      document.getElementById('start-ride').style.display = 'none';
+      document.getElementById('stop-ride').style.display = 'inline-block';
+      
+      // Disable normal movement controls during ride
+      if (camera.userData.controls) {
+        camera.userData.controls.enabled = false;
+      }
+      
+      console.log('&#128640; VR Ride started');
+    }
+    
+    // Stop the VR ride
+    function stopRide() {
+      isRideActive = false;
+      document.getElementById('start-ride').style.display = 'inline-block';
+      document.getElementById('stop-ride').style.display = 'none';
+      
+      // Re-enable normal movement controls
+      if (camera.userData.controls) {
+        camera.userData.controls.enabled = true;
+      }
+      
+      console.log('&#9209;&#65039; VR Ride stopped');
+    }
+    
+    // Update camera position along the path during the ride
+    function updateRide(delta) {
+      if (!isRideActive || !ovalPath) return;
+      
+      // Update progress along the path
+      rideProgress += (rideSpeed * delta) / 100; // Adjust speed with delta time
+      if (rideProgress >= 1) rideProgress = 0; // Loop the ride
+      
+      // Get position along the path
+      const pathPoint = ovalPath.getPoint(rideProgress);
+      
+      // Get tangent for orientation (facing direction)
+      const tangent = ovalPath.getTangent(rideProgress);
+      
+      // Update camera position
+      camera.position.copy(pathPoint);
+      
+      // Keep the ability to look around with mouse
+      // We don't override the camera rotation, allowing mouse look
+    }
+  </script>
+
+  <script>
+    let scene, camera, renderer;
+    const clock = new THREE.Clock();
+    const EYE_HEIGHT = 7;
+    let currentAreas = [];
+    
+    // Park dimensions - renamed to PLACE for generic use
+    const PLACE_WIDTH = 200;
+    const PLACE_DEPTH = 400;
+    const AREA_SIZE = 40;
+    
+    // CAMERA_LIMITS is now defined in navigation.js
+    
+const AREA_POSITIONS = {
+  // Left side, back row (negative Z) - KEEP ORIGINAL
+  '1a': new THREE.Vector3(-60, 0, -150),  // Left-back
+  '1b': new THREE.Vector3(-20, 0, -150),  // Left-center-back  
+  '1c': new THREE.Vector3(20, 0, -150),   // Right-center-back
+  '1d': new THREE.Vector3(60, 0, -150),   // Right-back
+  
+  // Left side, front row (positive Z) - MOVE CLOSER TO BACK
+  '1e': new THREE.Vector3(-60, 0, -100),   // Left-front
+  '1f': new THREE.Vector3(-20, 0, -100),   // Left-center-front
+  '1g': new THREE.Vector3(20, 0, -100),    // Right-center-front
+  '1h': new THREE.Vector3(60, 0, -100),    // Right-front
+  
+  // NEW: Middle row - MOVE CLOSER TO BACK
+  '1v': new THREE.Vector3(-60, 0, -50),    // Left-middle
+  '1w': new THREE.Vector3(-20, 0, -50),    // Left-center-middle
+  '1x': new THREE.Vector3(20, 0, -50),     // Right-center-middle
+  '1y': new THREE.Vector3(60, 0, -50),     // Right-middle
+  
+  // ACTIVITY AREA SUB-AREAS - a1 to a8
+  '1a1': new THREE.Vector3(-60, 0, -20),    // Back-left activity area
+  '1a2': new THREE.Vector3(-20, 0, -20),    // Back-center activity area
+  '1a3': new THREE.Vector3(20, 0, -20),     // Back-right activity area
+  '1a4': new THREE.Vector3(60, 0, -20),     // Back-far-right activity area
+  
+  '1a5': new THREE.Vector3(-60, 0, 20),     // Front-left activity area
+  '1a6': new THREE.Vector3(-20, 0, 20),     // Front-center activity area
+  '1a7': new THREE.Vector3(20, 0, 20),      // Front-right activity area
+  '1a8': new THREE.Vector3(60, 0, 20),      // Front-far-right activity area
+    
+  // Right side, back row (negative Z) - MOVE TO FRONT OF ACTIVITY AREA
+  '1i': new THREE.Vector3(-60, 0, 50),    // Left-back
+  '1j': new THREE.Vector3(-20, 0, 50),    // Left-center-back
+  '1k': new THREE.Vector3(20, 0, 50),     // Right-center-back
+  '1m': new THREE.Vector3(60, 0, 50),     // Right-back
+  
+  // KEEP ORIGINAL - Right side middle
+  '1n': new THREE.Vector3(-60, 0, 100),   // Left-middle
+  '1o': new THREE.Vector3(-20, 0, 100),   // Left-center-middle
+  '1p': new THREE.Vector3(20, 0, 100),    // Right-center-middle
+  '1q': new THREE.Vector3(60, 0, 100),    // Right-middle  
+  
+  // KEEP ORIGINAL - Right side, front row (positive Z)
+  '1r': new THREE.Vector3(-60, 0, 150),   // Left-front
+  '1s': new THREE.Vector3(-20, 0, 150),   // Left-center-front
+  '1t': new THREE.Vector3(20, 0, 150),    // Right-center-front
+  '1u': new THREE.Vector3(60, 0, 150),    // Right-front
+};
+
+    // Simple function to get all area IDs
+    function getAvailableAreas() {
+      return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '1i', '1j', '1k', '1m', '1n', '1o', '1p', '1q', '1r', '1s', '1t', '1v', '1w', '1x', '1y']
+    }
+
+    init();
+    animate();
+
+    function init() {
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 7, 0); // Start in area 1a
+      camera.rotation.set(0, 0 * Math.PI / 180, 0);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x87CEEB); // Sky blue background
+      document.body.appendChild(renderer.domElement);
+
+      // Initialize VR Ride
+      initVRRide();
+
+      // Lighting - brighter for outdoor environment
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
+      hemiLight.position.set(0, 50, 0);
+      scene.add(hemiLight);
+
+      const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(ambient);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+      dirLight.position.set(10, 20, 10);
+      dirLight.castShadow = true;
+      scene.add(dirLight);
+
+      // First load obj_create_park, then create park and load areas
+      loadObjectCreator().then(() => {
+        createPark();
+        createRoads(); // Add roads to the scene
+        loadAreas();
+      }).catch((error) => {
+        console.error('Failed to load object creator:', error);
+        createPark();
+        createRoads(); // Add roads to the scene
+        loadAreas();
+      });
+
+      // Use the shared navigation controls - pass PLACE dimensions
+      setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.8);
+      window.addEventListener("resize", onWindowResize);
+    }
+
+    function createPark() {
+      // Create grass ground with finely tiled texture
+      const groundMat = new THREE.MeshLambertMaterial({ 
+        color: 0x3a7d34 // Fallback color if texture fails to load
+      });
+
+      // Create the ground
+      const ground = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_WIDTH, PLACE_DEPTH), groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      scene.add(ground);
+
+      // Load grass texture with fine tiling
+      if (window.textureLoader) {
+        try {
+          const grassTexture = window.textureLoader.load('universe/textures/grass1.jpg');
+          grassTexture.wrapS = THREE.RepeatWrapping;
+          grassTexture.wrapT = THREE.RepeatWrapping;
+          
+          // Fine tiling for sharp grass
+          const repeatX = PLACE_WIDTH / 12;   
+          const repeatY = PLACE_DEPTH / 24;  
+          grassTexture.repeat.set(repeatX, repeatY);
+          
+          groundMat.map = grassTexture;
+          groundMat.needsUpdate = true;
+          
+          console.log('&#9989; Grass texture loaded with sharp tiling - repeat:', repeatX, repeatY);
+        } catch (error) {
+          console.error('&#10060; Failed to load grass texture:', error);
+        }
+      }
+      
+      // Create oval activity area in the blank space
+      createOvalActivityArea();
+      
+      console.log('&#9989; Park base created successfully');
+    }
+
+    function createOvalActivityArea() {
+      console.log('&#128736;&#65039; Creating activity area with proper frame...');
+      
+      const activityWidth = 90;
+      const activityLength = 40;
+      const activityHeight = 0.02;
+      const activityPosition = new THREE.Vector3(0, activityHeight, 0);
+      
+      // Create activity area material - SAME APPROACH AS PATHWAY
+      const activityMat = new THREE.MeshLambertMaterial({ 
+        color: 0x888888 // Default gray color (fallback)
+      });
+      
+      // Try to load activity texture - SAME APPROACH AS PATHWAY
+      if (window.textureLoader) {
+        try {
+          const activityTexture = window.textureLoader.load('universe/textures/play-area.jpg');
+          activityTexture.wrapS = THREE.RepeatWrapping;
+          activityTexture.wrapT = THREE.RepeatWrapping;
+          activityTexture.repeat.set(16, 16); // Same tiling as pathway
+          activityMat.map = activityTexture;
+          console.log('&#9989; Activity area texture loaded successfully');
+        } catch (error) {
+          console.error('&#10060; Failed to load activity area texture, using fallback:', error);
+          
+          // Try concrete as fallback (same as pathway)
+          try {
+            const concreteTexture = window.textureLoader.load('universe/textures/concrete.jpg');
+            concreteTexture.wrapS = THREE.RepeatWrapping;
+            concreteTexture.wrapT = THREE.RepeatWrapping;
+            concreteTexture.repeat.set(8, 8);
+            activityMat.map = concreteTexture;
+            console.log('&#9989; Using concrete texture as fallback for activity area');
+          } catch (fallbackError) {
+            console.error('&#10060; All texture fallbacks failed, using default color');
+          }
+        }
+      }
+      
+      // Create the activity area
+      const activityGeometry = new THREE.PlaneGeometry(activityWidth, activityLength);
+      const activityArea = new THREE.Mesh(activityGeometry, activityMat);
+      activityArea.rotation.x = -Math.PI / 2;
+      activityArea.position.copy(activityPosition);
+      activityArea.name = 'activity-area';
+      scene.add(activityArea);
+      
+      // --- FIXED: Create a rectangular FRAME instead of covering plane ---
+      const frameThickness = 0.1; // thickness of the frame
+      const frameHeight = 0.01; // slightly above the activity area
+
+      const halfW = activityWidth / 2;
+      const halfL = activityLength / 2;
+
+      const horizGeom = new THREE.BoxGeometry(activityWidth + frameThickness * 2, frameHeight, frameThickness);
+      const vertGeom  = new THREE.BoxGeometry(frameThickness, frameHeight, activityLength + frameThickness * 2);
+
+      const frameMat = new THREE.MeshLambertMaterial({
+        color: 0x222222,
+        side: THREE.DoubleSide
+      });
+
+      // top bar (along +Z)
+      const topBar = new THREE.Mesh(horizGeom, frameMat);
+      topBar.position.set(activityPosition.x, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z + halfL + frameThickness / 2);
+      scene.add(topBar);
+
+      // bottom bar (along -Z)
+      const bottomBar = new THREE.Mesh(horizGeom, frameMat);
+      bottomBar.position.set(activityPosition.x, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z - halfL - frameThickness / 2);
+      scene.add(bottomBar);
+
+      // left bar (along -X)
+      const leftBar = new THREE.Mesh(vertGeom, frameMat);
+      leftBar.position.set(activityPosition.x - halfW - frameThickness / 2, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z);
+      scene.add(leftBar);
+
+      // right bar (along +X)
+      const rightBar = new THREE.Mesh(vertGeom, frameMat);
+      rightBar.position.set(activityPosition.x + halfW + frameThickness / 2, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z);
+      scene.add(rightBar);
+
+      console.log('&#128295; Activity area created with proper frame at:', activityPosition);
+    }
+
+function createRoads() {
+    // Create roads along the major and minor axes of the oval pathway
+    const roadWidth = 8; // Same width as the pathway
+    const roadHeight = 0.049; // Slightly lower than activity area to be underneath it
+    
+    // Oval dimensions (same as pathway)
+    const ovalWidth = PLACE_WIDTH - 40;
+    const ovalDepth = PLACE_DEPTH - 60;
+    
+    // Activity area dimensions (for cutting out roads underneath)
+    const activityWidth = 90;
+    const activityLength = 50;
+    
+    // Create DIFFERENT materials for major and minor axis roads
+    const majorAxisRoadMat = new THREE.MeshLambertMaterial({ 
+        color: 0x707070 // Default concrete color
+    });
+    
+    const minorAxisRoadMat = new THREE.MeshLambertMaterial({ 
+        color: 0x707070 // Default concrete color
+    });
+    
+    // Try to load concrete texture with DIFFERENT TILING for each road
+    if (window.textureLoader) {
+        try {
+            // MAJOR AXIS ROAD TEXTURE (horizontal road) - more repetition along length
+            const majorAxisTexture = window.textureLoader.load('universe/textures/concrete2.jpg');
+            majorAxisTexture.wrapS = THREE.RepeatWrapping;
+            majorAxisTexture.wrapT = THREE.RepeatWrapping;
+            majorAxisTexture.repeat.set(8, 2); // More tiling along X-axis (length)
+            majorAxisRoadMat.map = majorAxisTexture;
+            
+            // MINOR AXIS ROAD TEXTURE (vertical road) - more repetition along length  
+            const minorAxisTexture = window.textureLoader.load('universe/textures/concrete2.jpg');
+            minorAxisTexture.wrapS = THREE.RepeatWrapping;
+            minorAxisTexture.wrapT = THREE.RepeatWrapping;
+            minorAxisTexture.repeat.set(4, 32); // More tiling along Z-axis (length)
+            minorAxisRoadMat.map = minorAxisTexture;
+            
+            console.log('&#9989; Different texture tiling applied to major and minor axis roads');
+        } catch (error) {
+            console.error('&#10060; Failed to load concrete texture for roads, using default color:', error);
+        }
+    }
+    
+    // Create road along the major axis (horizontal, X-axis) - CUT OUT UNDER ACTIVITY AREA
+    const majorAxisRoadLength = ovalWidth;
+    
+    // Create the major axis road in two segments - EXTENDED to reach activity area edges
+    // Each segment should extend from the park edge to the activity area edge
+    const majorSegmentLength = (majorAxisRoadLength - activityWidth) / 2;
+    
+    // Left segment of major axis road (before activity area)
+    const leftMajorSegmentGeometry = new THREE.PlaneGeometry(majorSegmentLength, roadWidth);
+    const leftMajorSegment = new THREE.Mesh(leftMajorSegmentGeometry, majorAxisRoadMat);
+    leftMajorSegment.rotation.x = -Math.PI / 2;
+    leftMajorSegment.position.y = roadHeight;
+    // Position so the right edge of this segment touches the left edge of activity area
+    leftMajorSegment.position.x = -(activityWidth / 2 + majorSegmentLength / 2);
+    leftMajorSegment.position.z = 0;
+    scene.add(leftMajorSegment);
+    
+    // Right segment of major axis road (after activity area)
+    const rightMajorSegmentGeometry = new THREE.PlaneGeometry(majorSegmentLength, roadWidth);
+    const rightMajorSegment = new THREE.Mesh(rightMajorSegmentGeometry, majorAxisRoadMat);
+    rightMajorSegment.rotation.x = -Math.PI / 2;
+    rightMajorSegment.position.y = roadHeight;
+    // Position so the left edge of this segment touches the right edge of activity area
+    rightMajorSegment.position.x = majorSegmentLength / 2 + activityWidth / 2;
+    rightMajorSegment.position.z = 0;
+    scene.add(rightMajorSegment);
+    
+    // Create road along the minor axis (vertical, Z-axis) - CUT OUT UNDER ACTIVITY AREA
+    const minorAxisRoadLength = ovalDepth;
+    
+    // Create the minor axis road in two segments - EXTENDED to reach activity area edges
+    // Each segment should extend from the park edge to the activity area edge
+    const minorSegmentLength = (minorAxisRoadLength - activityLength) / 2;
+    
+    // Bottom segment of minor axis road (before activity area)
+    const bottomMinorSegmentGeometry = new THREE.PlaneGeometry(roadWidth, minorSegmentLength);
+    const bottomMinorSegment = new THREE.Mesh(bottomMinorSegmentGeometry, minorAxisRoadMat);
+    bottomMinorSegment.rotation.x = -Math.PI / 2;
+    bottomMinorSegment.position.y = roadHeight;
+    bottomMinorSegment.position.x = 0;
+    // Position so the top edge of this segment touches the bottom edge of activity area
+    bottomMinorSegment.position.z = -(minorSegmentLength / 2 + activityLength / 2) + 5;
+    scene.add(bottomMinorSegment);
+    
+    // Top segment of minor axis road (after activity area)
+    const topMinorSegmentGeometry = new THREE.PlaneGeometry(roadWidth, minorSegmentLength);
+    const topMinorSegment = new THREE.Mesh(topMinorSegmentGeometry, minorAxisRoadMat);
+    topMinorSegment.rotation.x = -Math.PI / 2;
+    topMinorSegment.position.y = roadHeight;
+    topMinorSegment.position.x = 0;
+    // Position so the bottom edge of this segment touches the top edge of activity area
+    topMinorSegment.position.z = minorSegmentLength / 2 + activityLength / 2 - 5;
+    scene.add(topMinorSegment);
+    
+    console.log('&#128739;&#65039; Roads created with extended segments reaching activity area edges');
+    console.log(`Major axis segments: ${majorSegmentLength.toFixed(1)} units each`);
+    console.log(`Minor axis segments: ${minorSegmentLength.toFixed(1)} units each`);
+}
+
+    function loadObjectCreator() {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'universe/obj_create_park.js?v=' + Date.now();
+        
+        script.onload = function() {
+          console.log('&#9989; obj_create_park.js loaded successfully');
+          if (!window.textureLoader) {
+            window.textureLoader = new THREE.TextureLoader();
+          }
+          if (window.initObjectTextures) {
+            window.initObjectTextures(window.textureLoader);
+          }
+          resolve();
+        };
+        
+        script.onerror = function() {
+          console.error('&#10060; Failed to load obj_create_park.js');
+          reject(new Error('Failed to load object creator script'));
+        };
+        
+        document.head.appendChild(script);
+      });
+    }
+
+    async function loadAreas() {
+      const loadingDiv = document.getElementById('loading');
+      
+      // Get all area IDs
+      const areaIds = getAvailableAreas();
+      const loadedAreas = [];
+      
+      loadingDiv.textContent = `Loading ${areaIds.length} park areas...`;
+      
+      // Try to load each area
+      for (const areaId of areaIds) {
+        loadingDiv.textContent = `Loading area ${areaId}...`;
+        try {
+          await loadAreaContent(areaId);
+          loadedAreas.push(areaId);
+        } catch (error) {
+          console.log(`Area ${areaId} not available - leaving empty`);
+        }
+      }
+      
+      loadingDiv.style.display = 'none';
+      if (!isMobile) {
+        document.getElementById('instructions').textContent = 
+          `Loaded ${loadedAreas.length} area(s) | Click "Start Ride" for VR tour | Mouse: Look Around`;
+      } else {
+        document.getElementById('instructions').style.display = 'none';
+      }
+    }
+
+    async function loadAreaContent(areaId) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = `universe/park-areas/park${areaId}.js`;
+        
+        script.onload = () => {
+          // Wait a frame to ensure the area group is created
+          setTimeout(() => {
+            const areaGroup = scene.getObjectByName(`area-${areaId}`);
+            if (areaGroup) {
+              console.log(`&#9989; Found area group: area-${areaId} with ${areaGroup.children.length} children`);
+              positionArea(areaId);
+              currentAreas.push(areaId);
+              console.log(`&#9989; Area ${areaId} loaded successfully`);
+              resolve();
+            } else {
+              console.error(`&#10060; Area group area-${areaId} not found after loading script`);
+              reject(new Error(`Area group not found: area-${areaId}`));
+            }
+          }, 0);
+        };
+        
+        script.onerror = () => {
+          reject(new Error(`Area ${areaId} file not found`));
+        };
+        
+        document.head.appendChild(script);
+      });
+    }
+
+    function positionArea(areaId) {
+      const areaGroup = scene.getObjectByName(`area-${areaId}`);
+      if (areaGroup && AREA_POSITIONS[areaId]) {
+        const areaPosition = AREA_POSITIONS[areaId];
+        areaGroup.position.copy(areaPosition);
+        console.log(`&#128205; Positioned area ${areaId} at:`, areaPosition);
+        console.log(`&#128205; Area group has ${areaGroup.children.length} children`);
+        
+        // Force update of world matrices
+        areaGroup.updateMatrixWorld(true);
+      } else {
+        console.error(`&#10060; Could not position area ${areaId}`);
+      }
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      
+      // Update VR ride if active
+      updateRide(delta);
+      
+      // Update normal controls if not in ride mode
+      if (camera.userData.update && !isRideActive) {
+        camera.userData.update();
+      }
+      
+      renderer.render(scene, camera);
+    }
+
+    // Placeholder functions for mobile controls
+    function initMobileControls() {
+      // This would be implemented in navigation.js
+    }
+    
+    function setupControls(camera, eyeHeight, placeWidth, placeDepth, speed) {
+      // This would be implemented in navigation.js
+      // For now, we'll create a simple mouse look control
+      let isMouseDown = false;
+      let previousMousePosition = {
+        x: 0,
+        y: 0
+      };
+      
+      document.addEventListener('mousedown', (e) => {
+        isMouseDown = true;
+      });
+      
+      document.addEventListener('mouseup', (e) => {
+        isMouseDown = false;
+      });
+      
+      document.addEventListener('mousemove', (e) => {
+        if (!isMouseDown || !lookControlsEnabled) return;
+        
+        const deltaMove = {
+          x: e.clientX - previousMousePosition.x,
+          y: e.clientY - previousMousePosition.y
+        };
+        
+        // Rotate camera based on mouse movement
+        camera.rotation.y -= deltaMove.x * 0.002;
+        camera.rotation.x -= deltaMove.y * 0.002;
+        
+        // Limit vertical rotation
+        camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
+        
+        previousMousePosition.x = e.clientX;
+        previousMousePosition.y = e.clientY;
+      });
+      
+      document.addEventListener('mousedown', (e) => {
+        previousMousePosition.x = e.clientX;
+        previousMousePosition.y = e.clientY;
+      });
+    }
+  </script>
+</body>
+</html>
