@@ -138,7 +138,6 @@
 </head>
 <body>
   <div id="info">Virtual Village | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset</div>
-  <div id="instructions">Loading village...</div>
   <div id="loading">Loading village areas...</div>
   
   <!-- Ride Controls -->
@@ -165,12 +164,12 @@
   <script>
     let scene, camera, renderer;
     const clock = new THREE.Clock();
-    const EYE_HEIGHT = 5;
+    const EYE_HEIGHT = 1.5;
     let currentAreas = [];
     let isRiding = false;
     let ridePath = [];
     let currentRidePoint = 0;
-    let rideSpeed = 0.004;
+    let rideSpeed = 0.5;
     let originalMouseLook = null;
     
     // Village dimensions - renamed to PLACE for generic use
@@ -263,6 +262,7 @@
 
     // Simple function to get all area IDs
     function getAvailableAreas() {
+      //return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '1i', '1j', '1k', '1m', '1n', '1o', '1p', '1q']
       return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '1i', '1j', '1k', '1m', '1n', '1o', '1p', '1q']
     }
 
@@ -349,54 +349,6 @@
       window.addEventListener("resize", onWindowResize);
     }
 
-    function toggleRide() {
-      isRiding = !isRiding;
-      const rideButton = document.getElementById('start-ride');
-      
-      if (isRiding) {
-        // Start ride
-        rideButton.textContent = 'Stop Ride';
-        rideButton.classList.add('riding');
-        
-        // Find the closest point on the ride path and start from there
-        currentRidePoint = findClosestRidePoint();
-        
-        // Store original mouse look function and replace with ride version
-        if (camera.userData.controls) {
-          // Keep mouse look enabled but disable movement keys
-          camera.userData.controls.moveForward = false;
-          camera.userData.controls.moveBackward = false;
-          camera.userData.controls.moveLeft = false;
-          camera.userData.controls.moveRight = false;
-          camera.userData.controls.enabled = true; // Keep mouse look enabled
-        }
-        
-        // Update info text
-        document.getElementById('info').textContent = 'Virtual Village | Auto Ride Mode | Mouse: Look Around | Click Stop Ride to regain control';
-        document.getElementById('instructions').textContent = 'Enjoy the automated tour! Use mouse to look around while riding.';
-        
-        console.log('&#128663; Ride started from closest point:', currentRidePoint);
-      } else {
-        // Stop ride
-        rideButton.textContent = 'Start Ride';
-        rideButton.classList.remove('riding');
-        
-        // Restore full manual controls
-        if (camera.userData.controls) {
-          camera.userData.controls.moveForward = true;
-          camera.userData.controls.moveBackward = true;
-          camera.userData.controls.moveLeft = true;
-          camera.userData.controls.moveRight = true;
-          camera.userData.controls.enabled = true;
-        }
-        
-        // Update info text
-        document.getElementById('info').textContent = 'Virtual Village | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset';
-        document.getElementById('instructions').textContent = 'Manual control enabled. Use WASD to move, mouse to look around.';
-        
-        console.log('&#128721; Ride stopped');
-      }
-    }
    
  
 function updateRide() {
@@ -407,52 +359,72 @@ function updateRide() {
   const direction = new THREE.Vector3().subVectors(targetPoint, camera.position);
   const distance = direction.length();
   
+  // === FIXED ROTATION CODE ===
+  // Only start rotating toward next point when close to current target
+  const rotationBlend = Math.max(0, 1 - distance / 15.0); // Blend over last 15 units
+  
+  // Calculate direction to current target
+  const currentDirection = new THREE.Vector3().subVectors(targetPoint, camera.position).normalize();
+  
+  // Calculate direction to next target  
+  const nextDirection = new THREE.Vector3().subVectors(nextPoint, targetPoint).normalize();
+  
+  // Blend directions based on distance to current target
+  const blendedDirection = new THREE.Vector3()
+    .copy(currentDirection)
+    .lerp(nextDirection, rotationBlend);
+  
+  const forwardDirection = new THREE.Vector3(-blendedDirection.x, -blendedDirection.y, -blendedDirection.z);
+  let targetRotation = Math.atan2(forwardDirection.x, forwardDirection.z);
+  
+  // ADD 90 DEGREES CLOCKWISE (&#960;/2 radians) to face right side
+  targetRotation += -Math.PI / 2;
+  
+  const currentRotation = camera.rotation.y;
+  let rotationDiff = targetRotation - currentRotation;
+  
+  // Normalize the difference to the shortest path
+  if (rotationDiff > Math.PI) rotationDiff -= 2 * Math.PI;
+  if (rotationDiff < -Math.PI) rotationDiff += 2 * Math.PI;
+  
+  // Smoother rotation with distance-based influence
+  const maxRotationPerFrame = 0.05; // Reduced from 0.087
+  if (Math.abs(rotationDiff) > maxRotationPerFrame) {
+    rotationDiff = Math.sign(rotationDiff) * maxRotationPerFrame;
+  }
+  
+  // Apply rotation with smoothing
+  const rotationInfluence = 0.3; // Reduced from 0.8 for smoother turns
+  camera.rotation.y += rotationDiff * rotationInfluence;
+  // === END FIXED ROTATION CODE ===
+  
+  // MOVEMENT LOGIC - THIS SHOULD ALWAYS RUN (not just in else block)
   if (distance < 5.0) {
-    // Move to next point
+    // Close enough to target - move to next point
     currentRidePoint = (currentRidePoint + 1) % ridePath.length;
   } else {
-    // Move towards current point
+    // Move towards current target point
     direction.normalize();
-    camera.position.add(direction.multiplyScalar(0.3));
-    
-    // Calculate the travel direction (from current position to next point)
-    const travelDirection = new THREE.Vector3().subVectors(nextPoint, camera.position);
-    travelDirection.normalize();
-    
-    // REVERSE the direction to face forward along the road
-    const forwardDirection = new THREE.Vector3(-travelDirection.x, -travelDirection.y, -travelDirection.z);
-    
-    // Calculate the target rotation to face forward
-    const targetRotation = Math.atan2(forwardDirection.x, forwardDirection.z);
-    
-    // Get the current rotation (including mouse look)
-    const currentRotation = camera.rotation.y;
-    
-    // Calculate the difference between target and current rotation
-    let rotationDiff = targetRotation - currentRotation;
-    
-    // Normalize the difference to the shortest path around the circle
-    if (rotationDiff > Math.PI) rotationDiff -= 2 * Math.PI;
-    if (rotationDiff < -Math.PI) rotationDiff += 2 * Math.PI;
-    
-    // Apply smooth rotation towards the travel direction
-    const rotationInfluence = 0.1;
-    camera.rotation.y += rotationDiff * rotationInfluence;
+    camera.position.add(direction.multiplyScalar(0.1));
   }
 }
+
 
 function toggleRide() {
   isRiding = !isRiding;
   const rideButton = document.getElementById('start-ride');
   
   if (isRiding) {
-    // Start ride
+    // Start ride - DO NOT reset position or rotation
     rideButton.textContent = 'Stop Ride';
     rideButton.classList.add('riding');
     
-    // Find the closest point and TELEPORT to it to start immediately on the road
+    // Find the closest point but DON'T teleport - use current position
     currentRidePoint = findClosestRidePoint();
-    camera.position.copy(ridePath[currentRidePoint]); // Teleport to road
+    // camera.position stays where it is - no teleporting!
+    
+    // Keep current camera rotation - don't override it
+    // camera.rotation.y stays as is
     
     // Disable movement keys but keep mouse look ENABLED
     if (camera.userData.controls) {
@@ -463,7 +435,11 @@ function toggleRide() {
       camera.userData.controls.enabled = true; // Ensure mouse look is enabled
     }
     
-    console.log('&#128663; Ride started - mouse look enabled, WASD disabled');
+    // Update info text
+    document.getElementById('info').textContent = 'Virtual Village | Auto Ride Mode | Mouse: Look Around | Click Stop Ride to regain control';
+    document.getElementById('instructions').textContent = 'Enjoy the automated tour! Use mouse to look around while riding.';
+    
+    console.log('&#128663; Ride resumed from current position and rotation');
   } else {
     // Stop ride
     rideButton.textContent = 'Start Ride';
@@ -477,6 +453,12 @@ function toggleRide() {
       camera.userData.controls.moveRight = true;
       camera.userData.controls.enabled = true;
     }
+    
+    // Update info text
+    document.getElementById('info').textContent = 'Virtual Village | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset';
+    document.getElementById('instructions').textContent = 'Manual control enabled. Use WASD to move, mouse to look around.';
+    
+    console.log('&#128721; Ride stopped - position and rotation preserved');
   }
 }
 
@@ -484,7 +466,7 @@ function toggleRide() {
     function createVillage() {
       // Create grass ground with finely tiled texture
       const groundMat = new THREE.MeshLambertMaterial({ 
-        color: 0x3a7d34 // Fallback color if texture fails to load
+        color: 0x888888 // Fallback color if texture fails to load
       });
 
       // Create the ground
@@ -495,7 +477,7 @@ function toggleRide() {
       // Load grass texture with fine tiling
       if (window.textureLoader) {
         try {
-          const grassTexture = window.textureLoader.load('universe/textures/grass2.jpg');
+          const grassTexture = window.textureLoader.load('universe/textures/candies/candy10.jpg');
           grassTexture.wrapS = THREE.RepeatWrapping;
           grassTexture.wrapT = THREE.RepeatWrapping;
           
@@ -527,13 +509,13 @@ function toggleRide() {
       
       // Create concrete material - using the same approach as ovalPathway
       const concreteMat = new THREE.MeshLambertMaterial({ 
-          color: 0x888888 // Default concrete color
+          color: 0x666666 // Default concrete color
       });
       
       // Load concrete texture exactly like ovalPathway
       if (window.textureLoader) {
           try {
-              const concreteTexture = window.textureLoader.load('universe/textures/concrete2.jpg'); // Use same file as oval
+              const concreteTexture = window.textureLoader.load('universe/textures/candies/candy11.jpg'); // Use same file as oval
               concreteTexture.wrapS = THREE.RepeatWrapping;
               concreteTexture.wrapT = THREE.RepeatWrapping;
               concreteTexture.repeat.set(4, 4); 
