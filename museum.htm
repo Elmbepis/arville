@@ -144,9 +144,6 @@
         const PLACE_WIDTH = 34;
         const PLACE_DEPTH = 94;
 
-        window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 48);
-        window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0 * Math.PI / 180, 0, 'YXZ');
-
         // Area positions for 8 equal sections in 30x80 room
         const AREA_POSITIONS = {
             // Row 1 (Far back) - Z = -30
@@ -178,7 +175,7 @@
             scene = new THREE.Scene();
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, EYE_HEIGHT, 41.5);
+            camera.position.set(0, EYE_HEIGHT, 30);
             camera.rotation.set(0, 0 * Math.PI / 180, 0);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -186,9 +183,12 @@
             renderer.setClearColor(0x202020);
             document.body.appendChild(renderer.domElement);
 
+	  		window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 30);
+      		window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0 * Math.PI / 180, 0, 'YXZ');
+  
             // Initialize mobile controls using the shared navigation.js
             initMobileControls();
-
+            
             // Update title to show museum ID
             document.title = `Arville Virtual Museum #${museumId}`;
             document.getElementById('info').textContent = 
