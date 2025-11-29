@@ -278,6 +278,16 @@ $conn->close();
                     <a href="amac-manuals.php" class="nav-btn">View Manuals</a>
                 </div>
                 
+                <!-- Training Videos -->
+                <div class="nav-card">
+                    <div class="nav-icon">&#127916;</div>
+                    <div class="nav-title">Training Videos</div>
+                    <div class="nav-description">
+                        Watch instructional videos and multimedia content to enhance your learning experience.
+                    </div>
+                    <a href="amac-videos.php" class="nav-btn">Watch Videos</a>
+                </div>
+                
                 <!-- Available Tests -->
                 <div class="nav-card">
                     <div class="nav-icon">&#128221;</div>
