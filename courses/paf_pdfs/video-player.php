@@ -364,7 +364,7 @@ $conn->close();
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <a href="training-videos.php" class="videos-btn">Back to Videos</a>
+            <a href="amac-videos.php" class="videos-btn">Back to Videos</a>
             <a href="dashboard.php" class="dashboard-btn">Back to Dashboard</a>
             <a href="logout.php" class="logout-btn">Logout</a>
         </div>
