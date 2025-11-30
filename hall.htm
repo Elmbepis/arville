@@ -186,8 +186,10 @@
             renderer.setClearColor(0x202020);
             document.body.appendChild(renderer.domElement);
 
-            // Initialize mobile controls using the shared navigation.js
-            initMobileControls();
+			// Initialize mobile controls - wait for navigation.js to be ready
+			setTimeout(() => {
+		    initMobileControls();
+			}, 100);
 
             // Update title to show hall ID
             document.title = `Arville Virtual Hall #${hallId}`;
