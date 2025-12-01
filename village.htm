@@ -163,6 +163,7 @@
   <script src="universe/obj_create_park.js"></script>
   <script src="universe/obj_create_house.js"></script>
   <script src="universe/obj_create_room.js"></script>
+  <script src="universe/js/sky-effect.js"></script>
 
   <script>
     let scene, camera, renderer;
@@ -179,35 +180,72 @@
     const PLACE_WIDTH = 200;
     const PLACE_DEPTH = 400;
     const AREA_SIZE = 40;
-    const villageId = new URLSearchParams(window.location.search).get('id') || 'default';
+    
+    // Get villageId from URL - fixed to handle numeric IDs
+    const urlId = new URLSearchParams(window.location.search).get('id');
+    const villageId = urlId || 'default';
+    console.log(`&#127757; URL id parameter: ${urlId}, villageId: ${villageId}`);
+
+    // Texture configuration based on villageId - use numeric keys for ?id=1, ?id=2, etc.
+    const TEXTURE_CONFIG = {
+      'default': {
+        ground: 'universe/textures/grass1.jpg',
+        roads: 'universe/textures/concrete2.jpg'
+      },
+      '1': {
+        ground: 'universe/textures/candies/candy10.jpg',
+        roads: 'universe/textures/candies/candy11.jpg'
+      },
+      '2': {
+        ground: 'universe/textures/soil-grass10.jpg',
+        roads: 'universe/textures/concrete4.jpg'
+      },
+      '3': {
+        ground: 'universe/textures/candies/candy30.jpg',
+        roads: 'universe/textures/candies/candy31.jpg'
+      },
+    };
+
+    // Get texture paths for current villageId
+    const currentTextures = TEXTURE_CONFIG[villageId] || TEXTURE_CONFIG['default'];
+    console.log(`&#127912; Using textures for villageId: ${villageId}`);
+    console.log(`&#127793; Ground texture: ${currentTextures.ground}`);
+    console.log(`&#128739;&#65039; Road texture: ${currentTextures.roads}`);
+    console.log(`&#128193; Available configs:`, Object.keys(TEXTURE_CONFIG));
 
     // CAMERA_LIMITS is now defined in navigation.js
     
-    const AREA_POSITIONS = {
-      // Row 1 (Back row) - Z = -150
-      '1a': new THREE.Vector3(-75, 0, -150),
-      '1b': new THREE.Vector3(-25, 0, -150),
-      '1c': new THREE.Vector3(25, 0, -150),
-      '1d': new THREE.Vector3(75, 0, -150),
-      
-      // Row 2 - Z = -50
-      '1e': new THREE.Vector3(-75, 0, -50),
-      '1f': new THREE.Vector3(-25, 0, -50),
-      '1g': new THREE.Vector3(25, 0, -50),
-      '1h': new THREE.Vector3(75, 0, -50),
-      
-      // Row 3 - Z = 50
-      '1i': new THREE.Vector3(-75, 0, 50),
-      '1j': new THREE.Vector3(-25, 0, 50),
-      '1k': new THREE.Vector3(25, 0, 50),
-      '1m': new THREE.Vector3(75, 0, 50),
-      
-      // Row 4 (Front row) - Z = 150
-      '1n': new THREE.Vector3(-75, 0, 150),
-      '1o': new THREE.Vector3(-25, 0, 150),
-      '1p': new THREE.Vector3(25, 0, 150),
-      '1q': new THREE.Vector3(75, 0, 150)
-    };
+// Replace the entire AREA_POSITIONS object with this function:
+function generateAreaPositions(villageId) {
+  return {
+    // Row 1 (Back row) - Z = -150
+    [`${villageId}a`]: new THREE.Vector3(-75, 0, -150),
+    [`${villageId}b`]: new THREE.Vector3(-25, 0, -150),
+    [`${villageId}c`]: new THREE.Vector3(25, 0, -150),
+    [`${villageId}d`]: new THREE.Vector3(75, 0, -150),
+    
+    // Row 2 - Z = -50
+    [`${villageId}e`]: new THREE.Vector3(-75, 0, -50),
+    [`${villageId}f`]: new THREE.Vector3(-25, 0, -50),
+    [`${villageId}g`]: new THREE.Vector3(25, 0, -50),
+    [`${villageId}h`]: new THREE.Vector3(75, 0, -50),
+    
+    // Row 3 - Z = 50
+    [`${villageId}i`]: new THREE.Vector3(-75, 0, 50),
+    [`${villageId}j`]: new THREE.Vector3(-25, 0, 50),
+    [`${villageId}k`]: new THREE.Vector3(25, 0, 50),
+    [`${villageId}m`]: new THREE.Vector3(75, 0, 50),
+    
+    // Row 4 (Front row) - Z = 150
+    [`${villageId}n`]: new THREE.Vector3(-75, 0, 150),
+    [`${villageId}o`]: new THREE.Vector3(-25, 0, 150),
+    [`${villageId}p`]: new THREE.Vector3(25, 0, 150),
+    [`${villageId}q`]: new THREE.Vector3(75, 0, 150)
+  };
+}
+
+// Then initialize AREA_POSITIONS with the current villageId
+const AREA_POSITIONS = generateAreaPositions(villageId);
 
     // Define ride path points following the concrete road system (outer rectangle)
     function createRidePath() {
@@ -265,8 +303,8 @@
 
     // Simple function to get all area IDs
     function getAvailableAreas() {
-      //return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '1i', '1j', '1k', '1m', '1n', '1o', '1p', '1q']
-      return ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '1i', '1j', '1k', '1m', '1n', '1o', '1p', '1q']
+      const suffix = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'h', 'k', 'm', 'n', 'o', 'p', 'q'];
+      return suffix.map(s => `${villageId}${s}`);
     }
 
 function loadObjectCreator() {
@@ -279,7 +317,7 @@ function loadObjectCreator() {
       if (window.initObjectTextures) {
         window.initObjectTextures(window.textureLoader);
       }
-      console.log('&#10003; Object creators initialized');
+      console.log('&#9989; Object creators initialized');
       resolve();
     }, 100);
   });
@@ -292,6 +330,8 @@ function loadObjectCreator() {
       scene = new THREE.Scene();
 
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      //camera.position.set(10, EYE_HEIGHT, -62); 
+      //camera.rotation.set(0, -90 * Math.PI / 180, 0);
       camera.position.set(10, EYE_HEIGHT, -62); 
       camera.rotation.set(0, -90 * Math.PI / 180, 0);
 
@@ -461,7 +501,7 @@ function toggleRide() {
 
 
     function createVillage() {
-      // Create grass ground with finely tiled texture
+      // Create ground with texture based on villageId
       const groundMat = new THREE.MeshLambertMaterial({ 
         color: 0x888888 // Fallback color if texture fails to load
       });
@@ -471,24 +511,24 @@ function toggleRide() {
       ground.rotation.x = -Math.PI / 2;
       scene.add(ground);
 
-      // Load grass texture with fine tiling
+      // Load ground texture based on villageId
       if (window.textureLoader) {
         try {
-          const grassTexture = window.textureLoader.load('universe/textures/candies/candy10.jpg');
-          grassTexture.wrapS = THREE.RepeatWrapping;
-          grassTexture.wrapT = THREE.RepeatWrapping;
+          const groundTexture = window.textureLoader.load(currentTextures.ground);
+          groundTexture.wrapS = THREE.RepeatWrapping;
+          groundTexture.wrapT = THREE.RepeatWrapping;
           
-          // Fine tiling for sharp grass
+          // Fine tiling for sharp texture
           const repeatX = PLACE_WIDTH / 1;   
           const repeatY = PLACE_DEPTH / 2;   
-          grassTexture.repeat.set(repeatX, repeatY);
+          groundTexture.repeat.set(repeatX, repeatY);
           
-          groundMat.map = grassTexture;
+          groundMat.map = groundTexture;
           groundMat.needsUpdate = true;
           
-          console.log('&#9989; Grass texture loaded with sharp tiling - repeat:', repeatX, repeatY);
+          console.log(`&#9989; Ground texture loaded: ${currentTextures.ground} - repeat:`, repeatX, repeatY);
         } catch (error) {
-          console.error('&#10060; Failed to load grass texture:', error);
+          console.error(`&#10060; Failed to load ground texture: ${currentTextures.ground}`, error);
         }
       }
       
@@ -500,26 +540,26 @@ function toggleRide() {
       const pathwayWidth = 6;
       const pathwayHeight = 0.05;
       
-      // FIX: Use PLACE dimensions instead of ZOO dimensions
+      // Use PLACE dimensions
       const rectWidth = PLACE_WIDTH - 90;
       const rectDepth = PLACE_DEPTH - 90;
       
-      // Create concrete material - using the same approach as ovalPathway
-      const concreteMat = new THREE.MeshLambertMaterial({ 
-          color: 0x666666 // Default concrete color
+      // Create road material - using the texture based on villageId
+      const roadMat = new THREE.MeshLambertMaterial({ 
+          color: 0x666666 // Default road color
       });
       
-      // Load concrete texture exactly like ovalPathway
+      // Load road texture based on villageId
       if (window.textureLoader) {
           try {
-              const concreteTexture = window.textureLoader.load('universe/textures/candies/candy11.jpg'); // Use same file as oval
-              concreteTexture.wrapS = THREE.RepeatWrapping;
-              concreteTexture.wrapT = THREE.RepeatWrapping;
-              concreteTexture.repeat.set(4, 4); 
-              concreteMat.map = concreteTexture;
-              console.log('&#9989; Concrete texture loaded for rectangular pathway');
+              const roadTexture = window.textureLoader.load(currentTextures.roads);
+              roadTexture.wrapS = THREE.RepeatWrapping;
+              roadTexture.wrapT = THREE.RepeatWrapping;
+              roadTexture.repeat.set(4, 4); 
+              roadMat.map = roadTexture;
+              console.log(`&#9989; Road texture loaded: ${currentTextures.roads}`);
           } catch (error) {
-              console.error('&#10060; Failed to load concrete texture, using default color:', error);
+              console.error(`&#10060; Failed to load road texture: ${currentTextures.roads}, using default color:`, error);
           }
       }
       
@@ -552,7 +592,7 @@ function toggleRide() {
       // Top border (positive Z) - LONGER SIDE
       const topPath = new THREE.Mesh(
           createPathSegment(rectWidth, pathwayWidth),
-          concreteMat
+          roadMat
       );
       topPath.rotation.x = -Math.PI / 2;
       topPath.position.set(0, pathwayHeight, adjustedHalfDepth);
@@ -560,7 +600,7 @@ function toggleRide() {
       // Bottom border (negative Z) - LONGER SIDE
       const bottomPath = new THREE.Mesh(
           createPathSegment(rectWidth, pathwayWidth),
-          concreteMat
+          roadMat
       );
       bottomPath.rotation.x = -Math.PI / 2;
       bottomPath.position.set(0, pathwayHeight, -adjustedHalfDepth);
@@ -568,7 +608,7 @@ function toggleRide() {
       // Left border (negative X) - SHORTER SIDE
       const leftPath = new THREE.Mesh(
           createPathSegment(pathwayWidth, rectDepth - 6),
-          concreteMat
+          roadMat
       );
       leftPath.rotation.x = -Math.PI / 2;
       leftPath.position.set(-adjustedHalfWidth, pathwayHeight, 0);
@@ -576,7 +616,7 @@ function toggleRide() {
       // Right border (positive X) - SHORTER SIDE
       const rightPath = new THREE.Mesh(
           createPathSegment(pathwayWidth, rectDepth - 6),
-          concreteMat
+          roadMat
       );
       rightPath.rotation.x = -Math.PI / 2;
       rightPath.position.set(adjustedHalfWidth, pathwayHeight, 0);
@@ -591,7 +631,7 @@ function toggleRide() {
       // First short road (upper third)
       const shortRoad1 = new THREE.Mesh(
           createPathSegment(rectWidth - 6, shortRoadWidth),
-          concreteMat
+          roadMat
       );
       shortRoad1.rotation.x = -Math.PI / 2;
       shortRoad1.position.set(0, pathwayHeight + 0.001, spacing);
@@ -599,7 +639,7 @@ function toggleRide() {
       // Second short road (lower third)
       const shortRoad2 = new THREE.Mesh(
           createPathSegment(rectWidth - 6, shortRoadWidth),
-          concreteMat
+          roadMat
       );
       shortRoad2.rotation.x = -Math.PI / 2;
       shortRoad2.position.set(0, pathwayHeight + 0.001, -spacing);
@@ -607,39 +647,54 @@ function toggleRide() {
       // Add short roads to scene
       scene.add(shortRoad1, shortRoad2);
       
-      console.log('&#128739;&#65039; Rectangular pathway created with proper texture scaling');
+      console.log('&#128295; Rectangular pathway created with proper texture scaling');
     }
 
-    async function loadAreas() {
-      const loadingDiv = document.getElementById('loading');
-      
-      // Get all area IDs
-      const areaIds = getAvailableAreas();
-      const loadedAreas = [];
-      
-      loadingDiv.textContent = `Loading ${areaIds.length} park areas...`;
-      
-      // Try to load each area
-      for (const areaId of areaIds) {
-        loadingDiv.textContent = `Loading area ${areaId}...`;
-        try {
-          await loadAreaContent(areaId);
-          loadedAreas.push(areaId);
-        } catch (error) {
-          console.log(`Area ${areaId} not available - leaving empty`);
-        }
-      }
-      
-      loadingDiv.style.display = 'none';
-      if (!isMobile) {
-        document.getElementById('instructions').textContent = 
-          `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | Q/E: Fly | R: Reset`;
-      } else {
-        document.getElementById('instructions').style.display = 'none';
-      }
+async function loadAreas() {
+  const loadingDiv = document.getElementById('loading');
+  
+  // Get all area IDs
+  const areaIds = getAvailableAreas();
+  const loadedAreas = [];
+  
+  if (loadingDiv) {
+    loadingDiv.textContent = `Loading ${areaIds.length} park areas...`;
+    loadingDiv.style.display = 'block';
+  }
+  
+  // Try to load each area
+  for (const areaId of areaIds) {
+    if (loadingDiv) {
+      loadingDiv.textContent = `Loading area ${areaId}...`;
     }
+    try {
+      await loadAreaContent(areaId);
+      loadedAreas.push(areaId);
+    } catch (error) {
+      console.log(`Area ${areaId} not available - leaving empty`);
+    }
+  }
+  
+  // Hide loading div after all areas are loaded
+  if (loadingDiv) {
+    loadingDiv.style.display = 'none';
+  }
+  
+  // Update instructions
+  const instructionsDiv = document.getElementById('instructions');
+  if (instructionsDiv) {
+    if (!isMobile) {
+      instructionsDiv.textContent = 
+        `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | Q/E: Fly | R: Reset`;
+    } else {
+      instructionsDiv.style.display = 'none';
+    }
+  }
+  
+  console.log(`&#9989; All areas loaded: ${loadedAreas.length} successful`);
+}
 
-    async function loadAreaContent(areaId) {
+     async function loadAreaContent(areaId) {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = `universe/village-areas/${villageId}/village${areaId}.js`;        
@@ -652,7 +707,7 @@ function toggleRide() {
               console.log(`&#9989; Found area group: area-${areaId} with ${areaGroup.children.length} children`);
               positionArea(areaId);
               currentAreas.push(areaId);
-              console.log(`&#10003; Area ${areaId} loaded successfully`);
+              console.log(`&#9989; Area ${areaId} loaded successfully`);
               resolve();
             } else {
               console.error(`&#10060; Area group area-${areaId} not found after loading script`);
