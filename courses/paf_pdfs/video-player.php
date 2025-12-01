@@ -161,27 +161,13 @@ $conn->close();
         height: 450px;
         background: #000;
         border-radius: 8px;
-        margin: 0 auto 20px;
+        margin: 0 auto 30px;
     }
     
     video {
         width: 100%;
         height: 100%;
         border-radius: 8px;
-    }
-    
-    .video-info {
-        background: #e9ecef;
-        padding: 15px;
-        border-radius: 6px;
-        margin: 20px 0;
-        text-align: center;
-        font-size: 0.9em;
-        color: #495057;
-    }
-    
-    .video-info p {
-        margin: 5px 0;
     }
     
     .video-controls {
@@ -318,7 +304,7 @@ $conn->close();
 
     <div class="dashboard-content">
         <?php if ($user_role === 'trainee' && $video): ?>
-            <!-- VIDEO PLAYER PAGE WITH STREAMING -->
+            <!-- VIDEO PLAYER PAGE -->
             <div class="video-player-section">
                 <h2 class="section-title">Training Video</h2>
                 
@@ -330,12 +316,6 @@ $conn->close();
                             <source src="video-stream.php?video_id=<?= $video['id'] ?>" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
-                    </div>
-                    
-                    <div class="video-info">
-                        <p><strong>Streaming enabled:</strong> Video will start playing immediately</p>
-                        <p><strong>Seek anywhere:</strong> Jump to any part without waiting for full download</p>
-                        <p><strong>Efficient bandwidth:</strong> Only downloads the portions you watch</p>
                     </div>
                     
                     <div class="video-controls">
@@ -364,7 +344,7 @@ $conn->close();
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <a href="amac-videos.php" class="videos-btn">Back to Videos</a>
+            <a href="training-videos.php" class="videos-btn">Back to Videos</a>
             <a href="dashboard.php" class="dashboard-btn">Back to Dashboard</a>
             <a href="logout.php" class="logout-btn">Logout</a>
         </div>
@@ -410,7 +390,7 @@ $conn->close();
       muteButton.textContent = video.muted ? 'Unmute' : 'Mute';
   }
 
-  // Add event listeners for better user experience
+  // Add event listeners
   document.addEventListener('DOMContentLoaded', function() {
       const video = document.querySelector('video');
       if (video) {
