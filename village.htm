@@ -795,30 +795,37 @@ async function loadAreas() {
     }
 
     function animate() {
-        requestAnimationFrame(animate);
-        const delta = clock.getDelta();
-        
-        if (isRiding) {
-          updateRide();
-        }
-        
-        // Always update controls (for mouse look) even during ride
-        if (camera.userData.update) {
-          camera.userData.update();
-        }
-        
-        // Update animation priorities (pauses distant models)
-        if (window.animationController) {
-            window.animationController.update(camera);
-        }
-        
-        // UPDATE ANIMATIONS ONLY ONCE HERE
-        if (window.updateAllAnimations) {
-            window.updateAllAnimations(delta);
-        }
-        
-        renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+    const delta = clock.getDelta();
+    
+    if (isRiding) {
+        updateRide();
     }
+    
+    // Always update controls (for mouse look) even during ride
+    if (camera.userData.update) {
+        camera.userData.update();
+    }
+    
+    // Update animation priorities (pauses distant models)
+    if (window.animationController) {
+        window.animationController.update(camera);
+    }
+    
+    // UPDATE ANIMATIONS ONLY ONCE HERE
+    if (window.updateAllAnimations) {
+        window.updateAllAnimations(delta);
+    }
+    
+    // ADD THIS LINE: Update spinning tops
+    if (window.spinningTops && window.spinningTops.length > 0) {
+        window.spinningTops.forEach(top => {
+            if (top && top.update) top.update(delta);
+        });
+    }
+    
+    renderer.render(scene, camera);
+}
   </script>
 </body>
 </html>
