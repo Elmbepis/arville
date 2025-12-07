@@ -165,7 +165,9 @@
   <script src="universe/obj_create_room.js"></script>
   <script src="universe/obj_create_toyland.js"></script>
   <script src="universe/js/sky-effect.js"></script>
-  <script src="universe/js/brightGLB.js"></script>
+  <script src="universe/js/brightenGLB.js"></script>
+  <script src="universe/js/darkenGLB.js"></script>
+  <script src="universe/js/GLB-movements.js"></script>
   <script src="universe/js/aquatic-atmosphere.js"></script>
 
   <script>
@@ -209,7 +211,7 @@
       },
       '4': {
         ground: 'universe/textures/sand.jpg',
-        roads: 'universe/textures/sand.jpg'
+        roads: 'universe/textures/sand2.jpg'
       },
     };
 
@@ -799,7 +801,7 @@ async function loadAreas() {
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    function animate() {
+function animate() {
     requestAnimationFrame(animate);
     const delta = clock.getDelta();
     
@@ -807,30 +809,33 @@ async function loadAreas() {
         updateRide();
     }
     
-    // Always update controls (for mouse look) even during ride
     if (camera.userData.update) {
         camera.userData.update();
     }
     
-    // Update animation priorities (pauses distant models)
     if (window.animationController) {
         window.animationController.update(camera);
     }
     
-    // UPDATE ANIMATIONS ONLY ONCE HERE
     if (window.updateAllAnimations) {
         window.updateAllAnimations(delta);
     }
-    
-    // ADD THIS LINE: Update spinning tops
+
     if (window.spinningTops && window.spinningTops.length > 0) {
         window.spinningTops.forEach(top => {
             if (top && top.update) top.update(delta);
         });
     }
     
+    scene.traverse((object) => {
+        if (object.userData && object.userData.type === 'bouncing_ball' && object.update) {
+            object.update(delta);
+        }
+    });
+    
     renderer.render(scene, camera);
 }
-  </script>
+
+</script>
 </body>
 </html>
