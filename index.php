@@ -65,10 +65,6 @@ echo "<header class='hero text-center py-5 bg-primary text-white'>";
 echo "    <div class='container'>";
 echo "        <h1 class='display-4 hero-title'>Step into the World of ARville:<br/>Where Business and Leisure Become Immersive</h1>";
 echo "        <p class='lead hero-subtitle'>Explore magical online Extended Reality (XR) experiences or avail of our web XR marketing plans to revolutionize your business.</p>";
-echo "        <div class='d-flex justify-content-center gap-3'>";
-echo "            <a href='use-cases.php' id='discover-btn' class='btn btn-lg btn-outline-light me-5 hero-btn'>Discover Web XR Experiences</a>";
-echo "            <a href='plans.php' id='join-btn' class='btn btn-lg btn-outline-light hero-btn'>Join the Web XR Network</a>";
-echo "        </div>";
 echo "    </div>";
 echo "</header>";
 
@@ -317,7 +313,7 @@ echo "        <p class='lead'>ARville is an online ecosystem of netizens, busine
 echo "        <a href='learn-more.php' class='btn btn-primary btn-lg'>Learn More About ARville</a>";
 echo "    </div>";
 echo "</section>";
-
+echo "        <div style='height: 30px;'></div>";
 // Subscription Plans
 echo "<section class='plans py-4' id='plans'>";
 echo "    <div class='container'>";
