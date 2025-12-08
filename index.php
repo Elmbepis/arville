@@ -4,15 +4,17 @@
 echo "<script>
         function preloadImages() {
             const images = [
-                'images/icon-hospitality2.jpg',
-                'images/icon-education2.jpg',
-                'images/icon-sports2.jpg',
-                'images/icon-electronics2.jpg',
-                'images/icon-fashion2.jpg',
-                'images/icon-beauty2.jpg',
-                'images/icon-cars2.jpg',
-                'images/icon-estate2.jpg',
-                'images/icon-gov2.jpg'
+                'images/candyland2.jpg',
+                'images/zombiezone2.jpg',
+                'images/toyworld2.jpg',
+                'images/fantasyforest2.jpg',
+                'images/spacecolony2.jpg', 
+                'images/underwaterkingdom2.jpg',
+                'images/westernfrontier2.jpg',
+                'images/samuraiempire2.jpg',
+                'images/medievalcastle2.jpg',
+                'images/scifistation2.jpg',
+                'images/mystictemple2.jpg'
             ];
             images.forEach((src) => {
                 const img = new Image();
@@ -55,15 +57,14 @@ echo "                <li class='nav-item'><a class='nav-link' href='plans.php'>
 echo "                <li class='nav-item'><a class='nav-link' href='about-us.php'>About Us</a></li>";
 echo "                <li class='nav-item'><a class='nav-link' href='contact.php'>Contact</a></li>";
 echo "            </ul>";
-echo "        </div>";
 echo "    </div>";
 echo "</nav>";
 
 // Hero Section
 echo "<header class='hero text-center py-5 bg-primary text-white'>";
 echo "    <div class='container'>";
-echo "        <h1 class='display-4 hero-title'>Step into the World of ARville:<br/>Where Marketing Becomes Immersive</h1>";
-echo "        <p class='lead hero-subtitle'>Explore magical online Extended Reality (XR) experiences or join our web XR network to revolutionize your business.</p>";
+echo "        <h1 class='display-4 hero-title'>Step into the World of ARville:<br/>Where Business and Leisure Become Immersive</h1>";
+echo "        <p class='lead hero-subtitle'>Explore magical online Extended Reality (XR) experiences or avail of our web XR marketing plans to revolutionize your business.</p>";
 echo "        <div class='d-flex justify-content-center gap-3'>";
 echo "            <a href='use-cases.php' id='discover-btn' class='btn btn-lg btn-outline-light me-5 hero-btn'>Discover Web XR Experiences</a>";
 echo "            <a href='plans.php' id='join-btn' class='btn btn-lg btn-outline-light hero-btn'>Join the Web XR Network</a>";
@@ -73,34 +74,34 @@ echo "</header>";
 
 echo "<style>";
 echo "    .hero-title {";
-echo "        font-size: 3rem; /* Default size for large screens */";
+echo "        font-size: 3rem;";
 echo "    }";
 echo "    .hero-subtitle {";
-echo "        font-size: 1.5rem; /* Default size for large screens */";
+echo "        font-size: 1.5rem;";
 echo "    }";
 echo "    .hero-btn {";
-echo "        font-size: 1rem; /* Default size for large screens */";
+echo "        font-size: 1rem;";
 echo "    }";
 echo "    @media (max-width: 768px) {";
 echo "        .hero-title {";
-echo "            font-size: 2rem; /* Adjusted size for medium screens */";
+echo "            font-size: 2rem;";
 echo "        }";
 echo "        .hero-subtitle {";
-echo "            font-size: 1rem; /* Adjusted size for medium screens */";
+echo "            font-size: 1rem;";
 echo "        }";
 echo "        .hero-btn {";
-echo "            font-size: 0.875rem; /* Adjusted size for medium screens */";
+echo "            font-size: 0.875rem;";
 echo "        }";
 echo "    }";
 echo "    @media (max-width: 576px) {";
 echo "        .hero-title {";
-echo "            font-size: 1.5rem; /* Adjusted size for small screens */";
+echo "            font-size: 1.5rem;";
 echo "        }";
 echo "        .hero-subtitle {";
-echo "            font-size: 0.875rem; /* Adjusted size for small screens */";
+echo "            font-size: 0.875rem;";
 echo "        }";
 echo "        .hero-btn {";
-echo "            font-size: 0.75rem; /* Adjusted size for small screens */";
+echo "            font-size: 0.75rem;";
 echo "        }";
 echo "    }";
 echo "</style>";
@@ -118,39 +119,79 @@ echo "        transition: background-color 0.3s, color 0.3s;";
 echo "    }";
 echo "</style>";
 
-// Business Categories Section
-echo "<section class='categories py-5' id='categories'>";
+// LARGE IMAGES SECTION - 2 columns, 2 rows (4 total) - SMALLER HORIZONTAL SPACING, LARGER VERTICAL SPACING
+echo "<section class='large-images py-5' id='large-images'>";
 echo "    <div class='container'>";
-echo "        <h2 class='text-center mb-4'>Explore Our Vibrant Web XR Network</h2>";
+echo "        <h2 class='text-center mb-4'>Featured Web XR Experiences by ARville</h2>";
 echo "        <div style='height: 20px;'></div>"; // Spacer element
-echo "        <div class='row g-4'>";
+echo "        <div class='row gx-2 gy-5'>"; // CHANGED: gx-2 (small horizontal gap), gy-4 (large vertical gap)
 
-$categories = [
-    ["title" => "Hospitality and Tourism", "tagline" => "Enhance your travel experiences with XR-driven services.", "icon" => "icon-hospitality.jpg", "hoverIcon" => "icon-hospitality2.jpg", "link" => "cat-page.php?cat=hospitality"],
-    ["title" => "Education and Development", "tagline" => "Empower your mind through XR.", "icon" => "icon-education.jpg", "hoverIcon" => "icon-education2.jpg", "link" => "cat-page.php?cat=education"],
-    ["title" => "Sports and Recreation", "tagline" => "Get into sports or find entertainment with XR.", "icon" => "icon-sports.jpg", "hoverIcon" => "icon-sports2.jpg", "link" => "cat-page.php?cat=sports"],
-    ["title" => "Electronics and Gadgets", "tagline" => "Acquaint yourself with tech products through XR.", "icon" => "icon-electronics.jpg", "hoverIcon" => "icon-electronics2.jpg", "link" => "cat-page.php?cat=electronics"],
-    ["title" => "Style and Fashion", "tagline" => "Reinvent your look with XR.", "icon" => "icon-fashion.jpg", "hoverIcon" => "icon-fashion2.jpg", "link" => "cat-page.php?cat=fashion"],
-    ["title" => "Beauty and Wellness", "tagline" => "Elevate your self-care through XR.", "icon" => "icon-beauty.jpg", "hoverIcon" => "icon-beauty2.jpg", "link" => "cat-page.php?cat=beauty"],
-    ["title" => "Cars and Car Accessories", "tagline" => "Find upgrades and accessories for your car with XR.", "icon" => "icon-cars.jpg", "hoverIcon" => "icon-cars2.jpg", "link" => "cat-page.php?cat=cars"],
-    ["title" => "Real Estate", "tagline" => "Enjoy looking for property investments through XR.", "icon" => "icon-estate.jpg", "hoverIcon" => "icon-estate2.jpg", "link" => "cat-page.php?cat=estate"],
-    ["title" => "Government and Public Service", "tagline" => "Find government information and assistance through XR.", "icon" => "icon-gov.jpg", "hoverIcon" => "icon-gov2.jpg", "link" => "cat-page.php?cat=gov"],
+$largeCategories = [
+    ["title" => "Candy Land", "tagline" => "A sweet paradise of sugary delights and colorful confections", "icon" => "candyland.jpg", "hoverIcon" => "candyland2.jpg", "link" => "village.htm?id=1"],
+    ["title" => "Zombie Zone", "tagline" => "A bloodcurdling necropolis ruled by the walking dead", "icon" => "zombiezone.jpg", "hoverIcon" => "zombiezone2.jpg", "link" => "village.htm?id=2"],
+    ["title" => "Toy World", "tagline" => "A magical realm where toys come to life and adventures begin", "icon" => "toyworld.jpg", "hoverIcon" => "toyworld2.jpg", "link" => "village.htm?id=3"],
+	["title" => "Robot City", "tagline" => "A futuristic community of intelligent machines and robots", "icon" => "robotcity.jpg", "hoverIcon" => "robotcity2.jpg", "link" => "village.htm?id=4"],
 ];
 
-foreach ($categories as $category) {
-    echo "<div class='col-md-4 col-sm-6'>";
-    echo "    <div class='category text-center'>";
+// Display only first 4 as large landscape images
+for ($i = 0; $i < 4; $i++) {
+    $category = $largeCategories[$i];
+    echo "<div class='col-lg-6 col-md-6'>"; // 2 columns on large screens
+    echo "    <div class='large-category text-center'>";
     echo "        <a href='{$category['link']}'>";
-    echo "            <img src='images/{$category['icon']}' class='category-icon img-fluid mb-3' alt='{$category['title']}' style='width: 260px; height: 260px; object-fit: contain;' data-original-src='images/{$category['icon']}' data-hover-src='images/{$category['hoverIcon']}'>";
+    echo "            <img src='images/{$category['icon']}' class='large-category-icon img-fluid mb-1' alt='{$category['title']}' style='width: 92%; max-width: 480px; height: 280px; object-fit: cover; border-radius: 10px;' data-original-src='images/{$category['icon']}' data-hover-src='images/{$category['hoverIcon']}'>";
     echo "        </a>";
-    echo "        <h3>{$category['title']}</h3>";
-    echo "        <p>{$category['tagline']}</p>";
+    echo "        <h3 style='margin-top: 10px; font-size: 1.4rem;'>{$category['title']}</h3>";
+    echo "        <p style='max-width: 480px; margin: -5px auto; font-size: 1rem;'>{$category['tagline']}</p>";
     echo "    </div>";
     echo "</div>";
 }
 
+echo "        </div>";
+echo "    </div>";
+echo "</section>";
+
+// SMALL IMAGES SECTION - 4 columns, 2 rows (8 total) - LARGER SQUARE
+echo "<section class='small-images py-5' id='small-images' style='background-color: #f8f9fa;'>";
+echo "    <div class='container'>";
+echo "        <h2 class='text-center mb-4'>More ARville XR Experiences for You to Explore</h2>";
+echo "        <div style='height: 30px;'></div>";
+echo "        <div class='row g-4'>"; // Keep g-4 for small images
+
+// SEPARATE ARRAY FOR SMALL IMAGES - Fantasy/XR experience themes
+$smallCategories = [
+    ["title" => "Arville Zoo", "tagline" => "A wildlife wonderland where every creature captivates imagination", "icon" => "zoo1a.jpg", "hoverIcon" => "zoo1b.jpg", "link" => "zoo1.htm"],
+    ["title" => "Arville Forest Park", "tagline" => "A serene sanctuary where wilderness meets curated beauty", "icon" => "park1a.jpg", "hoverIcon" => "park1b.jpg", "link" => "park1.htm"],
+    ["title" => "Arville Museum of Fine Arts", "tagline" => "A gathering of the greatest masterpieces in human history", "icon" => "museum1a.jpg", "hoverIcon" => "museum1b.jpg", "link" => "museum.htm?id=1"],
+    ["title" => "Kids' Horror Room # 1", "tagline" => "Dancing with Vampirette and Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
+    ["title" => "Kids' Horror Room # 2", "tagline" => "Dancing with Clown and Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
+    ["title" => "Kids' Horror Room # 3", "tagline" => "Dancing with Zombie and Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
+    ["title" => "Kids' Horror Yard # 1", "tagline" => "Dancing with Wolfie and Pumpkin", "icon" => "yard1a.jpg", "hoverIcon" => "yard1b.jpg", "link" => "yard.htm?id=1"],
+    ["title" => "Kids' Horror Yard # 2", "tagline" => "Dancing wih Redhot and Bones", "icon" => "yard2a.jpg", "hoverIcon" => "yard2b.jpg", "link" => "yard.htm?id=2"],
+    ["title" => "Kids' Horror Yard # 3", "tagline" => "Dancing with Teddy and Frankie", "icon" => "yard3a.jpg", "hoverIcon" => "yard3b.jpg", "link" => "yard.htm?id=3"],
+];
+
+// Display all 8 small images from the separate array
+for ($i = 0; $i < 9; $i++) {
+    $category = $smallCategories[$i];
+    echo "<div class='col-lg-3 col-md-6 col-sm-6'>"; // 4 columns on large screens, 2 columns on medium
+    echo "    <div class='small-category text-center'>";
+    echo "        <a href='{$category['link']}'>";
+    echo "            <img src='images/{$category['icon']}' class='small-category-icon img-fluid mb-2' alt='{$category['title']}' style='width: 220px; height: 220px; object-fit: cover; border-radius: 10px;' data-original-src='images/{$category['icon']}' data-hover-src='images/{$category['hoverIcon']}'>";
+    echo "        </a>";
+    echo "        <h4 style='font-size: 1.2rem; margin-top: 8px;'>{$category['title']}</h4>";
+    echo "        <p style='font-size: 0.95rem; margin-top: 4px;'>{$category['tagline']}</p>";
+    echo "    </div>";
+    echo "</div>";
+}
+
+echo "        </div>";
+echo "    </div>";
+echo "</section>";
+
+// Mouseover script for both large and small images
 echo "<script>";
-echo "    document.querySelectorAll('.category-icon').forEach(function(img) {";
+echo "    document.querySelectorAll('.large-category-icon, .small-category-icon').forEach(function(img) {";
 echo "        img.addEventListener('mouseover', function() {";
 echo "            this.src = this.getAttribute('data-hover-src');";
 echo "        });";
@@ -160,12 +201,119 @@ echo "        });";
 echo "    });";
 echo "</script>";
 
+// Responsive styling for mobile
+echo "<style>";
+echo "    /* Large images responsive adjustments */";
+echo "    @media (max-width: 1200px) {";
+echo "        .large-category-icon {";
+echo "            width: 95% !important;";
+echo "            max-width: 420px !important;";
+echo "            height: 260px !important;"; // Adjusted: 260px (from 220px)
+echo "        }";
+echo "    }";
+echo "    @media (max-width: 992px) {";
+echo "        .large-category-icon {";
+echo "            width: 90% !important;";
+echo "            max-width: 380px !important;";
+echo "            height: 240px !important;"; // Adjusted: 240px (from 200px)
+echo "        }";
+echo "        .large-category h3 {";
+echo "            font-size: 1.3rem !important;";
+echo "        }";
+echo "    }";
+echo "    @media (max-width: 768px) {";
+echo "        .large-category-icon {";
+echo "            width: 95% !important;";
+echo "            max-width: 350px !important;";
+echo "            height: 210px !important;"; // Adjusted: 210px (from 180px)
+echo "        }";
+echo "        .large-category h3 {";
+echo "            font-size: 1.2rem !important;";
+echo "        }";
+echo "        .large-category p {";
+echo "            font-size: 0.95rem !important;";
+echo "            max-width: 90% !important;";
+echo "        }";
+echo "    }";
+echo "    @media (max-width: 576px) {";
+echo "        .large-category-icon {";
+echo "            width: 100% !important;";
+echo "            max-width: 300px !important;";
+echo "            height: 190px !important;"; // Adjusted: 190px (from 160px)
+echo "        }";
+echo "        .large-category h3 {";
+echo "            font-size: 1.1rem !important;";
+echo "        }";
+echo "        .large-category p {";
+echo "            font-size: 0.9rem !important;";
+echo "        }";
+echo "        .col-lg-6 {";
+echo "            margin-bottom: 30px;";
+echo "        }";
+echo "    }";
+echo "    ";
+echo "    /* Small images responsive adjustments */";
+echo "    @media (max-width: 1200px) {";
+echo "        .small-category-icon {";
+echo "            width: 200px !important;";
+echo "            height: 200px !important;";
+echo "        }";
+echo "    }";
+echo "    @media (max-width: 992px) {";
+echo "        .small-category-icon {";
+echo "            width: 180px !important;";
+echo "            height: 180px !important;";
+echo "        }";
+echo "        .small-category h4 {";
+echo "            font-size: 1.1rem !important;";
+echo "        }";
+echo "    }";
+echo "    @media (max-width: 768px) {";
+echo "        .small-category-icon {";
+echo "            width: 160px !important;";
+echo "            height: 160px !important;";
+echo "        }";
+echo "        .small-category h4 {";
+echo "            font-size: 1rem !important;";
+echo "        }";
+echo "        .small-category p {";
+echo "            font-size: 0.9rem !important;";
+echo "        }";
+echo "    }";
+echo "    @media (max-width: 576px) {";
+echo "        .small-category-icon {";
+echo "            width: 140px !important;";
+echo "            height: 140px !important;";
+echo "        }";
+echo "        .small-category h4 {";
+echo "            font-size: 0.95rem !important;";
+echo "        }";
+echo "        .small-category p {";
+echo "            font-size: 0.85rem !important;";
+echo "        }";
+echo "        .col-lg-3 {";
+echo "            margin-bottom: 25px;";
+echo "        }";
+echo "    }";
+echo "    @media (max-width: 480px) {";
+echo "        .small-category-icon {";
+echo "            width: 120px !important;";
+echo "            height: 120px !important;";
+echo "        }";
+echo "        .small-category h4 {";
+echo "            font-size: 0.9rem !important;";
+echo "        }";
+echo "        .small-category p {";
+echo "            font-size: 0.8rem !important;";
+echo "        }";
+echo "    }";
+echo "</style>";
+
 // About Section
-echo "            <div style='margin-bottom: 5px;'></div>";
 echo "<section class='about py-5' id='about' style='background-color: #f2f2f2;'>"; 
 echo "    <div class='container text-center'>";
 echo "        <h2>What is ARville?</h2>";
-echo "        <p class='lead'>ARville is an online ecosystem of businesses, consumers, and communities connected together by immersive XR experiences and innovative marketing and customer relationship tools.</p>";
+echo "        <p class='lead'>ARville is an online ecosystem of netizens, businesses, and communities connected together by immersive XR experiences and innovative marketing and customer relationship tools.</p>";
 echo "        <a href='learn-more.php' class='btn btn-primary btn-lg'>Learn More About ARville</a>";
 echo "    </div>";
 echo "</section>";
@@ -174,7 +322,7 @@ echo "</section>";
 echo "<section class='plans py-4' id='plans'>";
 echo "    <div class='container'>";
 echo "        <h2 class='text-center mb-4'>Plans to Suit Every Vision</h2>";
-echo "        <div class='row g-4 align-items-stretch'>"; // Added align-items-stretch for equal height
+echo "        <div class='row g-4 align-items-stretch'>";
 
 $plans = [
     [
@@ -198,11 +346,11 @@ $plans = [
 ];
 
 foreach ($plans as $plan) {
-    echo "<div class='col-lg-4 col-md-6 d-flex'>"; // Added d-flex
-    echo "    <div class='plan border rounded p-4 text-center d-flex flex-column w-100'>"; // Added d-flex flex-column w-100
+    echo "<div class='col-lg-4 col-md-6 d-flex'>";
+    echo "    <div class='plan border rounded p-4 text-center d-flex flex-column w-100'>";
     echo "        <h3>{$plan['name']}</h3>";
-    echo "        <p class='flex-grow-1'>{$plan['features']}</p>"; // Added flex-grow-1
-    echo "        <a href='{$plan['link']}' class='btn btn-primary mt-auto'>{$plan['cta']}</a>"; // Added mt-auto
+    echo "        <p class='flex-grow-1'>{$plan['features']}</p>";
+    echo "        <a href='{$plan['link']}' class='btn btn-primary mt-auto'>{$plan['cta']}</a>";
     echo "    </div>";
     echo "</div>";
 }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arville Virtual Village</title>
+  <title>Arville Virtual Ecosystem</title>
   <style>
     body {
       margin: 0;
@@ -137,8 +137,8 @@
   
 </head>
 <body>
-  <div id="info">Virtual Village | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset</div>
-  <div id="loading">Loading village areas...</div>
+  <div id="info">Virtual Ecosystem | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset</div>
+  <div id="loading">Loading ecosystem areas...</div>
   
   <!-- Ride Controls -->
   <div id="ride-controls">
@@ -164,7 +164,6 @@
   <script src="universe/obj_create_house.js"></script>
   <script src="universe/obj_create_room.js"></script>
   <script src="universe/obj_create_toyland.js"></script>
-  <script src="universe/obj_create_robotcity.js"></script>
   <script src="universe/js/sky-effect.js"></script>
   <script src="universe/js/brightenGLB.js"></script>
   <script src="universe/js/darkenGLB.js"></script>
@@ -182,25 +181,25 @@
     let rideSpeed = 0.5;
     let originalMouseLook = null;
     
-    // Village dimensions - renamed to PLACE for generic use
+    // Ecosystem dimensions - renamed to PLACE for generic use
     const PLACE_WIDTH = 200;
     const PLACE_DEPTH = 400;
     const AREA_SIZE = 40;
     
-    // Get villageId from URL - fixed to handle numeric IDs
+    // Get ecosystemId from URL - fixed to handle numeric IDs
     const urlId = new URLSearchParams(window.location.search).get('id');
-    const villageId = urlId || 'default';
-    console.log(`&#127757; URL id parameter: ${urlId}, villageId: ${villageId}`);
+    const ecosystemId = urlId || 'default';
+    console.log(`&#127757; URL id parameter: ${urlId}, ecosystemId: ${ecosystemId}`);
 
-    // Texture configuration based on villageId - use numeric keys for ?id=1, ?id=2, etc.
+    // Texture configuration based on ecosystemId - use numeric keys for ?id=1, ?id=2, etc.
     const TEXTURE_CONFIG = {
       'default': {
         ground: 'universe/textures/grass1.jpg',
         roads: 'universe/textures/concrete2.jpg'
       },
       '1': {
-        ground: 'universe/textures/candies/candy10.jpg',
-        roads: 'universe/textures/candies/candy11.jpg'
+        ground: 'universe/textures/sand.jpg',
+        roads: 'universe/textures/sand2.jpg'
       },
       '2': {
         ground: 'universe/textures/soil-grass10.jpg',
@@ -211,14 +210,14 @@
         roads: 'universe/textures/plastic2.jpg'
       },
       '4': {
-        ground: 'universe/textures/metal10.jpg',
-        roads: 'universe/textures/metal11.jpg'
+        ground: 'universe/textures/grass1.jpg',
+        roads: 'universe/textures/concrete2.jpg'
       },
     };
 
-    // Get texture paths for current villageId
-    const currentTextures = TEXTURE_CONFIG[villageId] || TEXTURE_CONFIG['default'];
-    console.log(`&#127912; Using textures for villageId: ${villageId}`);
+    // Get texture paths for current ecosystemId
+    const currentTextures = TEXTURE_CONFIG[ecosystemId] || TEXTURE_CONFIG['default'];
+    console.log(`&#127912; Using textures for ecosystemId: ${ecosystemId}`);
     console.log(`&#127793; Ground texture: ${currentTextures.ground}`);
     console.log(`&#128739;&#65039; Road texture: ${currentTextures.roads}`);
     console.log(`&#128193; Available configs:`, Object.keys(TEXTURE_CONFIG));
@@ -226,36 +225,36 @@
     // CAMERA_LIMITS is now defined in navigation.js
     
 // Replace the entire AREA_POSITIONS object with this function:
-function generateAreaPositions(villageId) {
+function generateAreaPositions(ecosystemId) {
   return {
     // Row 1 (Back row) - Z = -150
-    [`${villageId}a`]: new THREE.Vector3(-75, 0, -150),
-    [`${villageId}b`]: new THREE.Vector3(-25, 0, -150),
-    [`${villageId}c`]: new THREE.Vector3(25, 0, -150),
-    [`${villageId}d`]: new THREE.Vector3(75, 0, -150),
+    [`${ecosystemId}a`]: new THREE.Vector3(-75, 0, -150),
+    [`${ecosystemId}b`]: new THREE.Vector3(-25, 0, -150),
+    [`${ecosystemId}c`]: new THREE.Vector3(25, 0, -150),
+    [`${ecosystemId}d`]: new THREE.Vector3(75, 0, -150),
     
     // Row 2 - Z = -50
-    [`${villageId}e`]: new THREE.Vector3(-75, 0, -50),
-    [`${villageId}f`]: new THREE.Vector3(-25, 0, -50),
-    [`${villageId}g`]: new THREE.Vector3(25, 0, -50),
-    [`${villageId}h`]: new THREE.Vector3(75, 0, -50),
+    [`${ecosystemId}e`]: new THREE.Vector3(-75, 0, -50),
+    [`${ecosystemId}f`]: new THREE.Vector3(-25, 0, -50),
+    [`${ecosystemId}g`]: new THREE.Vector3(25, 0, -50),
+    [`${ecosystemId}h`]: new THREE.Vector3(75, 0, -50),
     
     // Row 3 - Z = 50
-    [`${villageId}i`]: new THREE.Vector3(-75, 0, 50),
-    [`${villageId}j`]: new THREE.Vector3(-25, 0, 50),
-    [`${villageId}k`]: new THREE.Vector3(25, 0, 50),
-    [`${villageId}m`]: new THREE.Vector3(75, 0, 50),
+    [`${ecosystemId}i`]: new THREE.Vector3(-75, 0, 50),
+    [`${ecosystemId}j`]: new THREE.Vector3(-25, 0, 50),
+    [`${ecosystemId}k`]: new THREE.Vector3(25, 0, 50),
+    [`${ecosystemId}m`]: new THREE.Vector3(75, 0, 50),
     
     // Row 4 (Front row) - Z = 150
-    [`${villageId}n`]: new THREE.Vector3(-75, 0, 150),
-    [`${villageId}o`]: new THREE.Vector3(-25, 0, 150),
-    [`${villageId}p`]: new THREE.Vector3(25, 0, 150),
-    [`${villageId}q`]: new THREE.Vector3(75, 0, 150)
+    [`${ecosystemId}n`]: new THREE.Vector3(-75, 0, 150),
+    [`${ecosystemId}o`]: new THREE.Vector3(-25, 0, 150),
+    [`${ecosystemId}p`]: new THREE.Vector3(25, 0, 150),
+    [`${ecosystemId}q`]: new THREE.Vector3(75, 0, 150)
   };
 }
 
-// Then initialize AREA_POSITIONS with the current villageId
-const AREA_POSITIONS = generateAreaPositions(villageId);
+// Then initialize AREA_POSITIONS with the current ecosystemId
+const AREA_POSITIONS = generateAreaPositions(ecosystemId);
 
     // Define ride path points following the concrete road system (outer rectangle)
     function createRidePath() {
@@ -315,7 +314,7 @@ const AREA_POSITIONS = generateAreaPositions(villageId);
     function getAvailableAreas() {
       //const suffix = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'o', 'p', 'q'];
       const suffix = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'o', 'p', 'q'];
-      return suffix.map(s => `${villageId}${s}`);
+      return suffix.map(s => `${ecosystemId}${s}`);
     }
 
 function loadObjectCreator() {
@@ -426,14 +425,14 @@ function init() {
 
   console.log('&#128161; Natural outdoor lighting: Sun + Sky + 4 cardinal directions + overhead');
 
-  // First load obj_create_village, then create village and load areas
+  // First load obj_create_ecosystem, then create ecosystem and load areas
   loadObjectCreator().then(() => {
-    createVillage();
+    createEcosystem();
     createRectangularPathway();
     loadAreas();
   }).catch((error) => {
     console.error('Failed to load object creator:', error);
-    createVillage();
+    createEcosystem();
     createRectangularPathway();
     loadAreas();
   });
@@ -530,7 +529,7 @@ function toggleRide() {
     }
     
     // Update info text
-    document.getElementById('info').textContent = 'Virtual Village | Auto Ride Mode | Mouse: Look Around | Click Stop Ride to regain control';
+    document.getElementById('info').textContent = 'Virtual Ecosystem | Auto Ride Mode | Mouse: Look Around | Click Stop Ride to regain control';
     document.getElementById('instructions').textContent = 'Enjoy the automated tour! Use mouse to look around while riding.';
     
     console.log('&#128663; Ride resumed from current position and rotation');
@@ -549,7 +548,7 @@ function toggleRide() {
     }
     
     // Update info text
-    document.getElementById('info').textContent = 'Virtual Village | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset';
+    document.getElementById('info').textContent = 'Virtual Ecosystem | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset';
     document.getElementById('instructions').textContent = 'Manual control enabled. Use WASD to move, mouse to look around.';
     
     console.log('&#128721; Ride stopped - position and rotation preserved');
@@ -557,8 +556,8 @@ function toggleRide() {
 }
 
 
-    function createVillage() {
-      // Create ground with texture based on villageId
+    function createEcosystem() {
+      // Create ground with texture based on ecosystemId
       const groundMat = new THREE.MeshLambertMaterial({ 
         color: 0x888888 // Fallback color if texture fails to load
       });
@@ -568,7 +567,7 @@ function toggleRide() {
       ground.rotation.x = -Math.PI / 2;
       scene.add(ground);
 
-      // Load ground texture based on villageId
+      // Load ground texture based on ecosystemId
       if (window.textureLoader) {
         try {
           const groundTexture = window.textureLoader.load(currentTextures.ground);
@@ -589,11 +588,11 @@ function toggleRide() {
         }
       }
       
-      console.log('&#9989; Village base created successfully');
+      console.log('&#9989; Ecosystem base created successfully');
     }
 
     function createRectangularPathway() {
-      // Create a rectangular pathway around the village
+      // Create a rectangular pathway around the ecosystem
       const pathwayWidth = 6;
       const pathwayHeight = 0.05;
       
@@ -601,12 +600,12 @@ function toggleRide() {
       const rectWidth = PLACE_WIDTH - 90;
       const rectDepth = PLACE_DEPTH - 90;
       
-      // Create road material - using the texture based on villageId
+      // Create road material - using the texture based on ecosystemId
       const roadMat = new THREE.MeshLambertMaterial({ 
           color: 0x666666 // Default road color
       });
       
-      // Load road texture based on villageId
+      // Load road texture based on ecosystemId
       if (window.textureLoader) {
           try {
               const roadTexture = window.textureLoader.load(currentTextures.roads);
@@ -754,12 +753,12 @@ async function loadAreas() {
      async function loadAreaContent(areaId) {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = `universe/village-areas/${villageId}/village${areaId}.js`;        
+        script.src = `universe/eco-areas/${ecosystemId}/eco${areaId}.js`;        
         
         script.onload = () => {
           // Wait a frame to ensure the area group is created
           setTimeout(() => {
-            const areaGroup = scene.getObjectByName(`village-area-${areaId}`);
+            const areaGroup = scene.getObjectByName(`ecosystem-area-${areaId}`);
             if (areaGroup) {
               console.log(`&#9989; Found area group: area-${areaId} with ${areaGroup.children.length} children`);
               positionArea(areaId);
@@ -782,7 +781,7 @@ async function loadAreas() {
     }
 
     function positionArea(areaId) {
-      const areaGroup = scene.getObjectByName(`village-area-${areaId}`);
+      const areaGroup = scene.getObjectByName(`ecosystem-area-${areaId}`);
       if (areaGroup && AREA_POSITIONS[areaId]) {
         const areaPosition = AREA_POSITIONS[areaId];
         areaGroup.position.copy(areaPosition);
