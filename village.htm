@@ -829,6 +829,12 @@ function animate() {
     }
     
     scene.traverse((object) => {
+        if (object.userData && object.userData.type === 'pinwheel_toy' && object.update) {
+            object.update(delta);
+        }
+    });
+    
+    scene.traverse((object) => {
         if (object.userData && object.userData.type === 'bouncing_ball' && object.update) {
             object.update(delta);
         }

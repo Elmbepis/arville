@@ -129,6 +129,7 @@
 
     <script src="universe/js/three.min.js"></script>
     <script src="universe/js/navigation.js"></script>
+    <script src="universe/js/GLTFLoader.js"></script>
 
     <script>
         let scene, camera, renderer;
@@ -532,24 +533,41 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        function animate() {
-            requestAnimationFrame(animate);
-            const delta = clock.getDelta();
-            
-            // ENFORCE FLIGHT CEILING LIMIT
-            const CEILING_HEIGHT = 10.0; // Slightly below actual ceiling
-            const MIN_HEIGHT = 0.5; // Minimum height above floor
-            
-            if (camera.position.y > CEILING_HEIGHT) {
-                camera.position.y = CEILING_HEIGHT;
-            }
-            if (camera.position.y < MIN_HEIGHT) {
-                camera.position.y = MIN_HEIGHT;
-            }
-            
-            if (camera.userData.update) camera.userData.update();
-            renderer.render(scene, camera);
+function animate() {
+    requestAnimationFrame(animate);
+    const delta = clock.getDelta();
+    
+    // ENFORCE FLIGHT CEILING LIMIT
+    const CEILING_HEIGHT = 10.0;
+    const MIN_HEIGHT = 0.5;
+    
+    if (camera.position.y > CEILING_HEIGHT) {
+        camera.position.y = CEILING_HEIGHT;
+    }
+    if (camera.position.y < MIN_HEIGHT) {
+        camera.position.y = MIN_HEIGHT;
+    }
+    
+    // UPDATE ALL ROTATING OBJECTS
+    scene.traverse((object) => {
+        // Update textured boxes (if you have them)
+        if (object.userData && object.userData.type === 'textured_box' && object.update) {
+            object.update(delta);
         }
+        // Update rotating GLB models
+        if (object.userData && object.userData.type === 'rotating_glb' && object.update) {
+            object.update(delta);
+        }
+        // Update rotating placeholders
+        if (object.userData && object.userData.type === 'rotating_placeholder' && object.update) {
+            object.update(delta);
+        }
+    });
+    
+    if (camera.userData.update) camera.userData.update();
+    renderer.render(scene, camera);
+}
+
     </script>
 </body>
 </html>
