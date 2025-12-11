@@ -27,7 +27,6 @@ echo "        </button>";
 echo "        <div class='collapse navbar-collapse' id='navbarNav'>";
 echo "            <ul class='navbar-nav ms-auto'>";
 echo "                <li class='nav-item'><a class='nav-link' href='index.php'>Home</a></li>";
-echo "                <li class='nav-item'><a class='nav-link' href='use-cases.php'>Use Cases</a></li>";
 echo "                <li class='nav-item'><a class='nav-link' href='plans.php'>Plans</a></li>";
 echo "                <li class='nav-item'><a class='nav-link' href='about-us.php'>About Us</a></li>";
 echo "                <li class='nav-item'><a class='nav-link' href='contact.php'>Contact</a></li>";

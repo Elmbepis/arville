@@ -89,7 +89,7 @@
   </style>
 </head>
 <body>
-  <div id="info">Virtual Shopping Mall | WASD: Move | Mouse: Look Around | R: Reset Position</div>
+  <div id="info">Virtual Shopping Mall | WASD: Move | Mouse: Look Around | R: Reset Position | H: Home</div>
   <div id="instructions"></div>
   <div id="loading">Creating mall structure...</div>
 
@@ -161,6 +161,926 @@
 
     // Make STORE_POSITIONS globally available for store files
     window.STORE_POSITIONS = STORE_POSITIONS;
+
+    // Add H key handler for Home
+    window.addEventListener('keydown', (event) => {
+      if (event.key.toLowerCase() === 'h') {
+        // Navigate to site's index.php
+        window.location.href = 'index.php';
+      }
+    });
+
+    // Load object creator function
+    function loadObjectCreator() {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'universe/obj_create_mall.js?v=' + Date.now();
+        
+        script.onload = function() {
+          console.log('&#9989; obj_create.js loaded successfully');
+          resolve();
+        };
+        
+        script.onerror = function() {
+          console.error('&#10060; Failed to load obj_create.js');
+          reject(new Error('Failed to load object creator script'));
+        };
+        
+        document.head.appendChild(script);
+      });
+    }
+
+    // Get available stores
+    function getAvailableStores() {
+      return [
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24'
+      ];
+    }
+
+    // Load store files function
+    function loadStoreFiles() {
+      return new Promise((resolve, reject) => {
+        const availableStores = getAvailableStores();
+        const storePromises = [];
+        let loadedCount = 0;
+        let errorCount = 0;
+
+        console.log(`&#128295; Loading ${availableStores.length} store files...`);
+
+        availableStores.forEach(storeName => {
+          const promise = new Promise((storeResolve, storeReject) => {
+            const script = document.createElement('script');
+            script.src = `universe/stores/1store${storeName}.js?v=${Date.now()}`;
+            
+            script.onload = function() {
+              loadedCount++;
+              console.log(`&#9989; ${storeName}.js loaded successfully (${loadedCount}/${availableStores.length})`);
+              storeResolve(storeName);
+            };
+            
+            script.onerror = function() {
+              errorCount++;
+              console.log(`&#9888;&#65039; ${storeName}.js not found, skipping (${loadedCount + errorCount}/${availableStores.length})`);
+              storeResolve(null); // Resolve with null instead of rejecting to continue loading other stores
+            };
+            
+            document.head.appendChild(script);
+          });
+          
+          storePromises.push(promise);
+        });
+
+        // Wait for all store files to load (or fail gracefully)
+        Promise.all(storePromises).then(results => {
+          const successfulLoads = results.filter(result => result !== null);
+          
+          console.log(`&#127881; Store loading completed:`);
+          console.log(`   &#9989; Successfully loaded: ${successfulLoads.length} stores`);
+          console.log(`   &#9888;&#65039; Skipped: ${errorCount} stores`);
+          console.log(`   &#128202; Total: ${availableStores.length} stores available`);
+          
+          if (successfulLoads.length > 0) {
+            resolve(successfulLoads);
+          } else {
+            // Even if no stores loaded, still resolve to continue
+            console.log('&#8505;&#65039; No store files loaded, continuing with mall structure only');
+            resolve([]);
+          }
+        }).catch(error => {
+          console.error('&#10060; Error in store loading:', error);
+          // Still resolve to continue with mall structure
+          resolve([]);
+        });
+      });
+    }
+
+    function init() {
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, EYE_HEIGHT, MALL_DEPTH/2+10);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x202020);
+      document.body.appendChild(renderer.domElement);
+
+      // Enhanced lighting
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
+      hemiLight.position.set(0, 20, 0);
+      scene.add(hemiLight);
+
+      const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(ambient);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+      dirLight.position.set(10, 20, 10);
+      scene.add(dirLight);
+
+      // Make scene globally available for store files
+      window.scene = scene;
+
+      console.log('&#127916; Starting mall loading sequence...');
+
+      // Load object creator first, then create mall structure and stores
+      loadObjectCreator().then(() => {
+        console.log('&#9989; Object creator loaded, initializing texture loader...');
+        
+        // Initialize texture loader for object creator
+        if (typeof initTextureLoader === 'function') {
+          initTextureLoader(new THREE.TextureLoader());
+          console.log('&#9989; Texture loader initialized');
+        } else {
+          console.log('&#9888;&#65039; initTextureLoader not found, using fallback');
+        }
+        
+        console.log('&#127970; Creating mall structure...');
+        // Create mall structure first
+        createMallStructure();
+        createStorefronts();
+        createSideWalls();
+        
+        console.log('&#9989; Mall structure complete, waiting for store loading...');
+        
+        // Wait a bit to ensure mall is fully rendered before loading stores
+        return new Promise(resolve => setTimeout(resolve, 1000));
+      }).then(() => {
+        console.log('&#128295; Loading store files...');
+        // Load store files
+        return loadStoreFiles();
+      }).then((loadedStores) => {
+        console.log('&#127881; All loading complete!');
+        console.log(`&#128202; Loaded ${loadedStores.length} store interiors`);
+        
+        document.getElementById('loading').style.display = 'none';
+        
+        // Clear the instructions div - no message displayed
+        document.getElementById('instructions').textContent = '';
+
+        // Show mobile controls if on mobile device
+        if (isMobile) {
+          document.getElementById('mobile-controls').style.display = 'block';
+        }
+        
+        // Final scene verification
+        setTimeout(() => {
+          console.log('&#128269; Final scene verification:');
+          console.log(`   - Total objects in scene: ${scene.children.length}`);
+          
+          // Look for our specific store
+          const store24 = scene.getObjectByName('1store24');
+          console.log(`   - Store 24 found: ${store24 ? 'YES' : 'NO'}`);
+          if (store24) {
+            console.log(`   - Store 24 children: ${store24.children.length}`);
+            console.log(`   - Store 24 position:`, store24.position);
+          }
+          
+          // Count all store groups
+          const storeGroups = scene.children.filter(child => 
+            child.name && child.name.startsWith('1store')
+          );
+          console.log(`   - Total store interiors: ${storeGroups.length}`);
+        }, 2000);
+        
+      }).catch((error) => {
+        console.error('&#10060; Loading error:', error);
+        // Fallback - create mall without detailed stores
+        console.log('&#128295; Falling back to basic mall structure...');
+        createMallStructure();
+        createStorefronts();
+        createSideWalls();
+        
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('instructions').textContent = '';
+      });
+
+      setupControls();
+      setupMobileControls();
+      window.addEventListener("resize", onWindowResize);
+    }
+
+    function createMallStructure() {
+      console.log('&#127970; Creating mall structure...');
+      const textureLoader = new THREE.TextureLoader();
+      
+      // Create a group for the entire mall structure
+      const mallGroup = new THREE.Group();
+      
+      // Adjust this value to move the mall forward/backward without affecting stores
+      const mallZOffset = 2.3; // Positive moves mall forward, negative moves mall backward
+
+      // MAIN FLOOR - with proper texture handling
+      const floorMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x444444,
+        roughness: 0.9
+      });
+
+      try {
+        const floorTexture = textureLoader.load('universe/textures/mall-floor.jpg');
+        floorTexture.wrapS = THREE.RepeatWrapping;
+        floorTexture.wrapT = THREE.RepeatWrapping;
+        floorTexture.repeat.set(10, 24);
+        floorMaterial.map = floorTexture;
+        console.log('&#9989; Floor texture loaded');
+      } catch (error) {
+        console.log('&#9888;&#65039; Using fallback floor color');
+      }
+
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(MALL_WIDTH, MALL_DEPTH),
+        floorMaterial
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.z = mallZOffset; // APPLY OFFSET
+      mallGroup.add(floor); // ADD TO MALL GROUP
+
+      // WIDER CENTRAL WALKWAY for larger mall
+      const walkwayMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x666666,
+        roughness: 0.8
+      });
+
+      try {
+        const walkwayTexture = textureLoader.load('universe/textures/walkway-pattern.jpg');
+        walkwayTexture.wrapS = THREE.RepeatWrapping;
+        walkwayTexture.wrapT = THREE.RepeatWrapping;
+        walkwayTexture.repeat.set(6, 48);
+        walkwayMaterial.map = walkwayTexture;
+        console.log('&#9989; Walkway texture loaded');
+      } catch (error) {
+        console.log('&#9888;&#65039; Using fallback walkway color');
+      }
+
+      const walkway = new THREE.Mesh(
+        new THREE.PlaneGeometry(12, MALL_DEPTH - 10),
+        walkwayMaterial
+      );
+      walkway.rotation.x = -Math.PI / 2;
+      walkway.position.y = 0.02;
+      walkway.position.z = mallZOffset; // APPLY OFFSET
+      mallGroup.add(walkway); // ADD TO MALL GROUP
+
+      // WALLS
+      const wallMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xdddddd,
+        roughness: 0.7
+      });
+
+      try {
+        const wallTexture = textureLoader.load('universe/textures/mall-walls.jpg');
+        wallTexture.wrapS = THREE.RepeatWrapping;
+        wallTexture.wrapT = THREE.RepeatWrapping;
+        wallTexture.repeat.set(20, 4);
+        wallMaterial.map = wallTexture;
+        console.log('&#9989; Wall texture loaded');
+      } catch (error) {
+        console.log('&#9888;&#65039; Using fallback wall color');
+      }
+
+      // Back wall
+      const backWall = new THREE.Mesh(
+        new THREE.PlaneGeometry(MALL_WIDTH, WALL_HEIGHT), 
+        wallMaterial
+      );
+      backWall.position.set(0, WALL_HEIGHT/2, -MALL_DEPTH/2 + mallZOffset); // APPLY OFFSET
+      mallGroup.add(backWall); // ADD TO MALL GROUP
+
+      // Front wall
+      const frontWall = new THREE.Mesh(
+        new THREE.PlaneGeometry(MALL_WIDTH, WALL_HEIGHT), 
+        wallMaterial
+      );
+      frontWall.position.set(0, WALL_HEIGHT/2, MALL_DEPTH/2 + mallZOffset); // APPLY OFFSET
+      frontWall.rotation.y = Math.PI;
+      mallGroup.add(frontWall); // ADD TO MALL GROUP
+
+      // Left wall
+      const leftWall = new THREE.Mesh(
+        new THREE.PlaneGeometry(MALL_DEPTH, WALL_HEIGHT), 
+        wallMaterial
+      );
+      leftWall.rotation.y = Math.PI / 2;
+      leftWall.position.set(-MALL_WIDTH/2, WALL_HEIGHT/2, mallZOffset); // APPLY OFFSET
+      mallGroup.add(leftWall); // ADD TO MALL GROUP
+
+      // Right wall
+      const rightWall = new THREE.Mesh(
+        new THREE.PlaneGeometry(MALL_DEPTH, WALL_HEIGHT), 
+        wallMaterial
+      );
+      rightWall.rotation.y = -Math.PI / 2;
+      rightWall.position.set(MALL_WIDTH/2, WALL_HEIGHT/2, mallZOffset); // APPLY OFFSET
+      mallGroup.add(rightWall); // ADD TO MALL GROUP
+
+      // CEILING
+      const ceilingMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xf8f8f8, 
+        roughness: 0.9 
+      });
+
+      try {
+        const ceilingTexture = textureLoader.load('universe/textures/mall-ceiling.jpg');
+        ceilingTexture.wrapS = THREE.RepeatWrapping;
+        ceilingTexture.wrapT = THREE.RepeatWrapping;
+        ceilingTexture.repeat.set(10, 24);
+        ceilingMaterial.map = ceilingTexture;
+        console.log('&#9989; Ceiling texture loaded');
+      } catch (error) {
+        console.log('&#9888;&#65039; Using fallback ceiling color');
+      }
+
+      const ceiling = new THREE.Mesh(
+        new THREE.PlaneGeometry(MALL_WIDTH, MALL_DEPTH),
+        ceilingMaterial
+      );
+      ceiling.rotation.x = Math.PI / 2;
+      ceiling.position.y = WALL_HEIGHT;
+      ceiling.position.z = mallZOffset; // APPLY OFFSET
+      mallGroup.add(ceiling); // ADD TO MALL GROUP
+
+      // ADD THE ENTIRE MALL GROUP TO THE SCENE
+      scene.add(mallGroup);
+
+      console.log('&#9989; Mall structure created with offset');
+    }
+
+    function createStorefronts() {
+      console.log('&#127978; Creating storefronts as frames with glass windows...');
+      
+      const textureLoader = new THREE.TextureLoader();
+      
+      // Texture paths for all 24 store fronts
+      const storeFrontTextures = [
+        'universe/textures/stores/1store1.jpg',
+        'universe/textures/stores/1store2.jpg',
+        'universe/textures/stores/1store3.jpg',
+        'universe/textures/stores/1store4.jpg',
+        'universe/textures/stores/1store5.jpg',
+        'universe/textures/stores/1store6.jpg',
+        'universe/textures/stores/1store7.jpg',
+        'universe/textures/stores/1store8.jpg',
+        'universe/textures/stores/1store9.jpg',
+        'universe/textures/stores/1store10.jpg',
+        'universe/textures/stores/1store11.jpg',
+        'universe/textures/stores/1store12.jpg',
+        'universe/textures/stores/1store13.jpg',
+        'universe/textures/stores/1store14.jpg',
+        'universe/textures/stores/1store15.jpg',
+        'universe/textures/stores/1store16.jpg',
+        'universe/textures/stores/1store17.jpg',
+        'universe/textures/stores/1store18.jpg',
+        'universe/textures/stores/1store19.jpg',
+        'universe/textures/stores/1store20.jpg',
+        'universe/textures/stores/1store21.jpg',
+        'universe/textures/stores/1store22.jpg',
+        'universe/textures/stores/1store23.jpg',
+        'universe/textures/stores/1store24.jpg'
+      ];
+
+      // Texture paths for all 24 store signs
+      const storeSignTextures = [
+        'universe/textures/stores/1sign1.jpg',
+        'universe/textures/stores/1sign2.jpg',
+        'universe/textures/stores/1sign3.jpg',
+        'universe/textures/stores/1sign4.jpg',
+        'universe/textures/stores/1sign5.jpg',
+        'universe/textures/stores/1sign6.jpg',
+        'universe/textures/stores/1sign7.jpg',
+        'universe/textures/stores/1sign8.jpg',
+        'universe/textures/stores/1sign9.jpg',
+        'universe/textures/stores/1sign10.jpg',
+        'universe/textures/stores/1sign11.jpg',
+        'universe/textures/stores/1sign12.jpg',
+        'universe/textures/stores/1sign13.jpg',
+        'universe/textures/stores/1sign14.jpg',
+        'universe/textures/stores/1sign15.jpg',
+        'universe/textures/stores/1sign16.jpg',
+        'universe/textures/stores/1sign17.jpg',
+        'universe/textures/stores/1sign18.jpg',
+        'universe/textures/stores/1sign19.jpg',
+        'universe/textures/stores/1sign20.jpg',
+        'universe/textures/stores/1sign21.jpg',
+        'universe/textures/stores/1sign22.jpg',
+        'universe/textures/stores/1sign23.jpg',
+        'universe/textures/stores/1sign24.jpg'
+      ];
+
+      Object.keys(STORE_POSITIONS).forEach((storeId, index) => {
+        const position = STORE_POSITIONS[storeId];
+        const storeGroup = new THREE.Group();
+        storeGroup.name = `store-${storeId}`;
+
+        // Store front dimensions
+        const storeWidth = STORE_FRONT_WIDTH;
+        const storeHeight = STORE_FRONT_HEIGHT;
+        const storeDepth = 0.5;
+        const frameThickness = 0.5;
+
+        // Create materials
+        const storeFrontMaterial = new THREE.MeshStandardMaterial({ 
+          color: 0xffffff,
+          roughness: 0.7,
+          metalness: 0.3
+        });
+
+        const signMaterial = new THREE.MeshStandardMaterial({ 
+          color: 0xffffff
+        });
+
+        // Frosted glass effect
+        const glassMaterial = new THREE.MeshPhysicalMaterial({
+          color: 0xffffff,
+          transparent: true,
+          transmission: 0.6,         // Lower transmission = more frosted
+          opacity: 0.4,              // More visible
+          roughness: 0.8,            // High roughness = frosted appearance
+          metalness: 0.0,            // No metallic
+          clearcoat: 0.3,
+          clearcoatRoughness: 0.5,
+          side: THREE.DoubleSide
+        });
+
+        // Try to load store front texture
+        try {
+          const storeTexture = textureLoader.load(storeFrontTextures[index]);
+          storeTexture.wrapS = THREE.RepeatWrapping;
+          storeTexture.wrapT = THREE.RepeatWrapping;
+          storeTexture.repeat.set(1, 1);
+          storeFrontMaterial.map = storeTexture;
+        } catch (error) {
+          console.log(`&#9888;&#65039; Could not load store front texture for store ${index + 1}`);
+        }
+
+        // Try to load sign texture
+        try {
+          const signTexture = textureLoader.load(storeSignTextures[index]);
+          signTexture.wrapS = THREE.RepeatWrapping;
+          signTexture.wrapT = THREE.RepeatWrapping;
+          signTexture.repeat.set(1, 1);
+          signMaterial.map = signTexture;
+        } catch (error) {
+          console.log(`&#9888;&#65039; Could not load sign texture for store ${index + 1}`);
+        }
+
+        // Create store front as a FRAME
+        const frameGroup = new THREE.Group();
+
+        // Top frame
+        const topFrame = new THREE.Mesh(
+          new THREE.BoxGeometry(storeWidth, frameThickness, storeDepth),
+          storeFrontMaterial
+        );
+        topFrame.position.set(0, storeHeight - frameThickness/2, 0);
+
+        // Bottom frame
+        const bottomFrame = new THREE.Mesh(
+          new THREE.BoxGeometry(storeWidth, frameThickness, storeDepth),
+          storeFrontMaterial
+        );
+        bottomFrame.position.set(0, frameThickness/2, 0);
+
+        // Left frame
+        const leftFrame = new THREE.Mesh(
+          new THREE.BoxGeometry(frameThickness, storeHeight - (frameThickness * 2), storeDepth),
+          storeFrontMaterial
+        );
+        leftFrame.position.set(-storeWidth/2 + frameThickness/2, storeHeight/2, 0);
+
+        // Right frame
+        const rightFrame = new THREE.Mesh(
+          new THREE.BoxGeometry(frameThickness, storeHeight - (frameThickness * 2), storeDepth),
+          storeFrontMaterial
+        );
+        rightFrame.position.set(storeWidth/2 - frameThickness/2, storeHeight/2, 0);
+
+        frameGroup.add(topFrame, bottomFrame, leftFrame, rightFrame);
+
+        // Glass window - fills the empty space in the frame
+        const glassWidth = storeWidth - (frameThickness * 2);
+        const glassHeight = storeHeight - (frameThickness * 2);
+        const glass = new THREE.Mesh(
+          new THREE.BoxGeometry(glassWidth, glassHeight, 0.05),
+          glassMaterial
+        );
+        glass.position.set(0, storeHeight/2, storeDepth/2 + 0.1);
+
+        // Store sign (number block removed)
+        const sign = new THREE.Mesh(
+          new THREE.BoxGeometry(storeWidth, 0.8, 0.1),
+          signMaterial
+        );
+        sign.position.set(0, storeHeight - 0.4, storeDepth/2 + 0.05);
+
+        // Add frame, glass, and sign to store group
+        storeGroup.add(frameGroup, glass, sign);
+
+        // Position the store
+        storeGroup.position.copy(position);
+
+        // Rotate stores to face the walkway
+        if (storeId.startsWith('left')) {
+          storeGroup.rotation.y = Math.PI / 2;
+        } else {
+          storeGroup.rotation.y = -Math.PI / 2;
+        }
+
+        // Store metadata
+        storeGroup.userData = {
+          storeName: `Store ${storeId.replace('left', 'L').replace('right', 'R')}`,
+          storeNumber: index + 1
+        };
+
+        scene.add(storeGroup);
+        currentStores.push(storeId);
+      });
+
+      console.log(`&#9989; Created ${currentStores.length} storefront frames with glass windows`);
+    }
+
+function createSideWalls() {
+  console.log('&#129521; Creating side walls relative to stores...');
+  
+  const textureLoader = new THREE.TextureLoader();
+  
+  const sideWallTextures = [
+    'universe/textures/stores/1sidewalla.jpg',
+    'universe/textures/stores/1sidewallb.jpg',
+    'universe/textures/stores/1sidewallc.jpg',
+    'universe/textures/stores/1sidewalld.jpg',
+    'universe/textures/stores/1sidewalle.jpg',
+    'universe/textures/stores/1sidewallf.jpg',
+    'universe/textures/stores/1sidewalla.jpg',
+    'universe/textures/stores/1sidewallb.jpg',
+    'universe/textures/stores/1sidewallc.jpg',
+    'universe/textures/stores/1sidewalld.jpg',
+    'universe/textures/stores/1sidewalle.jpg',
+    'universe/textures/stores/1sidewallf.jpg',
+    'universe/textures/stores/1sidewalla.jpg',
+    'universe/textures/stores/1sidewallb.jpg',
+    'universe/textures/stores/1sidewallc.jpg',
+    'universe/textures/stores/1sidewalld.jpg',
+    'universe/textures/stores/1sidewalle.jpg',
+    'universe/textures/stores/1sidewallf.jpg',
+    'universe/textures/stores/1sidewalla.jpg',
+    'universe/textures/stores/1sidewallb.jpg',
+    'universe/textures/stores/1sidewallc.jpg',
+    'universe/textures/stores/1sidewalld.jpg'
+  ];
+
+  const wallHeight = 7.5;
+  const wallThickness = 0.2;
+
+  // Calculate the distance from mall wall to store front
+  const leftMallWallX = -MALL_WIDTH/2;
+  const leftStoreFrontX = -10;
+  const leftWallLength = Math.abs(leftStoreFrontX - leftMallWallX);
+
+  const rightMallWallX = MALL_WIDTH/2;
+  const rightStoreFrontX = 10;
+  const rightWallLength = Math.abs(rightMallWallX - rightStoreFrontX);
+
+  let wallIndex = 0;
+
+  // Helper function to load textures with fallback
+  const loadTextureWithFallback = (texturePath, fallbackPath, wallNum) => {
+    return new Promise((resolve) => {
+      textureLoader.load(
+        texturePath,
+        (texture) => {
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(8, 4);
+          resolve(texture);
+        },
+        undefined,
+        (error) => {
+          console.log(`&#9888;&#65039; Could not load ${texturePath} for side wall ${wallNum}, trying fallback...`);
+          textureLoader.load(
+            fallbackPath,
+            (fallbackTexture) => {
+              fallbackTexture.wrapS = THREE.RepeatWrapping;
+              fallbackTexture.wrapT = THREE.RepeatWrapping;
+              fallbackTexture.repeat.set(8, 4);
+              resolve(fallbackTexture);
+              console.log(`&#9989; Using default texture for side wall ${wallNum}`);
+            },
+            undefined,
+            (fallbackError) => {
+              console.log(`&#9888;&#65039; Could not load fallback texture for side wall ${wallNum}, using color`);
+              resolve(null);
+            }
+          );
+        }
+      );
+    });
+  };
+
+  // Create walls for left side stores
+  for (let i = 0; i < storesPerSide - 1; i++) {
+    const wallMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0xdddddd,
+      roughness: 0.7
+    });
+
+    // Load the individual texture with fallback to default
+    loadTextureWithFallback(
+      sideWallTextures[wallIndex],
+      'universe/textures/stores/1sidewalla.jpg',
+      wallIndex + 1
+    ).then(texture => {
+      if (texture) {
+        wallMaterial.map = texture;
+        wallMaterial.needsUpdate = true;
+      }
+    });
+
+    // Calculate position between store i and store i+1 using store positions
+    const storeIPos = STORE_POSITIONS[`left${i+1}`].z;
+    const storeIPlus1Pos = STORE_POSITIONS[`left${i+2}`].z;
+    const zPos = (storeIPos + storeIPlus1Pos) / 2; // Position between two stores
+    
+    // Create visible wall
+    const wall = new THREE.Mesh(
+      new THREE.BoxGeometry(wallThickness, wallHeight, leftWallLength),
+      wallMaterial
+    );
+    
+    // Create INVISIBLE COLLIDER (thicker for better collision detection)
+    const wallCollider = new THREE.Mesh(
+      new THREE.BoxGeometry(wallThickness * 3, wallHeight, leftWallLength),
+      new THREE.MeshBasicMaterial({ 
+        visible: false, // Make it invisible
+        transparent: true,
+        opacity: 0.0
+      })
+    );
+    wallCollider.name = 'wall-collider';
+    wallCollider.userData = { isCollider: true };
+    
+    // Position wall so it extends from mall wall to store front
+    const wallX = leftMallWallX + (leftWallLength / 2);
+    wall.position.set(wallX, wallHeight/2, zPos);
+    wallCollider.position.set(wallX, wallHeight/2, zPos);
+    
+    // Rotate wall to be perpendicular to walkway
+    wall.rotation.y = Math.PI / 2;
+    wallCollider.rotation.y = Math.PI / 2;
+    
+    scene.add(wall);
+    scene.add(wallCollider);
+    wallIndex++;
+  }
+
+  // Create walls for right side stores  
+  for (let i = 0; i < storesPerSide - 1; i++) {
+    const wallMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0xdddddd,
+      roughness: 0.7
+    });
+
+    // Load the individual texture with fallback to default
+    loadTextureWithFallback(
+      sideWallTextures[wallIndex],
+      'universe/textures/stores/1sidewalla.jpg',
+      wallIndex + 1
+    ).then(texture => {
+      if (texture) {
+        wallMaterial.map = texture;
+        wallMaterial.needsUpdate = true;
+      }
+    });
+
+    // Calculate position between store i and store i+1 using store positions
+    const storeIPos = STORE_POSITIONS[`right${i+1}`].z;
+    const storeIPlus1Pos = STORE_POSITIONS[`right${i+2}`].z;
+    const zPos = (storeIPos + storeIPlus1Pos) / 2; // Position between two stores
+    
+    // Create visible wall
+    const wall = new THREE.Mesh(
+      new THREE.BoxGeometry(wallThickness, wallHeight, rightWallLength),
+      wallMaterial
+    );
+    
+    // Create INVISIBLE COLLIDER (thicker for better collision detection)
+    const wallCollider = new THREE.Mesh(
+      new THREE.BoxGeometry(wallThickness * 3, wallHeight, rightWallLength),
+      new THREE.MeshBasicMaterial({ 
+        visible: false, // Make it invisible
+        transparent: true,
+        opacity: 0.0
+      })
+    );
+    wallCollider.name = 'wall-collider';
+    wallCollider.userData = { isCollider: true };
+    
+    // Position wall so it extends from mall wall to store front
+    const wallX = rightMallWallX - (rightWallLength / 2);
+    wall.position.set(wallX, wallHeight/2, zPos);
+    wallCollider.position.set(wallX, wallHeight/2, zPos);
+    
+    // Rotate wall to be perpendicular to walkway
+    wall.rotation.y = Math.PI / 2;
+    wallCollider.rotation.y = Math.PI / 2;
+    
+    scene.add(wall);
+    scene.add(wallCollider);
+    wallIndex++;
+  }
+
+  console.log(`&#9989; Created ${(storesPerSide - 1) * 2} side walls with colliders`);
+}
+
+function setupControls() {
+    const moveState = { forward: false, backward: false, left: false, right: false };
+    const velocity = new THREE.Vector3();
+    const direction = new THREE.Vector3();
+    let yaw = 0;
+    let pitch = 0;
+    let isMouseDown = false;
+    let previousMouseX = 0;
+    let previousMouseY = 0;
+
+    const moveSpeed = 0.04;
+    const MAX_PITCH = 15 * (Math.PI / 180);
+
+    // Mouse controls
+    document.addEventListener("mousedown", (e) => {
+        isMouseDown = true;
+        previousMouseX = e.clientX;
+        previousMouseY = e.clientY;
+    });
+    document.addEventListener("mouseup", () =>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arville Virtual Shopping Mall</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      font-family: Arial, sans-serif;
+    }
+    #info, #instructions {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      color: white;
+      z-index: 10;
+    }
+    #info {
+      top: 10px;
+      background: rgba(0,0,0,0.5);
+      padding: 5px;
+    }
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 100;
+    }
+
+    /* Mobile Controls */
+    #mobile-controls {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+    
+    #joystick-container {
+      position: absolute;
+      bottom: 100px;
+      left: 20px;
+      width: 120px;
+      height: 120px;
+      pointer-events: auto;
+    }
+    
+    #joystick-base {
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      position: absolute;
+      border: 2px solid rgba(255,255,255,0.5);
+      top: 20px;
+      left: 20px;
+    }
+    
+    #joystick-handle {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 50%;
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      transition: transform 0.1s;
+    }
+    
+    #camera-control-area {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40%;
+      height: 100%;
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">Virtual Shopping Mall | WASD: Move | Mouse: Look Around | R: Reset Position | H: Home</div>
+  <div id="instructions"></div>
+  <div id="loading">Creating mall structure...</div>
+
+  <!-- Mobile Controls -->
+  <div id="mobile-controls">
+    <div id="joystick-container">
+      <div id="joystick-base"></div>
+      <div id="joystick-handle"></div>
+    </div>
+    <div id="camera-control-area"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <script>
+    let scene, camera, renderer;
+    const clock = new THREE.Clock();
+    const EYE_HEIGHT = 3.7;
+    let currentStores = [];
+
+    // Larger mall dimensions for more stores
+    const MALL_WIDTH = 50;
+    const MALL_DEPTH = 120;
+    const WALL_HEIGHT = 7.5;
+    const STORE_FRONT_WIDTH = 10;
+    const STORE_FRONT_HEIGHT = 7.5;
+
+    // Store positions - fixed absolute positions (decoupled from mall)
+    const STORE_POSITIONS = {};
+    const storesPerSide = 12;
+
+    // Calculate current absolute store positions
+    const MALL_DEPTH_CURRENT = 125;
+    const storeZStart = -MALL_DEPTH_CURRENT/2 + 10; // = -62.5 + 10 = -52.5
+
+    for (let i = 0; i < storesPerSide; i++) {
+      // Left side stores - fixed absolute positions
+      STORE_POSITIONS[`left${i+1}`] = new THREE.Vector3(
+        -6 - 4, // 4 units from left edge of walkway
+        0, 
+        storeZStart + (i * STORE_FRONT_WIDTH) // Fixed absolute Z: -52.5, -42.5, -32.5, etc.
+      );
+      
+      // Right side stores - fixed absolute positions  
+      STORE_POSITIONS[`right${i+1}`] = new THREE.Vector3(
+        6 + 4, // 4 units from right edge of walkway
+        0, 
+        storeZStart + (i * STORE_FRONT_WIDTH) // Fixed absolute Z: -52.5, -42.5, -32.5, etc.
+      );
+    }
+
+    const MOBILE_CAMERA_LIMITS = {
+      minX: -MALL_WIDTH/2+1,
+      maxX: MALL_WIDTH/2-1,
+      minZ: -MALL_DEPTH/2+4,
+      maxZ: MALL_DEPTH/2+1
+    };
+
+    // Detect if device is mobile/touch
+    const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+    // Mobile navigation variables
+    let joystickActive = false;
+    let joystickStartPos = new THREE.Vector2();
+    let joystickCurrentPos = new THREE.Vector2();
+    let cameraTouchActive = false;
+    let lastTouchX = 0;
+    let lastTouchY = 0;
+
+    // Make STORE_POSITIONS globally available for store files
+    window.STORE_POSITIONS = STORE_POSITIONS;
+
+    // Add H key handler for Home
+    window.addEventListener('keydown', (event) => {
+      if (event.key.toLowerCase() === 'h') {
+        // Navigate to site's index.php
+        window.location.href = 'index.php';
+      }
+    });
 
     // Load object creator function
     function loadObjectCreator() {

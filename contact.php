@@ -27,7 +27,6 @@ echo "        </button>";
 echo "        <div class='collapse navbar-collapse' id='navbarNav'>";
 echo "            <ul class='navbar-nav ms-auto'>";
 echo "                <li class='nav-item'><a class='nav-link' href='index.php'>Home</a></li>";
-echo "                <li class='nav-item'><a class='nav-link' href='use-cases.php'>Use Cases</a></li>";
 echo "                <li class='nav-item'><a class='nav-link' href='plans.php'>Plans</a></li>";
 echo "                <li class='nav-item'><a class='nav-link' href='about-us.php'>About Us</a></li>";
 echo "                <li class='nav-item'><a class='nav-link' href='contact.php'>Contact</a></li>";
@@ -72,7 +71,7 @@ echo "    <h2 class='text-center mb-4' style='color: #0447f3;'>Our Contact Detai
 echo "    <div class='row text-center'>";
 echo "        <div class='col-md-4'>";
 echo "            <h5>Address</h5>";
-echo "            <p>245 New Delhi St.<br>Better Living Subd.<br/>Paranaque City, Philippines</p>";
+echo "            <p>Paranaque City, Philippines</p>";
 echo "        </div>";
 echo "        <div class='col-md-4'>";
 echo "            <h5>Phone</h5>";

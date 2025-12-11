@@ -20,8 +20,8 @@ echo "        <img src='images/logo.jpg' alt='ARville' style='width: 200px;'>";
 echo "    </div>";
 echo "    <nav>";
 echo "        <a href='index.php' class='me-3'>Home</a>";
-echo "        <a href='products.php' class='me-3'>Products</a>";
 echo "        <a href='plans.php' class='me-3'>Plans</a>";
+echo "        <a href='contact.php' class='me-3'>Contact</a>";
 echo "    </nav>";
 echo "</header>";
 
