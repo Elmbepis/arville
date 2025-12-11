@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arville Virtual Hall</title>
+  	<title id="dynamic-title">Arville Virtual Village</title>
     <style>
         body {
             margin: 0;
@@ -140,7 +140,18 @@
         // Get hall ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const hallId = urlParams.get('id') || '1';
-        
+
+    	// Set dynamic title based on villageId
+    	const TITLE_CONFIG = {
+    	  'default': 'ARville Virtual Trade Expo',
+    	  '1': 'ARville Snack Expo',
+    	  '2': 'ARville Beauty and Wellness Expo',
+    	};
+    
+    // Set the page title
+    document.title = TITLE_CONFIG[hallId] || TITLE_CONFIG['default'];
+    console.log(`&#128221; Set page title to: ${document.title}`);
+
         // Hall dimensions for navigation
         const PLACE_WIDTH = 30;
         const PLACE_DEPTH = 80;
@@ -201,7 +212,6 @@
 			}, 100);
 
             // Update title to show hall ID
-            document.title = `Arville Virtual Hall #${hallId}`;
             document.getElementById('info').textContent = 
                 `Arville Virtual Hall #${hallId} | WASD: Move | Mouse: Look | R: Reset | H: Home`;
 
