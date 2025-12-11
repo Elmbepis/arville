@@ -3,7 +3,7 @@
 $plans = [
     [
         "name" => "Silver Plan",
-        "price" => "Starts at &#8369;2,000",
+        "price" => "Starts at &#8369;5,000",
         "features" => [
             "Place three (3) products or signages in high-traffic communal AR or VR environments.",
         ],
@@ -13,7 +13,7 @@ $plans = [
     ],
     [
         "name" => "Gold Plan",
-        "price" => "Starts at &#8369;6,000",
+        "price" => "Starts at &#8369;10,000",
         "features" => [
             "Own an exclusive AR or VR scene or a booth in a large VR venue: perfect for a branded showroom, VIP lounge, or interactive product demo.",
         ],
@@ -23,7 +23,7 @@ $plans = [
     ],
     [
         "name" => "Platinum Plan",
-        "price" => "Starts at &#8369;30,000",
+        "price" => "Starts at &#8369;50,000",
         "features" => [
             "Own a grand, landmark VR environment like a virtual expo hall, convention center, museum, or mall to showcase a multitude of products, host events, and offer immersive brand experiences.",
         ],
