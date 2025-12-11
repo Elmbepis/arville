@@ -7,14 +7,17 @@ echo "<script>
                 'images/candyland2.jpg',
                 'images/zombiezone2.jpg',
                 'images/toyworld2.jpg',
-                'images/fantasyforest2.jpg',
+                'images/robotcity2.jpg',
                 'images/spacecolony2.jpg', 
-                'images/underwaterkingdom2.jpg',
-                'images/westernfrontier2.jpg',
-                'images/samuraiempire2.jpg',
-                'images/medievalcastle2.jpg',
-                'images/scifistation2.jpg',
-                'images/mystictemple2.jpg'
+                'images/zoo1b.jpg',
+                'images/park1b.jpg',
+                'images/museum1b.jpg',
+                'images/room1b.jpg',
+                'images/room2b.jpg',
+                'images/room3b.jpg'
+                'images/yard1b.jpg',
+                'images/yard2b.jpg',
+                'images/yard3b.jpg'
             ];
             images.forEach((src) => {
                 const img = new Image();
@@ -156,9 +159,9 @@ echo "        <div class='row g-4'>"; // Keep g-4 for small images
 
 // SEPARATE ARRAY FOR SMALL IMAGES - Fantasy/XR experience themes
 $smallCategories = [
-    ["title" => "Arville Zoo", "tagline" => "A wildlife wonderland where every creature captivates imagination", "icon" => "zoo1a.jpg", "hoverIcon" => "zoo1b.jpg", "link" => "zoo1.htm"],
-    ["title" => "Arville Forest Park", "tagline" => "A serene sanctuary where wilderness meets curated beauty", "icon" => "park1a.jpg", "hoverIcon" => "park1b.jpg", "link" => "park1.htm"],
-    ["title" => "Arville Museum of Fine Arts", "tagline" => "A gathering of the greatest masterpieces in human history", "icon" => "museum1a.jpg", "hoverIcon" => "museum1b.jpg", "link" => "museum.htm?id=1"],
+    ["title" => "ARville Zoo", "tagline" => "A wildlife wonderland where every creature captivates imagination", "icon" => "zoo1a.jpg", "hoverIcon" => "zoo1b.jpg", "link" => "zoo1.htm"],
+    ["title" => "ARville Forest Park", "tagline" => "A serene sanctuary where wilderness meets curated beauty", "icon" => "park1a.jpg", "hoverIcon" => "park1b.jpg", "link" => "park1.htm"],
+    ["title" => "ARville Museum of Fine Arts", "tagline" => "A gathering of the greatest masterpieces in human history", "icon" => "museum1a.jpg", "hoverIcon" => "museum1b.jpg", "link" => "museum.htm?id=1"],
     ["title" => "Kids' Horror Room # 1", "tagline" => "Dancing with Vampirette and Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
     ["title" => "Kids' Horror Room # 2", "tagline" => "Dancing with Clown and Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
     ["title" => "Kids' Horror Room # 3", "tagline" => "Dancing with Zombie and Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],

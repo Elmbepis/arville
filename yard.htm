@@ -121,7 +121,7 @@
   </style>
 </head>
 <body>
-  <div id="info">Arville Virtual Yard | WASD: Move | Mouse: Look Around | R: Reset Position</div>
+  <div id="info">Arville Virtual Yard | WASD: Move | Mouse: Look Around | R: Reset Position | H: Home</div>
   <div id="loading">Preparing environment...</div>
   <div id="debug-console">DEBUG CONSOLE:<br></div>
   
@@ -429,7 +429,7 @@ function startAudioSystem() {
             return createAndPlaySound(window.audioBuffers.get(audioPath), options);
         }
 
-        console.log(`&#128229; Loading audio: ${audioPath}`);
+        console.log(`&#128193; Loading audio: ${audioPath}`);
         
         // Check if THREE.AudioLoader exists
         if (typeof THREE.AudioLoader === 'undefined') {
@@ -448,7 +448,7 @@ function startAudioSystem() {
             },
             function(xhr) {
                 if (xhr.lengthComputable) {
-                    console.log(`&#128229; Loading: ${Math.round((xhr.loaded / xhr.total) * 100)}%`);
+                    console.log(`&#128193; Loading: ${Math.round((xhr.loaded / xhr.total) * 100)}%`);
                 }
             },
             function(error) {
@@ -603,6 +603,14 @@ function startAudioSystem() {
         // Initialize texture loader
         textureLoader = new THREE.TextureLoader();
         window.textureLoader = textureLoader;
+
+        // Add H key handler for Home
+        window.addEventListener('keydown', (event) => {
+            if (event.key.toLowerCase() === 'h') {
+                // Navigate to site's index.php
+                window.location.href = 'index.php';
+            }
+        });
 
         // Initialize audio system but don't enable it yet
         initAudioSystem();
@@ -805,7 +813,7 @@ function startAudioSystem() {
                 }
                 const instructions = document.getElementById('instructions');
                 if (instructions && !window.isMobile) {
-                    instructions.textContent = `Yard ${yardNumber} ready | Use WASD to move and mouse to look around`;
+                    instructions.textContent = `Yard ${yardNumber} ready | Use WASD to move and mouse to look around | H: Home`;
                 }
                 if (typeof debugLog === 'function') {
                     debugLog('Yard loaded - disabling debug');
@@ -821,7 +829,7 @@ function startAudioSystem() {
             }
             const instructions = document.getElementById('instructions');
             if (instructions && !window.isMobile) {
-                instructions.textContent = `Yard ${yardNumber} ready (no objects) | Use WASD to move and mouse to look around`;
+                instructions.textContent = `Yard ${yardNumber} ready (no objects) | Use WASD to move and mouse to look around | H: Home`;
             }
             setTimeout(disableDebugging, 500);
         };

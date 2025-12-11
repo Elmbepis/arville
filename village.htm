@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arville Virtual Village</title>
+  <title id="dynamic-title">Arville Virtual Village</title>
   <style>
     body {
       margin: 0;
@@ -137,7 +137,7 @@
   
 </head>
 <body>
-  <div id="info">Virtual Village | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset</div>
+  <div id="info">Virtual Village | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset | H: Home</div>
   <div id="loading">Loading village areas...</div>
   
   <!-- Ride Controls -->
@@ -191,6 +191,19 @@
     const urlId = new URLSearchParams(window.location.search).get('id');
     const villageId = urlId || 'default';
     console.log(`&#127757; URL id parameter: ${urlId}, villageId: ${villageId}`);
+
+    // Set dynamic title based on villageId
+    const TITLE_CONFIG = {
+      'default': 'ARville Virtual Village',
+      '1': 'ARville Candy Land',
+      '2': 'ARville Zombie Zone',
+      '3': 'ARville Toy World',
+      '4': 'ARville Robot City'
+    };
+    
+    // Set the page title
+    document.title = TITLE_CONFIG[villageId] || TITLE_CONFIG['default'];
+    console.log(`&#128221; Set page title to: ${document.title}`);
 
     // Texture configuration based on villageId - use numeric keys for ?id=1, ?id=2, etc.
     const TEXTURE_CONFIG = {
@@ -313,7 +326,6 @@ const AREA_POSITIONS = generateAreaPositions(villageId);
 
     // Simple function to get all area IDs
     function getAvailableAreas() {
-      //const suffix = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'o', 'p', 'q'];
       const suffix = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'o', 'p', 'q'];
       return suffix.map(s => `${villageId}${s}`);
     }
@@ -341,8 +353,6 @@ function init() {
   scene = new THREE.Scene();
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  //camera.position.set(0, EYE_HEIGHT, 60); 
-  //camera.rotation.set(0, 0 * Math.PI / 180, 0);
   camera.position.set(0, EYE_HEIGHT, 60); 
   camera.rotation.set(0, 0 * Math.PI / 180, 0);
 
@@ -353,6 +363,14 @@ function init() {
 
   window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 60);
   window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0 * Math.PI / 180, 0, 'YXZ');
+  
+  // Add H key handler for Home
+  window.addEventListener('keydown', (event) => {
+    if (event.key.toLowerCase() === 'h') {
+      // Navigate to site's index.php
+      window.location.href = 'index.php';
+    }
+  });
   
   // Initialize mobile controls using the shared navigation.js
   setTimeout(() => {
@@ -530,7 +548,7 @@ function toggleRide() {
     }
     
     // Update info text
-    document.getElementById('info').textContent = 'Virtual Village | Auto Ride Mode | Mouse: Look Around | Click Stop Ride to regain control';
+    document.getElementById('info').textContent = 'Virtual Village | Auto Ride Mode | Mouse: Look Around | Click Stop Ride to regain control | H: Home';
     document.getElementById('instructions').textContent = 'Enjoy the automated tour! Use mouse to look around while riding.';
     
     console.log('&#128663; Ride resumed from current position and rotation');
@@ -549,7 +567,7 @@ function toggleRide() {
     }
     
     // Update info text
-    document.getElementById('info').textContent = 'Virtual Village | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset';
+    document.getElementById('info').textContent = 'Virtual Village | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset | H: Home';
     document.getElementById('instructions').textContent = 'Manual control enabled. Use WASD to move, mouse to look around.';
     
     console.log('&#128721; Ride stopped - position and rotation preserved');
@@ -742,7 +760,7 @@ async function loadAreas() {
   if (instructionsDiv) {
     if (!isMobile) {
       instructionsDiv.textContent = 
-        `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | Q/E: Fly | R: Reset`;
+        `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | Q/E: Fly | R: Reset | H: Home`;
     } else {
       instructionsDiv.style.display = 'none';
     }

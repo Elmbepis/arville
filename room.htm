@@ -121,7 +121,7 @@
   </style>
 </head>
 <body>
-  <div id="info">Virtual Room | WASD: Move | Mouse: Look Around | R: Reset Position</div>
+  <div id="info">Virtual Room | WASD: Move | Mouse: Look Around | R: Reset Position | H: Home</div>
   <div id="loading">Preparing venue...</div>
   <div id="debug-console">DEBUG CONSOLE:<br></div>
   
@@ -247,6 +247,14 @@
         debugLog(`Renderer failed: ${e.message}`);
         return;
       }
+
+      // Add H key handler for Home
+      window.addEventListener('keydown', (event) => {
+        if (event.key.toLowerCase() === 'h') {
+          // Navigate to site's index.php
+          window.location.href = 'index.php';
+        }
+      });
 
       debugLog('Initializing mobile controls...');
       try {
@@ -392,7 +400,7 @@
           loadingDiv.style.display = 'none';
           if (!window.isMobile) {
             document.getElementById('instructions').textContent = 
-              `Room ${roomNumber} ready | Use WASD to move and mouse to look around`;
+              `Room ${roomNumber} ready | Use WASD to move and mouse to look around | H: Home`;
           }
           debugLog('Room loaded - disabling debug');
           
@@ -405,7 +413,7 @@
         loadingDiv.style.display = 'none';
         if (!window.isMobile) {
           document.getElementById('instructions').textContent = 
-            `Room ${roomNumber} ready (no objects) | Use WASD to move and mouse to look around`;
+            `Room ${roomNumber} ready (no objects) | Use WASD to move and mouse to look around | H: Home`;
         }
         // Still disable debugging
         setTimeout(disableDebugging, 500);

@@ -128,7 +128,7 @@
   
 </head>
 <body>
-  <div id="info">Virtual Zoo | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset</div>
+  <div id="info">Virtual Zoo | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset | H: Home</div>
   <div id="instructions">Loading zoo...</div>
   <div id="loading">Loading zoo areas...</div>
   
@@ -217,6 +217,14 @@ const AREA_POSITIONS = {
 	  window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, 5, -57);
       window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 180 * Math.PI / 180, 0, 'YXZ');
   
+      // Add H key handler for Home
+      window.addEventListener('keydown', (event) => {
+        if (event.key.toLowerCase() === 'h') {
+          // Navigate to site's index.php
+          window.location.href = 'index.php';
+        }
+      });
+      
       // Initialize mobile controls using the shared navigation.js
       initMobileControls();
 
@@ -410,7 +418,7 @@ function createRectangularPathway() {
         script.src = 'universe/obj_create_park.js?v=' + Date.now();
         
         script.onload = function() {
-          console.log('&#10003; obj_create_park.js loaded successfully');
+          console.log('&#9989; obj_create_park.js loaded successfully');
           if (!window.textureLoader) {
             window.textureLoader = new THREE.TextureLoader();
           }
@@ -421,7 +429,7 @@ function createRectangularPathway() {
         };
         
         script.onerror = function() {
-          console.error('&#10007; Failed to load obj_create_park.js');
+          console.error('&#10060; Failed to load obj_create_park.js');
           reject(new Error('Failed to load object creator script'));
         };
         
@@ -452,7 +460,7 @@ function createRectangularPathway() {
       loadingDiv.style.display = 'none';
       if (!isMobile) {
         document.getElementById('instructions').textContent = 
-          `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | Q/E: Fly | R: Reset`;
+          `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | Q/E: Fly | R: Reset | H: Home`;
       } else {
         document.getElementById('instructions').style.display = 'none';
       }
@@ -471,7 +479,7 @@ function createRectangularPathway() {
               console.log(`&#9989; Found area group: area-${areaId} with ${areaGroup.children.length} children`);
               positionArea(areaId);
               currentAreas.push(areaId);
-              console.log(`&#10003; Area ${areaId} loaded successfully`);
+              console.log(`&#9989; Area ${areaId} loaded successfully`);
               resolve();
             } else {
               console.error(`&#10060; Area group area-${areaId} not found after loading script`);

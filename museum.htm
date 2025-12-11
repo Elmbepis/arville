@@ -108,7 +108,7 @@
     </style>
 </head>
 <body>
-    <div id="info">Arville Virtual Museum #${museumId} | WASD: Move | Mouse: Look Around | R: Reset Position</div>
+    <div id="info">Arville Virtual Museum #${museumId} | WASD: Move | Mouse: Look Around | R: Reset Position | H: Home</div>
     <div id="loading">Preparing venue...</div>
     
     <!-- Flight Controls - HIDDEN -->
@@ -186,6 +186,14 @@
 	  		window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 30);
       		window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0 * Math.PI / 180, 0, 'YXZ');
   
+            // Add H key handler for Home
+            window.addEventListener('keydown', (event) => {
+                if (event.key.toLowerCase() === 'h') {
+                    // Navigate to site's index.php
+                    window.location.href = 'index.php';
+                }
+            });
+            
 			// Initialize mobile controls - wait for navigation.js to be ready
 			setTimeout(() => {
 			    initMobileControls();
@@ -194,7 +202,7 @@
             // Update title to show museum ID
             document.title = `Arville Virtual Museum #${museumId}`;
             document.getElementById('info').textContent = 
-                `Arville Virtual Museum #${museumId} | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset`;
+                `Arville Virtual Museum #${museumId} | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset | H: Home`;
 
             // Lighting - balanced from multiple directions
             const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.9);
@@ -249,18 +257,18 @@
                 script.src = `universe/museum-sections/${museumId}/main-textures.js`;
                 
                 script.onload = function() {
-                    console.log(`&#10003; main-textures.js loaded for museum ${museumId}`);
+                    console.log(`&#9989; main-textures.js loaded for museum ${museumId}`);
                     if (window.HALL_TEXTURES) {
-                        console.log(`&#10003; Museum texture configuration loaded for museum ${museumId}`);
-                        console.log('&#128203; Texture config:', window.HALL_TEXTURES);
+                        console.log(`&#9989; Museum texture configuration loaded for museum ${museumId}`);
+                        console.log('&#128195; Texture config:', window.HALL_TEXTURES);
                     } else {
-                        console.warn(`&#9888; No HALL_TEXTURES configuration found for museum ${museumId}`);
+                        console.warn(`&#9888;&#65039; No HALL_TEXTURES configuration found for museum ${museumId}`);
                     }
                     resolve();
                 };
                 
                 script.onerror = function() {
-                    console.error(`&#10007; Failed to load main-textures.js for museum ${museumId}`);
+                    console.error(`&#10060; Failed to load main-textures.js for museum ${museumId}`);
                     resolve();
                 };
                 
@@ -288,7 +296,7 @@
             
             // Check if HALL_TEXTURES is available, otherwise use defaults
             if (!window.HALL_TEXTURES) {
-                console.warn('&#9888; No HALL_TEXTURES configuration found, using default museum textures');
+                console.warn('&#9888;&#65039; No HALL_TEXTURES configuration found, using default museum textures');
                 window.HALL_TEXTURES = {
                     floor: {
                         path: 'universe/textures/museum1-floor.jpg',
@@ -314,9 +322,9 @@
                 floorTexture.wrapT = THREE.RepeatWrapping;
                 floorTexture.repeat.set(textureConfig.floor.repeat.x, textureConfig.floor.repeat.y);
                 materials.floor = new THREE.MeshLambertMaterial({ map: floorTexture });
-                console.log('&#10003; Floor texture loaded with repeat:', textureConfig.floor.repeat);
+                console.log('&#9989; Floor texture loaded with repeat:', textureConfig.floor.repeat);
             } catch (error) {
-                console.error('&#10007; Failed to load floor texture:', error);
+                console.error('&#10060; Failed to load floor texture:', error);
                 materials.floor = new THREE.MeshLambertMaterial({ color: 0x888888 });
             }
 
@@ -324,7 +332,7 @@
             if (textureConfig.walls.back && textureConfig.walls.front && 
                 textureConfig.walls.left && textureConfig.walls.right) {
                 // Individual wall textures
-                console.log('&#128260; Loading individual wall textures');
+                console.log('&#128295; Loading individual wall textures');
                 
                 try {
                     // Back wall
@@ -337,9 +345,9 @@
                         map: backWallTexture,
                         roughness: 0.8
                     });
-                    console.log('&#10003; Back wall texture loaded with repeat:', textureConfig.walls.back.repeat);
+                    console.log('&#9989; Back wall texture loaded with repeat:', textureConfig.walls.back.repeat);
                 } catch (error) {
-                    console.error('&#10007; Failed to load back wall texture:', error);
+                    console.error('&#10060; Failed to load back wall texture:', error);
                     materials.walls_back = new THREE.MeshStandardMaterial({ 
                         color: 0xeeeeee, 
                         roughness: 0.6 
@@ -357,9 +365,9 @@
                         map: frontWallTexture,
                         roughness: 0.8
                     });
-                    console.log('&#10003; Front wall texture loaded with repeat:', textureConfig.walls.front.repeat);
+                    console.log('&#9989; Front wall texture loaded with repeat:', textureConfig.walls.front.repeat);
                 } catch (error) {
-                    console.error('&#10007; Failed to load front wall texture:', error);
+                    console.error('&#10060; Failed to load front wall texture:', error);
                     materials.walls_front = new THREE.MeshStandardMaterial({ 
                         color: 0xeeeeee, 
                         roughness: 0.6 
@@ -377,9 +385,9 @@
                         map: leftWallTexture,
                         roughness: 0.8
                     });
-                    console.log('&#10003; Left wall texture loaded with repeat:', textureConfig.walls.left.repeat);
+                    console.log('&#9989; Left wall texture loaded with repeat:', textureConfig.walls.left.repeat);
                 } catch (error) {
-                    console.error('&#10007; Failed to load left wall texture:', error);
+                    console.error('&#10060; Failed to load left wall texture:', error);
                     materials.walls_left = new THREE.MeshStandardMaterial({ 
                         color: 0xeeeeee, 
                         roughness: 0.6 
@@ -397,9 +405,9 @@
                         map: rightWallTexture,
                         roughness: 0.8
                     });
-                    console.log('&#10003; Right wall texture loaded with repeat:', textureConfig.walls.right.repeat);
+                    console.log('&#9989; Right wall texture loaded with repeat:', textureConfig.walls.right.repeat);
                 } catch (error) {
-                    console.error('&#10007; Failed to load right wall texture:', error);
+                    console.error('&#10060; Failed to load right wall texture:', error);
                     materials.walls_right = new THREE.MeshStandardMaterial({ 
                         color: 0xeeeeee, 
                         roughness: 0.6 
@@ -407,7 +415,7 @@
                 }
             } else {
                 // Single wall texture for all walls
-                console.log('&#128260; Loading single wall texture for all walls');
+                console.log('&#128295; Loading single wall texture for all walls');
                 try {
                     const wallTexture = await loadTexture(textureConfig.walls.path);
                     wallTexture.wrapS = THREE.RepeatWrapping;
@@ -419,9 +427,9 @@
                         roughness: 0.8,
                         side: THREE.DoubleSide
                     });
-                    console.log('&#10003; Wall texture loaded with repeat:', textureConfig.walls.repeat);
+                    console.log('&#9989; Wall texture loaded with repeat:', textureConfig.walls.repeat);
                 } catch (error) {
-                    console.error('&#10007; Failed to load wall texture:', error);
+                    console.error('&#10060; Failed to load wall texture:', error);
                     materials.walls = new THREE.MeshStandardMaterial({ 
                         color: 0xeeeeee, 
                         roughness: 0.6,
@@ -440,9 +448,9 @@
                     map: ceilingTexture,
                     roughness: 0.9
                 });
-                console.log('&#10003; Ceiling texture loaded with repeat:', textureConfig.ceiling.repeat);
+                console.log('&#9989; Ceiling texture loaded with repeat:', textureConfig.ceiling.repeat);
             } catch (error) {
-                console.error('&#10007; Failed to load ceiling texture:', error);
+                console.error('&#10060; Failed to load ceiling texture:', error);
                 materials.ceiling = new THREE.MeshStandardMaterial({ 
                     color: 0xdddddd, 
                     roughness: 0.9 
@@ -529,7 +537,7 @@
             ceiling.position.y = wallHeight;
             scene.add(ceiling);
             
-            console.log(`&#10003; Museum room created for museum ${museumId}`);
+            console.log(`&#9989; Museum room created for museum ${museumId}`);
         }
 
         function createRoomWithDefaultMaterials() {
@@ -557,7 +565,7 @@
                 script.src = 'universe/obj_create_room.js?v=' + Date.now();
                 
                 script.onload = function() {
-                    console.log('&#10003; Object creator loaded');
+                    console.log('&#9989; Object creator loaded');
                     if (!window.textureLoader) {
                         window.textureLoader = new THREE.TextureLoader();
                     }
@@ -568,7 +576,7 @@
                 };
                 
                 script.onerror = function() {
-                    console.error('&#10007; Failed to load object creator');
+                    console.error('&#10060; Failed to load object creator');
                     reject(new Error('Failed to load object creator script'));
                 };
                 
@@ -597,6 +605,14 @@
             }
             
             loadingDiv.style.display = 'none';
+            
+            // Update instructions with loaded count
+            if (!isMobile) {
+                document.getElementById('instructions').textContent = 
+                    `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | Q/E: Fly | R: Reset | H: Home`;
+            } else {
+                document.getElementById('instructions').style.display = 'none';
+            }
         }
 
         async function loadAreaContent(areaId) {
@@ -612,10 +628,10 @@
                         if (areaGroup) {
                             positionArea(areaId);
                             currentAreas.push(areaId);
-                            console.log(`&#10003; Area ${areaId} loaded successfully`);
+                            console.log(`&#9989; Area ${areaId} loaded successfully`);
                             resolve();
                         } else {
-                            console.error(`&#10007; Area group area-${areaId} not found after loading script`);
+                            console.error(`&#10060; Area group area-${areaId} not found after loading script`);
                             reject(new Error(`Area group not found: area-${areaId}`));
                         }
                     }, 0);
@@ -637,7 +653,7 @@
                 console.log(`&#128205; Positioned area ${areaId} at:`, areaPosition);
                 areaGroup.updateMatrixWorld(true);
             } else {
-                console.error(`&#10007; Could not position area ${areaId}`);
+                console.error(`&#10060; Could not position area ${areaId}`);
             }
         }
 
