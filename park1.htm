@@ -108,7 +108,7 @@
   </style>
 </head>
 <body>
-  <div id="info">Virtual Park | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset</div>
+  <div id="info">Virtual Park | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset | H: Home</div>
   <div id="instructions">Loading park...</div>
   <div id="loading">Loading park areas...</div>
   
@@ -212,6 +212,14 @@ const AREA_POSITIONS = {
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setClearColor(0x87CEEB); // Sky blue background
       document.body.appendChild(renderer.domElement);
+
+      // Add H key handler for Home
+      window.addEventListener('keydown', (event) => {
+        if (event.key.toLowerCase() === 'h') {
+          // Navigate to site's index.php
+          window.location.href = 'index.php';
+        }
+      });
 
       // Initialize mobile controls using the shared navigation.js
       initMobileControls();
@@ -368,7 +376,7 @@ const AREA_POSITIONS = {
       rightBar.position.set(activityPosition.x + halfW + frameThickness / 2, activityPosition.y + frameHeight / 2 + 0.005, activityPosition.z);
       scene.add(rightBar);
 
-      console.log('&#128736;&#65039; Activity area created with proper frame at:', activityPosition);
+      console.log('&#9881;&#65039; Activity area created with proper frame at:', activityPosition);
     }
 
     function createOvalPathway() {
@@ -577,7 +585,7 @@ function createRoads() {
       loadingDiv.style.display = 'none';
       if (!isMobile) {
         document.getElementById('instructions').textContent = 
-          `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | R: Reset`;
+          `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | R: Reset | H: Home`;
       } else {
         document.getElementById('instructions').style.display = 'none';
       }

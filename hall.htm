@@ -108,7 +108,7 @@
     </style>
 </head>
 <body>
-    <div id="info">Arville Virtual Hall #${hallId} | WASD: Move | Mouse: Look Around | R: Reset Position</div>
+    <div id="info">Arville Virtual Hall #${hallId} | WASD: Move | Mouse: Look Around | R: Reset Position | H: Home</div>
     <div id="loading">Preparing venue...</div>
     
     <!-- Flight Controls - HIDDEN -->
@@ -187,6 +187,14 @@
             renderer.setClearColor(0x202020);
             document.body.appendChild(renderer.domElement);
 
+            // Add H key handler for Home
+            window.addEventListener('keydown', (event) => {
+                if (event.key.toLowerCase() === 'h') {
+                    // Navigate to site's index.php
+                    window.location.href = 'index.php';
+                }
+            });
+
 			// Initialize mobile controls - wait for navigation.js to be ready
 			setTimeout(() => {
 		    initMobileControls();
@@ -195,7 +203,7 @@
             // Update title to show hall ID
             document.title = `Arville Virtual Hall #${hallId}`;
             document.getElementById('info').textContent = 
-                `Arville Virtual Hall #${hallId} | WASD: Move | Mouse: Look | R: Reset`;
+                `Arville Virtual Hall #${hallId} | WASD: Move | Mouse: Look | R: Reset | H: Home`;
 
             // Lighting - balanced from multiple directions
             const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.9);
@@ -484,6 +492,14 @@
             
             loadingDiv.style.display = 'none';
             console.log(`&#9989; Loaded ${loadedBooths.length} booths`);
+            
+            // Update instructions with loaded count
+            if (!window.isMobile) {
+                document.getElementById('instructions').textContent = 
+                    `Loaded ${loadedBooths.length} booth(s) | WASD: Move | Mouse: Look | R: Reset | H: Home`;
+            } else {
+                document.getElementById('instructions').style.display = 'none';
+            }
         }
 
         async function loadBoothContent(boothId) { // Changed from loadAreaContent
