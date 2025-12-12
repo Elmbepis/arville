@@ -170,6 +170,7 @@
   <script src="universe/js/darkenGLB.js"></script>
   <script src="universe/js/GLB-movements.js"></script>
   <script src="universe/js/aquatic-atmosphere.js"></script>
+  <script src="universe/js/modelPath.js"></script>
 
   <script>
     let scene, camera, renderer;
@@ -857,6 +858,11 @@ function animate() {
             object.update(delta);
         }
     });
+    
+    // ADD ONLY THIS LINE FOR ModelPathSystem
+    if (window.ModelPathSystem && window.ModelPathSystem.updateModelAnimations) {
+        window.ModelPathSystem.updateModelAnimations(delta);
+    }
     
     renderer.render(scene, camera);
 }
