@@ -12,6 +12,7 @@ echo "<script>
                 'images/zoo1b.jpg',
                 'images/park1b.jpg',
                 'images/museum1b.jpg',
+                'images/hall1b.jpg',
                 'images/room1b.jpg',
                 'images/room2b.jpg',
                 'images/room3b.jpg'
@@ -148,7 +149,6 @@ echo "        </div>";
 echo "    </div>";
 echo "</section>";
 
-// SMALL IMAGES SECTION - 4 columns, 2 rows (8 total) - LARGER SQUARE
 echo "<section class='small-images py-5' id='small-images' style='background-color: #f8f9fa;'>";
 echo "    <div class='container'>";
 echo "        <h2 class='text-center mb-4'>More ARville XR Experiences for You to Explore</h2>";
@@ -160,6 +160,7 @@ $smallCategories = [
     ["title" => "ARville Zoo", "tagline" => "A wildlife wonderland where every creature captivates imagination", "icon" => "zoo1a.jpg", "hoverIcon" => "zoo1b.jpg", "link" => "zoo1.htm"],
     ["title" => "ARville Forest Park", "tagline" => "A serene sanctuary where wilderness meets curated beauty", "icon" => "park1a.jpg", "hoverIcon" => "park1b.jpg", "link" => "park1.htm"],
     ["title" => "ARville Museum of Fine Arts", "tagline" => "A gathering of the greatest masterpieces in human history", "icon" => "museum1a.jpg", "hoverIcon" => "museum1b.jpg", "link" => "museum.htm?id=1"],
+    ["title" => "ARville Snack and Beverage Expo", "tagline" => "A trade expo of popular snack and beverage brands", "icon" => "hall1a.jpg", "hoverIcon" => "hall1b.jpg", "link" => "hall.htm?id=1"],
     ["title" => "Kids' Horror Room # 1", "tagline" => "Dancing with Vampirette and Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
     ["title" => "Kids' Horror Room # 2", "tagline" => "Dancing with Clown and Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
     ["title" => "Kids' Horror Room # 3", "tagline" => "Dancing with Zombie and Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
@@ -168,8 +169,7 @@ $smallCategories = [
     ["title" => "Kids' Horror Yard # 3", "tagline" => "Dancing with Teddy and Frankie", "icon" => "yard3a.jpg", "hoverIcon" => "yard3b.jpg", "link" => "yard.htm?id=3"],
 ];
 
-// Display all 8 small images from the separate array
-for ($i = 0; $i < 9; $i++) {
+for ($i = 0; $i < 10; $i++) {
     $category = $smallCategories[$i];
     echo "<div class='col-lg-3 col-md-6 col-sm-6'>"; // 4 columns on large screens, 2 columns on medium
     echo "    <div class='small-category text-center'>";
