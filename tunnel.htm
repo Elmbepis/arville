@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Massive Half-Torus Tunnel with Sectors</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      font-family: Arial, sans-serif;
+    }
+    #info {
+      position: absolute;
+      top: 10px;
+      width: 100%;
+      text-align: center;
+      color: white;
+      z-index: 10;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+    }
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      z-index: 100;
+      font-size: 20px;
+    }
+    #ride-controls {
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      z-index: 100;
+    }
+    #start-ride {
+      padding: 10px 20px;
+      background: rgba(0,150,0,0.8);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    #start-ride.riding {
+      background: rgba(150,0,0,0.8);
+    }
+    #sector-info {
+      position: absolute;
+      top: 100px;
+      left: 20px;
+      color: white;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 100;
+      min-width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">Massive Half-Torus Tunnel with Sectors | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | Click to lock mouse | R: Ride Mode | V: Toggle Sector View</div>
+  <div id="loading">Creating massive half-torus tunnel with sectors...</div>
+  
+  <div id="ride-controls">
+    <button id="start-ride">Start Ride</button>
+  </div>
+  
+  <div id="sector-info">
+    <div>Sector: None</div>
+    <div>Distance: -</div>
+    <div>Angle: -°</div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    let scene, camera, renderer;
+    const clock = new THREE.Clock();
+    
+    // ========== MASSIVE SCALE ==========
+    const TUNNEL_MAJOR_RADIUS = 2000;   // Radius of the circular path
+    const TUNNEL_MINOR_RADIUS = 300;    // Radius of the tube cross-section
+    const TUNNEL_SEGMENTS = 256;
+    
+    const GROUND_Y = -250;
+    
+    // Movement
+    let velocity = new THREE.Vector3();
+    let moveSpeed = 150;
+    let keys = {};
+    let pitch = 0, yaw = 0;
+    
+    // Ride feature
+    let isRiding = false;
+    let rideAngle = 0;
+    let rideSpeed = 2.0;
+    
+    // Texture
+    let textureLoader;
+    let groundTexture;
+    
+    // Colliders
+    let tunnelColliders = [];
+    
+    // Sector system
+    let sectors = [];
+    let sectorAreas = {}; // Will contain all area positions for each sector
+    let currentSector = null;
+    let sectorMarkers = [];
+    let showSectors = false;
+    
+    // Object creator functions (will be defined later or loaded from external files)
+    let objectCreators = {};
+    
+    init();
+    
+    function init() {
+      // Create scene
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x111111);
+      
+      // Create camera
+      camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 5000);
+      
+      // ========== PERFECTLY CENTERED CAMERA ==========
+      const startAngle = 0;
+      const centerX = TUNNEL_MAJOR_RADIUS * Math.cos(startAngle);
+      const centerZ = TUNNEL_MAJOR_RADIUS * Math.sin(startAngle);
+      
+      camera.position.set(centerX, 0.05, centerZ);
+      
+      const lookAheadAngle = startAngle + 0.1;
+      const lookX = TUNNEL_MAJOR_RADIUS * Math.cos(lookAheadAngle);
+      const lookZ = TUNNEL_MAJOR_RADIUS * Math.sin(lookAheadAngle);
+      
+      camera.lookAt(lookX, 0.05, lookZ);
+      
+      // Create renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      document.body.appendChild(renderer.domElement);
+      
+      // Initialize texture loader
+      textureLoader = new THREE.TextureLoader();
+      
+      // Setup lighting
+      setupLighting();
+      
+      // Create the tunnel
+      createHalfTorusTunnel();
+      
+      // Create colliders for walls/ceiling
+      createColliders();
+      
+      // Create ground with texture
+      createGround();
+      
+      // Initialize sectors (4 sectors around the tunnel)
+      initializeSectors();
+      
+      // Setup controls
+      setupControls();
+      
+      // Setup ride button
+      document.getElementById('start-ride').addEventListener('click', toggleRide);
+      
+      // Hide loading
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+      }, 500);
+      
+      // Handle window resize
+      window.addEventListener('resize', onWindowResize);
+      
+      // Start animation
+      animate();
+    }
+    
+    function setupLighting() {
+      // Ambient light
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(ambientLight);
+      
+      // Main directional light
+      const sunLight = new THREE.DirectionalLight(0xffffdd, 0.9);
+      sunLight.position.set(0, 500, 0).normalize();
+      scene.add(sunLight);
+      
+      // Point lights for tunnel illumination
+      for (let i = 0; i < 16; i++) {
+        const angle = (i / 16) * Math.PI * 2;
+        const x = TUNNEL_MAJOR_RADIUS * Math.cos(angle);
+        const z = TUNNEL_MAJOR_RADIUS * Math.sin(angle);
+        
+        const pointLight = new THREE.PointLight(0xffffaa, 0.6, 500);
+        pointLight.position.set(x, TUNNEL_MINOR_RADIUS/2, z);
+        scene.add(pointLight);
+      }
+    }
+    
+    function createHalfTorusTunnel() {
+      // Create torus geometry
+      const torusGeometry = new THREE.TorusGeometry(
+        TUNNEL_MAJOR_RADIUS,
+        TUNNEL_MINOR_RADIUS,
+        TUNNEL_SEGMENTS,
+        TUNNEL_SEGMENTS * 2
+      );
+      
+      // Rotate torus
+      torusGeometry.rotateX(Math.PI / 2);
+      
+      // Create tunnel material
+      const tunnelMaterial = new THREE.MeshPhongMaterial({
+        color: 0xAAAAAA,
+        shininess: 30,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.9
+      });
+      
+      const fullTorus = new THREE.Mesh(torusGeometry, tunnelMaterial);
+      scene.add(fullTorus);
+    }
+    
+    function createColliders() {
+      console.log("Creating wall/ceiling colliders...");
+      
+      // Create colliders for the tunnel walls and ceiling
+      const colliderCount = 48;
+      
+      for (let i = 0; i < colliderCount; i++) {
+        const angle = (i / colliderCount) * Math.PI * 2;
+        
+        // Create colliders at different heights (including ceiling)
+        for (let j = 0; j < 12; j++) {
+          const tubeAngle = (j / 12) * Math.PI * 2;
+          
+          // Position on torus surface
+          const x = (TUNNEL_MAJOR_RADIUS + TUNNEL_MINOR_RADIUS * Math.cos(tubeAngle)) * Math.cos(angle);
+          const y = TUNNEL_MINOR_RADIUS * Math.sin(tubeAngle);
+          const z = (TUNNEL_MAJOR_RADIUS + TUNNEL_MINOR_RADIUS * Math.cos(tubeAngle)) * Math.sin(angle);
+          
+          // Only add colliders for visible parts (above ground level)
+          if (y > GROUND_Y - 5) {
+            tunnelColliders.push({
+              type: 'sphere',
+              position: new THREE.Vector3(x, y, z),
+              radius: 15
+            });
+          }
+        }
+      }
+      
+      console.log(`Created ${tunnelColliders.length} wall/ceiling colliders`);
+    }
+    
+    function createGround() {
+      console.log("Creating ground with concrete texture...");
+      
+      // Ground parameters
+      const groundRadius = TUNNEL_MAJOR_RADIUS + TUNNEL_MINOR_RADIUS + 100;
+      const groundSegments = 128;
+      
+      // Create ground geometry
+      const groundGeometry = new THREE.CircleGeometry(groundRadius, groundSegments);
+      
+      // Load concrete texture
+      groundTexture = textureLoader.load(
+        'universe/textures/concrete5.jpg',
+        (texture) => {
+          console.log("Concrete texture loaded successfully");
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          const textureRepeat = groundRadius / 50;
+          texture.repeat.set(textureRepeat, textureRepeat);
+        },
+        undefined,
+        (error) => {
+          console.warn("Concrete texture failed to load, using fallback color", error);
+        }
+      );
+      
+      // Create ground material
+      const groundMaterial = new THREE.MeshPhongMaterial({
+        map: groundTexture,
+        color: 0xffffff,
+        side: THREE.DoubleSide,
+        shininess: 10
+      });
+      
+      const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = GROUND_Y;
+      scene.add(ground);
+      
+      console.log(`Ground created with radius: ${groundRadius}`);
+    }
+    
+    function initializeSectors() {
+      console.log("Initializing 4 sectors around the tunnel...");
+      
+      // Define 4 sectors at 90-degree intervals
+      const sectorAngles = [0, Math.PI/2, Math.PI, 3*Math.PI/2];
+      
+      // First create basic sector objects with their centers
+      sectors = sectorAngles.map((angle, index) => {
+        const sectorId = index + 1; // Sectors 1-4
+        
+        // Calculate sector center position (outside the tunnel)
+        const distanceFromTunnel = TUNNEL_MAJOR_RADIUS + 400; // Position outside tunnel
+        const centerX = distanceFromTunnel * Math.cos(angle);
+        const centerZ = distanceFromTunnel * Math.sin(angle);
+        
+        return {
+          id: sectorId,
+          angle: angle,
+          center: new THREE.Vector3(centerX, GROUND_Y + 5, centerZ),
+          areaPositions: null, // Will be populated next
+          loaded: false,
+          group: null
+        };
+      });
+      
+      // Now generate area positions for each sector
+      sectors.forEach(sector => {
+        sector.areaPositions = generateSectorAreaPositions(sector);
+        
+        // Store area positions for external loading
+        sectorAreas[`sector${sector.id}`] = sector.areaPositions;
+        
+        // Create visual marker for sector
+        createSectorMarker(sector);
+      });
+      
+      console.log("Sectors initialized:", sectors);
+      console.log("Sector area positions:", sectorAreas);
+    }
+    
+    function generateSectorAreaPositions(sector) {
+      // Create a grid of 4x4 areas for each sector (16 areas per sector)
+      // Areas are positioned relative to sector center
+      
+      const positions = {};
+      const gridSize = 4;
+      const spacing = 50; // Distance between areas
+      const offsetX = -((gridSize - 1) * spacing) / 2;
+      const offsetZ = -((gridSize - 1) * spacing) / 2;
+      
+      const areaLetters = 'abcdefghijklmnpq'; // 16 letters (skipping 'o' for clarity)
+      
+      for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+          const index = row * gridSize + col;
+          const areaLetter = areaLetters[index];
+          const areaId = `${sector.id}${areaLetter}`;
+          
+          // Local grid position
+          const localX = offsetX + col * spacing;
+          const localZ = offsetZ + row * spacing;
+          
+          // Rotate position to align with sector angle
+          const rotatedX = localX * Math.cos(sector.angle) - localZ * Math.sin(sector.angle);
+          const rotatedZ = localX * Math.sin(sector.angle) + localZ * Math.cos(sector.angle);
+          
+          // Add to sector center position
+          const worldX = sector.center.x + rotatedX;
+          const worldZ = sector.center.z + rotatedZ;
+          
+          positions[areaId] = new THREE.Vector3(worldX, GROUND_Y + 5, worldZ);
+        }
+      }
+      
+      return positions;
+    }
+    
+    function createSectorMarker(sector) {
+      // Create a visible marker for the sector
+      const markerGeometry = new THREE.SphereGeometry(10, 16, 16);
+      const markerMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0xff0000,
+        transparent: true,
+        opacity: 0.5
+      });
+      
+      const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+      marker.position.copy(sector.center);
+      marker.position.y = GROUND_Y + 15; // Raise above ground
+      marker.visible = showSectors;
+      marker.name = `sector-marker-${sector.id}`;
+      
+      scene.add(marker);
+      sectorMarkers.push(marker);
+      
+      // Add area markers
+      Object.values(sector.areaPositions).forEach((pos, index) => {
+        const areaMarkerGeometry = new THREE.SphereGeometry(3, 8, 8);
+        const areaMarkerMaterial = new THREE.MeshBasicMaterial({ 
+          color: 0x00ff00,
+          transparent: true,
+          opacity: 0.3
+        });
+        
+        const areaMarker = new THREE.Mesh(areaMarkerGeometry, areaMarkerMaterial);
+        areaMarker.position.copy(pos);
+        areaMarker.position.y = GROUND_Y + 3;
+        areaMarker.visible = showSectors;
+        areaMarker.name = `area-marker-${sector.id}-${index}`;
+        
+        scene.add(areaMarker);
+        sectorMarkers.push(areaMarker);
+      });
+    }
+    
+    function toggleSectorsVisibility() {
+      showSectors = !showSectors;
+      
+      // Toggle all sector markers
+      sectorMarkers.forEach(marker => {
+        marker.visible = showSectors;
+      });
+      
+      // Update info display
+      document.getElementById('info').textContent = showSectors 
+        ? 'Sector markers VISIBLE | WASD: Move | Mouse: Look | Q/E: Fly | Click to lock mouse | R: Ride Mode | V: Toggle Sector View'
+        : 'Massive Half-Torus Tunnel with Sectors | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | Click to lock mouse | R: Ride Mode | V: Toggle Sector View';
+    }
+    
+    function checkCurrentSector() {
+      const cameraPos = camera.position;
+      let closestSector = null;
+      let minDistance = Infinity;
+      
+      sectors.forEach(sector => {
+        const distance = cameraPos.distanceTo(sector.center);
+        if (distance < 500 && distance < minDistance) { // Within 500 units
+          minDistance = distance;
+          closestSector = sector;
+        }
+      });
+      
+      currentSector = closestSector;
+      updateSectorInfo();
+    }
+    
+    function updateSectorInfo() {
+      const infoDiv = document.getElementById('sector-info');
+      
+      if (currentSector) {
+        const cameraAngle = Math.atan2(camera.position.z, camera.position.x);
+        const angleDeg = ((cameraAngle * 180 / Math.PI) + 360) % 360;
+        const distance = Math.sqrt(
+          Math.pow(camera.position.x, 2) + 
+          Math.pow(camera.position.z, 2)
+        ) - TUNNEL_MAJOR_RADIUS;
+        
+        infoDiv.innerHTML = `
+          <div>Sector: ${currentSector.id}</div>
+          <div>Distance from tunnel: ${Math.round(distance)}</div>
+          <div>Angle: ${Math.round(angleDeg)}°</div>
+          <div>Areas: 16</div>
+        `;
+      } else {
+        const cameraAngle = Math.atan2(camera.position.z, camera.position.x);
+        const angleDeg = ((cameraAngle * 180 / Math.PI) + 360) % 360;
+        const distance = Math.sqrt(
+          Math.pow(camera.position.x, 2) + 
+          Math.pow(camera.position.z, 2)
+        ) - TUNNEL_MAJOR_RADIUS;
+        
+        infoDiv.innerHTML = `
+          <div>Sector: None</div>
+          <div>Distance from tunnel: ${Math.round(distance)}</div>
+          <div>Angle: ${Math.round(angleDeg)}°</div>
+        `;
+      }
+    }
+    
+    function setupControls() {
+      // Keyboard controls
+      window.addEventListener('keydown', (event) => {
+        const key = event.key.toLowerCase();
+        keys[key] = true;
+        
+        // Toggle sector view with 'V'
+        if (key === 'v') {
+          toggleSectorsVisibility();
+        }
+        
+        // Toggle ride with 'R'
+        if (key === 'r') {
+          toggleRide();
+        }
+      });
+      
+      window.addEventListener('keyup', (event) => {
+        keys[event.key.toLowerCase()] = false;
+      });
+      
+      // Mouse look
+      document.addEventListener('mousemove', (event) => {
+        if (document.pointerLockElement === renderer.domElement) {
+          const movementX = event.movementX || 0;
+          const movementY = event.movementY || 0;
+          
+          yaw -= movementX * 0.002;
+          pitch -= movementY * 0.002;
+          pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
+        }
+      });
+      
+      // Pointer lock
+      renderer.domElement.addEventListener('click', () => {
+        renderer.domElement.requestPointerLock();
+      });
+    }
+    
+    function toggleRide() {
+      isRiding = !isRiding;
+      const rideButton = document.getElementById('start-ride');
+      
+      if (isRiding) {
+        rideButton.textContent = 'Stop Ride';
+        rideButton.classList.add('riding');
+        document.getElementById('info').textContent = 'Automated Ride Mode | Click Stop to regain control';
+        
+        // Start ride from current position
+        rideAngle = Math.atan2(camera.position.z, camera.position.x);
+        
+        console.log('Ride started');
+      } else {
+        rideButton.textContent = 'Start Ride';
+        rideButton.classList.remove('riding');
+        document.getElementById('info').textContent = 'Massive Half-Torus Tunnel with Sectors | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | Click to lock mouse | R: Ride Mode | V: Toggle Sector View';
+        
+        console.log('Ride stopped');
+      }
+    }
+    
+    function updateRide(deltaTime) {
+      if (!isRiding) return;
+      
+      // Update ride angle
+      rideAngle += 0.05 * rideSpeed * deltaTime;
+      
+      // Calculate new position on the center path
+      const targetX = TUNNEL_MAJOR_RADIUS * Math.cos(rideAngle);
+      const targetZ = TUNNEL_MAJOR_RADIUS * Math.sin(rideAngle);
+      
+      // Smooth movement
+      camera.position.x += (targetX - camera.position.x) * 0.05;
+      camera.position.z += (targetZ - camera.position.z) * 0.05;
+      
+      // Maintain height
+      camera.position.y = 0.05;
+      
+      // Calculate tangent direction (parallel to path)
+      const tangentX = -Math.sin(rideAngle);
+      const tangentZ = Math.cos(rideAngle);
+      
+      // Look ahead along tangent
+      const lookAheadDistance = 50;
+      const lookX = camera.position.x + tangentX * lookAheadDistance;
+      const lookZ = camera.position.z + tangentZ * lookAheadDistance;
+      
+      camera.lookAt(lookX, 0.05, lookZ);
+    }
+    
+    function checkCollision(newPosition) {
+      // Check collision with tunnel walls and ceiling
+      for (const collider of tunnelColliders) {
+        if (collider.type === 'sphere') {
+          const distance = newPosition.distanceTo(collider.position);
+          if (distance < collider.radius) {
+            return true;
+          }
+        }
+      }
+      
+      // Check ground collision
+      if (newPosition.y < GROUND_Y - 10) {
+        return true;
+      }
+      
+      return false;
+    }
+    
+    function updateMovement(deltaTime) {
+      if (isRiding) return;
+      
+      // Calculate movement direction based on camera orientation
+      const forward = new THREE.Vector3(0, 0, -1);
+      const right = new THREE.Vector3(1, 0, 0);
+      forward.applyQuaternion(camera.quaternion);
+      right.applyQuaternion(camera.quaternion);
+      
+      // Reset velocity
+      velocity.set(0, 0, 0);
+      
+      // Apply movement based on keys
+      if (keys['w']) velocity.add(forward);
+      if (keys['s']) velocity.sub(forward);
+      if (keys['a']) velocity.sub(right);
+      if (keys['d']) velocity.add(right);
+      if (keys['q']) velocity.y += 1;
+      if (keys['e']) velocity.y -= 1;
+      if (keys[' '] || keys['space']) velocity.y += 1;
+      if (keys['shift']) velocity.y -= 1;
+      
+      // Normalize and apply speed
+      if (velocity.lengthSq() > 0) {
+        velocity.normalize().multiplyScalar(moveSpeed * deltaTime);
+        
+        // Calculate new position
+        const newPosition = camera.position.clone().add(velocity);
+        
+        // Check collisions before moving
+        if (!checkCollision(newPosition)) {
+          camera.position.copy(newPosition);
+        } else {
+          // Collision detected
+          console.log("Collision with wall/ceiling/ground - movement blocked");
+        }
+      }
+      
+      // Apply mouse look rotation
+      camera.rotation.set(pitch, yaw, 0, 'YXZ');
+    }
+    
+    function animate() {
+      requestAnimationFrame(animate);
+      const deltaTime = clock.getDelta();
+      
+      if (isRiding) {
+        updateRide(deltaTime);
+      } else {
+        updateMovement(deltaTime);
+      }
+      
+      // Check current sector
+      checkCurrentSector();
+      
+      renderer.render(scene, camera);
+    }
+    
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    
+    // ========== OBJECT CREATOR FUNCTIONS ==========
+    // These would be defined in external .js files and loaded dynamically
+    // For now, we'll define placeholder functions
+    
+    objectCreators.createDeciduousTree = function(trunkTexture, leavesTexture, trunkScale, leavesScale) {
+      console.log(`Creating tree with textures: ${trunkTexture}, ${leavesTexture}`);
+      // Placeholder - returns a simple box
+      const geometry = new THREE.BoxGeometry(5, 10, 5);
+      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+      return new THREE.Mesh(geometry, material);
+    };
+    
+    objectCreators.createShrub = function(trunkTexture, leavesTexture, trunkScale, leavesScale) {
+      console.log(`Creating shrub with textures: ${trunkTexture}, ${leavesTexture}`);
+      // Placeholder - returns a simple sphere
+      const geometry = new THREE.SphereGeometry(3, 8, 8);
+      const material = new THREE.MeshBasicMaterial({ color: 0x008800 });
+      return new THREE.Mesh(geometry, material);
+    };
+    
+    objectCreators.createPineTree = function(levels, trunkTexture, leavesTexture) {
+      console.log(`Creating pine tree with ${levels} levels`);
+      // Placeholder - returns a simple cone
+      const geometry = new THREE.ConeGeometry(2, 10, 8);
+      const material = new THREE.MeshBasicMaterial({ color: 0x006600 });
+      return new THREE.Mesh(geometry, material);
+    };
+    
+    objectCreators.createBoulder = function(texture, scale) {
+      console.log(`Creating boulder with texture: ${texture}`);
+      // Placeholder - returns a simple sphere
+      const geometry = new THREE.SphereGeometry(scale * 2, 16, 16);
+      const material = new THREE.MeshBasicMaterial({ color: 0x888888 });
+      return new THREE.Mesh(geometry, material);
+    };
+    
+    // Export sector positions for external scripts
+    window.getSectorAreaPositions = function(sectorId) {
+      return sectorAreas[`sector${sectorId}`] || {};
+    };
+    
+    // Export specific area position
+    window.getAreaPosition = function(sectorId, areaLetter) {
+      const areaId = `${sectorId}${areaLetter}`;
+      return sectorAreas[`sector${sectorId}`]?.[areaId] || null;
+    };
+    
+    // Make scene available for external scripts
+    window.scene = scene;
+    window.THREE = THREE;
+    window.textureLoader = textureLoader;
+    
+    console.log("Tunnel with sectors initialized. Sector positions available via:");
+    console.log("window.getSectorAreaPositions(sectorId) - Get all areas in a sector");
+    console.log("window.getAreaPosition(sectorId, areaLetter) - Get specific area position");
+    
+  </script>
+</body>
+</html>
