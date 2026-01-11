@@ -142,13 +142,15 @@ function formatDate($date) {
     return date('M j, Y', strtotime($date));
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Dashboard | Arville Metaverse</title>
+    <title>Teacher Dashboard | MIEL - Multiple Intelligence E-Learning</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
         /* ===== KID-FRIENDLY THEME (SAME AS create-quiz.php) ===== */
         :root {
@@ -169,21 +171,153 @@ function formatDate($date) {
         
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
-            background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
-            min-height: 100vh;
             color: var(--text-dark);
-            padding: 20px;
+            padding: 0px;
+            min-height: 100vh;
+            position: relative;
+            /* Fallback gradient background */
+            background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
+        }
+        
+        /* Tiled semi-opaque image background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('background-tile.jpg');
+            background-repeat: repeat;
+            background-size: 300px 300px;
+            opacity: 1; /* Full opacity for the image */
+            z-index: -2; /* Lower z-index than the overlay */
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(248, 249, 255, 0.3); /* Reduced from 0.85 to 0.3 */
+            z-index: -2; /* Higher z-index than the image */
         }
         
         .container {
             max-width: 800px; /* SAME WIDTH AS create-quiz.php */
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
         
-        /* ===== HEADER (SAME STYLE) ===== */
-        .header {
+        .navbar {
+   			 margin-bottom: 30px;
+			}
+			
+	.bottom-buttons-container {
+	    margin-bottom: 30px !important; /* Adjust this value as needed */
+	}
+
+
+        /* ===== MIEL HEADER ===== */
+        .miel-header {
             text-align: center;
             margin-bottom: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 5px solid var(--primary-blue);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .miel-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, 
+                #4A90E2 0%, /* Blue */
+                #50C878 25%, /* Green */
+                #FFD166 50%, /* Yellow */
+                #FF6B6B 75%, /* Red */
+                #9C27B0 100% /* Purple */
+            );
+        }
+        
+        .miel-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .miel-logo-image {
+            max-width: 200px;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .miel-logo-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .miel-subtitle {
+            font-size: 1.4rem;
+            color: var(--secondary-green);
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .miel-tagline {
+            color: #666;
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto 15px;
+            line-height: 1.4;
+        }
+        
+        .miel-intelligence-icons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .intelligence-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #F8F9FF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--primary-blue);
+            border: 2px solid #E0E0E0;
+            transition: all 0.3s;
+        }
+        
+        .intelligence-icon:hover {
+            transform: scale(1.1);
+            border-color: var(--primary-blue);
+            background: white;
+            box-shadow: var(--shadow);
+        }
+        
+        /* ===== DASHBOARD HEADER ===== */
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 25px;
             padding: 20px;
             background: white;
             border-radius: var(--border-radius);
@@ -230,11 +364,13 @@ function formatDate($date) {
         
         /* ===== CARD STYLES (SAME AS create-quiz.php) ===== */
         .card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: var(--border-radius);
             padding: 30px;
             box-shadow: var(--shadow);
             width: 100%;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
         }
         
         .card-title {
@@ -556,9 +692,11 @@ function formatDate($date) {
             gap: 20px;
             margin-top: 30px;
             padding: 20px;
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
         }
         
         /* Green button for "Back to Dashboard" */
@@ -686,6 +824,28 @@ function formatDate($date) {
                 padding: 10px;
             }
             
+            .miel-header {
+                padding: 20px;
+            }
+            
+            .miel-logo-image {
+                max-width: 150px;
+            }
+            
+            .miel-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .intelligence-icons {
+                gap: 10px;
+            }
+            
+            .intelligence-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+            
             .main-card {
                 padding: 20px;
             }
@@ -753,6 +913,14 @@ function formatDate($date) {
             .stats-summary {
                 grid-template-columns: 1fr;
             }
+            
+            .miel-logo-image {
+                max-width: 120px;
+            }
+            
+            .miel-subtitle {
+                font-size: 1rem;
+            }
         }
         
         /* ===== ANIMATIONS (SAME AS create-quiz.php) ===== */
@@ -774,6 +942,18 @@ function formatDate($date) {
             animation: fadeIn 0.5s ease;
         }
         
+        @keyframes rainbow {
+            0% { color: #4A90E2; }
+            25% { color: #50C878; }
+            50% { color: #FFD166; }
+            75% { color: #FF6B6B; }
+            100% { color: #9C27B0; }
+        }
+        
+        .rainbow {
+            animation: rainbow 3s ease infinite;
+        }
+        
         /* ===== SCROLLBAR ===== */
         .score-list::-webkit-scrollbar {
             width: 8px;
@@ -791,9 +971,39 @@ function formatDate($date) {
     </style>
 </head>
 <body>
+    <!-- ARVILLE NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="index.php">
+                <img src="../images/logo.jpg" alt="ARville Network" width="200" class="d-inline-block align-text-top">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="plans.php">Plans</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about-us.php">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
-        <!-- HEADER -->
-        <header class="header fade-in">
+        <!-- MIEL HEADER -->
+        <header class="miel-header fade-in">
+            <div class="miel-logo">
+                <img src="miel-logo.jpg" alt="MIEL Logo" class="miel-logo-image fade-in">                
+                <p class="miel-subtitle">Multiple Intelligence Experiential Learning System</p>
+                <p class="miel-tagline">Empowering every student through personalized learning adventures based on their unique intelligence strengths</p>
+            </div>
+            
+        </header>
+
+        <!-- DASHBOARD HEADER -->
+        <header class="dashboard-header fade-in">
             <div class="logo">
                 <i class="fas fa-chalkboard-teacher logo-icon bounce"></i>
                 <div>
@@ -1107,6 +1317,11 @@ function formatDate($date) {
             });
         });
         
+        // Intelligence icons animation
+        document.querySelectorAll('.intelligence-icon').forEach((icon, index) => {
+            icon.style.animationDelay = `${index * 0.1}s`;
+        });
+        
         // Function to go directly to add questions
         function addQuestionsToQuiz() {
             window.location.href = 'add-questions.php';
@@ -1136,6 +1351,22 @@ function formatDate($date) {
                 }
             });
         });
+        
+        // Make MIEL logo image interactive
+        const mielLogo = document.querySelector('.miel-logo-image');
+        if (mielLogo) {
+            mielLogo.addEventListener('click', function() {
+                this.classList.toggle('bounce');
+                alert('MIEL - Multiple Intelligence Experiential Learning\nPersonalized learning for every student!');
+                
+                // Remove bounce class after animation completes
+                setTimeout(() => {
+                    this.classList.remove('bounce');
+                }, 500);
+            });
+        }
     </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
