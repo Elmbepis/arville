@@ -63,6 +63,11 @@ if (isset($_POST['logout'])) {
     exit();
 }
 
+// Format date
+function formatDate($date) {
+    return date('M j, Y', strtotime($date));
+}
+
 // Get intelligence type name
 function getIntelligenceName($type) {
     $names = [
@@ -128,10 +133,11 @@ function getWorldIcon($world) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard | Arville Metaverse</title>
+    <title>Student Dashboard | MIEL - Multiple Intelligence E-Learning</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
-        /* ===== KID-FRIENDLY THEME (SAME AS create-quiz.php) ===== */
+        /* ===== KID-FRIENDLY THEME (SAME AS teacher-dashboard.php) ===== */
         :root {
             --primary-blue: #4A90E2;
             --secondary-green: #50C878;
@@ -150,21 +156,167 @@ function getWorldIcon($world) {
         
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
-            background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
-            min-height: 100vh;
             color: var(--text-dark);
-            padding: 20px;
+            padding: 0px;
+            min-height: 100vh;
+            position: relative;
+            /* Fallback gradient background */
+            background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
+        }
+        
+        /* Tiled semi-opaque image background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('background-tile.jpg');
+            background-repeat: repeat;
+            background-size: 1980px 1080px;
+            opacity: 0.9; /* Full opacity for the image */
+            z-index: -1; /* Lower z-index than the overlay */
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(248, 249, 255, 0.3); /* Reduced from 0.85 to 0.3 */
+            z-index: -3; /* Higher z-index than the image */
         }
         
         .container {
             max-width: 800px; /* SAME WIDTH AS create-quiz.php */
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
         
-        /* ===== HEADER (SAME STYLE) ===== */
-        .header {
+        .navbar {
+            margin-bottom: 30px;
+        }
+        
+        .navbar {
+            font-family: 'Arial', sans-serif !important;
+            font-weight: 300 !important;
+        }
+
+        .navbar-nav .nav-link {
+            font-size: 1.0rem !important;
+            color: #333 !important;
+            transition: color 0.3s ease !important;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #4A90E2 !important;
+        }
+        
+        .bottom-buttons-container {
+            margin-bottom: 30px !important; /* Adjust this value as needed */
+        }
+
+        /* ===== MIEL HEADER ===== */
+        .miel-header {
             text-align: center;
             margin-bottom: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 5px solid var(--primary-blue);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .miel-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, 
+                #4A90E2 0%, /* Blue */
+                #50C878 25%, /* Green */
+                #FFD166 50%, /* Yellow */
+                #FF6B6B 75%, /* Red */
+                #9C27B0 100% /* Purple */
+            );
+        }
+        
+        .miel-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .miel-logo-image {
+            max-width: 200px;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .miel-logo-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .miel-subtitle {
+            font-size: 1.4rem;
+            color: var(--secondary-green);
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .miel-tagline {
+            color: #666;
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto 15px;
+            line-height: 1.4;
+        }
+        
+        .miel-intelligence-icons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .intelligence-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #F8F9FF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--primary-blue);
+            border: 2px solid #E0E0E0;
+            transition: all 0.3s;
+        }
+        
+        .intelligence-icon:hover {
+            transform: scale(1.1);
+            border-color: var(--primary-blue);
+            background: white;
+            box-shadow: var(--shadow);
+        }
+        
+        /* ===== DASHBOARD HEADER ===== */
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 25px;
             padding: 20px;
             background: white;
             border-radius: var(--border-radius);
@@ -209,13 +361,15 @@ function getWorldIcon($world) {
             margin-bottom: 30px;
         }
         
-        /* ===== CARD STYLES (SAME AS create-quiz.php) ===== */
+        /* ===== CARD STYLES (SAME AS teacher-dashboard.php) ===== */
         .card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: var(--border-radius);
             padding: 30px;
             box-shadow: var(--shadow);
             width: 100%;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
         }
         
         .card-title {
@@ -238,10 +392,10 @@ function getWorldIcon($world) {
         }
         
         .profile-avatar {
-            width: 120px; /* SAME SIZE AS create-quiz.php INTELLIGENCE ICONS */
+            width: 120px;
             height: 120px;
             background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
-            border-radius: 15px; /* SAME BORDER RADIUS */
+            border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -301,7 +455,7 @@ function getWorldIcon($world) {
             font-size: 1rem;
         }
         
-        /* ===== QUIZ ICONS GRID (SAME SIZE AS create-quiz.php WORLD SELECTOR) ===== */
+        /* ===== QUIZ ICONS GRID ===== */
         .quiz-grid-section {
             width: 100%;
         }
@@ -310,14 +464,14 @@ function getWorldIcon($world) {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(2, 1fr);
-            gap: 15px; /* SAME GAP AS create-quiz.php */
+            gap: 15px;
             margin-bottom: 20px;
         }
         
         .quiz-icon {
             aspect-ratio: 1/1;
             background: #F8F9FF;
-            border-radius: 15px; /* SAME BORDER RADIUS */
+            border-radius: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -329,7 +483,7 @@ function getWorldIcon($world) {
             border: 3px solid #E0E0E0;
             position: relative;
             overflow: hidden;
-            min-height: 0; /* Allow flexible sizing */
+            min-height: 0;
         }
         
         .quiz-icon:hover {
@@ -369,7 +523,7 @@ function getWorldIcon($world) {
         }
         
         .icon-main {
-            font-size: 2rem; /* SAME SIZE AS create-quiz.php INTELLIGENCE ICONS */
+            font-size: 2rem;
             margin-bottom: 10px;
             color: var(--primary-blue);
             width: 40px;
@@ -473,55 +627,44 @@ function getWorldIcon($world) {
             color: var(--text-dark);
         }
         
-        /* ===== STANDARDIZED BUTTONS ===== */
-        .btn {
-            padding: 15px 30px;
+        /* ===== STANDARDIZED BUTTON STYLES ===== */
+        /* Blue functional buttons -> Yellow on hover */
+        .action-btn {
+            flex: 0 0 auto;
+            padding: 12px 25px;
             border: none;
             border-radius: 15px;
-            font-size: 1.2rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            font-size: 1.2rem;
             text-decoration: none;
-        }
-        
-        .btn-primary {
-            background: var(--primary-blue);
             color: white;
+            background-color: #4A90E2 !important; /* BLUE for functional buttons */
         }
         
-        .btn-primary:hover {
-            background: #357ABD;
+        .action-btn:hover {
+            background-color: #FFD166 !important; /* YELLOW on hover */
             transform: translateY(-3px);
+            color: #2C3E50 !important;
         }
         
-        .btn-success {
-            background: var(--secondary-green);
-            color: white;
+        /* Override specific button colors to be blue */
+        .action-btn-primary,
+        .action-btn-success,
+        .action-btn-warning {
+            background-color: #4A90E2 !important; /* All functional buttons BLUE */
         }
         
-        .btn-success:hover {
-            background: #3DAF5E;
-            transform: translateY(-3px);
-        }
-        
-        .btn-secondary {
-            background: var(--accent-yellow);
-            color: var(--text-dark);
-        }
-        
-        .btn-secondary:hover {
-            background: #E6B800;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+        .action-btn-primary:hover,
+        .action-btn-success:hover,
+        .action-btn-warning:hover {
+            background-color: #FFD166 !important; /* All functional buttons YELLOW on hover */
+            color: #2C3E50 !important;
         }
         
         /* ===== BOTTOM BUTTONS CONTAINER ===== */
@@ -531,10 +674,13 @@ function getWorldIcon($world) {
             gap: 20px;
             margin-top: 30px;
             padding: 20px;
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-        }        
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+        
         /* Green button for "Back to Dashboard" */
         .green-btn {
             background-color: #50C878 !important;
@@ -581,13 +727,40 @@ function getWorldIcon($world) {
             transform: translateY(-3px) !important;
         }
         
-        /* ===== MOBILE RESPONSIVE (SAME AS create-quiz.php) ===== */
+        /* Hide original logout section */
+        .logout-section {
+            display: none !important;
+        }
+        
+        /* ===== MOBILE RESPONSIVE (SAME AS teacher-dashboard.php) ===== */
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
             }
             
-            .card {
+            .miel-header {
+                padding: 20px;
+            }
+            
+            .miel-logo-image {
+                max-width: 150px;
+            }
+            
+            .miel-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .intelligence-icons {
+                gap: 10px;
+            }
+            
+            .intelligence-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+            
+            .main-card {
                 padding: 20px;
             }
             
@@ -614,11 +787,11 @@ function getWorldIcon($world) {
                 grid-template-columns: 1fr;
             }
             
-            .button-group {
+            .action-buttons {
                 flex-direction: column;
             }
             
-            .btn {
+            .action-btn {
                 width: 100%;
             }
             
@@ -643,12 +816,16 @@ function getWorldIcon($world) {
                 grid-template-rows: repeat(4, 1fr);
             }
             
-            .btn {
-                width: 100%;
+            .miel-logo-image {
+                max-width: 120px;
+            }
+            
+            .miel-subtitle {
+                font-size: 1rem;
             }
         }
         
-        /* ===== ANIMATIONS (SAME AS create-quiz.php) ===== */
+        /* ===== ANIMATIONS (SAME AS teacher-dashboard.php) ===== */
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
@@ -666,17 +843,59 @@ function getWorldIcon($world) {
         .fade-in {
             animation: fadeIn 0.5s ease;
         }
+        
+        @keyframes rainbow {
+            0% { color: #4A90E2; }
+            25% { color: #50C878; }
+            50% { color: #FFD166; }
+            75% { color: #FF6B6B; }
+            100% { color: #9C27B0; }
+        }
+        
+        .rainbow {
+            animation: rainbow 3s ease infinite;
+        }
     </style>
 </head>
 <body>
+    <!-- ARVILLE NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="../index.php">
+                <img src="../images/logo.jpg" alt="ARville Network" width="200" class="d-inline-block align-text-top">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="plans.php">Plans</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about-us.php">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
-        <!-- HEADER -->
-        <header class="header fade-in">
+        <!-- MIEL HEADER -->
+        <header class="miel-header fade-in">
+            <div class="miel-logo">
+                <img src="miel-logo.jpg" alt="MIEL Logo" class="miel-logo-image fade-in">                
+                <p class="miel-subtitle">Multiple Intelligence Experiential Learning System</p>
+                <p class="miel-tagline">Empowering every student through personalized learning adventures based on their unique intelligence strengths</p>
+            </div>
+            
+        </header>
+
+        <!-- DASHBOARD HEADER -->
+        <header class="dashboard-header fade-in">
             <div class="logo">
                 <i class="fas fa-graduation-cap logo-icon bounce"></i>
                 <div>
                     <h1>Student Dashboard</h1>
-                    <p class="subtitle">Welcome to Arville Metaverse!</p>
+                    <p class="subtitle">Explore Quizzes & Track Your Progress</p>
                 </div>
             </div>
             <div class="welcome-message">
@@ -737,7 +956,7 @@ function getWorldIcon($world) {
                             </div>
                             <div class="profile-details">
                                 <div class="profile-label">Member Since</div>
-                                <div class="profile-value"><?php echo date('F j, Y', strtotime($student['created_at'])); ?></div>
+                                <div class="profile-value"><?php echo formatDate($student['created_at']); ?></div>
                             </div>
                         </div>
                     </div>
@@ -869,10 +1088,12 @@ function getWorldIcon($world) {
         </div>
 
         <!-- BOTTOM BUTTONS CONTAINER -->
-        <div class="bottom-buttons-container">            
-            <a href="logout.php" class="red-btn">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
+        <div class="bottom-buttons-container fade-in">
+            <form method="POST" action="student-dashboard.php" style="display: inline;">
+                <button type="submit" name="logout" class="red-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
         </div>
     </div>
 
@@ -880,18 +1101,16 @@ function getWorldIcon($world) {
     <script>
         // Quiz functions
         function takeQuiz(quizId) {
-            alert(`Starting quiz #${quizId}\n\nThis will redirect to the quiz taking page in the full version.`);
-            // window.location.href = `take-quiz.php?quiz_id=${quizId}`;
+            window.location.href = `take-quiz.php?quiz_id=${quizId}`;
         }
         
         function reviewQuiz(quizId) {
-            alert(`Reviewing quiz #${quizId}\n\nThis will show your answers and results in the full version.`);
-            // window.location.href = `review-quiz.php?quiz_id=${quizId}`;
+            window.location.href = `review-quiz.php?quiz_id=${quizId}`;
         }
         
         // Auto-refresh every 30 seconds
         setInterval(() => {
-            console.log('Auto-refreshing dashboard...');
+            console.log('Auto-refreshing student dashboard...');
         }, 30000);
         
         // Add keyboard shortcuts
@@ -903,12 +1122,12 @@ function getWorldIcon($world) {
             
             if (e.key === 'Escape') {
                 if (confirm('Are you sure you want to logout?')) {
-                    window.location.href = 'logout.php';
+                    document.querySelector('button[name="logout"]').click();
                 }
             }
         });
         
-        // Add hover effects (same as create-quiz.php)
+        // Add hover effects
         document.querySelectorAll('.quiz-icon').forEach(icon => {
             icon.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-5px)';
@@ -929,6 +1148,22 @@ function getWorldIcon($world) {
                 this.style.transform = 'translateY(0)';
             });
         });
+        
+        // Make MIEL logo image interactive
+        const mielLogo = document.querySelector('.miel-logo-image');
+        if (mielLogo) {
+            mielLogo.addEventListener('click', function() {
+                this.classList.toggle('bounce');
+                alert('MIEL - Multiple Intelligence Experiential Learning\nPersonalized learning for every student!');
+                
+                // Remove bounce class after animation completes
+                setTimeout(() => {
+                    this.classList.remove('bounce');
+                }, 500);
+            });
+        }
     </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

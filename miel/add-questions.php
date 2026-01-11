@@ -315,10 +315,11 @@ function getQuestionTypeIcon($type) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Questions | Arville Metaverse</title>
+    <title>Add Questions | MIEL - Multiple Intelligence E-Learning</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ===== KID-FRIENDLY THEME (SAME AS create-quiz.php) ===== */
+        /* ===== KID-FRIENDLY THEME (SAME AS teacher-dashboard.php) ===== */
         :root {
             --primary-blue: #4A90E2;
             --secondary-green: #50C878;
@@ -337,21 +338,169 @@ function getQuestionTypeIcon($type) {
         
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
-            background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
-            min-height: 100vh;
             color: var(--text-dark);
-            padding: 20px;
+            padding: 0px;
+            min-height: 100vh;
+            position: relative;
+            /* Fallback gradient background */
+            background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
+        }
+        
+        /* Tiled semi-opaque image background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('background-tile.jpg');
+            background-repeat: repeat;
+            background-size: 1980px 1080px;
+            opacity: 0.9; /* Full opacity for the image */
+            z-index: -1; /* Lower z-index than the overlay */
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(248, 249, 255, 0.3); /* Reduced from 0.85 to 0.3 */
+            z-index: -3; /* Higher z-index than the image */
         }
         
         .container {
-            max-width: 900px;
+            max-width: 800px; /* SAME WIDTH AS teacher-dashboard.php */
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            padding-bottom: 50px;
         }
         
-        /* ===== HEADER ===== */
-        .header {
+        .navbar {
+            margin-bottom: 30px;
+        }
+        
+        .navbar {
+   		 font-family: 'Arial', sans-serif !important;
+   		 font-weight: 300 !important;
+		}
+
+		.navbar-nav .nav-link {
+	    font-size: 1.0rem !important;
+    	color: #333 !important;
+    	transition: color 0.3s ease !important;
+    	margin-bottom: -70px !important;
+		}
+
+		.navbar-nav .nav-link:hover {
+	    color: #4A90E2 !important;
+		}
+		
+		.navbar-brand {
+    	margin-bottom: -50px !important;
+		}
+        
+        /* ===== MIEL HEADER ===== */
+        .miel-header {
             text-align: center;
             margin-bottom: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 5px solid var(--primary-blue);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .miel-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, 
+                #4A90E2 0%, /* Blue */
+                #50C878 25%, /* Green */
+                #FFD166 50%, /* Yellow */
+                #FF6B6B 75%, /* Red */
+                #9C27B0 100% /* Purple */
+            );
+        }
+        
+        .miel-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .miel-logo-image {
+            max-width: 200px;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .miel-logo-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .miel-subtitle {
+            font-size: 1.4rem;
+            color: var(--secondary-green);
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .miel-tagline {
+            color: #666;
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto 15px;
+            line-height: 1.4;
+        }
+        
+        .miel-intelligence-icons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .intelligence-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #F8F9FF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--primary-blue);
+            border: 2px solid #E0E0E0;
+            transition: all 0.3s;
+        }
+        
+        .intelligence-icon:hover {
+            transform: scale(1.1);
+            border-color: var(--primary-blue);
+            background: white;
+            box-shadow: var(--shadow);
+        }
+        
+        /* ===== DASHBOARD HEADER ===== */
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 25px;
             padding: 20px;
             background: white;
             border-radius: var(--border-radius);
@@ -384,10 +533,13 @@ function getQuestionTypeIcon($type) {
         
         /* ===== MAIN CARD ===== */
         .main-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: var(--border-radius);
             padding: 30px;
             box-shadow: var(--shadow);
+            width: 100%;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
             margin-bottom: 30px;
         }
         
@@ -453,7 +605,7 @@ function getQuestionTypeIcon($type) {
             gap: 20px;
         }
         
-        .quiz-icon {
+        .quiz-icon-large {
             width: 80px;
             height: 80px;
             background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
@@ -570,7 +722,7 @@ function getQuestionTypeIcon($type) {
             background: #E8F5E9;
         }
         
-        .question-type-icon {
+        .question-type-icon-small {
             font-size: 2rem;
             margin-bottom: 10px;
             width: 50px;
@@ -738,7 +890,7 @@ function getQuestionTypeIcon($type) {
             background: #E8F5E9;
         }
         
-        .option-letter {
+        .option-letter-small {
             width: 30px;
             height: 30px;
             background: #E0E0E0;
@@ -749,7 +901,7 @@ function getQuestionTypeIcon($type) {
             font-weight: bold;
         }
         
-        .question-option.correct .option-letter {
+        .question-option.correct .option-letter-small {
             background: var(--secondary-green);
             color: white;
         }
@@ -856,9 +1008,11 @@ function getQuestionTypeIcon($type) {
             gap: 20px;
             margin-top: 30px;
             padding: 20px;
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
         }        
         /* Green button for "Back to Dashboard" */
         .green-btn {
@@ -925,7 +1079,7 @@ function getQuestionTypeIcon($type) {
             border-left: 5px solid #FF6B6B;
         }
         
-        /* ===== ANIMATIONS ===== */
+        /* ===== ANIMATIONS (SAME AS teacher-dashboard.php) ===== */
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
@@ -944,10 +1098,44 @@ function getQuestionTypeIcon($type) {
             animation: fadeIn 0.5s ease;
         }
         
-        /* ===== MOBILE RESPONSIVE ===== */
+        @keyframes rainbow {
+            0% { color: #4A90E2; }
+            25% { color: #50C878; }
+            50% { color: #FFD166; }
+            75% { color: #FF6B6B; }
+            100% { color: #9C27B0; }
+        }
+        
+        .rainbow {
+            animation: rainbow 3s ease infinite;
+        }
+        
+        /* ===== MOBILE RESPONSIVE (SAME AS teacher-dashboard.php) ===== */
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
+            }
+            
+            .miel-header {
+                padding: 20px;
+            }
+            
+            .miel-logo-image {
+                max-width: 150px;
+            }
+            
+            .miel-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .intelligence-icons {
+                gap: 10px;
+            }
+            
+            .intelligence-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
             }
             
             .main-card {
@@ -1010,13 +1198,51 @@ function getQuestionTypeIcon($type) {
                 margin-top: 15px;
                 justify-content: flex-end;
             }
+            
+            .miel-logo-image {
+                max-width: 120px;
+            }
+            
+            .miel-subtitle {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- ARVILLE NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="../index.php">
+                <img src="../images/logo.jpg" alt="ARville Network" width="200" class="d-inline-block align-text-top">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="plans.php">Plans</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about-us.php">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
-        <!-- HEADER -->
-        <header class="header fade-in">
+        <!-- MIEL HEADER -->
+        <header class="miel-header fade-in">
+            <div class="miel-logo">
+                <img src="miel-logo.jpg" alt="MIEL Logo" class="miel-logo-image fade-in">                
+                <p class="miel-subtitle">Multiple Intelligence Experiential Learning System</p>
+                <p class="miel-tagline">Empowering every student through personalized learning adventures based on their unique intelligence strengths</p>
+            </div>
+            
+        </header>
+
+        <!-- DASHBOARD HEADER -->
+        <header class="dashboard-header fade-in">
             <div class="logo">
                 <i class="fas fa-question-circle logo-icon bounce"></i>
                 <div>
@@ -1070,7 +1296,7 @@ function getQuestionTypeIcon($type) {
             <?php if ($quiz_info): ?>
             <!-- QUIZ INFO -->
             <div class="quiz-info-card">
-                <div class="quiz-icon">
+                <div class="quiz-icon-large">
                     <i class="fas fa-<?php echo getWorldIcon($quiz_info['virtual_world']); ?>"></i>
                 </div>
                 <div class="quiz-details">
@@ -1122,7 +1348,7 @@ function getQuestionTypeIcon($type) {
                         ?>
                         <div class="question-type-option <?php echo $isSelected ? 'selected' : ''; ?>" 
                              data-question-type="<?php echo $key; ?>">
-                            <div class="question-type-icon <?php echo str_replace('_', '-', $key); ?>-icon">
+                            <div class="question-type-icon-small <?php echo str_replace('_', '-', $key); ?>-icon">
                                 <i class="fas fa-<?php echo $type['icon']; ?>"></i>
                             </div>
                             <div class="question-type-info">
@@ -1293,7 +1519,7 @@ function getQuestionTypeIcon($type) {
                         <?php foreach (['A', 'B', 'C', 'D'] as $letter): ?>
                         <?php if (isset($options[$letter])): ?>
                         <div class="question-option <?php echo $letter === $question['correct_answer'] ? 'correct' : ''; ?>">
-                            <div class="option-letter"><?php echo $letter; ?></div>
+                            <div class="option-letter-small"><?php echo $letter; ?></div>
                             <div><?php echo htmlspecialchars($options[$letter]); ?></div>
                             <?php if ($letter === $question['correct_answer']): ?>
                             <div style="margin-left: auto; color: var(--secondary-green);">
@@ -1308,14 +1534,14 @@ function getQuestionTypeIcon($type) {
                     <?php elseif ($question_type === 'true_false'): ?>
                     <div class="question-options">
                         <div class="question-option correct">
-                            <div class="option-letter">A</div>
+                            <div class="option-letter-small">A</div>
                             <div>True</div>
                             <div style="margin-left: auto; color: var(--secondary-green);">
                                 <i class="fas fa-check-circle"></i>
                             </div>
                         </div>
                         <div class="question-option">
-                            <div class="option-letter">B</div>
+                            <div class="option-letter-small">B</div>
                             <div>False</div>
                         </div>
                     </div>
@@ -1323,7 +1549,7 @@ function getQuestionTypeIcon($type) {
                     <?php elseif ($question_type === 'fill_blank'): ?>
                     <div class="question-options">
                         <div class="question-option correct" style="grid-column: span 2;">
-                            <div class="option-letter">A</div>
+                            <div class="option-letter-small">A</div>
                             <div><strong>Correct Answer:</strong> <?php echo htmlspecialchars($options['A'] ?? ''); ?></div>
                             <div style="margin-left: auto; color: var(--secondary-green);">
                                 <i class="fas fa-check-circle"></i>
@@ -1570,6 +1796,22 @@ function getQuestionTypeIcon($type) {
                 }
             });
         }
+        
+        // Make MIEL logo image interactive
+        const mielLogo = document.querySelector('.miel-logo-image');
+        if (mielLogo) {
+            mielLogo.addEventListener('click', function() {
+                this.classList.toggle('bounce');
+                alert('MIEL - Multiple Intelligence Experiential Learning\nPersonalized learning for every student!');
+                
+                // Remove bounce class after animation completes
+                setTimeout(() => {
+                    this.classList.remove('bounce');
+                }, 500);
+            });
+        }
     </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

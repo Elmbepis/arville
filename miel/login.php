@@ -112,15 +112,17 @@ if (isset($_SESSION['user_id'])) {
     exit();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arville Metaverse | MIEL - Login & Register</title>
+    <title>Login | MIEL - Multiple Intelligence E-Learning</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ===== KID-FRIENDLY THEME ===== */
+        /* ===== KID-FRIENDLY THEME (SAME AS teacher-dashboard.php) ===== */
         :root {
             --primary-blue: #4A90E2;
             --secondary-green: #50C878;
@@ -139,24 +141,175 @@ if (isset($_SESSION['user_id'])) {
         
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
-            background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
-            min-height: 100vh;
             color: var(--text-dark);
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 0px;
+            min-height: 100vh;
+            position: relative;
+            /* Fallback gradient background */
+            background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
+        }
+        
+        /* Tiled semi-opaque image background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('background-tile.jpg');
+            background-repeat: repeat;
+            background-size: 1980px 1080px;
+            opacity: 0.9; /* Full opacity for the image */
+            z-index: -1; /* Lower z-index than the overlay */
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(248, 249, 255, 0.3); /* Reduced from 0.85 to 0.3 */
+            z-index: -3; /* Higher z-index than the image */
         }
         
         .container {
-            max-width: 500px;
-            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
         
-        /* ===== HEADER ===== */
-        .header {
+        /* NARROW FORM CONTAINER */
+        .narrow-form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .navbar {
+            margin-bottom: 30px;
+        }
+        
+        .navbar {
+   		 font-family: 'Arial', sans-serif !important;
+   		 font-weight: 300 !important;
+		}
+
+		.navbar-nav .nav-link {
+	    font-size: 1.0rem !important;
+    	color: #333 !important;
+    	transition: color 0.3s ease !important;
+		}
+
+		.navbar-nav .nav-link:hover {
+	    color: #4A90E2 !important;
+		}
+        
+        .btn-login {
+    	padding: 10px 20px !important; /* Reduced height */
+		}
+        
+        /* ===== MIEL HEADER ===== */
+        .miel-header {
             text-align: center;
             margin-bottom: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 5px solid var(--primary-blue);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .miel-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, 
+                #4A90E2 0%, /* Blue */
+                #50C878 25%, /* Green */
+                #FFD166 50%, /* Yellow */
+                #FF6B6B 75%, /* Red */
+                #9C27B0 100% /* Purple */
+            );
+        }
+        
+        .miel-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .miel-logo-image {
+            max-width: 200px;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .miel-logo-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .miel-subtitle {
+            font-size: 1.4rem;
+            color: var(--secondary-green);
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .miel-tagline {
+            color: #666;
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto 15px;
+            line-height: 1.4;
+        }
+        
+        .miel-intelligence-icons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .intelligence-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #F8F9FF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--primary-blue);
+            border: 2px solid #E0E0E0;
+            transition: all 0.3s;
+        }
+        
+        .intelligence-icon:hover {
+            transform: scale(1.1);
+            border-color: var(--primary-blue);
+            background: white;
+            box-shadow: var(--shadow);
+        }
+        
+        /* ===== LOGIN/REGISTER HEADER ===== */
+        .form-header {
+            text-align: center;
+            margin-bottom: 25px;
             padding: 20px;
             background: white;
             border-radius: var(--border-radius);
@@ -189,10 +342,13 @@ if (isset($_SESSION['user_id'])) {
         
         /* ===== MAIN CARD ===== */
         .main-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: var(--border-radius);
             padding: 30px;
             box-shadow: var(--shadow);
+            width: 100%;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
             margin-bottom: 30px;
         }
         
@@ -293,12 +449,15 @@ if (isset($_SESSION['user_id'])) {
         }
         
         .btn-success {
-            background: var(--secondary-green);
-            color: white;
+            background: #9C27B0 !important; /* Purple color */
+            color: white !important;
+            border: none !important;
         }
         
         .btn-success:hover {
-            background: #3DAF5E;
+            background: #7B1FA2 !important; /* Darker purple on hover */
+            color: white !important;
+            transform: translateY(-3px);
         }
         
         /* ===== MESSAGES ===== */
@@ -372,43 +531,12 @@ if (isset($_SESSION['user_id'])) {
             animation: fadeIn 0.3s ease;
         }
         
+        /* ===== ANIMATIONS ===== */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* ===== MOBILE RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .main-card {
-                padding: 20px;
-            }
-            
-            h1 {
-                font-size: 1.8rem;
-            }
-            
-            .role-selector {
-                flex-direction: column;
-            }
-            
-            .btn {
-                font-size: 1.1rem;
-                padding: 12px 20px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .input-with-icon input {
-                padding-left: 40px;
-                font-size: 0.95rem;
-            }
-        }
-        
-        /* ===== ANIMATIONS ===== */
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
@@ -426,20 +554,122 @@ if (isset($_SESSION['user_id'])) {
             display: block;
             animation: fadeIn 0.5s ease;
         }
+        
+        /* ===== MOBILE RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .container, .narrow-form-container {
+                padding: 10px;
+            }
+            
+            .main-card {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .miel-header {
+                padding: 20px;
+            }
+            
+            .miel-logo-image {
+                max-width: 150px;
+            }
+            
+            .miel-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .intelligence-icons {
+                gap: 10px;
+            }
+            
+            .intelligence-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+            
+            .role-selector {
+                flex-direction: column;
+            }
+            
+            .btn {
+                font-size: 1.1rem;
+                padding: 12px 20px;
+            }
+            
+            .form-header {
+                padding: 20px;
+            }
+            
+            /* Adjust narrow container for mobile */
+            .narrow-form-container {
+                max-width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .input-with-icon input {
+                padding-left: 40px;
+                font-size: 0.95rem;
+            }
+            
+            .miel-logo-image {
+                max-width: 120px;
+            }
+            
+            .miel-subtitle {
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- ARVILLE NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="../index.php">
+                <img src="../images/logo.jpg" alt="ARville Network" width="200" class="d-inline-block align-text-top">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="plans.php">Plans</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about-us.php">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
-        <!-- HEADER -->
-        <header class="header">
+        <!-- MIEL HEADER (800px width) -->
+        <header class="miel-header fade-in">
+            <div class="miel-logo">
+                <img src="miel-logo.jpg" alt="MIEL Logo" class="miel-logo-image fade-in">                
+                <p class="miel-subtitle">Multiple Intelligence Experiential Learning System</p>
+                <p class="miel-tagline">Empowering every student through personalized learning adventures based on their unique intelligence strengths</p>
+            </div>
+            
+        </header>
+    </div>
+
+    <!-- FORM SECTION (600px width) -->
+    <div class="narrow-form-container">
+        <!-- FORM HEADER -->
+        <header class="form-header fade-in">
             <div class="logo">
                 <i class="fas fa-graduation-cap logo-icon bounce"></i>
                 <div>
-                    <h1>Arville Metaverse</h1>
-                    <p class="subtitle">Fun Learning for Everyone!</p>
+                    <h1>MIEL Learning Portal</h1>
+                    <p class="subtitle">Login or Register to Start Learning!</p>
                 </div>
             </div>
-            <p>Join our interactive learning community</p>
         </header>
 
         <!-- MAIN CARD -->
@@ -490,9 +720,10 @@ if (isset($_SESSION['user_id'])) {
                     </div>
                 </div>
                 
-                <button type="submit" name="login" class="btn btn-primary">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
+<button type="submit" name="login" class="btn btn-primary btn-login" style="width: 50% !important; max-width: 250px !important; margin: 0 auto !important; display: block !important;">
+    <i class="fas fa-sign-in-alt"></i> Login
+</button>
+
             </form>
             
             <!-- REGISTRATION FORM -->
@@ -671,6 +902,22 @@ if (isset($_SESSION['user_id'])) {
         if (urlParams.get('action') === 'register') {
             document.querySelector('.form-tab[data-form="register"]').click();
         }
+        
+        // Make MIEL logo image interactive
+        const mielLogo = document.querySelector('.miel-logo-image');
+        if (mielLogo) {
+            mielLogo.addEventListener('click', function() {
+                this.classList.toggle('bounce');
+                alert('MIEL - Multiple Intelligence Experiential Learning\nPersonalized learning for every student!');
+                
+                // Remove bounce class after animation completes
+                setTimeout(() => {
+                    this.classList.remove('bounce');
+                }, 500);
+            });
+        }
     </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

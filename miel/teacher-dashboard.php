@@ -189,9 +189,9 @@ function formatDate($date) {
             height: 100%;
             background-image: url('background-tile.jpg');
             background-repeat: repeat;
-            background-size: 300px 300px;
-            opacity: 1; /* Full opacity for the image */
-            z-index: -2; /* Lower z-index than the overlay */
+            background-size: 1980px 1080px;
+            opacity: 0.9; /* Full opacity for the image */
+            z-index: -1; /* Lower z-index than the overlay */
         }
 
         body::after {
@@ -202,7 +202,7 @@ function formatDate($date) {
             width: 100%;
             height: 100%;
             background: rgba(248, 249, 255, 0.3); /* Reduced from 0.85 to 0.3 */
-            z-index: -2; /* Higher z-index than the image */
+            z-index: -3; /* Higher z-index than the image */
         }
         
         .container {
@@ -215,7 +215,22 @@ function formatDate($date) {
         .navbar {
    			 margin-bottom: 30px;
 			}
-			
+        
+        .navbar {
+   		 font-family: 'Arial', sans-serif !important;
+   		 font-weight: 300 !important;
+		}
+
+		.navbar-nav .nav-link {
+	    font-size: 1.0rem !important;
+    	color: #333 !important;
+    	transition: color 0.3s ease !important;
+		}
+
+		.navbar-nav .nav-link:hover {
+	    color: #4A90E2 !important;
+		}
+        
 	.bottom-buttons-container {
 	    margin-bottom: 30px !important; /* Adjust this value as needed */
 	}
@@ -974,7 +989,7 @@ function formatDate($date) {
     <!-- ARVILLE NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-            <a class="navbar-brand" href="index.php">
+            <a class="navbar-brand" href="../index.php">
                 <img src="../images/logo.jpg" alt="ARville Network" width="200" class="d-inline-block align-text-top">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
