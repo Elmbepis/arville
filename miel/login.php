@@ -213,97 +213,24 @@ if (isset($_SESSION['user_id'])) {
     	padding: 10px 20px !important; /* Reduced height */
 		}
         
-        /* ===== MIEL HEADER ===== */
-        .miel-header {
+        /* ===== MIEL BANNER ===== */
+        .miel-banner-container {
             text-align: center;
             margin-bottom: 30px;
-            padding: 25px;
-            background: white;
+            padding: 0;
             border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            border: 5px solid var(--primary-blue);
             position: relative;
             overflow: hidden;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
-        .miel-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 8px;
-            background: linear-gradient(90deg, 
-                #4A90E2 0%, /* Blue */
-                #50C878 25%, /* Green */
-                #FFD166 50%, /* Yellow */
-                #FF6B6B 75%, /* Red */
-                #9C27B0 100% /* Purple */
-            );
-        }
-        
-        .miel-logo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .miel-logo-image {
-            max-width: 200px;
+        .miel-banner {
+            width: 100%;
             height: auto;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .miel-logo-image:hover {
-            transform: scale(1.05);
-        }
-        
-        .miel-subtitle {
-            font-size: 1.4rem;
-            color: var(--secondary-green);
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        
-        .miel-tagline {
-            color: #666;
-            font-size: 1rem;
-            max-width: 600px;
-            margin: 0 auto 15px;
-            line-height: 1.4;
-        }
-        
-        .miel-intelligence-icons {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .intelligence-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #F8F9FF;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: var(--primary-blue);
-            border: 2px solid #E0E0E0;
-            transition: all 0.3s;
-        }
-        
-        .intelligence-icon:hover {
-            transform: scale(1.1);
-            border-color: var(--primary-blue);
-            background: white;
-            box-shadow: var(--shadow);
+            display: block;
+            border-radius: var(--border-radius);
         }
         
         /* ===== LOGIN/REGISTER HEADER ===== */
@@ -569,26 +496,13 @@ if (isset($_SESSION['user_id'])) {
                 font-size: 1.8rem;
             }
             
-            .miel-header {
-                padding: 20px;
+            .miel-banner-container {
+                padding: 0;
+                margin-bottom: 20px;
             }
             
-            .miel-logo-image {
-                max-width: 150px;
-            }
-            
-            .miel-subtitle {
-                font-size: 1.1rem;
-            }
-            
-            .intelligence-icons {
-                gap: 10px;
-            }
-            
-            .intelligence-icon {
-                width: 35px;
-                height: 35px;
-                font-size: 1rem;
+            .miel-banner {
+                border-width: 3px;
             }
             
             .role-selector {
@@ -616,12 +530,8 @@ if (isset($_SESSION['user_id'])) {
                 font-size: 0.95rem;
             }
             
-            .miel-logo-image {
-                max-width: 120px;
-            }
-            
-            .miel-subtitle {
-                font-size: 1rem;
+            .miel-banner-container {
+                margin-bottom: 15px;
             }
         }
     </style>
@@ -647,16 +557,9 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </nav>
 
-    <div class="container">
-        <!-- MIEL HEADER (800px width) -->
-        <header class="miel-header fade-in">
-            <div class="miel-logo">
-                <img src="miel-logo.jpg" alt="MIEL Logo" class="miel-logo-image fade-in">                
-                <p class="miel-subtitle">Multiple Intelligence Experiential Learning System</p>
-                <p class="miel-tagline">Empowering every student through personalized learning adventures based on their unique intelligence strengths</p>
-            </div>
-            
-        </header>
+    <!-- MIEL BANNER IMAGE -->
+    <div class="miel-banner-container fade-in">
+        <img src="miel-banner.png" alt="MIEL - Multiple Intelligence Experiential Learning System" class="miel-banner">
     </div>
 
     <!-- FORM SECTION (600px width) -->
@@ -903,10 +806,10 @@ if (isset($_SESSION['user_id'])) {
             document.querySelector('.form-tab[data-form="register"]').click();
         }
         
-        // Make MIEL logo image interactive
-        const mielLogo = document.querySelector('.miel-logo-image');
-        if (mielLogo) {
-            mielLogo.addEventListener('click', function() {
+        // Make MIEL banner image interactive
+        const mielBanner = document.querySelector('.miel-banner');
+        if (mielBanner) {
+            mielBanner.addEventListener('click', function() {
                 this.classList.toggle('bounce');
                 alert('MIEL - Multiple Intelligence Experiential Learning\nPersonalized learning for every student!');
                 

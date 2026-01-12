@@ -1,5 +1,5 @@
 <?php
-// create-quiz.php
+// create-activity.php
 // Database configuration
 $host = 'localhost';
 $dbname = 'miel';
@@ -9,7 +9,7 @@ $password = 'AcadeV25!';
 // Handle form submission
 $statusMessage = '';
 $statusType = '';
-$savedQuizId = null;
+$savedActivityId = null;
 $formSubmitted = false;
 
 // Start session
@@ -25,10 +25,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'teacher') {
 $teacher_id = $_SESSION['user_id'];
 
 // Check if form was just submitted
-if (isset($_SESSION['quiz_created'])) {
+if (isset($_SESSION['activity_created'])) {
     $formSubmitted = true;
-    $savedQuizId = $_SESSION['quiz_created'];
-    $statusMessage = "Quiz created successfully! Quiz ID: $savedQuizId";
+    $savedActivityId = $_SESSION['activity_created'];
+    $statusMessage = "Activity created successfully! Activity ID: $savedActivityId";
     $statusType = 'success';
 }
 
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
         $input = json_decode(file_get_contents('php://input'), true);
         $title = $input['title'] ?? '';
         
-        $sql = "SELECT COUNT(*) as count FROM quizzes WHERE title = :title";
+        $sql = "SELECT COUNT(*) as count FROM activities WHERE title = :title";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([':title' => $title]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -62,55 +62,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         
         // Check for duplicate title
-        $checkSql = "SELECT COUNT(*) as count FROM quizzes WHERE title = :title";
+        $checkSql = "SELECT COUNT(*) as count FROM activities WHERE title = :title";
         $checkStmt = $pdo->prepare($checkSql);
-        $checkStmt->execute([':title' => $_POST['quiz_title']]);
+        $checkStmt->execute([':title' => $_POST['activity_title']]);
         $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
         
         if ($result['count'] > 0) {
-            $statusMessage = "Error: A quiz with this title already exists. Please choose a different title.";
+            $statusMessage = "Error: An activity with this title already exists. Please choose a different title.";
             $statusType = 'error';
         } else {
-            // Insert into quizzes table with ACTUAL teacher ID from session
-            $quizSql = "INSERT INTO quizzes (teacher_id, title, description, intelligence_type, virtual_world, created_at) 
-                        VALUES (:teacher_id, :title, :description, :intelligence_type, :virtual_world, NOW())";
+            // Determine activity type based on intelligence type
+            $activity_type = $_POST['activity_type'] ?? 'essay';
+            $instructions = $_POST['activity_instructions'] ?? '';
+            $max_points = intval($_POST['max_points']) > 0 ? intval($_POST['max_points']) : 100;
+            $due_date = !empty($_POST['due_date']) ? $_POST['due_date'] : null;
             
-            $quizStmt = $pdo->prepare($quizSql);
-            $quizStmt->execute([
+            // Insert into activities table with ACTUAL teacher ID from session
+            $activitySql = "INSERT INTO activities (teacher_id, title, description, intelligence_type, virtual_world, 
+                          activity_type, instructions, max_points, due_date, created_at) 
+                          VALUES (:teacher_id, :title, :description, :intelligence_type, :virtual_world, 
+                                  :activity_type, :instructions, :max_points, :due_date, NOW())";
+            
+            $activityStmt = $pdo->prepare($activitySql);
+            $activityStmt->execute([
                 ':teacher_id' => $teacher_id, // Use actual teacher ID from session
-                ':title' => $_POST['quiz_title'],
-                ':description' => $_POST['quiz_description'],
+                ':title' => $_POST['activity_title'],
+                ':description' => $_POST['activity_description'],
                 ':intelligence_type' => $_POST['intelligence_type'],
-                ':virtual_world' => $_POST['virtual_world']
+                ':virtual_world' => $_POST['virtual_world'],
+                ':activity_type' => $activity_type,
+                ':instructions' => $instructions,
+                ':max_points' => $max_points,
+                ':due_date' => $due_date
             ]);
             
-            $savedQuizId = $pdo->lastInsertId();
+            $savedActivityId = $pdo->lastInsertId();
             
             // Prevent duplicate submission on refresh
-            $_SESSION['quiz_created'] = $savedQuizId;
+            $_SESSION['activity_created'] = $savedActivityId;
             
             // Redirect to prevent form resubmission
-            header("Location: create-quiz.php?created=$savedQuizId");
+            header("Location: create-activity.php?created=$savedActivityId");
             exit();
         }
         
     } catch(Exception $e) {
-        $statusMessage = 'Failed to create quiz: ' . $e->getMessage();
+        $statusMessage = 'Failed to create activity: ' . $e->getMessage();
         $statusType = 'error';
     }
 }
 
 // Check if redirected after successful creation
 if (isset($_GET['created'])) {
-    $savedQuizId = $_GET['created'];
-    $statusMessage = "Quiz created successfully! Quiz ID: $savedQuizId";
+    $savedActivityId = $_GET['created'];
+    $statusMessage = "Activity created successfully! Activity ID: $savedActivityId";
     $statusType = 'success';
     $formSubmitted = true;
 }
 
 // Clear session on page load (except when redirected after success)
 if (!isset($_GET['created'])) {
-    unset($_SESSION['quiz_created']);
+    unset($_SESSION['activity_created']);
 }
 ?>
 <!DOCTYPE html>
@@ -118,7 +130,7 @@ if (!isset($_GET['created'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Quiz | MIEL - Multiple Intelligence E-Learning</title>
+    <title>Create Activity | MIEL - Multiple Intelligence E-Learning</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -160,8 +172,8 @@ if (!isset($_GET['created'])) {
             background-image: url('background-tile.jpg');
             background-repeat: repeat;
             background-size: 1980px 1080px;
-            opacity: 0.9; /* Full opacity for the image */
-            z-index: -1; /* Lower z-index than the overlay */
+            opacity: 0.9;
+            z-index: -1;
         }
 
         body::after {
@@ -171,12 +183,12 @@ if (!isset($_GET['created'])) {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(248, 249, 255, 0.3); /* Reduced from 0.85 to 0.3 */
-            z-index: -3; /* Higher z-index than the image */
+            background: rgba(248, 249, 255, 0.3);
+            z-index: -3;
         }
         
         .container {
-            max-width: 800px; /* SAME WIDTH AS teacher-dashboard.php */
+            max-width: 800px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -212,7 +224,7 @@ if (!isset($_GET['created'])) {
             text-align: center;
             margin-bottom: 30px;
             padding: 0;
-            max-width: 450px;
+            max-width: 550px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -223,7 +235,6 @@ if (!isset($_GET['created'])) {
             display: block;
         }
         
-        /* ===== MIEL HEADER (KEPT FOR REFERENCE BUT NOT USED) ===== */
         .miel-header {
             text-align: center;
             margin-bottom: 30px;
@@ -244,79 +255,14 @@ if (!isset($_GET['created'])) {
             right: 0;
             height: 8px;
             background: linear-gradient(90deg, 
-                #4A90E2 0%, /* Blue */
-                #50C878 25%, /* Green */
-                #FFD166 50%, /* Yellow */
-                #FF6B6B 75%, /* Red */
-                #9C27B0 100% /* Purple */
+                #4A90E2 0%,
+                #50C878 25%,
+                #FFD166 50%,
+                #FF6B6B 75%,
+                #9C27B0 100%
             );
         }
         
-        .miel-logo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .miel-logo-image {
-            max-width: 200px;
-            height: auto;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .miel-logo-image:hover {
-            transform: scale(1.05);
-        }
-        
-        .miel-subtitle {
-            font-size: 1.4rem;
-            color: var(--secondary-green);
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        
-        .miel-tagline {
-            color: #666;
-            font-size: 1rem;
-            max-width: 600px;
-            margin: 0 auto 15px;
-            line-height: 1.4;
-        }
-        
-        .miel-intelligence-icons {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .intelligence-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #F8F9FF;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: var(--primary-blue);
-            border: 2px solid #E0E0E0;
-            transition: all 0.3s;
-        }
-        
-        .intelligence-icon:hover {
-            transform: scale(1.1);
-            border-color: var(--primary-blue);
-            background: white;
-            box-shadow: var(--shadow);
-        }
-        
-        /* ===== DASHBOARD HEADER ===== */
         .dashboard-header {
             text-align: center;
             margin-bottom: 25px;
@@ -559,6 +505,79 @@ if (!isset($_GET['created'])) {
             color: #666;
         }
         
+        /* ===== ACTIVITY TYPE SELECTOR ===== */
+        .activity-type-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .activity-type-option {
+            background: #F8F9FF;
+            border: 3px solid #E0E0E0;
+            border-radius: 15px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 140px;
+        }
+        
+        .activity-type-option:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-blue);
+        }
+        
+        .activity-type-option.selected {
+            border-color: var(--secondary-green);
+            background: #E8F5E9;
+        }
+        
+        .activity-type-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(74, 144, 226, 0.1);
+            color: var(--primary-blue);
+        }
+        
+        .activity-type-info {
+            text-align: center;
+        }
+        
+        .activity-type-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: var(--text-dark);
+        }
+        
+        .activity-type-info p {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        /* Activity type colors */
+        .essay-icon { color: #4A90E2; background: rgba(74, 144, 226, 0.1); }
+        .drawing-icon { color: #9C27B0; background: rgba(156, 39, 176, 0.1); }
+        .presentation-icon { color: #50C878; background: rgba(80, 200, 120, 0.1); }
+        
+        /* ===== POINTS AND DATE INPUTS ===== */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
         /* ===== BUTTONS ===== */
         .btn {
             padding: 15px 30px;
@@ -603,16 +622,6 @@ if (!isset($_GET['created'])) {
             background: #E6B800;
         }
         
-        .btn-warning {
-            background: #FFA726;
-            color: white;
-        }
-        
-        .btn-warning:hover {
-            background: #FF9800;
-            transform: translateY(-3px);
-        }
-        
         .button-group {
             display: flex;
             gap: 15px;
@@ -620,14 +629,13 @@ if (!isset($_GET['created'])) {
         }
         
         /* ===== STANDARDIZED BUTTON STYLES ===== */
-        /* Blue functional buttons -> Yellow on hover */
         .btn-success, .btn-secondary {
-            background-color: #4A90E2 !important; /* BLUE for functional buttons */
+            background-color: #4A90E2 !important;
             color: white !important;
         }
         
         .btn-success:hover, .btn-secondary:hover {
-            background-color: #FFD166 !important; /* YELLOW on hover */
+            background-color: #FFD166 !important;
             transform: translateY(-3px);
             color: #2C3E50 !important;
         }
@@ -646,7 +654,6 @@ if (!isset($_GET['created'])) {
             border: 2px solid rgba(255, 255, 255, 0.8);
         }     
            
-        /* Green button for "Back to Dashboard" */
         .green-btn {
             background-color: #50C878 !important;
             color: white !important;
@@ -669,7 +676,6 @@ if (!isset($_GET['created'])) {
             transform: translateY(-3px) !important;
         }
         
-        /* Red button for logout */
         .red-btn {
             background-color: #FF6B6B !important;
             color: white !important;
@@ -692,7 +698,7 @@ if (!isset($_GET['created'])) {
             transform: translateY(-3px) !important;
         }
         
-        /* ===== MOBILE RESPONSIVE (SAME AS teacher-dashboard.php) ===== */
+        /* ===== MOBILE RESPONSIVE ===== */
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -712,9 +718,14 @@ if (!isset($_GET['created'])) {
             }
             
             .intelligence-selector,
-            .world-selector {
+            .world-selector,
+            .activity-type-selector {
                 grid-template-columns: repeat(2, 1fr);
-                grid-template-rows: repeat(4, 1fr);
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
             }
             
             .button-group {
@@ -725,7 +736,6 @@ if (!isset($_GET['created'])) {
                 width: 100%;
             }
             
-            /* Bottom buttons on mobile */
             .bottom-buttons-container {
                 flex-direction: column;
                 gap: 10px;
@@ -741,7 +751,8 @@ if (!isset($_GET['created'])) {
         
         @media (max-width: 480px) {
             .intelligence-selector,
-            .world-selector {
+            .world-selector,
+            .activity-type-selector {
                 grid-template-columns: 1fr;
             }
             
@@ -753,13 +764,17 @@ if (!isset($_GET['created'])) {
                 grid-template-rows: repeat(8, 1fr);
             }
             
+            .activity-type-selector {
+                grid-template-rows: repeat(3, 1fr);
+            }
+            
             .input-with-icon input {
                 padding-left: 45px;
                 font-size: 1rem;
             }
         }
         
-        /* ===== ANIMATIONS (SAME AS teacher-dashboard.php) ===== */
+        /* ===== ANIMATIONS ===== */
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
@@ -776,18 +791,6 @@ if (!isset($_GET['created'])) {
         
         .fade-in {
             animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes rainbow {
-            0% { color: #4A90E2; }
-            25% { color: #50C878; }
-            50% { color: #FFD166; }
-            75% { color: #FF6B6B; }
-            100% { color: #9C27B0; }
-        }
-        
-        .rainbow {
-            animation: rainbow 3s ease infinite;
         }
         
         /* ===== STATUS MESSAGES ===== */
@@ -809,7 +812,7 @@ if (!isset($_GET['created'])) {
             border-left: 5px solid #FF6B6B;
         }
         
-        .quiz-id-display {
+        .activity-id-display {
             background: #E3F2FD;
             padding: 15px;
             border-radius: 15px;
@@ -818,7 +821,7 @@ if (!isset($_GET['created'])) {
             font-size: 1.1rem;
         }
         
-        .quiz-id-display strong {
+        .activity-id-display strong {
             color: var(--primary-blue);
             font-size: 1.3rem;
         }
@@ -866,10 +869,10 @@ if (!isset($_GET['created'])) {
         <!-- DASHBOARD HEADER -->
         <header class="dashboard-header fade-in">
             <div class="logo">
-                <i class="fas fa-graduation-cap logo-icon bounce"></i>
+                <i class="fas fa-tasks logo-icon bounce"></i>
                 <div>
-                    <h1>Create Quiz for Arville Metaverse</h1>
-                    <p class="subtitle">Design fun quizzes for your students!</p>
+                    <h1>Create Activity for Arville Metaverse</h1>
+                    <p class="subtitle">Design creative activities for your students!</p>
                 </div>
             </div>
         </header>
@@ -883,32 +886,62 @@ if (!isset($_GET['created'])) {
             </div>
             <?php endif; ?>
             
-            <?php if ($savedQuizId): ?>
-            <div class="quiz-id-display">
-                <p>Your quiz has been created with ID: <strong><?php echo $savedQuizId; ?></strong></p>
+            <?php if ($savedActivityId): ?>
+            <div class="activity-id-display">
+                <p>Your activity has been created with ID: <strong><?php echo $savedActivityId; ?></strong></p>
                 <div class="button-group" style="margin-top: 15px;">
-                    <a href="add-questions.php?quiz_id=<?php echo $savedQuizId; ?>" class="btn btn-primary">
-                        <i class="fas fa-plus-circle"></i> Add Questions
-                    </a>
-                    <a href="create-quiz.php" class="btn btn-success">
-                        <i class="fas fa-plus"></i> Create Another Quiz
+                    <a href="create-activity.php" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Create Another Activity
                     </a>
                 </div>
             </div>
             <?php endif; ?>
             
-            <form method="POST" action="create-quiz.php" id="quizForm" class="<?php echo $formSubmitted ? 'form-disabled' : ''; ?>">
-                <!-- QUIZ INFO SECTION -->
+            <form method="POST" action="create-activity.php" id="activityForm" class="<?php echo $formSubmitted ? 'form-disabled' : ''; ?>">
+                <!-- ACTIVITY INFO SECTION -->
                 <div class="form-group">
                     <label class="form-label">
-                        <i class="fas fa-heading"></i> Quiz Title
+                        <i class="fas fa-heading"></i> Activity Title
                     </label>
                     <div class="input-with-icon">
                         <i class="fas fa-pencil-alt input-icon"></i>
-                        <input type="text" name="quiz_title" id="quizTitle" placeholder="Enter a fun quiz title..." maxlength="200" required
-                               value="<?php echo isset($_POST['quiz_title']) && !$formSubmitted ? htmlspecialchars($_POST['quiz_title']) : ''; ?>">
+                        <input type="text" name="activity_title" id="activityTitle" placeholder="Enter activity title (e.g., 'Creative Essay Writing')" maxlength="200" required
+                               value="<?php echo isset($_POST['activity_title']) && !$formSubmitted ? htmlspecialchars($_POST['activity_title']) : ''; ?>">
                     </div>
                     <div id="titleError" class="error-message"></div>
+                </div>
+
+                <!-- ACTIVITY TYPE SELECTOR -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-clipboard-check"></i> Activity Type
+                    </label>
+                    <div class="activity-type-selector">
+                        <?php
+                        $activityTypes = [
+                            'essay' => ['icon' => 'file-alt', 'name' => 'Essay Writing', 'desc' => 'Written assignments'],
+                            'drawing' => ['icon' => 'paint-brush', 'name' => 'Drawing', 'desc' => 'Artistic creations'],
+                            'presentation' => ['icon' => 'presentation', 'name' => 'Presentation', 'desc' => 'Slides or video']
+                        ];
+                        
+                        $selectedActivityType = isset($_POST['activity_type']) && !$formSubmitted ? $_POST['activity_type'] : 'essay';
+                        
+                        foreach ($activityTypes as $key => $type):
+                            $isSelected = $selectedActivityType === $key;
+                        ?>
+                        <div class="activity-type-option <?php echo $isSelected ? 'selected' : ''; ?>" 
+                             data-activity-type="<?php echo $key; ?>">
+                            <div class="activity-type-icon <?php echo $key; ?>-icon">
+                                <i class="fas fa-<?php echo $type['icon']; ?>"></i>
+                            </div>
+                            <div class="activity-type-info">
+                                <h4><?php echo $type['name']; ?></h4>
+                                <p><?php echo $type['desc']; ?></p>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <input type="hidden" name="activity_type" id="activityType" value="<?php echo $selectedActivityType; ?>">
                 </div>
 
                 <!-- INTELLIGENCE TYPE SELECTOR -->
@@ -952,11 +985,11 @@ if (!isset($_GET['created'])) {
                 <!-- DESCRIPTION -->
                 <div class="form-group">
                     <label class="form-label">
-                        <i class="fas fa-book-open"></i> Description
+                        <i class="fas fa-book-open"></i> Activity Description
                     </label>
                     <div class="input-with-icon">
                         <i class="fas fa-align-left input-icon"></i>
-                        <textarea name="quiz_description" id="quizDescription" placeholder="Describe what students will learn..."><?php echo isset($_POST['quiz_description']) && !$formSubmitted ? htmlspecialchars($_POST['quiz_description']) : ''; ?></textarea>
+                        <textarea name="activity_description" id="activityDescription" placeholder="Describe the activity and learning objectives..."><?php echo isset($_POST['activity_description']) && !$formSubmitted ? htmlspecialchars($_POST['activity_description']) : ''; ?></textarea>
                     </div>
                 </div>
 
@@ -1000,18 +1033,58 @@ if (!isset($_GET['created'])) {
                     <input type="hidden" name="virtual_world" id="virtualWorld" value="<?php echo $selectedWorld; ?>">
                 </div>
 
+                <!-- INSTRUCTIONS -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-list-check"></i> Detailed Instructions
+                    </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-clipboard-list input-icon"></i>
+                        <textarea name="activity_instructions" id="activityInstructions" placeholder="Provide step-by-step instructions for students..." rows="5"><?php echo isset($_POST['activity_instructions']) && !$formSubmitted ? htmlspecialchars($_POST['activity_instructions']) : ''; ?></textarea>
+                    </div>
+                </div>
+
+                <!-- POINTS AND DUE DATE -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-cog"></i> Activity Settings
+                    </label>
+                    <div class="form-row">
+                        <div>
+                            <label class="form-label" style="font-size: 1rem;">
+                                <i class="fas fa-star"></i> Maximum Points
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-star input-icon"></i>
+                                <input type="number" name="max_points" id="maxPoints" placeholder="100" min="1" max="1000" 
+                                       value="<?php echo isset($_POST['max_points']) && !$formSubmitted ? htmlspecialchars($_POST['max_points']) : '100'; ?>">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label" style="font-size: 1rem;">
+                                <i class="fas fa-calendar-alt"></i> Due Date (Optional)
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-calendar-alt input-icon"></i>
+                                <input type="date" name="due_date" id="dueDate" 
+                                       value="<?php echo isset($_POST['due_date']) && !$formSubmitted ? htmlspecialchars($_POST['due_date']) : ''; ?>">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ACTION BUTTONS -->
                 <div class="button-group" style="margin-top: 30px;">
                     <?php if (!$formSubmitted): ?>
                     <button type="submit" class="btn btn-success" id="submitBtn">
-                        <i class="fas fa-plus-circle"></i> Create Quiz
+                        <i class="fas fa-plus-circle"></i> Create Activity
                     </button>
                     <button type="reset" class="btn btn-secondary">
                         <i class="fas fa-redo"></i> Reset Form
                     </button>
                     <?php else: ?>
-                    <a href="create-quiz.php" class="btn btn-success">
-                        <i class="fas fa-plus"></i> Create Another Quiz
+                    <a href="create-activity.php" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Create Another Activity
                     </a>
                     <?php endif; ?>
                 </div>
@@ -1024,26 +1097,43 @@ if (!isset($_GET['created'])) {
                 <i class="fas fa-tachometer-alt"></i> Back to Dashboard
             </a>
             
-<form method="POST" action="logout.php" style="display: inline;">
-    <button type="submit" name="logout" class="red-btn">
-        <i class="fas fa-sign-out-alt"></i> Logout
-    </button>
-</form>
-
+            <form method="POST" action="logout.php" style="display: inline;">
+                <button type="submit" name="logout" class="red-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
         </div>
     </div>
 
     <!-- JAVASCRIPT -->
     <script>
         // DOM Elements
+        const activityTypeOptions = document.querySelectorAll('.activity-type-option');
         const intelligenceOptions = document.querySelectorAll('.intelligence-option');
         const worldOptions = document.querySelectorAll('.world-option');
+        const activityTypeInput = document.getElementById('activityType');
         const intelligenceInput = document.getElementById('intelligenceType');
         const virtualWorldInput = document.getElementById('virtualWorld');
-        const quizForm = document.getElementById('quizForm');
-        const titleInput = document.getElementById('quizTitle');
+        const activityForm = document.getElementById('activityForm');
+        const titleInput = document.getElementById('activityTitle');
         const titleError = document.getElementById('titleError');
         const submitBtn = document.getElementById('submitBtn');
+        const dueDateInput = document.getElementById('dueDate');
+
+        // Set minimum due date to today
+        const today = new Date().toISOString().split('T')[0];
+        if (dueDateInput) {
+            dueDateInput.min = today;
+        }
+
+        // Activity Type Selector
+        activityTypeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                activityTypeOptions.forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                activityTypeInput.value = option.dataset.activityType;
+            });
+        });
 
         // Intelligence Type Selector
         intelligenceOptions.forEach(option => {
@@ -1068,7 +1158,7 @@ if (!isset($_GET['created'])) {
             if (!title.trim()) return false;
             
             try {
-                const response = await fetch('create-quiz.php', {
+                const response = await fetch('create-activity.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1086,15 +1176,25 @@ if (!isset($_GET['created'])) {
         }
 
         // Form validation
-        quizForm.addEventListener('submit', async function(e) {
+        activityForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const title = titleInput.value.trim();
             if (!title) {
-                titleError.textContent = 'Please enter a quiz title!';
+                titleError.textContent = 'Please enter an activity title!';
                 titleError.style.display = 'block';
                 titleInput.focus();
                 return false;
+            }
+            
+            const pointsInput = document.getElementById('maxPoints');
+            if (pointsInput) {
+                const points = parseInt(pointsInput.value);
+                if (isNaN(points) || points < 1 || points > 1000) {
+                    alert('Please enter valid points between 1 and 1000');
+                    pointsInput.focus();
+                    return false;
+                }
             }
             
             // Check for duplicate title
@@ -1106,11 +1206,11 @@ if (!isset($_GET['created'])) {
             const isDuplicate = await checkDuplicateTitle(title);
             
             if (isDuplicate) {
-                titleError.textContent = 'A quiz with this title already exists. Please choose a different title.';
+                titleError.textContent = 'An activity with this title already exists. Please choose a different title.';
                 titleError.style.display = 'block';
                 titleInput.focus();
                 if (submitBtn) {
-                    submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Create Quiz';
+                    submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Create Activity';
                     submitBtn.disabled = false;
                 }
                 return false;
@@ -1121,7 +1221,7 @@ if (!isset($_GET['created'])) {
             this.submit();
         });
 
-        // Real-time title validation (optional)
+        // Real-time title validation
         titleInput.addEventListener('input', function() {
             titleError.style.display = 'none';
         });
@@ -1129,7 +1229,7 @@ if (!isset($_GET['created'])) {
         // Add keyboard shortcut: Ctrl+Enter to submit
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key === 'Enter' && !<?php echo $formSubmitted ? 'true' : 'false'; ?>) {
-                quizForm.submit();
+                activityForm.submit();
             }
         });
 
@@ -1138,9 +1238,8 @@ if (!isset($_GET['created'])) {
         if (mielBanner) {
             mielBanner.addEventListener('click', function() {
                 this.classList.toggle('bounce');
-                alert('MIEL - Multiple Intelligence Experiential Learning\nPersonalized learning for every student!');
+                alert('MIEL - Multiple Intelligence Experiential Learning\nActivities for creative expression!');
                 
-                // Remove bounce class after animation completes
                 setTimeout(() => {
                     this.classList.remove('bounce');
                 }, 500);

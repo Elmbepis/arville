@@ -39,6 +39,16 @@ try {
     $quizStmt->execute([$_SESSION['user_id']]);
     $teacherQuizzes = $quizStmt->fetchAll(PDO::FETCH_ASSOC);
     
+    // Get activities created by this teacher
+    $activityStmt = $pdo->prepare("
+        SELECT a.*
+        FROM activities a 
+        WHERE a.teacher_id = ?
+        ORDER BY a.created_at DESC
+    ");
+    $activityStmt->execute([$_SESSION['user_id']]);
+    $teacherActivities = $activityStmt->fetchAll(PDO::FETCH_ASSOC);
+    
     // Get student scores for teacher's quizzes
     $scoreStmt = $pdo->prepare("
         SELECT s.*, q.title as quiz_title, u.full_name as student_name, u.grade_level, u.class_name
@@ -56,10 +66,12 @@ try {
     $statsStmt = $pdo->prepare("
         SELECT 
             COUNT(DISTINCT q.id) as total_quizzes,
+            COUNT(DISTINCT a.id) as total_activities,
             COUNT(DISTINCT s.student_id) as total_students,
             COUNT(DISTINCT s.id) as total_attempts,
             COALESCE(AVG(s.score), 0) as overall_avg_score
         FROM quizzes q 
+        LEFT JOIN activities a ON q.teacher_id = a.teacher_id
         LEFT JOIN scores s ON q.id = s.quiz_id
         WHERE q.teacher_id = ?
     ");
@@ -105,6 +117,26 @@ function getIntelligenceIcon($type) {
         'naturalist' => 'leaf'
     ];
     return $icons[$type] ?? 'question-circle';
+}
+
+// Get activity type name
+function getActivityTypeName($type) {
+    $names = [
+        'essay' => 'Essay',
+        'drawing' => 'Drawing',
+        'presentation' => 'Presentation'
+    ];
+    return $names[$type] ?? $type;
+}
+
+// Get activity type icon
+function getActivityTypeIcon($type) {
+    $icons = [
+        'essay' => 'file-alt',
+        'drawing' => 'paint-brush',
+        'presentation' => 'presentation'
+    ];
+    return $icons[$type] ?? 'tasks';
 }
 
 // Get world name
@@ -235,98 +267,20 @@ function formatDate($date) {
 	    margin-bottom: 30px !important; /* Adjust this value as needed */
 	}
 
-
-        /* ===== MIEL HEADER ===== */
-        .miel-header {
+        /* ===== MIEL BANNER ===== */
+        .miel-banner-container {
             text-align: center;
             margin-bottom: 30px;
-            padding: 25px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            border: 5px solid var(--primary-blue);
-            position: relative;
-            overflow: hidden;
+            padding: 0;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
-        .miel-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 8px;
-            background: linear-gradient(90deg, 
-                #4A90E2 0%, /* Blue */
-                #50C878 25%, /* Green */
-                #FFD166 50%, /* Yellow */
-                #FF6B6B 75%, /* Red */
-                #9C27B0 100% /* Purple */
-            );
-        }
-        
-        .miel-logo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .miel-logo-image {
-            max-width: 200px;
+        .miel-banner {
+            width: 100%;
             height: auto;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .miel-logo-image:hover {
-            transform: scale(1.05);
-        }
-        
-        .miel-subtitle {
-            font-size: 1.4rem;
-            color: var(--secondary-green);
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        
-        .miel-tagline {
-            color: #666;
-            font-size: 1rem;
-            max-width: 600px;
-            margin: 0 auto 15px;
-            line-height: 1.4;
-        }
-        
-        .miel-intelligence-icons {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .intelligence-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #F8F9FF;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: var(--primary-blue);
-            border: 2px solid #E0E0E0;
-            transition: all 0.3s;
-        }
-        
-        .intelligence-icon:hover {
-            transform: scale(1.1);
-            border-color: var(--primary-blue);
-            background: white;
-            box-shadow: var(--shadow);
+            display: block;
         }
         
         /* ===== DASHBOARD HEADER ===== */
@@ -591,6 +545,51 @@ function formatDate($date) {
             margin-top: 5px;
         }
         
+        /* ===== ACTIVITIES SECTION ===== */
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .activity-icon {
+            aspect-ratio: 1/1;
+            background: #F8F9FF;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 3px solid #E0E0E0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .activity-icon:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-blue);
+            box-shadow: var(--shadow);
+        }
+        
+        .activity-type-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #9C27B0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(156, 39, 176, 0.1);
+        }
+        
         /* ===== SCORES SECTION ===== */
         .scores-section {
             width: 100%;
@@ -785,6 +784,12 @@ function formatDate($date) {
             text-align: center;
             border: 3px dashed #DDD;
             color: #999;
+            cursor: pointer;
+        }
+        
+        .empty-icon:hover {
+            background: #E8F0FE;
+            border-color: var(--primary-blue);
         }
         
         .empty-icon i {
@@ -833,32 +838,20 @@ function formatDate($date) {
             color: var(--text-dark);
         }
         
+        .badge-purple {
+            background: #9C27B0;
+            color: white;
+        }
+        
         /* ===== MOBILE RESPONSIVE (SAME AS create-quiz.php) ===== */
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
             }
             
-            .miel-header {
-                padding: 20px;
-            }
-            
-            .miel-logo-image {
-                max-width: 150px;
-            }
-            
-            .miel-subtitle {
-                font-size: 1.1rem;
-            }
-            
-            .intelligence-icons {
-                gap: 10px;
-            }
-            
-            .intelligence-icon {
-                width: 35px;
-                height: 35px;
-                font-size: 1rem;
+            .miel-banner-container {
+                padding: 10px;
+                margin-bottom: 20px;
             }
             
             .main-card {
@@ -870,6 +863,7 @@ function formatDate($date) {
             }
             
             .quiz-grid,
+            .activity-grid,
             .empty-grid {
                 grid-template-columns: repeat(2, 1fr);
                 grid-template-rows: repeat(4, 1fr);
@@ -920,6 +914,7 @@ function formatDate($date) {
         
         @media (max-width: 480px) {
             .quiz-grid,
+            .activity-grid,
             .empty-grid {
                 grid-template-columns: repeat(2, 1fr);
                 grid-template-rows: repeat(4, 1fr);
@@ -927,14 +922,6 @@ function formatDate($date) {
             
             .stats-summary {
                 grid-template-columns: 1fr;
-            }
-            
-            .miel-logo-image {
-                max-width: 120px;
-            }
-            
-            .miel-subtitle {
-                font-size: 1rem;
             }
         }
         
@@ -983,6 +970,11 @@ function formatDate($date) {
             background: var(--primary-blue);
             border-radius: 10px;
         }
+        
+        /* ===== SECTION MARGINS ===== */
+        .section-divider {
+            height: 20px;
+        }
     </style>
 </head>
 <body>
@@ -1006,24 +998,19 @@ function formatDate($date) {
         </div>
     </nav>
 
-    <div class="container">
-        <!-- MIEL HEADER -->
-        <header class="miel-header fade-in">
-            <div class="miel-logo">
-                <img src="miel-logo.jpg" alt="MIEL Logo" class="miel-logo-image fade-in">                
-                <p class="miel-subtitle">Multiple Intelligence Experiential Learning System</p>
-                <p class="miel-tagline">Empowering every student through personalized learning adventures based on their unique intelligence strengths</p>
-            </div>
-            
-        </header>
+    <!-- MIEL BANNER IMAGE -->
+    <div class="miel-banner-container fade-in">
+        <img src="miel-banner.png" alt="MIEL - Multiple Intelligence Experiential Learning System" class="miel-banner">
+    </div>
 
+    <div class="container">
         <!-- DASHBOARD HEADER -->
         <header class="dashboard-header fade-in">
             <div class="logo">
                 <i class="fas fa-chalkboard-teacher logo-icon bounce"></i>
                 <div>
                     <h1>Teacher Dashboard</h1>
-                    <p class="subtitle">Manage Your Quizzes & Track Student Progress</p>
+                    <p class="subtitle">Manage Your Quizzes, Activities & Track Student Progress</p>
                 </div>
             </div>
             <div class="welcome-message">
@@ -1080,8 +1067,8 @@ function formatDate($date) {
                                 <i class="fas fa-trophy"></i>
                             </div>
                             <div class="profile-details">
-                                <div class="profile-label">Active Quizzes</div>
-                                <div class="profile-value"><?php echo $stats['total_quizzes'] ?? 0; ?></div>
+                                <div class="profile-label">Total Content</div>
+                                <div class="profile-value"><?php echo ($stats['total_quizzes'] + $stats['total_activities']) ?? 0; ?></div>
                             </div>
                         </div>
                     </div>
@@ -1091,11 +1078,11 @@ function formatDate($date) {
                 <div class="stats-summary">
                     <div class="stat-item">
                         <div class="stat-value"><?php echo $stats['total_quizzes'] ?? 0; ?></div>
-                        <div class="stat-label">Quizzes Created</div>
+                        <div class="stat-label">Quizzes</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value"><?php echo $stats['total_students'] ?? 0; ?></div>
-                        <div class="stat-label">Students</div>
+                        <div class="stat-value"><?php echo $stats['total_activities'] ?? 0; ?></div>
+                        <div class="stat-label">Activities</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value"><?php echo $stats['total_attempts'] ?? 0; ?></div>
@@ -1165,7 +1152,6 @@ function formatDate($date) {
                     </div>
                     
                     <div class="action-buttons">
-                        <!-- ADDED: Add Questions button beside Create New Quiz -->
                         <?php if (!empty($teacherQuizzes)): ?>
                         <a href="add-questions.php" class="action-btn">
                             <i class="fas fa-question-circle"></i> Add Questions
@@ -1179,7 +1165,69 @@ function formatDate($date) {
                         <a href="create-quiz.php" class="action-btn">
                             <i class="fas fa-plus-circle"></i> Create New Quiz
                         </a>
-                        <!-- REMOVED: View All Quizzes button -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- MY ACTIVITIES SECTION (UNDER QUIZZES) -->
+            <div class="card fade-in">
+                <h2 class="card-title">
+                    <i class="fas fa-tasks"></i> My Activities
+                    <span class="badge badge-purple"><?php echo count($teacherActivities); ?></span>
+                </h2>
+                
+                <div class="quiz-grid-section">
+                    <div class="activity-grid">
+                        <?php if (empty($teacherActivities)): ?>
+                            <!-- Show 8 empty placeholders for activities -->
+                            <?php for ($i = 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                                <i class="fas fa-plus-circle"></i>
+                                <div class="empty-text">Create Activity <?php echo $i; ?></div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php else: ?>
+                            <?php 
+                            // Show up to 8 activities
+                            $displayActivities = array_slice($teacherActivities, 0, 8);
+                            $activityCount = 0;
+                            ?>
+                            <?php foreach ($displayActivities as $activity): $activityCount++; ?>
+                            <div class="activity-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)">
+                                <div class="icon-badge"><?php echo $activityCount; ?></div>
+                                <div class="activity-type-icon">
+                                    <i class="fas fa-<?php echo getActivityTypeIcon($activity['activity_type']); ?>"></i>
+                                </div>
+                                <div class="icon-title">
+                                    <?php echo htmlspecialchars(substr($activity['title'], 0, 20)); ?>
+                                    <?php if (strlen($activity['title']) > 20): ?>...<?php endif; ?>
+                                </div>
+                                <div class="icon-stats">
+                                    <div><i class="fas fa-paper-plane"></i> Not Submitted</div>
+                                    <div><i class="fas fa-check-circle"></i> 0 graded</div>
+                                </div>
+                                <?php if ($activity['due_date']): ?>
+                                <div class="icon-stats" style="color: #FF9800; font-size: 0.7rem;">
+                                    <i class="fas fa-calendar"></i> Due: <?php echo formatDate($activity['due_date']); ?>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                            <?php endforeach; ?>
+                            
+                            <?php // Fill remaining slots with placeholders ?>
+                            <?php for ($i = $activityCount + 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                                <i class="fas fa-plus-circle"></i>
+                                <div class="empty-text">Create New Activity</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <a href="create-activity.php" class="action-btn">
+                            <i class="fas fa-plus-circle"></i> Create New Activity
+                        </a>
                     </div>
                 </div>
             </div>
@@ -1187,7 +1235,7 @@ function formatDate($date) {
             <!-- STUDENT SCORES SECTION -->
             <div class="card fade-in">
                 <h2 class="card-title">
-                    <i class="fas fa-chart-line"></i> Student Scores
+                    <i class="fas fa-chart-line"></i> Student Quiz Scores
                     <span class="badge badge-primary"><?php echo count($studentScores); ?></span>
                 </h2>
                 
@@ -1195,7 +1243,7 @@ function formatDate($date) {
                     <?php if (empty($studentScores)): ?>
                         <div class="empty-score">
                             <i class="fas fa-chart-bar"></i>
-                            <p>No student scores yet. Share your quizzes with students!</p>
+                            <p>No student quiz scores yet. Share your quizzes with students!</p>
                         </div>
                     <?php else: ?>
                         <div class="score-list">
@@ -1240,8 +1288,30 @@ function formatDate($date) {
                     <?php endif; ?>
                     
                     <div class="action-buttons">
-                        <button class="action-btn" onclick="exportScores()">
-                            <i class="fas fa-download"></i> Export Scores
+                        <button class="action-btn" onclick="exportQuizScores()">
+                            <i class="fas fa-download"></i> Export Quiz Scores
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STUDENT ACTIVITY GRADES SECTION (UNDER STUDENT SCORES) -->
+            <div class="card fade-in">
+                <h2 class="card-title">
+                    <i class="fas fa-check-double"></i> Student Activity Grades
+                    <span class="badge badge-purple">Coming Soon</span>
+                </h2>
+                
+                <div class="scores-section">
+                    <div class="empty-score">
+                        <i class="fas fa-clipboard-check"></i>
+                        <p>Activity submission and grading system coming soon!</p>
+                        <p>Student submissions will be handled by a separate system.</p>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="exportActivityGrades()">
+                            <i class="fas fa-download"></i> Export Activity Grades
                         </button>
                     </div>
                 </div>
@@ -1262,16 +1332,20 @@ function formatDate($date) {
     <script>
         // Quiz functions
         function viewQuiz(quizId) {
-            // Directly go to add questions page with the selected quiz
             window.location.href = `add-questions.php?quiz_id=${quizId}`;
         }
         
-        function viewAllScores() {
-            alert('Viewing all scores - This would show detailed score analytics in the full version.');
+        // Activity functions
+        function viewActivity(activityId) {
+            alert('View Activity feature coming soon!');
         }
         
-        function exportScores() {
-            alert('Exporting scores - This would download a CSV file of all student scores in the full version.');
+        function exportQuizScores() {
+            alert('Exporting quiz scores - This would download a CSV file of all student quiz scores in the full version.');
+        }
+        
+        function exportActivityGrades() {
+            alert('Export Activity Grades feature coming soon!');
         }
         
         // Auto-refresh every 30 seconds
@@ -1286,9 +1360,13 @@ function formatDate($date) {
                 window.location.href = 'create-quiz.php';
             }
             
+            if (e.ctrlKey && e.key === 'a') {
+                e.preventDefault();
+                window.location.href = 'create-activity.php';
+            }
+            
             if (e.ctrlKey && e.key === 'q') {
                 e.preventDefault();
-                // Go to add questions page
                 window.location.href = 'add-questions.php';
             }
             
@@ -1300,7 +1378,7 @@ function formatDate($date) {
         });
         
         // Add hover effects
-        document.querySelectorAll('.quiz-icon').forEach(icon => {
+        document.querySelectorAll('.quiz-icon, .activity-icon').forEach(icon => {
             icon.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-5px)';
             });
@@ -1332,9 +1410,15 @@ function formatDate($date) {
             });
         });
         
-        // Intelligence icons animation
-        document.querySelectorAll('.intelligence-icon').forEach((icon, index) => {
-            icon.style.animationDelay = `${index * 0.1}s`;
+        // Empty icon hover effect
+        document.querySelectorAll('.empty-icon').forEach(icon => {
+            icon.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            icon.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
         });
         
         // Function to go directly to add questions
@@ -1342,23 +1426,33 @@ function formatDate($date) {
             window.location.href = 'add-questions.php';
         }
         
-        // Add context menu to quiz icons for quick actions
-        document.querySelectorAll('.quiz-icon').forEach(icon => {
+        // Make MIEL banner image interactive
+        const mielBanner = document.querySelector('.miel-banner');
+        if (mielBanner) {
+            mielBanner.addEventListener('click', function() {
+                this.classList.toggle('bounce');
+                alert('MIEL - Multiple Intelligence Experiential Learning\nPersonalized learning for every student!');
+                
+                setTimeout(() => {
+                    this.classList.remove('bounce');
+                }, 500);
+            });
+        }
+        
+        // Add context menu to activity icons for quick actions
+        document.querySelectorAll('.activity-icon').forEach(icon => {
             icon.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
-                const quizId = this.getAttribute('onclick')?.match(/\d+/)?.[0];
-                if (quizId) {
-                    const action = prompt(`Quick Actions for Quiz #${quizId}\n\nEnter:\n1 - Add Questions\n2 - View Details\n3 - Edit Quiz`);
+                const activityId = this.getAttribute('onclick')?.match(/\d+/)?.[0];
+                if (activityId) {
+                    const action = prompt(`Quick Actions for Activity #${activityId}\n\nEnter:\n1 - View Details\n2 - Edit Activity`);
                     
                     switch(action) {
                         case '1':
-                            viewQuiz(quizId);
+                            viewActivity(activityId);
                             break;
                         case '2':
-                            alert(`Viewing quiz #${quizId} details - Feature coming soon!`);
-                            break;
-                        case '3':
-                            alert(`Edit quiz #${quizId} - Feature coming soon!`);
+                            alert(`Edit activity #${activityId} - Feature coming soon!`);
                             break;
                         default:
                             // Do nothing
@@ -1366,20 +1460,6 @@ function formatDate($date) {
                 }
             });
         });
-        
-        // Make MIEL logo image interactive
-        const mielLogo = document.querySelector('.miel-logo-image');
-        if (mielLogo) {
-            mielLogo.addEventListener('click', function() {
-                this.classList.toggle('bounce');
-                alert('MIEL - Multiple Intelligence Experiential Learning\nPersonalized learning for every student!');
-                
-                // Remove bounce class after animation completes
-                setTimeout(() => {
-                    this.classList.remove('bounce');
-                }, 500);
-            });
-        }
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

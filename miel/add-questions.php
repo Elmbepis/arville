@@ -88,6 +88,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $statusMessage = "Please enter the question text!";
                 $statusType = 'error';
             } else {
+                // Get the correct answer from form
+                $correct_answer = $_POST['correct_answer'] ?? 'A';
+                
                 // Prepare options array based on question type
                 if ($question_type === 'multiple_choice') {
                     // Validate MC options
@@ -96,54 +99,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         $statusMessage = "Please fill in all multiple choice options!";
                         $statusType = 'error';
                     } else {
-                        // For MC: First option is correct, others are distractors
+                        // For MC: Store all options
                         $options = [
                             'A' => $_POST['option_a'] ?? '',
                             'B' => $_POST['option_b'] ?? '',
                             'C' => $_POST['option_c'] ?? '',
                             'D' => $_POST['option_d'] ?? ''
                         ];
-                        $correct_answer = 'A'; // First option is always correct
                         
                         // Store question type in options array
                         $options['question_type'] = $question_type;
                         
+                        // Set qtype value
+                        $qtype = 'MC';
+                        
                         $insertStmt = $pdo->prepare("
-                            INSERT INTO questions (quiz_id, question_text, options, correct_answer) 
-                            VALUES (?, ?, ?, ?)
+                            INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
+                            VALUES (?, ?, ?, ?, ?)
                         ");
                         
                         $insertStmt->execute([
                             $quiz_id,
+                            $qtype,
                             $_POST['question_text'],
                             json_encode($options),
-                            $correct_answer
+                            $correct_answer  // Use the selected correct answer
                         ]);
                         
                         $statusMessage = "Multiple choice question added successfully!";
                         $statusType = 'success';
                     }
                 } elseif ($question_type === 'true_false') {
-                    // For T/F: True is correct, False is distractor
+                    // For T/F: Store both options
                     $options = [
                         'A' => 'True',
                         'B' => 'False'
                     ];
-                    $correct_answer = 'A'; // True is always correct (first option)
                     
                     // Store question type in options array
                     $options['question_type'] = $question_type;
                     
+                    // Set qtype value
+                    $qtype = 'TF';
+                    
                     $insertStmt = $pdo->prepare("
-                        INSERT INTO questions (quiz_id, question_text, options, correct_answer) 
-                        VALUES (?, ?, ?, ?)
+                        INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
+                        VALUES (?, ?, ?, ?, ?)
                     ");
                     
                     $insertStmt->execute([
                         $quiz_id,
+                        $qtype,
                         $_POST['question_text'],
                         json_encode($options),
-                        $correct_answer
+                        $correct_answer  // Use the selected correct answer (A or B)
                     ]);
                     
                     $statusMessage = "True/False question added successfully!";
@@ -159,18 +168,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         $options = [
                             'A' => $_POST['fill_answer'] ?? ''
                         ];
-                        $correct_answer = 'A'; // Only one option for fill in the blank
+                        $correct_answer = 'A'; // Always A for fill in blank
                         
                         // Store question type in options array
                         $options['question_type'] = $question_type;
                         
+                        // Set qtype value
+                        $qtype = 'FB';
+                        
                         $insertStmt = $pdo->prepare("
-                            INSERT INTO questions (quiz_id, question_text, options, correct_answer) 
-                            VALUES (?, ?, ?, ?)
+                            INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
+                            VALUES (?, ?, ?, ?, ?)
                         ");
                         
                         $insertStmt->execute([
                             $quiz_id,
+                            $qtype,
                             $_POST['question_text'],
                             json_encode($options),
                             $correct_answer
@@ -190,6 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $_POST['option_d'] = '';
                     $_POST['fill_answer'] = '';
                     $_POST['question_type'] = 'multiple_choice';
+                    $_POST['correct_answer'] = 'A';
                     
                     // Refresh questions list
                     $questionStmt = $pdo->prepare("SELECT * FROM questions WHERE quiz_id = ? ORDER BY id");
@@ -309,6 +323,16 @@ function getQuestionTypeIcon($type) {
     ];
     return $icons[$type] ?? 'question-circle';
 }
+
+// Get qtype display name
+function getQtypeName($qtype) {
+    $names = [
+        'MC' => 'Multiple Choice',
+        'TF' => 'True/False',
+        'FB' => 'Fill in Blank'
+    ];
+    return $names[$qtype] ?? $qtype;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -404,7 +428,23 @@ function getQuestionTypeIcon($type) {
     	margin-bottom: -50px !important;
 		}
         
-        /* ===== MIEL HEADER ===== */
+        /* ===== MIEL BANNER ===== */
+        .miel-banner-container {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .miel-banner {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        /* ===== MIEL HEADER (KEPT FOR REFERENCE BUT NOT USED) ===== */
         .miel-header {
             text-align: center;
             margin-bottom: 30px;
@@ -1116,26 +1156,9 @@ function getQuestionTypeIcon($type) {
                 padding: 10px;
             }
             
-            .miel-header {
-                padding: 20px;
-            }
-            
-            .miel-logo-image {
-                max-width: 150px;
-            }
-            
-            .miel-subtitle {
-                font-size: 1.1rem;
-            }
-            
-            .intelligence-icons {
-                gap: 10px;
-            }
-            
-            .intelligence-icon {
-                width: 35px;
-                height: 35px;
-                font-size: 1rem;
+            .miel-banner-container {
+                padding: 10px;
+                margin-bottom: 20px;
             }
             
             .main-card {
@@ -1198,14 +1221,6 @@ function getQuestionTypeIcon($type) {
                 margin-top: 15px;
                 justify-content: flex-end;
             }
-            
-            .miel-logo-image {
-                max-width: 120px;
-            }
-            
-            .miel-subtitle {
-                font-size: 1rem;
-            }
         }
     </style>
 </head>
@@ -1230,17 +1245,12 @@ function getQuestionTypeIcon($type) {
         </div>
     </nav>
 
-    <div class="container">
-        <!-- MIEL HEADER -->
-        <header class="miel-header fade-in">
-            <div class="miel-logo">
-                <img src="miel-logo.jpg" alt="MIEL Logo" class="miel-logo-image fade-in">                
-                <p class="miel-subtitle">Multiple Intelligence Experiential Learning System</p>
-                <p class="miel-tagline">Empowering every student through personalized learning adventures based on their unique intelligence strengths</p>
-            </div>
-            
-        </header>
+    <!-- MIEL BANNER IMAGE -->
+    <div class="miel-banner-container fade-in">
+        <img src="miel-banner.png" alt="MIEL - Multiple Intelligence Experiential Learning System" class="miel-banner">
+    </div>
 
+    <div class="container">
         <!-- DASHBOARD HEADER -->
         <header class="dashboard-header fade-in">
             <div class="logo">
@@ -1336,8 +1346,8 @@ function getQuestionTypeIcon($type) {
                     <div class="question-type-selector">
                         <?php
                         $questionTypes = [
-                            'multiple_choice' => ['icon' => 'list-ol', 'name' => 'Multiple Choice', 'desc' => '4 options, first is correct'],
-                            'true_false' => ['icon' => 'check-circle', 'name' => 'True/False', 'desc' => 'True is correct answer'],
+                            'multiple_choice' => ['icon' => 'list-ol', 'name' => 'Multiple Choice', 'desc' => '4 options, select correct one'],
+                            'true_false' => ['icon' => 'check-circle', 'name' => 'True/False', 'desc' => 'Select correct answer'],
                             'fill_blank' => ['icon' => 'pen', 'name' => 'Fill in Blank', 'desc' => 'Student types answer']
                         ];
                         
@@ -1381,7 +1391,7 @@ function getQuestionTypeIcon($type) {
                         <label class="form-label">
                             <i class="fas fa-list-ol"></i> Multiple Choice Options
                             <span style="font-size: 0.9rem; color: var(--secondary-green); margin-left: 10px;">
-                                <i class="fas fa-info-circle"></i> First option is correct answer
+                                <i class="fas fa-info-circle"></i> Select the correct answer
                             </span>
                         </label>
                         <div class="options-grid">
@@ -1389,29 +1399,27 @@ function getQuestionTypeIcon($type) {
                             <?php foreach ($option_letters as $index => $letter): ?>
                             <div class="option-item">
                                 <div class="option-header">
-                                    <div class="option-label <?php echo $index === 0 ? 'correct' : ''; ?>">
+                                    <div class="option-label">
                                         <?php echo $letter; ?>
-                                        <?php if ($index === 0): ?>
-                                        <i class="fas fa-check" style="font-size: 0.7rem; margin-left: 2px;"></i>
-                                        <?php endif; ?>
                                     </div>
-                                    <span>
-                                        <?php echo $index === 0 ? 'Correct Answer' : 'Option ' . $letter; ?>
-                                    </span>
+                                    <span>Option <?php echo $letter; ?></span>
+                                    <div style="margin-left: auto;">
+                                        <input type="radio" name="correct_answer" 
+                                               value="<?php echo $letter; ?>" 
+                                               <?php echo (isset($_POST['correct_answer']) && $_POST['correct_answer'] == $letter) ? 'checked' : ($index == 0 ? 'checked' : ''); ?>
+                                               style="transform: scale(1.2);">
+                                        <small style="color: var(--secondary-green); margin-left: 5px;">
+                                            <i class="fas fa-check"></i> Correct
+                                        </small>
+                                    </div>
                                 </div>
                                 <div class="input-with-icon">
                                     <i class="fas fa-arrow-right input-icon"></i>
                                     <input type="text" name="option_<?php echo strtolower($letter); ?>" 
-                                           placeholder="<?php echo $index === 0 ? 'Enter correct answer...' : 'Enter distractor ' . $letter . '...'; ?>" 
+                                           placeholder="Enter option <?php echo $letter; ?>..." 
                                            required
                                            value="<?php echo isset($_POST['option_' . strtolower($letter)]) ? htmlspecialchars($_POST['option_' . strtolower($letter)]) : ''; ?>">
                                 </div>
-                                <?php if ($index === 0): ?>
-                                <div class="option-note">
-                                    <i class="fas fa-lightbulb" style="color: var(--secondary-green);"></i>
-                                    This will be randomized with other options in the quiz
-                                </div>
-                                <?php endif; ?>
                             </div>
                             <?php endforeach; ?>
                         </div>
@@ -1423,32 +1431,36 @@ function getQuestionTypeIcon($type) {
                         <label class="form-label">
                             <i class="fas fa-check-circle"></i> True/False Options
                             <span style="font-size: 0.9rem; color: var(--secondary-green); margin-left: 10px;">
-                                <i class="fas fa-info-circle"></i> "True" is always correct answer
+                                <i class="fas fa-info-circle"></i> Select the correct answer
                             </span>
                         </label>
                         <div class="options-grid">
+                            <?php 
+                            $tf_options = [
+                                'A' => 'True',
+                                'B' => 'False'
+                            ];
+                            ?>
+                            <?php foreach ($tf_options as $letter => $label): ?>
                             <div class="option-item">
                                 <div class="option-header">
-                                    <div class="option-label correct">A<i class="fas fa-check" style="font-size: 0.7rem; margin-left: 2px;"></i></div>
-                                    <span>Correct Answer</span>
-                                </div>
-                                <div style="padding: 15px; background: #E8F5E9; border-radius: 10px; text-align: center;">
-                                    <strong style="color: var(--secondary-green); font-size: 1.2rem;">True</strong>
-                                    <div class="option-note">
-                                        <i class="fas fa-lightbulb" style="color: var(--secondary-green);"></i>
-                                        This will be randomized with "False" in the quiz
+                                    <div class="option-label"><?php echo $letter; ?></div>
+                                    <span><?php echo $label; ?></span>
+                                    <div style="margin-left: auto;">
+                                        <input type="radio" name="correct_answer" 
+                                               value="<?php echo $letter; ?>"
+                                               <?php echo (isset($_POST['correct_answer']) && $_POST['correct_answer'] == $letter) ? 'checked' : ($letter == 'A' ? 'checked' : ''); ?>
+                                               style="transform: scale(1.2);">
+                                        <small style="color: var(--secondary-green); margin-left: 5px;">
+                                            <i class="fas fa-check"></i> Correct
+                                        </small>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="option-item">
-                                <div class="option-header">
-                                    <div class="option-label">B</div>
-                                    <span>Distractor</span>
-                                </div>
                                 <div style="padding: 15px; background: #F8F9FF; border-radius: 10px; text-align: center;">
-                                    <strong style="color: #666; font-size: 1.2rem;">False</strong>
+                                    <strong style="font-size: 1.2rem;"><?php echo $label; ?></strong>
                                 </div>
                             </div>
+                            <?php endforeach; ?>
                         </div>
                     </div>
                     
@@ -1468,6 +1480,8 @@ function getQuestionTypeIcon($type) {
                                    required
                                    value="<?php echo isset($_POST['fill_answer']) ? htmlspecialchars($_POST['fill_answer']) : ''; ?>">
                         </div>
+                        <!-- Hidden radio for correct answer (always A for fill in blank) -->
+                        <input type="hidden" name="correct_answer" value="A">
                         <div style="margin-top: 10px; padding: 10px; background: #E8F5E9; border-radius: 10px; font-size: 0.9rem;">
                             <i class="fas fa-lightbulb" style="color: var(--secondary-green); margin-right: 5px;"></i>
                             Students will see: "________________" and need to type the correct answer
@@ -1512,6 +1526,9 @@ function getQuestionTypeIcon($type) {
                             <i class="fas fa-<?php echo getQuestionTypeIcon($question_type); ?>"></i>
                             <?php echo getQuestionTypeName($question_type); ?>
                         </span>
+                        <span style="font-size: 0.8rem; color: #666; margin-left: 5px;">
+                            (<?php echo getQtypeName($question['qtype']); ?>)
+                        </span>
                     </div>
                     
                     <?php if ($question_type === 'multiple_choice'): ?>
@@ -1533,16 +1550,23 @@ function getQuestionTypeIcon($type) {
                     
                     <?php elseif ($question_type === 'true_false'): ?>
                     <div class="question-options">
-                        <div class="question-option correct">
+                        <div class="question-option <?php echo $question['correct_answer'] == 'A' ? 'correct' : ''; ?>">
                             <div class="option-letter-small">A</div>
                             <div>True</div>
+                            <?php if ($question['correct_answer'] == 'A'): ?>
                             <div style="margin-left: auto; color: var(--secondary-green);">
                                 <i class="fas fa-check-circle"></i>
                             </div>
+                            <?php endif; ?>
                         </div>
-                        <div class="question-option">
+                        <div class="question-option <?php echo $question['correct_answer'] == 'B' ? 'correct' : ''; ?>">
                             <div class="option-letter-small">B</div>
                             <div>False</div>
+                            <?php if ($question['correct_answer'] == 'B'): ?>
+                            <div style="margin-left: auto; color: var(--secondary-green);">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                     
@@ -1644,33 +1668,33 @@ function getQuestionTypeIcon($type) {
                         <label class="form-label">
                             <i class="fas fa-list-ol"></i> Multiple Choice Options
                             <span style="font-size: 0.9rem; color: var(--secondary-green); margin-left: 10px;">
-                                <i class="fas fa-info-circle"></i> First option is correct answer
+                                <i class="fas fa-info-circle"></i> Select the correct answer
                             </span>
                         </label>
                         <div class="options-grid">
                             ${['A', 'B', 'C', 'D'].map((letter, index) => `
                                 <div class="option-item">
                                     <div class="option-header">
-                                        <div class="option-label ${index === 0 ? 'correct' : ''}">
+                                        <div class="option-label">
                                             ${letter}
-                                            ${index === 0 ? '<i class="fas fa-check" style="font-size: 0.7rem; margin-left: 2px;"></i>' : ''}
                                         </div>
-                                        <span>
-                                            ${index === 0 ? 'Correct Answer' : 'Option ' + letter}
-                                        </span>
+                                        <span>Option ${letter}</span>
+                                        <div style="margin-left: auto;">
+                                            <input type="radio" name="correct_answer" 
+                                                   value="${letter}" 
+                                                   ${index === 0 ? 'checked' : ''}
+                                                   style="transform: scale(1.2);">
+                                            <small style="color: var(--secondary-green); margin-left: 5px;">
+                                                <i class="fas fa-check"></i> Correct
+                                            </small>
+                                        </div>
                                     </div>
                                     <div class="input-with-icon">
                                         <i class="fas fa-arrow-right input-icon"></i>
                                         <input type="text" name="option_${letter.toLowerCase()}" 
-                                               placeholder="${index === 0 ? 'Enter correct answer...' : 'Enter distractor ' + letter + '...'}" 
+                                               placeholder="Enter option ${letter}..." 
                                                required>
                                     </div>
-                                    ${index === 0 ? `
-                                    <div class="option-note">
-                                        <i class="fas fa-lightbulb" style="color: var(--secondary-green);"></i>
-                                        This will be randomized with other options in the quiz
-                                    </div>
-                                    ` : ''}
                                 </div>
                             `).join('')}
                         </div>
@@ -1682,32 +1706,30 @@ function getQuestionTypeIcon($type) {
                         <label class="form-label">
                             <i class="fas fa-check-circle"></i> True/False Options
                             <span style="font-size: 0.9rem; color: var(--secondary-green); margin-left: 10px;">
-                                <i class="fas fa-info-circle"></i> "True" is always correct answer
+                                <i class="fas fa-info-circle"></i> Select the correct answer
                             </span>
                         </label>
                         <div class="options-grid">
-                            <div class="option-item">
-                                <div class="option-header">
-                                    <div class="option-label correct">A<i class="fas fa-check" style="font-size: 0.7rem; margin-left: 2px;"></i></div>
-                                    <span>Correct Answer</span>
-                                </div>
-                                <div style="padding: 15px; background: #E8F5E9; border-radius: 10px; text-align: center;">
-                                    <strong style="color: var(--secondary-green); font-size: 1.2rem;">True</strong>
-                                    <div class="option-note">
-                                        <i class="fas fa-lightbulb" style="color: var(--secondary-green);"></i>
-                                        This will be randomized with "False" in the quiz
+                            ${[['A', 'True'], ['B', 'False']].map(([letter, label], index) => `
+                                <div class="option-item">
+                                    <div class="option-header">
+                                        <div class="option-label">${letter}</div>
+                                        <span>${label}</span>
+                                        <div style="margin-left: auto;">
+                                            <input type="radio" name="correct_answer" 
+                                                   value="${letter}"
+                                                   ${index === 0 ? 'checked' : ''}
+                                                   style="transform: scale(1.2);">
+                                            <small style="color: var(--secondary-green); margin-left: 5px;">
+                                                <i class="fas fa-check"></i> Correct
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 15px; background: #F8F9FF; border-radius: 10px; text-align: center;">
+                                        <strong style="font-size: 1.2rem;">${label}</strong>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="option-item">
-                                <div class="option-header">
-                                    <div class="option-label">B</div>
-                                    <span>Distractor</span>
-                                </div>
-                                <div style="padding: 15px; background: #F8F9FF; border-radius: 10px; text-align: center;">
-                                    <strong style="color: #666; font-size: 1.2rem;">False</strong>
-                                </div>
-                            </div>
+                            `).join('')}
                         </div>
                     </div>
                 `;
@@ -1726,6 +1748,8 @@ function getQuestionTypeIcon($type) {
                                    placeholder="Enter the correct answer for fill in the blank..." 
                                    required>
                         </div>
+                        <!-- Hidden radio for correct answer (always A for fill in blank) -->
+                        <input type="hidden" name="correct_answer" value="A">
                         <div style="margin-top: 10px; padding: 10px; background: #E8F5E9; border-radius: 10px; font-size: 0.9rem;">
                             <i class="fas fa-lightbulb" style="color: var(--secondary-green); margin-right: 5px;"></i>
                             Students will see: "________________" and need to type the correct answer
@@ -1758,6 +1782,14 @@ function getQuestionTypeIcon($type) {
                             input.focus();
                             return false;
                         }
+                    }
+                    
+                    // Check if a correct answer is selected
+                    const correctAnswer = document.querySelector('input[name="correct_answer"]:checked');
+                    if (!correctAnswer) {
+                        e.preventDefault();
+                        alert('Please select the correct answer!');
+                        return false;
                     }
                 } else if (questionType === 'fill_blank') {
                     const fillAnswer = document.querySelector('input[name="fill_answer"]');
@@ -1797,10 +1829,10 @@ function getQuestionTypeIcon($type) {
             });
         }
         
-        // Make MIEL logo image interactive
-        const mielLogo = document.querySelector('.miel-logo-image');
-        if (mielLogo) {
-            mielLogo.addEventListener('click', function() {
+        // Make MIEL banner image interactive
+        const mielBanner = document.querySelector('.miel-banner');
+        if (mielBanner) {
+            mielBanner.addEventListener('click', function() {
                 this.classList.toggle('bounce');
                 alert('MIEL - Multiple Intelligence Experiential Learning\nPersonalized learning for every student!');
                 

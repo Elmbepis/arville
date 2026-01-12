@@ -220,7 +220,23 @@ function getWorldIcon($world) {
             margin-bottom: 30px !important; /* Adjust this value as needed */
         }
 
-        /* ===== MIEL HEADER ===== */
+        /* ===== MIEL BANNER ===== */
+        .miel-banner-container {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .miel-banner {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        /* ===== MIEL HEADER (KEPT FOR REFERENCE BUT NOT USED) ===== */
         .miel-header {
             text-align: center;
             margin-bottom: 30px;
@@ -738,29 +754,12 @@ function getWorldIcon($world) {
                 padding: 10px;
             }
             
-            .miel-header {
-                padding: 20px;
+            .miel-banner-container {
+                padding: 10px;
+                margin-bottom: 20px;
             }
             
-            .miel-logo-image {
-                max-width: 150px;
-            }
-            
-            .miel-subtitle {
-                font-size: 1.1rem;
-            }
-            
-            .intelligence-icons {
-                gap: 10px;
-            }
-            
-            .intelligence-icon {
-                width: 35px;
-                height: 35px;
-                font-size: 1rem;
-            }
-            
-            .main-card {
+            .card {
                 padding: 20px;
             }
             
@@ -814,14 +813,6 @@ function getWorldIcon($world) {
             .empty-grid {
                 grid-template-columns: repeat(2, 1fr);
                 grid-template-rows: repeat(4, 1fr);
-            }
-            
-            .miel-logo-image {
-                max-width: 120px;
-            }
-            
-            .miel-subtitle {
-                font-size: 1rem;
             }
         }
         
@@ -878,17 +869,12 @@ function getWorldIcon($world) {
         </div>
     </nav>
 
-    <div class="container">
-        <!-- MIEL HEADER -->
-        <header class="miel-header fade-in">
-            <div class="miel-logo">
-                <img src="miel-logo.jpg" alt="MIEL Logo" class="miel-logo-image fade-in">                
-                <p class="miel-subtitle">Multiple Intelligence Experiential Learning System</p>
-                <p class="miel-tagline">Empowering every student through personalized learning adventures based on their unique intelligence strengths</p>
-            </div>
-            
-        </header>
+    <!-- MIEL BANNER IMAGE -->
+    <div class="miel-banner-container fade-in">
+        <img src="miel-banner.png" alt="MIEL - Multiple Intelligence Experiential Learning System" class="miel-banner">
+    </div>
 
+    <div class="container">
         <!-- DASHBOARD HEADER -->
         <header class="dashboard-header fade-in">
             <div class="logo">
@@ -1149,10 +1135,10 @@ function getWorldIcon($world) {
             });
         });
         
-        // Make MIEL logo image interactive
-        const mielLogo = document.querySelector('.miel-logo-image');
-        if (mielLogo) {
-            mielLogo.addEventListener('click', function() {
+        // Make MIEL banner image interactive
+        const mielBanner = document.querySelector('.miel-banner');
+        if (mielBanner) {
+            mielBanner.addEventListener('click', function() {
                 this.classList.toggle('bounce');
                 alert('MIEL - Multiple Intelligence Experiential Learning\nPersonalized learning for every student!');
                 
