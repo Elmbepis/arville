@@ -62,6 +62,23 @@ try {
     $scoreStmt->execute([$_SESSION['user_id']]);
     $studentScores = $scoreStmt->fetchAll(PDO::FETCH_ASSOC);
     
+    // Get activities that need grading (with submission counts)
+    $gradingStmt = $pdo->prepare("
+        SELECT 
+            a.*,
+            COUNT(DISTINCT ag.student_id) as students_submitted,
+            COUNT(DISTINCT CASE WHEN ag.points_earned IS NULL AND ag.submission_data IS NOT NULL THEN ag.student_id END) as students_to_grade,
+            COUNT(DISTINCT CASE WHEN ag.points_earned IS NOT NULL THEN ag.student_id END) as students_graded,
+            MAX(ag.created_at) as last_submission_date
+        FROM activities a
+        LEFT JOIN activity_grades ag ON a.id = ag.activity_id
+        WHERE a.teacher_id = ?
+        GROUP BY a.id
+        ORDER BY last_submission_date DESC, a.created_at DESC
+    ");
+    $gradingStmt->execute([$_SESSION['user_id']]);
+    $activitiesToGrade = $gradingStmt->fetchAll(PDO::FETCH_ASSOC);
+    
     // Get summary statistics
     $statsStmt = $pdo->prepare("
         SELECT 
@@ -124,7 +141,11 @@ function getActivityTypeName($type) {
     $names = [
         'essay' => 'Essay',
         'drawing' => 'Drawing',
-        'presentation' => 'Presentation'
+        'presentation' => 'Presentation',
+        'project' => 'Project',
+        'experiment' => 'Experiment',
+        'performance' => 'Performance',
+        'portfolio' => 'Portfolio'
     ];
     return $names[$type] ?? $type;
 }
@@ -134,7 +155,11 @@ function getActivityTypeIcon($type) {
     $icons = [
         'essay' => 'file-alt',
         'drawing' => 'paint-brush',
-        'presentation' => 'presentation'
+        'presentation' => 'presentation',
+        'project' => 'tasks',
+        'experiment' => 'flask',
+        'performance' => 'theater-masks',
+        'portfolio' => 'briefcase'
     ];
     return $icons[$type] ?? 'tasks';
 }
@@ -172,6 +197,11 @@ function getWorldIcon($world) {
 // Format date
 function formatDate($date) {
     return date('M j, Y', strtotime($date));
+}
+
+// Format date with time
+function formatDateTime($date) {
+    return date('M j, Y g:i A', strtotime($date));
 }
 ?>
 
@@ -590,6 +620,82 @@ function formatDate($date) {
             background: rgba(156, 39, 176, 0.1);
         }
         
+        /* ===== ACTIVITIES TO GRADE SECTION ===== */
+        .grading-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .grading-icon {
+            aspect-ratio: 1/1;
+            background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 3px solid #FFB74D;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .grading-icon:hover {
+            transform: translateY(-5px);
+            border-color: #FF9800;
+            box-shadow: var(--shadow);
+        }
+        
+        .grading-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #FF9800;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .grading-icon-main {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #FF9800;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 152, 0, 0.1);
+        }
+        
+        .grading-stats {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .grading-urgent {
+            color: #F44336;
+            font-weight: bold;
+        }
+        
+        .grading-ready {
+            color: #4CAF50;
+        }
+        
         /* ===== SCORES SECTION ===== */
         .scores-section {
             width: 100%;
@@ -683,6 +789,17 @@ function formatDate($date) {
             background-color: #FFD166 !important; /* YELLOW on hover */
             transform: translateY(-3px);
             color: #2C3E50 !important;
+        }
+        
+        /* Orange button for grading */
+        .orange-btn {
+            background-color: #FF9800 !important;
+            color: white !important;
+        }
+        
+        .orange-btn:hover {
+            background-color: #F57C00 !important;
+            transform: translateY(-3px);
         }
         
         /* Override specific button colors to be blue */
@@ -843,6 +960,11 @@ function formatDate($date) {
             color: white;
         }
         
+        .badge-orange {
+            background: #FF9800;
+            color: white;
+        }
+        
         /* ===== MOBILE RESPONSIVE (SAME AS create-quiz.php) ===== */
         @media (max-width: 768px) {
             .container {
@@ -864,6 +986,7 @@ function formatDate($date) {
             
             .quiz-grid,
             .activity-grid,
+            .grading-grid,
             .empty-grid {
                 grid-template-columns: repeat(2, 1fr);
                 grid-template-rows: repeat(4, 1fr);
@@ -915,6 +1038,7 @@ function formatDate($date) {
         @media (max-width: 480px) {
             .quiz-grid,
             .activity-grid,
+            .grading-grid,
             .empty-grid {
                 grid-template-columns: repeat(2, 1fr);
                 grid-template-rows: repeat(4, 1fr);
@@ -942,6 +1066,15 @@ function formatDate($date) {
         
         .fade-in {
             animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .pulse {
+            animation: pulse 1s ease infinite;
         }
         
         @keyframes rainbow {
@@ -1203,8 +1336,8 @@ function formatDate($date) {
                                     <?php if (strlen($activity['title']) > 20): ?>...<?php endif; ?>
                                 </div>
                                 <div class="icon-stats">
-                                    <div><i class="fas fa-paper-plane"></i> Not Submitted</div>
-                                    <div><i class="fas fa-check-circle"></i> 0 graded</div>
+                                    <div><i class="fas fa-<?php echo getIntelligenceIcon($activity['intelligence_type']); ?>"></i> <?php echo getIntelligenceName($activity['intelligence_type']); ?></div>
+                                    <div><i class="fas fa-<?php echo getWorldIcon($activity['virtual_world']); ?>"></i> <?php echo getWorldName($activity['virtual_world']); ?></div>
                                 </div>
                                 <?php if ($activity['due_date']): ?>
                                 <div class="icon-stats" style="color: #FF9800; font-size: 0.7rem;">
@@ -1228,6 +1361,89 @@ function formatDate($date) {
                         <a href="create-activity.php" class="action-btn">
                             <i class="fas fa-plus-circle"></i> Create New Activity
                         </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTIVITIES TO GRADE SECTION (ADDED NEW SECTION) -->
+            <div class="card fade-in">
+                <h2 class="card-title">
+                    <i class="fas fa-check-double"></i> Activities to Grade
+                    <?php 
+                    $totalToGrade = 0;
+                    foreach ($activitiesToGrade as $activity) {
+                        $totalToGrade += $activity['students_to_grade'] ?? 0;
+                    }
+                    ?>
+                    <span class="badge badge-orange"><?php echo $totalToGrade; ?> pending</span>
+                </h2>
+                
+                <div class="quiz-grid-section">
+                    <div class="grading-grid">
+                        <?php if (empty($activitiesToGrade) || $totalToGrade == 0): ?>
+                            <!-- Show 8 empty placeholders -->
+                            <?php for ($i = 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                                <i class="fas fa-check-circle"></i>
+                                <div class="empty-text">No submissions yet</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php else: ?>
+                            <?php 
+                            // Show up to 8 activities that need grading
+                            $gradingCount = 0;
+                            foreach ($activitiesToGrade as $activity):
+                                if ($activity['students_to_grade'] > 0 && $gradingCount < 8):
+                                    $gradingCount++;
+                            ?>
+                            <div class="grading-icon" onclick="gradeActivity(<?php echo $activity['id']; ?>)">
+                                <?php if ($activity['students_to_grade'] > 0): ?>
+                                <div class="grading-badge pulse"><?php echo $activity['students_to_grade']; ?></div>
+                                <?php endif; ?>
+                                <div class="grading-icon-main">
+                                    <i class="fas fa-<?php echo getActivityTypeIcon($activity['activity_type']); ?>"></i>
+                                </div>
+                                <div class="icon-title">
+                                    <?php echo htmlspecialchars(substr($activity['title'], 0, 20)); ?>
+                                    <?php if (strlen($activity['title']) > 20): ?>...<?php endif; ?>
+                                </div>
+                                <div class="grading-stats <?php echo $activity['students_to_grade'] > 0 ? 'grading-urgent' : 'grading-ready'; ?>">
+                                    <i class="fas fa-users"></i> <?php echo $activity['students_to_grade']; ?> to grade
+                                </div>
+                                <div class="grading-stats">
+                                    <i class="fas fa-check"></i> <?php echo $activity['students_graded']; ?> graded
+                                </div>
+                                <?php if ($activity['last_submission_date']): ?>
+                                <div class="grading-stats" style="font-size: 0.7rem; color: #666;">
+                                    <i class="fas fa-clock"></i> Last: <?php echo formatDate($activity['last_submission_date']); ?>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                            <?php 
+                                endif;
+                            endforeach;
+                            
+                            // Fill remaining slots
+                            for ($i = $gradingCount + 1; $i <= 8; $i++):
+                            ?>
+                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                                <i class="fas fa-check-circle"></i>
+                                <div class="empty-text">All caught up!</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <?php if ($totalToGrade > 0): ?>
+                        <a href="grade-activity.php?activity_id=<?php echo !empty($activitiesToGrade[0]['id']) ? $activitiesToGrade[0]['id'] : ''; ?>" class="action-btn orange-btn">
+                            <i class="fas fa-clipboard-check"></i> Start Grading
+                        </a>
+                        <?php endif; ?>
+                        
+                        <button class="action-btn" onclick="viewAllActivities()">
+                            <i class="fas fa-list"></i> View All Activities
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1294,28 +1510,6 @@ function formatDate($date) {
                     </div>
                 </div>
             </div>
-
-            <!-- STUDENT ACTIVITY GRADES SECTION (UNDER STUDENT SCORES) -->
-            <div class="card fade-in">
-                <h2 class="card-title">
-                    <i class="fas fa-check-double"></i> Student Activity Grades
-                    <span class="badge badge-purple">Coming Soon</span>
-                </h2>
-                
-                <div class="scores-section">
-                    <div class="empty-score">
-                        <i class="fas fa-clipboard-check"></i>
-                        <p>Activity submission and grading system coming soon!</p>
-                        <p>Student submissions will be handled by a separate system.</p>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="action-btn" onclick="exportActivityGrades()">
-                            <i class="fas fa-download"></i> Export Activity Grades
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- BOTTOM BUTTONS -->
@@ -1335,17 +1529,22 @@ function formatDate($date) {
             window.location.href = `add-questions.php?quiz_id=${quizId}`;
         }
         
-        // Activity functions
-        function viewActivity(activityId) {
-            alert('View Activity feature coming soon!');
+		// Activity functions - links to view-activity.php for teachers to view activity details
+		function viewActivity(activityId) {
+            window.location.href = `create-activity.php?edit=${activityId}`;
+        }
+                
+        // Grading functions - links to grade-activity.php for grading submissions
+        function gradeActivity(activityId) {
+            window.location.href = `grade-activity.php?activity_id=${activityId}`;
+        }
+                
+        function viewAllActivities() {
+            alert('Feature coming soon! This would show a full list of all activities with detailed grading status.');
         }
         
         function exportQuizScores() {
             alert('Exporting quiz scores - This would download a CSV file of all student quiz scores in the full version.');
-        }
-        
-        function exportActivityGrades() {
-            alert('Export Activity Grades feature coming soon!');
         }
         
         // Auto-refresh every 30 seconds
@@ -1370,6 +1569,13 @@ function formatDate($date) {
                 window.location.href = 'add-questions.php';
             }
             
+            if (e.ctrlKey && e.key === 'g') {
+                e.preventDefault();
+                // Go to first activity that needs grading
+                const gradeBtn = document.querySelector('.orange-btn');
+                if (gradeBtn) gradeBtn.click();
+            }
+            
             if (e.key === 'Escape') {
                 if (confirm('Are you sure you want to logout?')) {
                     document.querySelector('button[name="logout"]').click();
@@ -1378,7 +1584,7 @@ function formatDate($date) {
         });
         
         // Add hover effects
-        document.querySelectorAll('.quiz-icon, .activity-icon').forEach(icon => {
+        document.querySelectorAll('.quiz-icon, .activity-icon, .grading-icon').forEach(icon => {
             icon.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-5px)';
             });
@@ -1440,18 +1646,22 @@ function formatDate($date) {
         }
         
         // Add context menu to activity icons for quick actions
-        document.querySelectorAll('.activity-icon').forEach(icon => {
+        document.querySelectorAll('.activity-icon, .grading-icon').forEach(icon => {
             icon.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
-                const activityId = this.getAttribute('onclick')?.match(/\d+/)?.[0];
+                const onclick = this.getAttribute('onclick');
+                const activityId = onclick?.match(/\((.*?)\)/)?.[1];
                 if (activityId) {
-                    const action = prompt(`Quick Actions for Activity #${activityId}\n\nEnter:\n1 - View Details\n2 - Edit Activity`);
+                    const action = prompt(`Quick Actions for Activity #${activityId}\n\nEnter:\n1 - View/Grade\n2 - View Details\n3 - Edit Activity`);
                     
                     switch(action) {
                         case '1':
-                            viewActivity(activityId);
+                            gradeActivity(activityId);
                             break;
                         case '2':
+                            viewActivity(activityId);
+                            break;
+                        case '3':
                             alert(`Edit activity #${activityId} - Feature coming soon!`);
                             break;
                         default:
@@ -1459,6 +1669,21 @@ function formatDate($date) {
                     }
                 }
             });
+        });
+        
+        // Show notification if there are activities to grade
+        window.addEventListener('load', function() {
+            const pendingCount = <?php echo $totalToGrade; ?>;
+            if (pendingCount > 0) {
+                console.log(`You have ${pendingCount} student submissions to grade!`);
+                // Optional: Show a browser notification
+                if (Notification.permission === "granted") {
+                    new Notification("MIEL Teacher Dashboard", {
+                        body: `You have ${pendingCount} student submissions to grade!`,
+                        icon: "miel-banner.png"
+                    });
+                }
+            }
         });
     </script>
     

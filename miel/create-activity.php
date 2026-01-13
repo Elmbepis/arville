@@ -1,18 +1,5 @@
 <?php
 // create-activity.php
-// Database configuration
-$host = 'localhost';
-$dbname = 'miel';
-$username = 'root';
-$password = 'AcadeV25!';
-
-// Handle form submission
-$statusMessage = '';
-$statusType = '';
-$savedActivityId = null;
-$formSubmitted = false;
-
-// Start session
 session_start();
 
 // Check if user is logged in and is a teacher
@@ -21,18 +8,73 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'teacher') {
     exit();
 }
 
+// Database configuration
+$host = 'localhost';
+$dbname = 'miel';
+$username = 'root';
+$password = 'AcadeV25!';
+
+// Initialize variables
+$statusMessage = '';
+$statusType = '';
+$savedActivityId = null;
+$formSubmitted = false;
+$isEditMode = false;
+$editActivityId = null;
+$activityData = null;
+
 // Get the actual teacher ID from session
 $teacher_id = $_SESSION['user_id'];
 
-// Check if form was just submitted
-if (isset($_SESSION['activity_created'])) {
+// Check if we're in edit mode
+if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
+    $isEditMode = true;
+    $editActivityId = intval($_GET['edit']);
+    
+    try {
+        $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        
+        // Get activity details - teacher can only edit their own activities
+        $activityStmt = $pdo->prepare("
+            SELECT a.* 
+            FROM activities a 
+            WHERE a.id = ? AND a.teacher_id = ?
+        ");
+        $activityStmt->execute([$editActivityId, $teacher_id]);
+        $activityData = $activityStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$activityData) {
+            // Activity not found or teacher doesn't own it
+            $statusMessage = "Activity not found or you don't have permission to edit it.";
+            $statusType = 'error';
+            $isEditMode = false;
+        }
+        
+    } catch(Exception $e) {
+        $statusMessage = 'Failed to load activity: ' . $e->getMessage();
+        $statusType = 'error';
+        $isEditMode = false;
+    }
+}
+
+// Check if form was just submitted for creation
+if (isset($_SESSION['activity_created']) && !$isEditMode) {
     $formSubmitted = true;
     $savedActivityId = $_SESSION['activity_created'];
     $statusMessage = "Activity created successfully! Activity ID: $savedActivityId";
     $statusType = 'success';
 }
 
-// Handle AJAX title check
+// Check if form was just submitted for editing
+if (isset($_SESSION['activity_updated']) && $isEditMode) {
+    $formSubmitted = true;
+    $savedActivityId = $editActivityId;
+    $statusMessage = "Activity updated successfully!";
+    $statusType = 'success';
+}
+
+// Handle AJAX title check (for creation mode only)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
     try {
         $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
@@ -40,10 +82,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
         
         $input = json_decode(file_get_contents('php://input'), true);
         $title = $input['title'] ?? '';
+        $excludeId = $input['exclude_id'] ?? null; // For edit mode, exclude current activity
         
-        $sql = "SELECT COUNT(*) as count FROM activities WHERE title = :title";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([':title' => $title]);
+        if ($excludeId) {
+            $sql = "SELECT COUNT(*) as count FROM activities WHERE title = :title AND id != :exclude_id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([':title' => $title, ':exclude_id' => $excludeId]);
+        } else {
+            $sql = "SELECT COUNT(*) as count FROM activities WHERE title = :title";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([':title' => $title]);
+        }
+        
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
         echo json_encode(['exists' => $result['count'] > 0]);
@@ -61,58 +111,111 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
         $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         
-        // Check for duplicate title
-        $checkSql = "SELECT COUNT(*) as count FROM activities WHERE title = :title";
-        $checkStmt = $pdo->prepare($checkSql);
-        $checkStmt->execute([':title' => $_POST['activity_title']]);
-        $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
+        $title = $_POST['activity_title'];
+        $activity_type = $_POST['activity_type'] ?? 'essay';
+        $instructions = $_POST['activity_instructions'] ?? '';
+        $max_points = intval($_POST['max_points']) > 0 ? intval($_POST['max_points']) : 100;
+        $due_date = !empty($_POST['due_date']) ? $_POST['due_date'] : null;
         
-        if ($result['count'] > 0) {
-            $statusMessage = "Error: An activity with this title already exists. Please choose a different title.";
-            $statusType = 'error';
+        if ($isEditMode && $editActivityId) {
+            // EDIT MODE: Update existing activity
+            
+            // Check for duplicate title (excluding current activity)
+            $checkSql = "SELECT COUNT(*) as count FROM activities WHERE title = :title AND id != :activity_id";
+            $checkStmt = $pdo->prepare($checkSql);
+            $checkStmt->execute([':title' => $title, ':activity_id' => $editActivityId]);
+            $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($result['count'] > 0) {
+                $statusMessage = "Error: Another activity with this title already exists. Please choose a different title.";
+                $statusType = 'error';
+            } else {
+                // Update existing activity (removed updated_at field)
+                $activitySql = "UPDATE activities 
+                              SET title = :title, 
+                                  description = :description, 
+                                  intelligence_type = :intelligence_type, 
+                                  virtual_world = :virtual_world,
+                                  activity_type = :activity_type, 
+                                  instructions = :instructions, 
+                                  max_points = :max_points, 
+                                  due_date = :due_date
+                              WHERE id = :activity_id AND teacher_id = :teacher_id";
+                
+                $activityStmt = $pdo->prepare($activitySql);
+                $activityStmt->execute([
+                    ':title' => $title,
+                    ':description' => $_POST['activity_description'],
+                    ':intelligence_type' => $_POST['intelligence_type'],
+                    ':virtual_world' => $_POST['virtual_world'],
+                    ':activity_type' => $activity_type,
+                    ':instructions' => $instructions,
+                    ':max_points' => $max_points,
+                    ':due_date' => $due_date,
+                    ':activity_id' => $editActivityId,
+                    ':teacher_id' => $teacher_id
+                ]);
+                
+                $savedActivityId = $editActivityId;
+                
+                // Prevent duplicate submission on refresh
+                $_SESSION['activity_updated'] = true;
+                
+                // Redirect to prevent form resubmission
+                header("Location: create-activity.php?edit=$editActivityId&updated=1");
+                exit();
+            }
+            
         } else {
-            // Determine activity type based on intelligence type
-            $activity_type = $_POST['activity_type'] ?? 'essay';
-            $instructions = $_POST['activity_instructions'] ?? '';
-            $max_points = intval($_POST['max_points']) > 0 ? intval($_POST['max_points']) : 100;
-            $due_date = !empty($_POST['due_date']) ? $_POST['due_date'] : null;
+            // CREATE MODE: Insert new activity
             
-            // Insert into activities table with ACTUAL teacher ID from session
-            $activitySql = "INSERT INTO activities (teacher_id, title, description, intelligence_type, virtual_world, 
-                          activity_type, instructions, max_points, due_date, created_at) 
-                          VALUES (:teacher_id, :title, :description, :intelligence_type, :virtual_world, 
-                                  :activity_type, :instructions, :max_points, :due_date, NOW())";
+            // Check for duplicate title
+            $checkSql = "SELECT COUNT(*) as count FROM activities WHERE title = :title";
+            $checkStmt = $pdo->prepare($checkSql);
+            $checkStmt->execute([':title' => $title]);
+            $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
             
-            $activityStmt = $pdo->prepare($activitySql);
-            $activityStmt->execute([
-                ':teacher_id' => $teacher_id, // Use actual teacher ID from session
-                ':title' => $_POST['activity_title'],
-                ':description' => $_POST['activity_description'],
-                ':intelligence_type' => $_POST['intelligence_type'],
-                ':virtual_world' => $_POST['virtual_world'],
-                ':activity_type' => $activity_type,
-                ':instructions' => $instructions,
-                ':max_points' => $max_points,
-                ':due_date' => $due_date
-            ]);
-            
-            $savedActivityId = $pdo->lastInsertId();
-            
-            // Prevent duplicate submission on refresh
-            $_SESSION['activity_created'] = $savedActivityId;
-            
-            // Redirect to prevent form resubmission
-            header("Location: create-activity.php?created=$savedActivityId");
-            exit();
+            if ($result['count'] > 0) {
+                $statusMessage = "Error: An activity with this title already exists. Please choose a different title.";
+                $statusType = 'error';
+            } else {
+                // Insert new activity
+                $activitySql = "INSERT INTO activities (teacher_id, title, description, intelligence_type, virtual_world, 
+                              activity_type, instructions, max_points, due_date, created_at) 
+                              VALUES (:teacher_id, :title, :description, :intelligence_type, :virtual_world, 
+                                      :activity_type, :instructions, :max_points, :due_date, NOW())";
+                
+                $activityStmt = $pdo->prepare($activitySql);
+                $activityStmt->execute([
+                    ':teacher_id' => $teacher_id,
+                    ':title' => $title,
+                    ':description' => $_POST['activity_description'],
+                    ':intelligence_type' => $_POST['intelligence_type'],
+                    ':virtual_world' => $_POST['virtual_world'],
+                    ':activity_type' => $activity_type,
+                    ':instructions' => $instructions,
+                    ':max_points' => $max_points,
+                    ':due_date' => $due_date
+                ]);
+                
+                $savedActivityId = $pdo->lastInsertId();
+                
+                // Prevent duplicate submission on refresh
+                $_SESSION['activity_created'] = $savedActivityId;
+                
+                // Redirect to prevent form resubmission
+                header("Location: create-activity.php?created=$savedActivityId");
+                exit();
+            }
         }
         
     } catch(Exception $e) {
-        $statusMessage = 'Failed to create activity: ' . $e->getMessage();
+        $statusMessage = 'Failed to ' . ($isEditMode ? 'update' : 'create') . ' activity: ' . $e->getMessage();
         $statusType = 'error';
     }
 }
 
-// Check if redirected after successful creation
+// Check if redirected after successful creation or update
 if (isset($_GET['created'])) {
     $savedActivityId = $_GET['created'];
     $statusMessage = "Activity created successfully! Activity ID: $savedActivityId";
@@ -120,17 +223,51 @@ if (isset($_GET['created'])) {
     $formSubmitted = true;
 }
 
-// Clear session on page load (except when redirected after success)
-if (!isset($_GET['created'])) {
-    unset($_SESSION['activity_created']);
+if (isset($_GET['updated'])) {
+    $savedActivityId = $editActivityId;
+    $statusMessage = "Activity updated successfully!";
+    $statusType = 'success';
+    $formSubmitted = true;
 }
+
+// Clear session on page load (except when redirected after success)
+if (!isset($_GET['created']) && !isset($_GET['updated'])) {
+    unset($_SESSION['activity_created']);
+    unset($_SESSION['activity_updated']);
+}
+
+// Function to safely get POST or activity data
+function getFormValue($fieldName) {
+    global $activityData, $isEditMode, $formSubmitted;
+    
+    if (!$formSubmitted && isset($_POST[$fieldName])) {
+        return htmlspecialchars($_POST[$fieldName]);
+    }
+    
+    if ($isEditMode && $activityData && isset($activityData[$fieldName])) {
+        return htmlspecialchars($activityData[$fieldName]);
+    }
+    
+    return '';
+}
+
+// Get form values for population
+$activity_title = getFormValue('title');
+$activity_description = getFormValue('description');
+$activity_instructions = getFormValue('instructions');
+$max_points_val = $activityData ? $activityData['max_points'] : (isset($_POST['max_points']) ? $_POST['max_points'] : 100);
+$due_date_val = $activityData ? ($activityData['due_date'] ? date('Y-m-d', strtotime($activityData['due_date'])) : '') : (isset($_POST['due_date']) ? $_POST['due_date'] : '');
+$selected_intelligence = $activityData ? $activityData['intelligence_type'] : (isset($_POST['intelligence_type']) ? $_POST['intelligence_type'] : 'linguistic');
+$selected_world = $activityData ? $activityData['virtual_world'] : (isset($_POST['virtual_world']) ? $_POST['virtual_world'] : 'zoo');
+$selected_activity_type = $activityData ? $activityData['activity_type'] : (isset($_POST['activity_type']) ? $_POST['activity_type'] : 'essay');
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Activity | MIEL - Multiple Intelligence E-Learning</title>
+    <title><?php echo $isEditMode ? 'Edit' : 'Create'; ?> Activity | MIEL - Multiple Intelligence E-Learning</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -265,7 +402,7 @@ if (!isset($_GET['created'])) {
         
         .dashboard-header {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 10px;
             padding: 20px;
             background: white;
             border-radius: var(--border-radius);
@@ -294,6 +431,7 @@ if (!isset($_GET['created'])) {
         .subtitle {
             color: var(--secondary-green);
             font-size: 1.2rem;
+            margin-bottom: -5px;
         }
         
         /* ===== MAIN CARD ===== */
@@ -570,6 +708,10 @@ if (!isset($_GET['created'])) {
         .essay-icon { color: #4A90E2; background: rgba(74, 144, 226, 0.1); }
         .drawing-icon { color: #9C27B0; background: rgba(156, 39, 176, 0.1); }
         .presentation-icon { color: #50C878; background: rgba(80, 200, 120, 0.1); }
+        .project-icon { color: #FF9800; background: rgba(255, 152, 0, 0.1); }
+        .experiment-icon { color: #F44336; background: rgba(244, 67, 54, 0.1); }
+        .performance-icon { color: #9C27B0; background: rgba(156, 39, 176, 0.1); }
+        .portfolio-icon { color: #795548; background: rgba(121, 85, 72, 0.1); }
         
         /* ===== POINTS AND DATE INPUTS ===== */
         .form-row {
@@ -628,13 +770,24 @@ if (!isset($_GET['created'])) {
             flex-wrap: wrap;
         }
         
-        /* ===== STANDARDIZED BUTTON STYLES ===== */
-        .btn-success, .btn-secondary {
+        /* Orange button for grading */
+        .orange-btn {
+            background-color: #FF9800 !important;
+            color: white !important;
+        }
+        
+        .orange-btn:hover {
+            background-color: #F57C00 !important;
+            transform: translateY(-3px);
+        }
+        
+        /* Standard button styles */
+        .btn-success, .btn-secondary, .btn-primary {
             background-color: #4A90E2 !important;
             color: white !important;
         }
         
-        .btn-success:hover, .btn-secondary:hover {
+        .btn-success:hover, .btn-secondary:hover, .btn-primary:hover {
             background-color: #FFD166 !important;
             transform: translateY(-3px);
             color: #2C3E50 !important;
@@ -837,6 +990,24 @@ if (!isset($_GET['created'])) {
             font-size: 0.9rem;
             display: none;
         }
+        
+        .edit-mode-banner {
+            background: linear-gradient(135deg, #FF9800, #FFB74D);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 3px solid #F57C00;
+        }
+        
+        .edit-mode-banner h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -871,8 +1042,8 @@ if (!isset($_GET['created'])) {
             <div class="logo">
                 <i class="fas fa-tasks logo-icon bounce"></i>
                 <div>
-                    <h1>Create Activity for Arville Metaverse</h1>
-                    <p class="subtitle">Design creative activities for your students!</p>
+                    <h1><?php echo $isEditMode ? 'Edit Activity' : 'Create Activity for Arville Metaverse'; ?></h1>
+                    <p class="subtitle"><?php echo $isEditMode ? 'Update your activity details' : 'Design creative activities for your students!'; ?></p>
                 </div>
             </div>
         </header>
@@ -886,18 +1057,24 @@ if (!isset($_GET['created'])) {
             </div>
             <?php endif; ?>
             
-            <?php if ($savedActivityId): ?>
+            <?php if ($savedActivityId && $formSubmitted): ?>
             <div class="activity-id-display">
-                <p>Your activity has been created with ID: <strong><?php echo $savedActivityId; ?></strong></p>
+                <p>Your activity has been <?php echo $isEditMode ? 'updated' : 'created'; ?> <?php if (!$isEditMode): ?>with ID: <strong><?php echo $savedActivityId; ?></strong><?php endif; ?></p>
                 <div class="button-group" style="margin-top: 15px;">
+                    <?php if ($isEditMode): ?>
+                    <a href="create-activity.php?edit=<?php echo $savedActivityId; ?>" class="btn btn-success">
+                        <i class="fas fa-edit"></i> Continue Editing
+                    </a>
+                    <?php else: ?>
                     <a href="create-activity.php" class="btn btn-success">
                         <i class="fas fa-plus"></i> Create Another Activity
                     </a>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endif; ?>
             
-            <form method="POST" action="create-activity.php" id="activityForm" class="<?php echo $formSubmitted ? 'form-disabled' : ''; ?>">
+            <form method="POST" action="create-activity.php<?php echo $isEditMode ? "?edit=$editActivityId" : ''; ?>" id="activityForm" class="<?php echo $formSubmitted ? 'form-disabled' : ''; ?>">
                 <!-- ACTIVITY INFO SECTION -->
                 <div class="form-group">
                     <label class="form-label">
@@ -906,7 +1083,7 @@ if (!isset($_GET['created'])) {
                     <div class="input-with-icon">
                         <i class="fas fa-pencil-alt input-icon"></i>
                         <input type="text" name="activity_title" id="activityTitle" placeholder="Enter activity title (e.g., 'Creative Essay Writing')" maxlength="200" required
-                               value="<?php echo isset($_POST['activity_title']) && !$formSubmitted ? htmlspecialchars($_POST['activity_title']) : ''; ?>">
+                               value="<?php echo $activity_title; ?>">
                     </div>
                     <div id="titleError" class="error-message"></div>
                 </div>
@@ -921,13 +1098,15 @@ if (!isset($_GET['created'])) {
                         $activityTypes = [
                             'essay' => ['icon' => 'file-alt', 'name' => 'Essay Writing', 'desc' => 'Written assignments'],
                             'drawing' => ['icon' => 'paint-brush', 'name' => 'Drawing', 'desc' => 'Artistic creations'],
-                            'presentation' => ['icon' => 'presentation', 'name' => 'Presentation', 'desc' => 'Slides or video']
+                            'presentation' => ['icon' => 'presentation', 'name' => 'Presentation', 'desc' => 'Slides or video'],
+                            'project' => ['icon' => 'tasks', 'name' => 'Project', 'desc' => 'Long-term projects'],
+                            'experiment' => ['icon' => 'flask', 'name' => 'Experiment', 'desc' => 'Scientific experiments'],
+                            'performance' => ['icon' => 'theater-masks', 'name' => 'Performance', 'desc' => 'Live performances'],
+                            'portfolio' => ['icon' => 'briefcase', 'name' => 'Portfolio', 'desc' => 'Collection of work']
                         ];
                         
-                        $selectedActivityType = isset($_POST['activity_type']) && !$formSubmitted ? $_POST['activity_type'] : 'essay';
-                        
                         foreach ($activityTypes as $key => $type):
-                            $isSelected = $selectedActivityType === $key;
+                            $isSelected = $selected_activity_type === $key;
                         ?>
                         <div class="activity-type-option <?php echo $isSelected ? 'selected' : ''; ?>" 
                              data-activity-type="<?php echo $key; ?>">
@@ -941,7 +1120,7 @@ if (!isset($_GET['created'])) {
                         </div>
                         <?php endforeach; ?>
                     </div>
-                    <input type="hidden" name="activity_type" id="activityType" value="<?php echo $selectedActivityType; ?>">
+                    <input type="hidden" name="activity_type" id="activityType" value="<?php echo $selected_activity_type; ?>">
                 </div>
 
                 <!-- INTELLIGENCE TYPE SELECTOR -->
@@ -962,10 +1141,8 @@ if (!isset($_GET['created'])) {
                             'naturalist' => ['icon' => 'leaf', 'name' => 'Naturalist', 'desc' => 'Nature Smart']
                         ];
                         
-                        $selectedIntelligence = isset($_POST['intelligence_type']) && !$formSubmitted ? $_POST['intelligence_type'] : 'linguistic';
-                        
                         foreach ($intelligenceTypes as $key => $type):
-                            $isSelected = $selectedIntelligence === $key;
+                            $isSelected = $selected_intelligence === $key;
                         ?>
                         <div class="intelligence-option <?php echo $isSelected ? 'selected' : ''; ?>" 
                              data-intelligence="<?php echo $key; ?>">
@@ -979,7 +1156,7 @@ if (!isset($_GET['created'])) {
                         </div>
                         <?php endforeach; ?>
                     </div>
-                    <input type="hidden" name="intelligence_type" id="intelligenceType" value="<?php echo $selectedIntelligence; ?>">
+                    <input type="hidden" name="intelligence_type" id="intelligenceType" value="<?php echo $selected_intelligence; ?>">
                 </div>
 
                 <!-- DESCRIPTION -->
@@ -989,7 +1166,7 @@ if (!isset($_GET['created'])) {
                     </label>
                     <div class="input-with-icon">
                         <i class="fas fa-align-left input-icon"></i>
-                        <textarea name="activity_description" id="activityDescription" placeholder="Describe the activity and learning objectives..."><?php echo isset($_POST['activity_description']) && !$formSubmitted ? htmlspecialchars($_POST['activity_description']) : ''; ?></textarea>
+                        <textarea name="activity_description" id="activityDescription" placeholder="Describe the activity and learning objectives..."><?php echo $activity_description; ?></textarea>
                     </div>
                 </div>
 
@@ -1011,10 +1188,8 @@ if (!isset($_GET['created'])) {
                             'arctic' => ['icon' => 'icicles', 'name' => 'Arctic', 'desc' => 'Polar Regions']
                         ];
                         
-                        $selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['virtual_world'] : 'zoo';
-                        
                         foreach ($worlds as $key => $world):
-                            $isSelected = $selectedWorld === $key;
+                            $isSelected = $selected_world === $key;
                         ?>
                         <div class="world-option <?php echo $isSelected ? 'selected' : ''; ?>" data-world="<?php echo $key; ?>">
                             <div class="world-thumbnail">
@@ -1030,7 +1205,7 @@ if (!isset($_GET['created'])) {
                         </div>
                         <?php endforeach; ?>
                     </div>
-                    <input type="hidden" name="virtual_world" id="virtualWorld" value="<?php echo $selectedWorld; ?>">
+                    <input type="hidden" name="virtual_world" id="virtualWorld" value="<?php echo $selected_world; ?>">
                 </div>
 
                 <!-- INSTRUCTIONS -->
@@ -1040,7 +1215,7 @@ if (!isset($_GET['created'])) {
                     </label>
                     <div class="input-with-icon">
                         <i class="fas fa-clipboard-list input-icon"></i>
-                        <textarea name="activity_instructions" id="activityInstructions" placeholder="Provide step-by-step instructions for students..." rows="5"><?php echo isset($_POST['activity_instructions']) && !$formSubmitted ? htmlspecialchars($_POST['activity_instructions']) : ''; ?></textarea>
+                        <textarea name="activity_instructions" id="activityInstructions" placeholder="Provide step-by-step instructions for students..." rows="5"><?php echo $activity_instructions; ?></textarea>
                     </div>
                 </div>
 
@@ -1057,7 +1232,7 @@ if (!isset($_GET['created'])) {
                             <div class="input-with-icon">
                                 <i class="fas fa-star input-icon"></i>
                                 <input type="number" name="max_points" id="maxPoints" placeholder="100" min="1" max="1000" 
-                                       value="<?php echo isset($_POST['max_points']) && !$formSubmitted ? htmlspecialchars($_POST['max_points']) : '100'; ?>">
+                                       value="<?php echo $max_points_val; ?>">
                             </div>
                         </div>
                         <div>
@@ -1067,7 +1242,7 @@ if (!isset($_GET['created'])) {
                             <div class="input-with-icon">
                                 <i class="fas fa-calendar-alt input-icon"></i>
                                 <input type="date" name="due_date" id="dueDate" 
-                                       value="<?php echo isset($_POST['due_date']) && !$formSubmitted ? htmlspecialchars($_POST['due_date']) : ''; ?>">
+                                       value="<?php echo $due_date_val; ?>">
                             </div>
                         </div>
                     </div>
@@ -1077,14 +1252,16 @@ if (!isset($_GET['created'])) {
                 <div class="button-group" style="margin-top: 30px;">
                     <?php if (!$formSubmitted): ?>
                     <button type="submit" class="btn btn-success" id="submitBtn">
-                        <i class="fas fa-plus-circle"></i> Create Activity
+                        <i class="fas <?php echo $isEditMode ? 'fa-save' : 'fa-plus-circle'; ?>"></i> 
+                        <?php echo $isEditMode ? 'Update Activity' : 'Create Activity'; ?>
                     </button>
                     <button type="reset" class="btn btn-secondary">
                         <i class="fas fa-redo"></i> Reset Form
                     </button>
                     <?php else: ?>
-                    <a href="create-activity.php" class="btn btn-success">
-                        <i class="fas fa-plus"></i> Create Another Activity
+                    <a href="create-activity.php<?php echo $isEditMode ? "?edit=$editActivityId" : ''; ?>" class="btn btn-success">
+                        <i class="fas <?php echo $isEditMode ? 'fa-edit' : 'fa-plus'; ?>"></i> 
+                        <?php echo $isEditMode ? 'Continue Editing' : 'Create Another Activity'; ?>
                     </a>
                     <?php endif; ?>
                 </div>
@@ -1119,6 +1296,8 @@ if (!isset($_GET['created'])) {
         const titleError = document.getElementById('titleError');
         const submitBtn = document.getElementById('submitBtn');
         const dueDateInput = document.getElementById('dueDate');
+        const isEditMode = <?php echo $isEditMode ? 'true' : 'false'; ?>;
+        const editActivityId = <?php echo $editActivityId ? "'$editActivityId'" : 'null'; ?>;
 
         // Set minimum due date to today
         const today = new Date().toISOString().split('T')[0];
@@ -1158,13 +1337,18 @@ if (!isset($_GET['created'])) {
             if (!title.trim()) return false;
             
             try {
+                const data = { title: title };
+                if (isEditMode && editActivityId) {
+                    data.exclude_id = editActivityId;
+                }
+                
                 const response = await fetch('create-activity.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: JSON.stringify({ title: title })
+                    body: JSON.stringify(data)
                 });
                 
                 const result = await response.json();
@@ -1199,18 +1383,18 @@ if (!isset($_GET['created'])) {
             
             // Check for duplicate title
             if (submitBtn) {
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+                submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEditMode ? 'Checking...' : 'Checking...'}`;
                 submitBtn.disabled = true;
             }
             
             const isDuplicate = await checkDuplicateTitle(title);
             
             if (isDuplicate) {
-                titleError.textContent = 'An activity with this title already exists. Please choose a different title.';
+                titleError.textContent = 'Another activity with this title already exists. Please choose a different title.';
                 titleError.style.display = 'block';
                 titleInput.focus();
                 if (submitBtn) {
-                    submitBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Create Activity';
+                    submitBtn.innerHTML = `<i class="fas ${isEditMode ? 'fa-save' : 'fa-plus-circle'}"></i> ${isEditMode ? 'Update Activity' : 'Create Activity'}`;
                     submitBtn.disabled = false;
                 }
                 return false;

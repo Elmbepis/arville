@@ -36,7 +36,7 @@ try {
     $quizStmt->execute();
     $availableQuizzes = $quizStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get student's scores
+    // Get student's quiz scores (renamed from My Scores to My Quiz Scores)
     $scoreStmt = $pdo->prepare("
         SELECT s.*, q.title as quiz_title, q.virtual_world, q.intelligence_type
         FROM scores s 
@@ -45,12 +45,45 @@ try {
         ORDER BY s.completed_at DESC
     ");
     $scoreStmt->execute([$_SESSION['user_id']]);
-    $studentScores = $scoreStmt->fetchAll(PDO::FETCH_ASSOC);
+    $studentQuizScores = $scoreStmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Get all quizzes for score comparison
     $allQuizzesStmt = $pdo->prepare("SELECT id, title FROM quizzes");
     $allQuizzesStmt->execute();
     $allQuizzes = $allQuizzesStmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // ===== NEW: Get Available Activities =====
+    // Simplified query - just get basic activity info
+    $activitiesStmt = $pdo->prepare("
+        SELECT a.*, u.full_name as teacher_name 
+        FROM activities a 
+        JOIN users u ON a.teacher_id = u.id 
+        ORDER BY a.created_at DESC
+    ");
+    $activitiesStmt->execute();
+    $availableActivities = $activitiesStmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // ===== NEW: Get Student's Activity Grades =====
+    // Check if activity_grades table exists, if not, return empty array
+    $studentActivityGrades = [];
+    try {
+        // First check if the table exists
+        $tableCheck = $pdo->query("SHOW TABLES LIKE 'activity_grades'");
+        if ($tableCheck->rowCount() > 0) {
+            $activityGradesStmt = $pdo->prepare("
+                SELECT ag.*, a.title as activity_title, a.activity_type, a.virtual_world, a.intelligence_type
+                FROM activity_grades ag 
+                JOIN activities a ON ag.activity_id = a.id 
+                WHERE ag.student_id = ? 
+                ORDER BY ag.graded_at DESC
+            ");
+            $activityGradesStmt->execute([$_SESSION['user_id']]);
+            $studentActivityGrades = $activityGradesStmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+    } catch (PDOException $e) {
+        // If table doesn't exist, just continue with empty array
+        $studentActivityGrades = [];
+    }
     
 } catch(PDOException $e) {
     die("Database error: " . $e->getMessage());
@@ -126,6 +159,32 @@ function getWorldIcon($world) {
         'arctic' => 'icicles'
     ];
     return $icons[$world] ?? 'globe';
+}
+
+// ===== NEW: Get activity type name =====
+function getActivityTypeName($type) {
+    $names = [
+        'essay' => 'Essay',
+        'project' => 'Project',
+        'presentation' => 'Presentation',
+        'experiment' => 'Experiment',
+        'performance' => 'Performance',
+        'portfolio' => 'Portfolio'
+    ];
+    return $names[$type] ?? ucfirst($type);
+}
+
+// ===== NEW: Get activity type icon =====
+function getActivityTypeIcon($type) {
+    $icons = [
+        'essay' => 'file-alt',
+        'project' => 'tasks',
+        'presentation' => 'presentation',
+        'experiment' => 'flask',
+        'performance' => 'theater-masks',
+        'portfolio' => 'briefcase'
+    ];
+    return $icons[$type] ?? 'file-alt';
 }
 ?>
 <!DOCTYPE html>
@@ -1001,11 +1060,63 @@ function getWorldIcon($world) {
                 </div>
             </div>
 
-            <!-- MY SCORES SECTION -->
+            <!-- ===== NEW: AVAILABLE ACTIVITIES SECTION ===== -->
             <div class="card fade-in">
                 <h2 class="card-title">
-                    <i class="fas fa-chart-line"></i> My Scores
-                    <span class="badge badge-primary"><?php echo count($studentScores); ?></span>
+                    <i class="fas fa-tasks"></i> Available Activities
+                    <span class="badge badge-primary"><?php echo count($availableActivities); ?></span>
+                </h2>
+                
+                <div class="scores-section">
+                    <div class="quiz-grid">
+                        <?php if (empty($availableActivities)): ?>
+                            <!-- Show 8 empty placeholders -->
+                            <?php for ($i = 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon">
+                                <i class="fas fa-plus-circle"></i>
+                                <div class="empty-text">Activity <?php echo $i; ?></div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php else: ?>
+                            <?php 
+                            // Show up to 8 activities
+                            $displayActivities = array_slice($availableActivities, 0, 8);
+                            $activityCount = 0;
+                            ?>
+                            <?php foreach ($displayActivities as $activity): $activityCount++; ?>
+                            <div class="quiz-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)">
+                                <div class="icon-badge"><?php echo $activityCount; ?></div>
+                                <div class="icon-main">
+                                    <i class="fas fa-<?php echo getActivityTypeIcon($activity['activity_type']); ?>"></i>
+                                </div>
+                                <div class="icon-title">
+                                    <?php echo htmlspecialchars(substr($activity['title'], 0, 20)); ?>
+                                    <?php if (strlen($activity['title']) > 20): ?>...<?php endif; ?>
+                                </div>
+                                <div class="icon-meta">
+                                    <i class="fas fa-<?php echo getWorldIcon($activity['virtual_world']); ?>"></i>
+                                    <?php echo getActivityTypeName($activity['activity_type']); ?>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                            
+                            <?php // Fill remaining slots with placeholders ?>
+                            <?php for ($i = $activityCount + 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon">
+                                <i class="fas fa-plus-circle"></i>
+                                <div class="empty-text">Coming Soon</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== RENAMED: MY QUIZ SCORES SECTION ===== -->
+            <div class="card fade-in">
+                <h2 class="card-title">
+                    <i class="fas fa-chart-line"></i> My Quiz Scores
+                    <span class="badge badge-primary"><?php echo count($studentQuizScores); ?></span>
                 </h2>
                 
                 <div class="scores-section">
@@ -1022,7 +1133,7 @@ function getWorldIcon($world) {
                             <?php 
                             // Create a map of quiz IDs to scores for easy lookup
                             $scoreMap = [];
-                            foreach ($studentScores as $score) {
+                            foreach ($studentQuizScores as $score) {
                                 $scoreMap[$score['quiz_id']] = $score;
                             }
                             
@@ -1071,6 +1182,62 @@ function getWorldIcon($world) {
                     </div>
                 </div>
             </div>
+
+            <!-- ===== NEW: MY ACTIVITY GRADES SECTION ===== -->
+            <div class="card fade-in">
+                <h2 class="card-title">
+                    <i class="fas fa-star"></i> My Activity Grades
+                    <span class="badge badge-primary"><?php echo count($studentActivityGrades); ?></span>
+                </h2>
+                
+                <div class="scores-section">
+                    <div class="quiz-grid">
+                        <?php if (empty($studentActivityGrades)): ?>
+                            <!-- Show 8 empty placeholders -->
+                            <?php for ($i = 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon">
+                                <i class="fas fa-star"></i>
+                                <div class="empty-text">Activity <?php echo $i; ?></div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php else: ?>
+                            <?php 
+                            // Show up to 8 activity grades
+                            $displayActivityGrades = array_slice($studentActivityGrades, 0, 8);
+                            $activityGradeCount = 0;
+                            ?>
+                            
+                            <?php foreach ($displayActivityGrades as $grade): $activityGradeCount++; ?>
+                                <div class="quiz-icon" onclick="reviewActivity(<?php echo $grade['activity_id']; ?>)">
+                                    <div class="icon-badge"><?php echo $activityGradeCount; ?></div>
+                                    <div class="icon-main">
+                                        <i class="fas fa-<?php echo getActivityTypeIcon($grade['activity_type']); ?>"></i>
+                                    </div>
+                                    <div class="icon-title">
+                                        <?php echo htmlspecialchars(substr($grade['activity_title'], 0, 20)); ?>
+                                        <?php if (strlen($grade['activity_title']) > 20): ?>...<?php endif; ?>
+                                    </div>
+                                    <div class="icon-score">
+                                        <?php echo $grade['points_earned']; ?>/<?php echo $grade['max_points']; ?>
+                                    </div>
+                                    <div class="icon-meta">
+                                        <i class="fas fa-<?php echo getWorldIcon($grade['virtual_world']); ?>"></i>
+                                        Grade: <?php echo number_format(($grade['points_earned'] / $grade['max_points']) * 100, 0); ?>%
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                            
+                            <?php // Fill remaining slots with placeholders ?>
+                            <?php for ($i = $activityGradeCount + 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon">
+                                <i class="fas fa-plus-circle"></i>
+                                <div class="empty-text">Coming Soon</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- BOTTOM BUTTONS CONTAINER -->
@@ -1092,6 +1259,15 @@ function getWorldIcon($world) {
         
         function reviewQuiz(quizId) {
             window.location.href = `review-quiz.php?quiz_id=${quizId}`;
+        }
+        
+        // ===== NEW: Activity functions =====
+        function viewActivity(activityId) {
+            window.location.href = `do-activity.php?activity_id=${activityId}`;
+        }
+        
+        function reviewActivity(activityId) {
+            window.location.href = `review-activity.php?activity_id=${activityId}`;
         }
         
         // Auto-refresh every 30 seconds
