@@ -355,7 +355,21 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
 		.navbar-brand {
     	margin-bottom: -50px !important;
 		}
-        
+		
+		.navbar .container {
+		    width: 100%;
+    		max-width: 100%;
+   		    padding-left: 300px;
+  		    padding-right: 300px;
+    		display: flex;
+    		justify-content: space-between;
+    		align-items: center;
+		}
+
+		.navbar .navbar-collapse {
+		    flex-grow: 0; /* Prevents it from taking up extra space */
+		}        
+		
         /* ===== MIEL BANNER ===== */
         .miel-banner-container {
             text-align: center;

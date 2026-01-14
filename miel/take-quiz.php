@@ -283,9 +283,47 @@ function getWorldIcon($world) {
         
         .container { max-width: 800px; margin: 0 auto; padding: 20px; }
         
+        /* Navbar adjustments */
+        .navbar {
+            font-family: 'Arial', sans-serif !important;
+            font-weight: 300 !important;
+            margin-bottom: -50px;
+            margin-top: -20px
+        }
+
+        .navbar-nav .nav-link {
+            font-size: 1.0rem !important;
+            color: #333 !important;
+            transition: color 0.3s ease !important;
+            margin-top: 20px
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #4A90E2 !important;
+        }
+        
+        .navbar-brand {
+            margin-bottom: -20px !important;
+        }
+        
+        .navbar .container {
+            width: 100%;
+            max-width: 100%;
+            padding-left: 300px;
+            padding-right: 300px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar .navbar-collapse {
+            flex-grow: 0; /* Prevents it from taking up extra space */
+        }
+        
         /* MIEL Banner */
         .miel-banner-container {
             text-align: center;
+            margin-top: 80px !important;
             margin-bottom: 30px;
             max-width: 450px;
             margin-left: auto;
@@ -634,7 +672,27 @@ function getWorldIcon($world) {
     </style>
 </head>
 <body>
-    <!-- MIEL BANNER -->
+    <!-- ARVILLE NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="../index.php">
+                <img src="../images/logo.jpg" alt="ARville Network" width="200" class="d-inline-block align-text-top">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="plans.php">Plans</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about-us.php">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MIEL BANNER IMAGE -->
     <div class="miel-banner-container fade-in">
         <img src="miel-banner.png" alt="MIEL - Multiple Intelligence Experiential Learning System" class="miel-banner">
     </div>

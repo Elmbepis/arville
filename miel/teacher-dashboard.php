@@ -292,7 +292,21 @@ function formatDateTime($date) {
 		.navbar-nav .nav-link:hover {
 	    color: #4A90E2 !important;
 		}
-        
+		
+		.navbar .container {
+		    width: 100%;
+    		max-width: 100%;
+   		    padding-left: 300px;
+  		    padding-right: 300px;
+    		display: flex;
+    		justify-content: space-between;
+    		align-items: center;
+		}
+
+		.navbar .navbar-collapse {
+		    flex-grow: 0; /* Prevents it from taking up extra space */
+		}        
+		
 	.bottom-buttons-container {
 	    margin-bottom: 30px !important; /* Adjust this value as needed */
 	}
@@ -620,7 +634,7 @@ function formatDateTime($date) {
             background: rgba(156, 39, 176, 0.1);
         }
         
-        /* ===== ACTIVITIES TO GRADE SECTION ===== */
+        /* ===== ACTIVITY GRADES SECTION ===== */
         .grading-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -631,7 +645,7 @@ function formatDateTime($date) {
         
         .grading-icon {
             aspect-ratio: 1/1;
-            background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+            background: #F8F9FF;
             border-radius: 15px;
             display: flex;
             flex-direction: column;
@@ -641,14 +655,14 @@ function formatDateTime($date) {
             text-align: center;
             transition: all 0.3s;
             cursor: pointer;
-            border: 3px solid #FFB74D;
+            border: 3px solid #E0E0E0;
             position: relative;
             overflow: hidden;
         }
         
         .grading-icon:hover {
             transform: translateY(-5px);
-            border-color: #FF9800;
+            border-color: var(--primary-blue);
             box-shadow: var(--shadow);
         }
         
@@ -1302,7 +1316,7 @@ function formatDateTime($date) {
                 </div>
             </div>
 
-            <!-- MY ACTIVITIES SECTION (UNDER QUIZZES) -->
+            <!-- MY ACTIVITIES SECTION -->
             <div class="card fade-in">
                 <h2 class="card-title">
                     <i class="fas fa-tasks"></i> My Activities
@@ -1365,38 +1379,92 @@ function formatDateTime($date) {
                 </div>
             </div>
 
-            <!-- ACTIVITIES TO GRADE SECTION (ADDED NEW SECTION) -->
+            <!-- STUDENT QUIZ SCORES SECTION -->
             <div class="card fade-in">
                 <h2 class="card-title">
-                    <i class="fas fa-check-double"></i> Activities to Grade
-                    <?php 
-                    $totalToGrade = 0;
-                    foreach ($activitiesToGrade as $activity) {
-                        $totalToGrade += $activity['students_to_grade'] ?? 0;
-                    }
-                    ?>
-                    <span class="badge badge-orange"><?php echo $totalToGrade; ?> pending</span>
+                    <i class="fas fa-chart-line"></i> Student Quiz Scores
+                    <span class="badge badge-primary"><?php echo count($teacherQuizzes); ?> quizzes</span>
                 </h2>
                 
                 <div class="quiz-grid-section">
-                    <div class="grading-grid">
-                        <?php if (empty($activitiesToGrade) || $totalToGrade == 0): ?>
+                    <div class="quiz-grid">
+                        <?php if (empty($teacherQuizzes)): ?>
                             <!-- Show 8 empty placeholders -->
                             <?php for ($i = 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
-                                <i class="fas fa-check-circle"></i>
-                                <div class="empty-text">No submissions yet</div>
+                            <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
+                                <i class="fas fa-plus-circle"></i>
+                                <div class="empty-text">Create Quiz <?php echo $i; ?></div>
                             </div>
                             <?php endfor; ?>
                         <?php else: ?>
                             <?php 
-                            // Show up to 8 activities that need grading
-                            $gradingCount = 0;
-                            foreach ($activitiesToGrade as $activity):
-                                if ($activity['students_to_grade'] > 0 && $gradingCount < 8):
-                                    $gradingCount++;
+                            // Show up to 8 quizzes for viewing scores
+                            $displayQuizScores = array_slice($teacherQuizzes, 0, 8);
+                            $scoreQuizCount = 0;
                             ?>
-                            <div class="grading-icon" onclick="gradeActivity(<?php echo $activity['id']; ?>)">
+                            <?php foreach ($displayQuizScores as $quiz): $scoreQuizCount++; ?>
+                            <div class="quiz-icon" onclick="window.location.href='quiz-scores.php?quiz_id=<?php echo $quiz['id']; ?>'">
+                                <div class="icon-badge"><?php echo $scoreQuizCount; ?></div>
+                                <div class="icon-main">
+                                    <i class="fas fa-<?php echo getWorldIcon($quiz['virtual_world']); ?>"></i>
+                                </div>
+                                <div class="icon-title">
+                                    <?php echo htmlspecialchars(substr($quiz['title'], 0, 20)); ?>
+                                    <?php if (strlen($quiz['title']) > 20): ?>...<?php endif; ?>
+                                </div>
+                                <div class="icon-stats">
+                                    <div><i class="fas fa-users"></i> <?php echo $quiz['attempt_count']; ?> attempts</div>
+                                </div>
+                                <?php if ($quiz['attempt_count'] > 0): ?>
+                                <div class="icon-score">
+                                    <?php echo number_format($quiz['avg_score'], 1); ?>%
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                            <?php endforeach; ?>
+                            
+                            <?php // Fill remaining slots with placeholders ?>
+                            <?php for ($i = $scoreQuizCount + 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
+                                <i class="fas fa-plus-circle"></i>
+                                <div class="empty-text">Create New Quiz</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="exportQuizScores()">
+                            <i class="fas fa-download"></i> Export All Quiz Scores
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTIVITY GRADES SECTION (Renamed from Activities to Grade) -->
+            <div class="card fade-in">
+                <h2 class="card-title">
+                    <i class="fas fa-check-double"></i> Activity Grades
+                </h2>
+                
+                <div class="quiz-grid-section">
+                    <div class="grading-grid">
+                        <?php if (empty($activitiesToGrade)): ?>
+                            <!-- Show 8 empty placeholders -->
+                            <?php for ($i = 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                                <i class="fas fa-check-circle"></i>
+                                <div class="empty-text">No activities yet</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php else: ?>
+                            <?php 
+                            // Show up to 8 activities for grading
+                            $displayGradingIcons = array_slice($activitiesToGrade, 0, 8);
+                            $gradingCount = 0;
+                            ?>
+                            <?php foreach ($displayGradingIcons as $activity): $gradingCount++; ?>
+                            <div class="grading-icon" onclick="window.location.href='grade-activity.php?activity_id=<?php echo $activity['id']; ?>'">
                                 <?php if ($activity['students_to_grade'] > 0): ?>
                                 <div class="grading-badge pulse"><?php echo $activity['students_to_grade']; ?></div>
                                 <?php endif; ?>
@@ -1419,27 +1487,19 @@ function formatDateTime($date) {
                                 </div>
                                 <?php endif; ?>
                             </div>
-                            <?php 
-                                endif;
-                            endforeach;
+                            <?php endforeach; ?>
                             
-                            // Fill remaining slots
-                            for ($i = $gradingCount + 1; $i <= 8; $i++):
-                            ?>
+                            <?php // Fill remaining slots ?>
+                            <?php for ($i = $gradingCount + 1; $i <= 8; $i++): ?>
                             <div class="empty-icon" onclick="window.location.href='create-activity.php'">
                                 <i class="fas fa-check-circle"></i>
-                                <div class="empty-text">All caught up!</div>
+                                <div class="empty-text">Create Activity</div>
                             </div>
                             <?php endfor; ?>
                         <?php endif; ?>
                     </div>
                     
                     <div class="action-buttons">
-                        <?php if ($totalToGrade > 0): ?>
-                        <a href="grade-activity.php?activity_id=<?php echo !empty($activitiesToGrade[0]['id']) ? $activitiesToGrade[0]['id'] : ''; ?>" class="action-btn orange-btn">
-                            <i class="fas fa-clipboard-check"></i> Start Grading
-                        </a>
-                        <?php endif; ?>
                         
                         <button class="action-btn" onclick="viewAllActivities()">
                             <i class="fas fa-list"></i> View All Activities
@@ -1448,68 +1508,6 @@ function formatDateTime($date) {
                 </div>
             </div>
 
-            <!-- STUDENT SCORES SECTION -->
-            <div class="card fade-in">
-                <h2 class="card-title">
-                    <i class="fas fa-chart-line"></i> Student Quiz Scores
-                    <span class="badge badge-primary"><?php echo count($studentScores); ?></span>
-                </h2>
-                
-                <div class="scores-section">
-                    <?php if (empty($studentScores)): ?>
-                        <div class="empty-score">
-                            <i class="fas fa-chart-bar"></i>
-                            <p>No student quiz scores yet. Share your quizzes with students!</p>
-                        </div>
-                    <?php else: ?>
-                        <div class="score-list">
-                            <?php foreach ($studentScores as $score): ?>
-                            <div class="score-item">
-                                <div class="score-header">
-                                    <div>
-                                        <div class="score-student">
-                                            <?php echo htmlspecialchars($score['student_name']); ?>
-                                            <?php if ($score['grade_level']): ?>
-                                            <span style="color: #666; font-size: 0.9rem;">(Grade <?php echo $score['grade_level']; ?>)</span>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="score-quiz">
-                                            <?php echo htmlspecialchars($score['quiz_title']); ?>
-                                            <?php if ($score['class_name']): ?>
-                                            • <?php echo htmlspecialchars($score['class_name']); ?>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                    <div class="score-value">
-                                        <?php echo $score['score']; ?>%
-                                    </div>
-                                </div>
-                                <div class="score-details">
-                                    <div>
-                                        <i class="fas fa-calendar" style="color: #9C27B0;"></i>
-                                        <?php echo formatDate($score['completed_at']); ?>
-                                    </div>
-                                    <div>
-                                        <i class="fas fa-clock" style="color: #FF9800;"></i>
-                                        Completed
-                                    </div>
-                                    <div>
-                                        <i class="fas fa-id-card" style="color: var(--secondary-green);"></i>
-                                        Student ID: <?php echo $score['student_id']; ?>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <div class="action-buttons">
-                        <button class="action-btn" onclick="exportQuizScores()">
-                            <i class="fas fa-download"></i> Export Quiz Scores
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- BOTTOM BUTTONS -->
@@ -1529,12 +1527,12 @@ function formatDateTime($date) {
             window.location.href = `add-questions.php?quiz_id=${quizId}`;
         }
         
-		// Activity functions - links to view-activity.php for teachers to view activity details
-		function viewActivity(activityId) {
+        // Activity functions
+        function viewActivity(activityId) {
             window.location.href = `create-activity.php?edit=${activityId}`;
         }
                 
-        // Grading functions - links to grade-activity.php for grading submissions
+        // Grading functions
         function gradeActivity(activityId) {
             window.location.href = `grade-activity.php?activity_id=${activityId}`;
         }
@@ -1671,20 +1669,6 @@ function formatDateTime($date) {
             });
         });
         
-        // Show notification if there are activities to grade
-        window.addEventListener('load', function() {
-            const pendingCount = <?php echo $totalToGrade; ?>;
-            if (pendingCount > 0) {
-                console.log(`You have ${pendingCount} student submissions to grade!`);
-                // Optional: Show a browser notification
-                if (Notification.permission === "granted") {
-                    new Notification("MIEL Teacher Dashboard", {
-                        body: `You have ${pendingCount} student submissions to grade!`,
-                        icon: "miel-banner.png"
-                    });
-                }
-            }
-        });
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -274,7 +274,21 @@ function getActivityTypeIcon($type) {
         .navbar-nav .nav-link:hover {
             color: #4A90E2 !important;
         }
-        
+		
+		.navbar .container {
+		    width: 100%;
+    		max-width: 100%;
+   		    padding-left: 300px;
+  		    padding-right: 300px;
+    		display: flex;
+    		justify-content: space-between;
+    		align-items: center;
+		}
+
+		.navbar .navbar-collapse {
+		    flex-grow: 0; /* Prevents it from taking up extra space */
+		}        
+		
         .bottom-buttons-container {
             margin-bottom: 30px !important; /* Adjust this value as needed */
         }

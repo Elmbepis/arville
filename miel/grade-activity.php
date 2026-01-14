@@ -276,7 +276,7 @@ function getGradeBadge($points, $max_points) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grade Activity | MIEL</title>
+    <title>Activity Grades | MIEL</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
@@ -295,7 +295,7 @@ function getGradeBadge($points, $max_points) {
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
             background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 0px;
             position: relative;
         }
         
@@ -325,7 +325,7 @@ function getGradeBadge($points, $max_points) {
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -334,7 +334,21 @@ function getGradeBadge($points, $max_points) {
         .navbar {
             margin-bottom: 30px;
         }
-        
+		
+		.navbar .container {
+		    width: 100%;
+    		max-width: 100%;
+   		    padding-left: 300px;
+  		    padding-right: 300px;
+    		display: flex;
+    		justify-content: space-between;
+    		align-items: center;
+		}
+
+		.navbar .navbar-collapse {
+		    flex-grow: 0; /* Prevents it from taking up extra space */
+		}        
+		
         .miel-banner-container {
             text-align: center;
             margin-bottom: 30px;
@@ -446,80 +460,94 @@ function getGradeBadge($points, $max_points) {
             color: var(--primary-blue);
         }
         
-        .student-selector {
-            background: #E8F5E9;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 3px solid #A5D6A7;
-        }
-        
-        .student-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
+        .student-list-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
             margin-top: 15px;
         }
         
-        .student-card {
-            background: white;
-            border-radius: 12px;
+        .student-list-table thead th {
+            background: var(--primary-blue);
+            color: white;
             padding: 15px;
-            border: 3px solid #E0E0E0;
+            text-align: left;
+            font-weight: bold;
+            border: none;
+        }
+        
+        .student-list-table thead th:first-child {
+            border-top-left-radius: 15px;
+        }
+        
+        .student-list-table thead th:last-child {
+            border-top-right-radius: 15px;
+        }
+        
+        .student-list-table tbody tr {
+            background: white;
             transition: all 0.3s;
-            cursor: pointer;
+        }
+        
+        .student-list-table tbody tr:hover {
+            background: #F8F9FF;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.1);
+        }
+        
+        .student-list-table tbody tr.selected {
+            background: #F0FFF4;
+            border-left: 5px solid var(--secondary-green);
+        }
+        
+        .student-list-table tbody td {
+            padding: 15px;
+            border-bottom: 3px solid #F0F0F0;
+        }
+        
+        .student-list-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .student-name-cell {
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+        
+        .student-info-cell {
+            color: #666;
+        }
+        
+        .grade-cell {
+            font-weight: bold;
             text-align: center;
         }
         
-        .student-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary-blue);
-            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.2);
+        .grade-cell.graded {
+            color: var(--secondary-green);
         }
         
-        .student-card.selected {
-            border-color: var(--secondary-green);
-            background: #F0FFF4;
+        .grade-cell.not-submitted {
+            color: #FF9800;
         }
         
-        .student-card.not-submitted {
-            border-color: #FFD166;
-            background: #FFF9E6;
-        }
-        
-        .student-name {
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: var(--text-dark);
-            margin-bottom: 5px;
-        }
-        
-        .student-class {
-            font-size: 0.9rem;
+        .grade-cell.not-graded {
             color: #666;
-            margin-bottom: 10px;
         }
         
-        .student-status {
-            font-size: 0.8rem;
-            padding: 3px 10px;
-            border-radius: 10px;
+        .action-link {
+            color: var(--primary-blue);
+            text-decoration: none;
             font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
         }
         
-        .status-submitted {
-            background: var(--secondary-green);
-            color: white;
-        }
-        
-        .status-not-submitted {
-            background: #FFD166;
-            color: var(--text-dark);
-        }
-        
-        .status-graded {
-            background: var(--primary-blue);
-            color: white;
+        .action-link:hover {
+            color: #3a7bc8;
+            text-decoration: underline;
         }
         
         .submission-content {
@@ -741,8 +769,14 @@ function getGradeBadge($points, $max_points) {
                 grid-template-columns: 1fr;
             }
             
-            .student-list {
-                grid-template-columns: 1fr;
+            .student-list-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .student-list-table thead th,
+            .student-list-table tbody td {
+                padding: 10px;
             }
             
             .bottom-buttons-container {
@@ -784,7 +818,7 @@ function getGradeBadge($points, $max_points) {
             <div class="logo">
                 <i class="fas fa-chalkboard-teacher logo-icon"></i>
                 <div>
-                    <h1>Grade Activity</h1>
+                    <h1>Activity Grades</h1>
                     <p class="subtitle">Review Student Submissions & Provide Grades</p>
                 </div>
             </div>
@@ -883,44 +917,76 @@ function getGradeBadge($points, $max_points) {
             <?php endif; ?>
         </div>
 
-        <!-- STUDENT SELECTION -->
+        <!-- STUDENT GRADES TABLE -->
         <div class="card fade-in">
             <h2 class="card-title">
-                <i class="fas fa-user-graduate"></i> Select Student
+                <i class="fas fa-user-graduate"></i> Student Grades
             </h2>
             
-            <div class="student-list">
-                <?php foreach ($students as $student): ?>
-                    <?php
-                    $has_submission = !empty($student['submission_data']);
-                    $is_graded = !empty($student['points_earned']);
-                    $is_selected = $selected_student_id == $student['id'];
-                    ?>
-                    <a href="?activity_id=<?php echo $activity_id; ?>&student_id=<?php echo $student['id']; ?>" 
-                       class="student-card <?php echo $is_selected ? 'selected' : ''; ?> <?php echo !$has_submission ? 'not-submitted' : ''; ?>"
-                       style="text-decoration: none; display: block;">
-                        <div class="student-name"><?php echo htmlspecialchars($student['full_name']); ?></div>
-                        <div class="student-class">
-                            Grade <?php echo $student['grade_level']; ?>
-                            <?php if ($student['class_name']): ?>• <?php echo htmlspecialchars($student['class_name']); ?><?php endif; ?>
-                        </div>
-                        <div class="student-status 
-                            <?php echo $is_graded ? 'status-graded' : ($has_submission ? 'status-submitted' : 'status-not-submitted'); ?>">
-                            <?php if ($is_graded): ?>
-                                Graded: <?php echo $student['points_earned']; ?>/<?php echo $activity['max_points']; ?>
-                            <?php elseif ($has_submission): ?>
-                                Submitted
-                            <?php else: ?>
-                                Not Submitted
-                            <?php endif; ?>
-                        </div>
-                        <?php if ($student['submission_date'] && $has_submission): ?>
-                        <div style="font-size: 0.8rem; color: #666; margin-top: 5px;">
-                            <?php echo formatDate($student['submission_date']); ?>
-                        </div>
-                        <?php endif; ?>
-                    </a>
-                <?php endforeach; ?>
+            <div style="overflow-x: auto;">
+                <table class="student-list-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Grade Level</th>
+                            <th>Class</th>
+                            <th>Status</th>
+                            <th>Grade</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($students as $student): ?>
+                            <?php
+                            $has_submission = !empty($student['submission_data']);
+                            $is_graded = !empty($student['points_earned']);
+                            $is_selected = $selected_student_id == $student['id'];
+                            
+// Determine grade display
+if ($is_graded) {
+    $grade_display = $student['points_earned'] . '/' . $activity['max_points'];
+    $grade_class = 'graded';
+    $status_text = 'Graded';
+} elseif ($has_submission) {
+    $grade_display = 'N/A';
+    $grade_class = 'not-graded';
+    $status_text = 'Submitted';
+} else {
+    $grade_display = 'N/A';
+    $grade_class = 'not-submitted';
+    $status_text = 'Not Submitted';
+}
+                            ?>
+                            
+                            <tr class="<?php echo $is_selected ? 'selected' : ''; ?>">
+                                <td class="student-name-cell">
+                                    <?php echo htmlspecialchars($student['full_name']); ?>
+                                </td>
+                                <td class="student-info-cell">
+                                    <?php echo $student['grade_level']; ?>
+                                </td>
+                                <td class="student-info-cell">
+                                    <?php echo htmlspecialchars($student['class_name'] ?: 'N/A'); ?>
+                                </td>
+                                <td class="student-info-cell">
+                                    <?php echo $status_text; ?>
+                                    <?php if ($student['submission_date'] && $has_submission): ?>
+                                    <br><small style="color: #888;"><?php echo formatDate($student['submission_date']); ?></small>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="grade-cell <?php echo $grade_class; ?>">
+                                    <?php echo $grade_display; ?>
+                                </td>
+                                <td>
+                                    <a href="?activity_id=<?php echo $activity_id; ?>&student_id=<?php echo $student['id']; ?>" 
+                                       class="action-link">
+                                        <i class="fas fa-edit"></i> <?php echo $has_submission ? 'Grade' : 'View'; ?>
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -1090,15 +1156,6 @@ function getGradeBadge($points, $max_points) {
                     </div>
                 </form>
             </div>
-        </div>
-        <?php else: ?>
-        <!-- NO STUDENT SELECTED -->
-        <div class="card fade-in" style="text-align: center; padding: 40px;">
-            <i class="fas fa-user-graduate" style="font-size: 4rem; color: var(--primary-blue); margin-bottom: 20px;"></i>
-            <h3 style="color: var(--primary-blue); margin-bottom: 10px;">Select a Student</h3>
-            <p style="color: #666; max-width: 600px; margin: 0 auto;">
-                Click on a student from the list above to view their submission and provide a grade.
-            </p>
         </div>
         <?php endif; ?>
 
