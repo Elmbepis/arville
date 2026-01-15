@@ -447,7 +447,7 @@ function getQtypeName($qtype) {
             text-align: center;
             margin-bottom: 30px;
             padding: 0;
-            max-width: 450px;
+            max-width: 500px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -510,9 +510,9 @@ function getQtypeName($qtype) {
         .miel-subtitle {
             font-size: 1.4rem;
             color: var(--secondary-green);
-            margin-bottom: 5px;
             font-weight: bold;
-        }
+            margin-bottom: -15px;
+       }
         
         .miel-tagline {
             color: #666;
@@ -527,7 +527,6 @@ function getQtypeName($qtype) {
             justify-content: center;
             flex-wrap: wrap;
             gap: 15px;
-            margin-top: 15px;
         }
         
         .intelligence-icon {
@@ -554,7 +553,7 @@ function getQtypeName($qtype) {
         /* ===== DASHBOARD HEADER ===== */
         .dashboard-header {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             padding: 20px;
             background: white;
             border-radius: var(--border-radius);
@@ -583,6 +582,7 @@ function getQtypeName($qtype) {
         .subtitle {
             color: var(--secondary-green);
             font-size: 1.2rem;
+            margin-bottom: 0px;
         }
         
         /* ===== MAIN CARD ===== */
@@ -1250,10 +1250,10 @@ function getQtypeName($qtype) {
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="plans.php">Plans</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about-us.php">About Us</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-about.php">About Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-join.php">Join Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../contact.php">Contact</a></li>
                 </ul>
             </div>
         </div>
@@ -1268,10 +1268,10 @@ function getQtypeName($qtype) {
         <!-- DASHBOARD HEADER -->
         <header class="dashboard-header fade-in">
             <div class="logo">
-                <i class="fas fa-question-circle logo-icon bounce"></i>
+ 
                 <div>
-                    <h1>Add Questions to Quiz</h1>
-                    <p class="subtitle">Create different types of questions for your students!</p>
+<img src="images/add-questions.jpg" alt="Create Quiz for Arville Metaverse" style="max-width: 450px; height: auto; margin-bottom: 10px;">
+                    <p class="subtitle">Add more questions to a quiz you've created for your students!</p>
                 </div>
             </div>
         </header>

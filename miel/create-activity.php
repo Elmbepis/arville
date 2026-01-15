@@ -1036,10 +1036,10 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="plans.php">Plans</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about-us.php">About Us</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-about.php">About Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-join.php">Join Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../contact.php">Contact</a></li>
                 </ul>
             </div>
         </div>
@@ -1054,10 +1054,10 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
         <!-- DASHBOARD HEADER -->
         <header class="dashboard-header fade-in">
             <div class="logo">
-                <i class="fas fa-tasks logo-icon bounce"></i>
+ 
                 <div>
-                    <h1><?php echo $isEditMode ? 'Edit Activity' : 'Create Activity for Arville Metaverse'; ?></h1>
-                    <p class="subtitle"><?php echo $isEditMode ? 'Update your activity details' : 'Design creative activities for your students!'; ?></p>
+<img src="images/create-activity.jpg" alt="Create Quiz for Arville Metaverse" style="max-width: 500px; height: auto; margin-bottom: 10px;">
+                    <p class="subtitle"><?php echo $isEditMode ? 'Update your activity details' : 'Create a new activity for your students based on ARville worlds!'; ?></p>
                 </div>
             </div>
         </header>

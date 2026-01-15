@@ -505,7 +505,7 @@ function getFileExtension($filename) {
             text-align: center;
             margin-bottom: 30px;
             padding: 0;
-            max-width: 450px;
+            max-width: 500px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -519,7 +519,7 @@ function getFileExtension($filename) {
         /* ===== DASHBOARD HEADER ===== */
         .dashboard-header {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             padding: 20px;
             background: white;
             border-radius: var(--border-radius);
@@ -548,6 +548,7 @@ function getFileExtension($filename) {
         .subtitle {
             color: var(--secondary-green);
             font-size: 1.2rem;
+            margin-bottom: 0px;
         }
         
         .welcome-message {
@@ -1264,10 +1265,10 @@ function getFileExtension($filename) {
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="plans.php">Plans</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about-us.php">About Us</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-about.php">About Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-join.php">Join Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../contact.php">Contact</a></li>
                 </ul>
             </div>
         </div>
@@ -1282,14 +1283,11 @@ function getFileExtension($filename) {
         <!-- DASHBOARD HEADER -->
         <header class="dashboard-header fade-in">
             <div class="logo">
-                <i class="fas fa-tasks logo-icon bounce"></i>
+ 
                 <div>
-                    <h1>Activity Details</h1>
-                    <p class="subtitle">Upload Your Submission Files & Links</p>
+<img src="images/do-activity.jpg" alt="Create Quiz for Arville Metaverse" style="max-width: 100%; height: auto; margin-bottom: 10px;">
+                    <p class="subtitle">View Details or Submit Files and Links for this Activity:<br/><span style="color: #3628C3; font-weight: bold; font-size: 1.1em;"><?php echo htmlspecialchars($activity['title']); ?></span></p>
                 </div>
-            </div>
-            <div class="welcome-message">
-                Hello, <strong><?php echo htmlspecialchars($student['full_name']); ?></strong>!
             </div>
         </header>
 

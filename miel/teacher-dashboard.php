@@ -316,7 +316,7 @@ function formatDateTime($date) {
             text-align: center;
             margin-bottom: 30px;
             padding: 0;
-            max-width: 450px;
+            max-width: 500px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -359,12 +359,13 @@ function formatDateTime($date) {
         .subtitle {
             color: var(--secondary-green);
             font-size: 1.2rem;
+            margin-bottom: -5px;
         }
         
         .welcome-message {
             font-size: 1.3rem;
             color: var(--text-dark);
-            margin-top: 10px;
+            margin-top: -5px;
         }
         
         /* ===== HORIZONTAL SECTIONS ===== */
@@ -1136,10 +1137,10 @@ function formatDateTime($date) {
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="plans.php">Plans</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about-us.php">About Us</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-about.php">About Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-join.php">Join Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../contact.php">Contact</a></li>
                 </ul>
             </div>
         </div>
@@ -1152,18 +1153,19 @@ function formatDateTime($date) {
 
     <div class="container">
         <!-- DASHBOARD HEADER -->
-        <header class="dashboard-header fade-in">
-            <div class="logo">
-                <i class="fas fa-chalkboard-teacher logo-icon bounce"></i>
-                <div>
-                    <h1>Teacher Dashboard</h1>
-                    <p class="subtitle">Manage Your Quizzes, Activities & Track Student Progress</p>
-                </div>
-            </div>
-            <div class="welcome-message">
-                Welcome back, <strong><?php echo htmlspecialchars($teacher['full_name']); ?></strong>!
-            </div>
-        </header>
+<header class="dashboard-header fade-in">
+    <div class="logo">
+ 
+        <div>
+            <!-- Replace text title with image -->
+            <img src="images/teacher-dashboard.jpg" alt="Teacher Dashboard" style="max-width: 550px; height: auto;">
+            <p class="subtitle">Manage Your Quizzes, Activities & Track Student Progress</p>
+        </div>
+    </div>
+    <div class="welcome-message">
+        Welcome back, Teacher <strong><?php echo htmlspecialchars($teacher['full_name']); ?></strong>!
+    </div>
+</header>
 
         <!-- HORIZONTAL SECTIONS -->
         <div class="horizontal-sections">
@@ -1502,7 +1504,7 @@ function formatDateTime($date) {
                     <div class="action-buttons">
                         
                         <button class="action-btn" onclick="viewAllActivities()">
-                            <i class="fas fa-list"></i> View All Activities
+                            <i class="fas fa-list"></i> Export All Activity Grades
                         </button>
                     </div>
                 </div>

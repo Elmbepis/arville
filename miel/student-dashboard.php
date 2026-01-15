@@ -298,7 +298,7 @@ function getActivityTypeIcon($type) {
             text-align: center;
             margin-bottom: 30px;
             padding: 0;
-            max-width: 450px;
+            max-width: 500px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -434,12 +434,13 @@ function getActivityTypeIcon($type) {
         .subtitle {
             color: var(--secondary-green);
             font-size: 1.2rem;
+            margin-bottom: -5px;
         }
         
         .welcome-message {
             font-size: 1.3rem;
             color: var(--text-dark);
-            margin-top: 10px;
+            margin-top: -5px;
         }
         
         /* ===== HORIZONTAL SECTIONS ===== */
@@ -933,10 +934,10 @@ function getActivityTypeIcon($type) {
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="plans.php">Plans</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about-us.php">About Us</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-about.php">About Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-join.php">Join Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../contact.php">Contact</a></li>
                 </ul>
             </div>
         </div>
@@ -949,21 +950,22 @@ function getActivityTypeIcon($type) {
 
     <div class="container">
         <!-- DASHBOARD HEADER -->
-        <header class="dashboard-header fade-in">
-            <div class="logo">
-                <i class="fas fa-graduation-cap logo-icon bounce"></i>
-                <div>
-                    <h1>Student Dashboard</h1>
-                    <p class="subtitle">Explore Quizzes & Track Your Progress</p>
-                </div>
-            </div>
-            <div class="welcome-message">
-                Hello, <strong><?php echo htmlspecialchars($student['full_name']); ?></strong>!
-                <?php if ($student['class_name']): ?>
-                <br><small>Class: <?php echo htmlspecialchars($student['class_name']); ?></small>
-                <?php endif; ?>
-            </div>
-        </header>
+<header class="dashboard-header fade-in">
+    <div class="logo">
+ 
+        <div>
+            <!-- Replace text title with image -->
+            <img src="images/student-dashboard.jpg" alt="Student Dashboard" style="max-width: 550px; height: auto; ">
+            <p class="subtitle">Work on Quizzes and Activities and Track Your Progress</p>
+        </div>
+    </div>
+    <div class="welcome-message">
+        Hello, <strong><?php echo htmlspecialchars($student['full_name']); ?></strong>!
+        <?php if ($student['class_name']): ?>
+        <br><small>Class: <?php echo htmlspecialchars($student['class_name']); ?></small>
+        <?php endif; ?>
+    </div>
+</header>
 
         <!-- HORIZONTAL SECTIONS -->
         <div class="horizontal-sections">
@@ -1022,10 +1024,10 @@ function getActivityTypeIcon($type) {
                 </div>
             </div>
 
-            <!-- AVAILABLE QUIZZES SECTION -->
+            <!-- RENAMED: MY QUIZZES SECTION (was Available Quizzes) -->
             <div class="card fade-in">
                 <h2 class="card-title">
-                    <i class="fas fa-gamepad"></i> Available Quizzes
+                    <i class="fas fa-gamepad"></i> My Quizzes
                     <span class="badge badge-primary"><?php echo count($availableQuizzes); ?></span>
                 </h2>
                 
@@ -1074,10 +1076,10 @@ function getActivityTypeIcon($type) {
                 </div>
             </div>
 
-            <!-- ===== NEW: AVAILABLE ACTIVITIES SECTION ===== -->
+            <!-- RENAMED: MY ACTIVITIES SECTION (was Available Activities) -->
             <div class="card fade-in">
                 <h2 class="card-title">
-                    <i class="fas fa-tasks"></i> Available Activities
+                    <i class="fas fa-tasks"></i> My Activities
                     <span class="badge badge-primary"><?php echo count($availableActivities); ?></span>
                 </h2>
                 
@@ -1126,132 +1128,8 @@ function getActivityTypeIcon($type) {
                 </div>
             </div>
 
-            <!-- ===== RENAMED: MY QUIZ SCORES SECTION ===== -->
-            <div class="card fade-in">
-                <h2 class="card-title">
-                    <i class="fas fa-chart-line"></i> My Quiz Scores
-                    <span class="badge badge-primary"><?php echo count($studentQuizScores); ?></span>
-                </h2>
-                
-                <div class="scores-section">
-                    <div class="quiz-grid">
-                        <?php if (empty($allQuizzes)): ?>
-                            <!-- Show 8 empty placeholders -->
-                            <?php for ($i = 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon">
-                                <i class="fas fa-chart-bar"></i>
-                                <div class="empty-text">Test <?php echo $i; ?></div>
-                            </div>
-                            <?php endfor; ?>
-                        <?php else: ?>
-                            <?php 
-                            // Create a map of quiz IDs to scores for easy lookup
-                            $scoreMap = [];
-                            foreach ($studentQuizScores as $score) {
-                                $scoreMap[$score['quiz_id']] = $score;
-                            }
-                            
-                            // Show up to 8 quizzes
-                            $displayQuizzes = array_slice($allQuizzes, 0, 8);
-                            $quizCount = 0;
-                            ?>
-                            
-                            <?php foreach ($displayQuizzes as $quiz): $quizCount++; ?>
-                                <?php 
-                                $hasScore = isset($scoreMap[$quiz['id']]);
-                                $score = $hasScore ? $scoreMap[$quiz['id']] : null;
-                                ?>
-                                <div class="quiz-icon <?php echo $hasScore ? '' : 'not-taken'; ?>" 
-                                     onclick="<?php echo $hasScore ? 'reviewQuiz(' . $quiz['id'] . ')' : 'takeQuiz(' . $quiz['id'] . ')'; ?>">
-                                    <div class="icon-badge <?php echo $hasScore ? '' : 'not-taken'; ?>">
-                                        <?php echo $hasScore ? '&#10003;' : '?'; ?>
-                                    </div>
-                                    <div class="icon-main">
-                                        <i class="fas fa-<?php echo $hasScore ? 'trophy' : 'clipboard'; ?>"></i>
-                                    </div>
-                                    <div class="icon-title">
-                                        <?php echo htmlspecialchars(substr($quiz['title'], 0, 20)); ?>
-                                        <?php if (strlen($quiz['title']) > 20): ?>...<?php endif; ?>
-                                    </div>
-                                    <?php if ($hasScore): ?>
-                                    <div class="icon-score">
-                                        <?php echo $score['score']; ?>%
-                                    </div>
-                                    <?php else: ?>
-                                    <div class="icon-meta">
-                                        <i class="fas fa-play-circle"></i> Not Taken
-                                    </div>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endforeach; ?>
-                            
-                            <?php // Fill remaining slots with placeholders ?>
-                            <?php for ($i = $quizCount + 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon">
-                                <i class="fas fa-plus-circle"></i>
-                                <div class="empty-text">Coming Soon</div>
-                            </div>
-                            <?php endfor; ?>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== NEW: MY ACTIVITY GRADES SECTION ===== -->
-            <div class="card fade-in">
-                <h2 class="card-title">
-                    <i class="fas fa-star"></i> My Activity Grades
-                    <span class="badge badge-primary"><?php echo count($studentActivityGrades); ?></span>
-                </h2>
-                
-                <div class="scores-section">
-                    <div class="quiz-grid">
-                        <?php if (empty($studentActivityGrades)): ?>
-                            <!-- Show 8 empty placeholders -->
-                            <?php for ($i = 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon">
-                                <i class="fas fa-star"></i>
-                                <div class="empty-text">Activity <?php echo $i; ?></div>
-                            </div>
-                            <?php endfor; ?>
-                        <?php else: ?>
-                            <?php 
-                            // Show up to 8 activity grades
-                            $displayActivityGrades = array_slice($studentActivityGrades, 0, 8);
-                            $activityGradeCount = 0;
-                            ?>
-                            
-                            <?php foreach ($displayActivityGrades as $grade): $activityGradeCount++; ?>
-                                <div class="quiz-icon" onclick="reviewActivity(<?php echo $grade['activity_id']; ?>)">
-                                    <div class="icon-badge"><?php echo $activityGradeCount; ?></div>
-                                    <div class="icon-main">
-                                        <i class="fas fa-<?php echo getActivityTypeIcon($grade['activity_type']); ?>"></i>
-                                    </div>
-                                    <div class="icon-title">
-                                        <?php echo htmlspecialchars(substr($grade['activity_title'], 0, 20)); ?>
-                                        <?php if (strlen($grade['activity_title']) > 20): ?>...<?php endif; ?>
-                                    </div>
-                                    <div class="icon-score">
-                                        <?php echo $grade['points_earned']; ?>/<?php echo $grade['max_points']; ?>
-                                    </div>
-                                    <div class="icon-meta">
-                                        <i class="fas fa-<?php echo getWorldIcon($grade['virtual_world']); ?>"></i>
-                                        Grade: <?php echo number_format(($grade['points_earned'] / $grade['max_points']) * 100, 0); ?>%
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                            
-                            <?php // Fill remaining slots with placeholders ?>
-                            <?php for ($i = $activityGradeCount + 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon">
-                                <i class="fas fa-plus-circle"></i>
-                                <div class="empty-text">Coming Soon</div>
-                            </div>
-                            <?php endfor; ?>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
+            <!-- REMOVED: My Quiz Scores section -->
+            <!-- REMOVED: My Activity Grades section -->
         </div>
 
         <!-- BOTTOM BUTTONS CONTAINER -->
@@ -1272,7 +1150,7 @@ function getActivityTypeIcon($type) {
         }
         
         function reviewQuiz(quizId) {
-            window.location.href = `review-quiz.php?quiz_id=${quizId}`;
+            window.location.href = `take-quiz.php?quiz_id=${quizId}`;
         }
         
         // ===== NEW: Activity functions =====
@@ -1281,7 +1159,7 @@ function getActivityTypeIcon($type) {
         }
         
         function reviewActivity(activityId) {
-            window.location.href = `review-activity.php?activity_id=${activityId}`;
+            window.location.href = `activity-grade.php?activity_id=${activityId}`;
         }
         
         // Auto-refresh every 30 seconds

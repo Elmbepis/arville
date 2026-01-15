@@ -122,7 +122,7 @@ if (isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ===== KID-FRIENDLY THEME (SAME AS teacher-dashboard.php) ===== */
+        /* ===== KID-FRIENDLY THEME ===== */
         :root {
             --primary-blue: #4A90E2;
             --secondary-green: #50C878;
@@ -131,6 +131,12 @@ if (isset($_SESSION['user_id'])) {
             --text-dark: #2C3E50;
             --shadow: 0 4px 12px rgba(0,0,0,0.1);
             --border-radius: 20px;
+            
+            /* SIMPLE COLOR CONTROLS */
+            --login-tab-bg: #4A90E2;
+            --login-tab-text: white;
+            --register-tab-bg: #9C27B0;
+            --register-tab-text: white;
         }
         
         * {
@@ -145,7 +151,6 @@ if (isset($_SESSION['user_id'])) {
             padding: 0px;
             min-height: 100vh;
             position: relative;
-            /* Fallback gradient background */
             background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
         }
         
@@ -160,8 +165,8 @@ if (isset($_SESSION['user_id'])) {
             background-image: url('background-tile.jpg');
             background-repeat: repeat;
             background-size: 1980px 1080px;
-            opacity: 0.9; /* Full opacity for the image */
-            z-index: -1; /* Lower z-index than the overlay */
+            opacity: 0.9;
+            z-index: -1;
         }
 
         body::after {
@@ -171,8 +176,8 @@ if (isset($_SESSION['user_id'])) {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(248, 249, 255, 0.3); /* Reduced from 0.85 to 0.3 */
-            z-index: -3; /* Higher z-index than the image */
+            background: rgba(248, 249, 255, 0.3);
+            z-index: -3;
         }
         
         .container {
@@ -220,13 +225,9 @@ if (isset($_SESSION['user_id'])) {
 		}
 
 		.navbar .navbar-collapse {
-		    flex-grow: 0; /* Prevents it from taking up extra space */
+		    flex-grow: 0;
 		}        
 		
-        .btn-login {
-    	padding: 10px 20px !important; /* Reduced height */
-		}
-        
         /* ===== MIEL BANNER ===== */
         .miel-banner-container {
             text-align: center;
@@ -235,7 +236,7 @@ if (isset($_SESSION['user_id'])) {
             border-radius: var(--border-radius);
             position: relative;
             overflow: hidden;
-            max-width: 450px;
+            max-width: 500px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -245,40 +246,6 @@ if (isset($_SESSION['user_id'])) {
             height: auto;
             display: block;
             border-radius: var(--border-radius);
-        }
-        
-        /* ===== LOGIN/REGISTER HEADER ===== */
-        .form-header {
-            text-align: center;
-            margin-bottom: 25px;
-            padding: 20px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .logo-icon {
-            font-size: 2.5rem;
-            color: var(--primary-blue);
-        }
-        
-        h1 {
-            color: var(--primary-blue);
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
-            color: var(--secondary-green);
-            font-size: 1.2rem;
         }
         
         /* ===== MAIN CARD ===== */
@@ -293,32 +260,78 @@ if (isset($_SESSION['user_id'])) {
             margin-bottom: 30px;
         }
         
-        /* ===== FORM SWITCHER ===== */
-        .form-switcher {
+        /* ===== TOP LOGIN/REGISTER BUTTONS ===== */
+        .top-buttons-container {
             display: flex;
             margin-bottom: 25px;
             border-radius: 15px;
             overflow: hidden;
             background: #F8F9FF;
+            gap: 2px;
+            border: 2px solid #E0E0E0;
         }
         
-        .form-tab {
+        .top-button {
             flex: 1;
-            padding: 15px;
+            padding: 12px 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1rem;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
         }
         
-        .form-tab.active {
-            background: var(--primary-blue);
+        .top-button:first-child {
+            border-radius: 13px 0 0 13px;
+        }
+        
+        .top-button:last-child {
+            border-radius: 0 13px 13px 0;
+        }
+        
+        /* Top Login Button - IDENTICAL TO BOTTOM LOGIN BUTTON */
+        /* Non-hover/active state: Same as bottom login button (#4A90E2) */
+        .top-button[data-form="login"],
+        .top-button[data-form="login"].active {
+            background: #4A90E2 !important; /* Same as .btn-primary */
+            color: white !important; /* Same as .btn-primary */
+            border: 2px solid #4A90E2 !important;
+        }
+        
+        /* Hover state: Same as bottom login button hover (#357ABD) - MUST COME AFTER DEFAULT */
+        .top-button[data-form="login"]:hover,
+        .top-button[data-form="login"].active:hover {
+            background: #357ABD !important; /* Same as .btn-primary:hover */
+            color: white !important; /* Same as .btn-primary:hover */
+            border-color: #357ABD !important;
+            transform: translateY(-3px); /* Same as bottom button */
+        }
+        
+        /* Top Register Button - Don't change (as requested) */
+        .top-button[data-form="register"] {
+            background: #F0F0F0; /* LIGHT GRAY */
+            color: #666666; /* Dark gray text */
+            border: 2px solid transparent;
+        }
+        
+        .top-button[data-form="register"]:hover {
+            background: #BEDAF4; /* Purple on hover */
+            color: #666666; /* White text on hover */
+            border-color: #7B1FA2;
+            transform: translateY(-3px); /* Same as bottom button */
+        }
+        
+        .top-button[data-form="register"].active {
+            background: #D2E3F5; /* Purple when active */
             color: white;
-        }
-        
-        .form-tab:hover:not(.active) {
-            background: #E3F2FD;
+            border-color: #7B1FA2;
         }
         
         /* ===== FORM ELEMENTS ===== */
@@ -363,7 +376,7 @@ if (isset($_SESSION['user_id'])) {
             box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
         }
         
-        /* ===== BUTTONS ===== */
+        /* ===== BOTTOM SUBMIT BUTTONS ===== */
         .btn {
             padding: 15px 30px;
             border: none;
@@ -379,6 +392,7 @@ if (isset($_SESSION['user_id'])) {
             width: 100%;
         }
         
+        /* Login Button */
         .btn-primary {
             background: var(--primary-blue);
             color: white;
@@ -389,6 +403,7 @@ if (isset($_SESSION['user_id'])) {
             transform: translateY(-3px);
         }
         
+        /* Register Button */
         .btn-success {
             background: #9C27B0 !important; /* Purple color */
             color: white !important;
@@ -399,6 +414,15 @@ if (isset($_SESSION['user_id'])) {
             background: #7B1FA2 !important; /* Darker purple on hover */
             color: white !important;
             transform: translateY(-3px);
+        }
+        
+        /* Login form submit button (centered) */
+        .btn-login {
+            padding: 10px 20px !important; /* Reduced height */
+            width: 50% !important;
+            max-width: 250px !important;
+            margin: 0 auto !important;
+            display: block !important;
         }
         
         /* ===== MESSAGES ===== */
@@ -506,10 +530,6 @@ if (isset($_SESSION['user_id'])) {
                 padding: 20px;
             }
             
-            h1 {
-                font-size: 1.8rem;
-            }
-            
             .miel-banner-container {
                 padding: 0;
                 margin-bottom: 20px;
@@ -528,11 +548,16 @@ if (isset($_SESSION['user_id'])) {
                 padding: 12px 20px;
             }
             
-            .form-header {
-                padding: 20px;
+            .top-button {
+                padding: 10px 15px;
+                font-size: 0.95rem;
             }
             
-            /* Adjust narrow container for mobile */
+            .btn-login {
+                width: 70% !important;
+                max-width: 200px !important;
+            }
+            
             .narrow-form-container {
                 max-width: 100%;
             }
@@ -546,6 +571,18 @@ if (isset($_SESSION['user_id'])) {
             
             .miel-banner-container {
                 margin-bottom: 15px;
+            }
+            
+            .top-button {
+                flex-direction: column;
+                padding: 8px;
+                gap: 5px;
+                font-size: 0.9rem;
+            }
+            
+            .btn-login {
+                width: 100% !important;
+                max-width: none !important;
             }
         }
     </style>
@@ -562,10 +599,10 @@ if (isset($_SESSION['user_id'])) {
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="plans.php">Plans</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about-us.php">About Us</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-about.php">About Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-join.php">Join Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../contact.php">Contact</a></li>
                 </ul>
             </div>
         </div>
@@ -578,16 +615,6 @@ if (isset($_SESSION['user_id'])) {
 
     <!-- FORM SECTION (600px width) -->
     <div class="narrow-form-container">
-        <!-- FORM HEADER -->
-        <header class="form-header fade-in">
-            <div class="logo">
-                <i class="fas fa-graduation-cap logo-icon bounce"></i>
-                <div>
-                    <h1>MIEL Learning Portal</h1>
-                    <p class="subtitle">Login or Register to Start Learning!</p>
-                </div>
-            </div>
-        </header>
 
         <!-- MAIN CARD -->
         <div class="main-card">
@@ -604,13 +631,13 @@ if (isset($_SESSION['user_id'])) {
             </div>
             <?php endif; ?>
             
-            <!-- FORM SWITCHER -->
-            <div class="form-switcher">
-                <div class="form-tab <?php echo $isLogin ? 'active' : ''; ?>" data-form="login">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </div>
-                <div class="form-tab <?php echo !$isLogin ? 'active' : ''; ?>" data-form="register">
-                    <i class="fas fa-user-plus"></i> Register
+            <!-- TOP LOGIN/REGISTER BUTTONS -->
+            <div class="top-buttons-container">
+                <button type="submit" name="login" form="loginForm" class="top-button <?php echo $isLogin ? 'active' : ''; ?>" data-form="login" id="loginTopButton">
+                    <i class="fas fa-sign-in-alt"></i> <span>Login</span>
+                </button>
+                <div class="top-button <?php echo !$isLogin ? 'active' : ''; ?>" data-form="register" id="registerTopButton">
+                    <i class="fas fa-user-plus"></i> <span>Register</span>
                 </div>
             </div>
             
@@ -637,9 +664,9 @@ if (isset($_SESSION['user_id'])) {
                     </div>
                 </div>
                 
-<button type="submit" name="login" class="btn btn-primary btn-login" style="width: 50% !important; max-width: 250px !important; margin: 0 auto !important; display: block !important;">
-    <i class="fas fa-sign-in-alt"></i> Login
-</button>
+                <button type="submit" name="login" class="btn btn-primary btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
 
             </form>
             
@@ -739,20 +766,25 @@ if (isset($_SESSION['user_id'])) {
     <!-- JAVASCRIPT -->
     <script>
         // DOM Elements
-        const formTabs = document.querySelectorAll('.form-tab');
+        const topButtons = document.querySelectorAll('.top-button');
         const formContents = document.querySelectorAll('.form-content');
         const roleOptions = document.querySelectorAll('.role-option');
         const roleInput = document.getElementById('roleInput');
         const studentInfo = document.getElementById('studentInfo');
         
-        // Form switcher
-        formTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const formType = tab.dataset.form;
+        // Form switcher - using top buttons
+        topButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                const formType = this.dataset.form;
                 
-                // Update active tab
-                formTabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
+                // Only prevent default for register button (div) not for login button (submit button)
+                if (formType === 'register') {
+                    e.preventDefault();
+                }
+                
+                // Update active button
+                topButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
                 
                 // Show corresponding form
                 formContents.forEach(form => form.classList.remove('active'));
@@ -817,7 +849,7 @@ if (isset($_SESSION['user_id'])) {
         // Auto-switch to registration form if coming from login
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('action') === 'register') {
-            document.querySelector('.form-tab[data-form="register"]').click();
+            document.querySelector('.top-button[data-form="register"]').click();
         }
         
         // Make MIEL banner image interactive

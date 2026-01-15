@@ -78,7 +78,81 @@ try {
     
     $hasTakenQuiz = ($existingScore !== false);
     
-    // Handle quiz submission
+    // If student has already taken the quiz, get their answers and calculate results
+    if ($hasTakenQuiz && $existingScore) {
+        $score = $existingScore['score'];
+        $totalQuestions = count($questions);
+        $correctAnswers = 0;
+        $savedAnswers = json_decode($existingScore['answers'], true);
+        $savedAnswers = is_array($savedAnswers) ? $savedAnswers : [];
+        
+        // Reconstruct question details for display
+        foreach ($questions as $question) {
+            $questionId = $question['id'];
+            $studentAnswer = $savedAnswers[$questionId] ?? '';
+            $correctAnswerKey = $question['correct_answer'];
+            $options = json_decode($question['options'], true);
+            $questionType = $question['qtype'] ?? 'MC';
+            
+            // Get correct answer text for display
+            $correctAnswerText = '';
+            $isCorrect = false;
+            
+            switch ($questionType) {
+                case 'MC':
+                    // Multiple Choice: compare selected letter (A, B, C, D)
+                    $correctAnswerText = $options[$correctAnswerKey] ?? '';
+                    if (strtoupper(trim($studentAnswer)) === strtoupper(trim($correctAnswerKey))) {
+                        $isCorrect = true;
+                        $correctAnswers++;
+                    }
+                    break;
+                    
+                case 'TF':
+                    // True/False: compare True/False (case-insensitive)
+                    $correctAnswerText = ($correctAnswerKey == 'A') ? 'True' : 'False';
+                    if (strcasecmp(trim($studentAnswer), trim($correctAnswerText)) === 0) {
+                        $isCorrect = true;
+                        $correctAnswers++;
+                    }
+                    break;
+                    
+                case 'FB':
+                    // Fill in the Blank: compare text (case-insensitive)
+                    $correctAnswerText = $options['A'] ?? '';
+                    if (strcasecmp(trim($studentAnswer), trim($correctAnswerText)) === 0) {
+                        $isCorrect = true;
+                        $correctAnswers++;
+                    }
+                    break;
+                    
+                default:
+                    // Default to multiple choice logic
+                    $correctAnswerText = $options[$correctAnswerKey] ?? '';
+                    if (strtoupper(trim($studentAnswer)) === strtoupper(trim($correctAnswerKey))) {
+                        $isCorrect = true;
+                        $correctAnswers++;
+                    }
+            }
+            
+            // Store question details for results display
+            $questionDetails[] = [
+                'question_id' => $questionId,
+                'question_text' => $question['question_text'],
+                'question_type' => $questionType,
+                'student_answer' => $studentAnswer,
+                'correct_answer' => $correctAnswerText,
+                'is_correct' => $isCorrect,
+                'options' => $options,
+                'correct_answer_key' => $correctAnswerKey
+            ];
+        }
+        
+        // Set showResults to true so it displays the detailed review
+        $showResults = true;
+    }
+    
+    // Handle quiz submission (new attempt)
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quiz']) && !$hasTakenQuiz) {
         $totalQuestions = count($questions);
         $correctAnswers = 0;
@@ -325,7 +399,7 @@ function getWorldIcon($world) {
             text-align: center;
             margin-top: 80px !important;
             margin-bottom: 30px;
-            max-width: 450px;
+            max-width: 500px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -683,10 +757,10 @@ function getWorldIcon($world) {
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="plans.php">Plans</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about-us.php">About Us</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-about.php">About Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-join.php">Join Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../contact.php">Contact</a></li>
                 </ul>
             </div>
         </div>
@@ -701,12 +775,18 @@ function getWorldIcon($world) {
         <!-- HEADER -->
         <header class="dashboard-header fade-in">
             <div>
-                <h1><?php echo $showResults ? 'Quiz Results' : htmlspecialchars($quiz['title']); ?></h1>
+                <?php if ($hasTakenQuiz): ?>
+                    <img src="images/my-quiz-score.jpg" alt="My Quiz Score" style="max-width: 100%; height: auto; margin-bottom: 10px;">
+                <?php else: ?>
+                    <img src="images/take-quiz.jpg" alt="Take Quiz" style="max-width: 100%; height: auto; margin-bottom: 10px;">
+                <?php endif; ?>
                 <p class="subtitle">
                     <?php if ($showResults): ?>
-                        See how you did!
+                        See how you did in this quiz:<br/><span style="color: #3628C3; font-weight: bold; font-size: 1.1em;"><?php echo htmlspecialchars($quiz['title']); ?></span>
+                    <?php elseif ($hasTakenQuiz): ?>
+                        View your score for this quiz:<br/><span style="color: #3628C3; font-weight: bold; font-size: 1.1em;"><?php echo htmlspecialchars($quiz['title']); ?></span>
                     <?php else: ?>
-                        Test your knowledge in the <?php echo getWorldName($quiz['virtual_world']); ?> world!
+                        Take this quiz:<br/><span style="color: #3628C3; font-weight: bold; font-size: 1.1em;"><?php echo htmlspecialchars($quiz['title']); ?></span>
                     <?php endif; ?>
                 </p>
             </div>
@@ -769,20 +849,7 @@ function getWorldIcon($world) {
                 </div>
             </div>
 
-            <?php if ($hasTakenQuiz && !$showResults && $existingScore): ?>
-                <!-- ALREADY COMPLETED (PRIOR ATTEMPT) -->
-                <div class="results-section fade-in">
-                    <div style="color: var(--secondary-green); font-size: 4rem; margin-bottom: 20px;">
-                        <i class="fas fa-trophy"></i>
-                    </div>
-                    <h2 style="color: var(--secondary-green); margin-bottom: 15px;">Quiz Already Completed!</h2>
-                    <div class="score-display"><?php echo $existingScore['score']; ?>%</div>
-                    <p style="color: #666; margin-bottom: 20px;">
-                        You completed this quiz on <?php echo date('M j, Y g:i A', strtotime($existingScore['completed_at'])); ?>
-                    </p>
-                </div>
-                
-            <?php elseif ($noQuestions): ?>
+            <?php if ($noQuestions): ?>
                 <!-- NO QUESTIONS -->
                 <div class="results-section fade-in" style="background: linear-gradient(135deg, #FFEBEE, #FFF3E0); border-color: #FF6B6B;">
                     <div style="color: #FF6B6B; font-size: 4rem; margin-bottom: 20px;">
@@ -824,6 +891,10 @@ function getWorldIcon($world) {
                     <div style="color: #666; margin-top: 15px;">
                         <p><i class="fas fa-check-circle" style="color: var(--secondary-green);"></i> 
                            <strong><?php echo $correctAnswers; ?></strong> out of <strong><?php echo $totalQuestions; ?></strong> questions correct</p>
+                        <?php if ($existingScore): ?>
+                        <p><i class="fas fa-calendar-alt" style="color: #666;"></i> 
+                           Completed on: <?php echo date('M j, Y g:i A', strtotime($existingScore['completed_at'])); ?></p>
+                        <?php endif; ?>
                     </div>
                 </div>
 

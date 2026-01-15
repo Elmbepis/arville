@@ -353,7 +353,7 @@ function getGradeBadge($points, $max_points) {
             text-align: center;
             margin-bottom: 30px;
             padding: 0;
-            max-width: 450px;
+            max-width: 500px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -395,6 +395,7 @@ function getGradeBadge($points, $max_points) {
         .subtitle {
             color: var(--secondary-green);
             font-size: 1.2rem;
+            margin-bottom: -5px;
         }
         
         .welcome-message {
@@ -798,10 +799,10 @@ function getGradeBadge($points, $max_points) {
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="plans.php">Plans</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about-us.php">About Us</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-about.php">About Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="miel-join.php">Join Miel</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../contact.php">Contact</a></li>
                 </ul>
             </div>
         </div>
@@ -816,14 +817,11 @@ function getGradeBadge($points, $max_points) {
         <!-- HEADER -->
         <header class="dashboard-header fade-in">
             <div class="logo">
-                <i class="fas fa-chalkboard-teacher logo-icon"></i>
+ 
                 <div>
-                    <h1>Activity Grades</h1>
-                    <p class="subtitle">Review Student Submissions & Provide Grades</p>
+<img src="images/activity-grades.jpg" alt="Create Quiz for Arville Metaverse" style="max-width: 500px; height: auto; margin-bottom: 10px;">
+                    <p class="subtitle">Review or Grade Student Submissions for this Activity:<br/><span style="color: #3628C3; font-weight: bold; font-size: 1.1em;"><?php echo htmlspecialchars($activity['title']); ?></span></p>
                 </div>
-            </div>
-            <div class="welcome-message">
-                Hello, Teacher <strong><?php echo htmlspecialchars($teacher['full_name']); ?></strong>!
             </div>
         </header>
 
