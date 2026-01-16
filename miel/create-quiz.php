@@ -504,19 +504,21 @@ if (!isset($_GET['created'])) {
             margin-top: 10px;
         }
         
+        /* Optimized virtual world card spacing */
         .world-option {
             background: #F8F9FF;
             border: 3px solid #E0E0E0;
             border-radius: 15px;
-            padding: 15px;
+            padding: 12px; /* Reduced padding */
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 200px;
+            justify-content: flex-start; /* Changed from center to flex-start */
+            min-height: 220px; /* Slightly increased height */
+            height: 100%;
         }
         
         .world-option:hover {
@@ -531,14 +533,22 @@ if (!isset($_GET['created'])) {
         
         .world-thumbnail {
             width: 100%;
-            height: 120px;
-            margin-bottom: 10px;
+            height: 110px; /* Slightly reduced height */
+            margin-bottom: 8px; /* Reduced margin */
             border-radius: 10px;
             overflow: hidden;
             background: #f0f0f0;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+        
+        .world-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
         }
         
         /* Placeholder styling */
@@ -560,18 +570,65 @@ if (!isset($_GET['created'])) {
         
         .world-info {
             text-align: center;
-            margin-top: 5px;
+            margin-top: 0;
+            flex-grow: 1; /* Allow content to fill space */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Distribute space evenly */
+            width: 100%;
+            padding: 0 5px; /* Small side padding */
         }
         
         .world-info h3 {
-            font-size: 1.1rem;
-            margin-bottom: 5px;
+            font-size: 1rem; /* Slightly smaller */
+            margin-bottom: -18px; /* Reduced margin */
             color: var(--text-dark);
+            line-height: 1.2;
+            min-height: 2.4em; /* Ensure consistent height for 2 lines */
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Limit to 2 lines */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
         
-        .world-info p {
-            font-size: 0.9rem;
+        .world-subtitle {
+            font-size: 0.85rem; /* Smaller font */
             color: #666;
+            margin-bottom: 10px; /* Added margin for separation */
+            line-height: 1.2;
+            font-weight: 500;
+            min-height: 1.2em; /* Ensure consistent height */
+        }
+        
+        .see-world-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            background-color: #FDD473;
+            color: #2C3E50 !important;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: auto; /* Push to bottom */
+            width: 100%;
+            max-width: 120px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .see-world-link:hover {
+            background-color: #FA7C1F;
+            transform: translateY(-2px);
+            color: white !important;
+            text-decoration: none;
+        }
+        
+        .see-world-link i {
+            font-size: 0.7rem;
         }
         
         /* ===== BUTTONS ===== */
@@ -752,6 +809,29 @@ if (!isset($_GET['created'])) {
                 width: 100%;
                 justify-content: center;
             }
+            
+            /* Mobile adjustments for world options */
+            .world-option {
+                min-height: 200px; /* Smaller on mobile */
+            }
+            
+            .world-thumbnail {
+                height: 100px;
+            }
+            
+            .world-info h3 {
+                font-size: 0.95rem;
+            }
+            
+            .world-subtitle {
+                font-size: 0.8rem;
+            }
+            
+            .see-world-link {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+                max-width: 110px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -771,6 +851,14 @@ if (!isset($_GET['created'])) {
             .input-with-icon input {
                 padding-left: 45px;
                 font-size: 1rem;
+            }
+            
+            .world-option {
+                min-height: 180px;
+            }
+            
+            .world-thumbnail {
+                height: 90px;
             }
         }
         
@@ -983,31 +1071,74 @@ if (!isset($_GET['created'])) {
                     <div class="world-selector">
                         <?php
                         $worlds = [
-                            'zoo' => ['icon' => 'paw', 'name' => 'Virtual Zoo', 'desc' => 'Animals & Habitats'],
-                            'museum' => ['icon' => 'landmark', 'name' => 'Museum', 'desc' => 'History & Art'],
-                            'forest' => ['icon' => 'tree', 'name' => 'Forest', 'desc' => 'Ecosystems'],
-                            'ocean' => ['icon' => 'water', 'name' => 'Ocean', 'desc' => 'Marine Life'],
-                            'farm' => ['icon' => 'tractor', 'name' => 'Farm', 'desc' => 'Agriculture'],
-                            'space' => ['icon' => 'rocket', 'name' => 'Space Station', 'desc' => 'Astronomy'],
-                            'city' => ['icon' => 'city', 'name' => 'City', 'desc' => 'Urban Life'],
-                            'arctic' => ['icon' => 'icicles', 'name' => 'Arctic', 'desc' => 'Polar Regions']
+                            'zoo' => [
+                                'name' => 'ARville Zoo', 
+                                'desc' => 'Zoology', 
+                                'image' => 'vw-zoo.jpg',
+                                'link' => '../zoo1.htm'
+                            ],
+                            'museum' => [
+                                'name' => 'ARVille Museum', 
+                                'desc' => 'History & Art', 
+                                'image' => 'vw-museum.jpg',
+                                'link' => '../museum.htm?id=1'
+                            ],
+                            'ocean' => [
+                                'name' => 'Under the Sea', 
+                                'desc' => 'Marine Biology', 
+                                'image' => 'vw-ocean.jpg',
+                                'link' => '../nature.htm?id=1'
+                            ],
+                            'forest park' => [
+                                'name' => 'Forest Park', 
+                                'desc' => 'Botany', 
+                                'image' => 'vw-forest-park.jpg',
+                                'link' => '../park1.htm'
+                            ],
+                            'arctic' => [
+                                'name' => 'Frozen Kingdom', 
+                                'desc' => 'Polar Regions', 
+                                'image' => 'vw-arctic.jpg',
+                                'link' => '../arctic.htm?id=5'
+                            ],
+                            'farm' => [
+                                'name' => 'Farm Village', 
+                                'desc' => 'Agriculture', 
+                                'image' => 'vw-farm.jpg',
+                                'link' => '../farm.htm?id=6'
+                            ],
+                            'toy world' => [
+                                'name' => 'Toy World', 
+                                'desc' => 'Fantasy', 
+                                'image' => 'vw-toy-world.jpg',
+                                'link' => '../village.htm?id=3'
+                            ],
+                            'candy land' => [
+                                'name' => 'Candy Land', 
+                                'desc' => 'Fantasy', 
+                                'image' => 'vw-candyland.jpg',
+                                'link' => '../village.htm?id=1'
+                            ]
                         ];
                         
                         $selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['virtual_world'] : 'zoo';
                         
                         foreach ($worlds as $key => $world):
                             $isSelected = $selectedWorld === $key;
+                            $imagePath = "images/{$world['image']}";
+                            // Check if image exists, fallback to default if not
+                            $actualImage = file_exists($imagePath) ? $imagePath : "images/default-world.jpg";
                         ?>
                         <div class="world-option <?php echo $isSelected ? 'selected' : ''; ?>" data-world="<?php echo $key; ?>">
                             <div class="world-thumbnail">
-                                <div class="thumbnail-placeholder">
-                                    <i class="fas fa-<?php echo $world['icon']; ?>"></i>
-                                    <span><?php echo $key; ?>.jpg</span>
-                                </div>
+                                <img src="<?php echo $actualImage; ?>" alt="<?php echo $world['name']; ?>">
                             </div>
                             <div class="world-info">
                                 <h3><?php echo $world['name']; ?></h3>
-                                <p><?php echo $world['desc']; ?></p>
+                                <p class="world-subtitle"><?php echo $world['desc']; ?></p>
+                                <a href="<?php echo $world['link']; ?>" target="_blank" class="see-world-link" onclick="event.stopPropagation();">
+                                    <i class="fas fa-external-link-alt"></i> See World
+                                </a>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -1069,9 +1200,14 @@ if (!isset($_GET['created'])) {
             });
         });
 
-        // World Selector
+        // World Selector - updated to ignore clicks on the "See World" link
         worldOptions.forEach(option => {
-            option.addEventListener('click', () => {
+            option.addEventListener('click', (e) => {
+                // Don't trigger selection if clicking on the "See World" link
+                if (e.target.closest('.see-world-link')) {
+                    return;
+                }
+                
                 worldOptions.forEach(o => o.classList.remove('selected'));
                 option.classList.add('selected');
                 virtualWorldInput.value = option.dataset.world;

@@ -551,17 +551,20 @@ function formatDateTime($date) {
             font-weight: bold;
         }
         
-        .icon-main {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            color: var(--primary-blue);
-            width: 40px;
-            height: 40px;
+        /* UPDATED: Thumbnail container for FULL RECTANGULAR images */
+        .thumbnail-container {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
-            background: rgba(74, 144, 226, 0.1);
+        }
+        
+        .thumbnail-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
         
         .icon-title {
@@ -622,19 +625,6 @@ function formatDateTime($date) {
             box-shadow: var(--shadow);
         }
         
-        .activity-type-icon {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            color: #9C27B0;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(156, 39, 176, 0.1);
-        }
-        
         /* ===== ACTIVITY GRADES SECTION ===== */
         .grading-grid {
             display: grid;
@@ -681,19 +671,6 @@ function formatDateTime($date) {
             justify-content: center;
             font-size: 0.9rem;
             font-weight: bold;
-        }
-        
-        .grading-icon-main {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            color: #FF9800;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(255, 152, 0, 0.1);
         }
         
         .grading-stats {
@@ -1245,272 +1222,344 @@ function formatDateTime($date) {
                 
             </div>
 
-            <!-- QUIZZES CREATED SECTION -->
-            <div class="card fade-in">
-                <h2 class="card-title">
-                    <i class="fas fa-clipboard-list"></i> My Quizzes
-                    <span class="badge badge-primary"><?php echo count($teacherQuizzes); ?></span>
-                </h2>
-                
-                <div class="quiz-grid-section">
-                    <div class="quiz-grid">
-                        <?php if (empty($teacherQuizzes)): ?>
-                            <!-- Show 8 empty placeholders -->
-                            <?php for ($i = 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
-                                <i class="fas fa-plus-circle"></i>
-                                <div class="empty-text">Create Quiz <?php echo $i; ?></div>
-                            </div>
-                            <?php endfor; ?>
-                        <?php else: ?>
-                            <?php 
-                            // Show up to 8 quizzes
-                            $displayQuizzes = array_slice($teacherQuizzes, 0, 8);
-                            $quizCount = 0;
-                            ?>
-                            <?php foreach ($displayQuizzes as $quiz): $quizCount++; ?>
-                            <div class="quiz-icon" onclick="viewQuiz(<?php echo $quiz['id']; ?>)">
-                                <div class="icon-badge"><?php echo $quizCount; ?></div>
-                                <div class="icon-main">
-                                    <i class="fas fa-<?php echo getWorldIcon($quiz['virtual_world']); ?>"></i>
-                                </div>
-                                <div class="icon-title">
-                                    <?php echo htmlspecialchars(substr($quiz['title'], 0, 20)); ?>
-                                    <?php if (strlen($quiz['title']) > 20): ?>...<?php endif; ?>
-                                </div>
-                                <div class="icon-stats">
-                                    <div><i class="fas fa-question"></i> <?php echo $quiz['question_count']; ?> Qs</div>
-                                    <div><i class="fas fa-users"></i> <?php echo $quiz['attempt_count']; ?> attempts</div>
-                                </div>
-                                <?php if ($quiz['attempt_count'] > 0): ?>
-                                <div class="icon-score">
-                                    <?php echo number_format($quiz['avg_score'], 1); ?>%
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                            <?php endforeach; ?>
-                            
-                            <?php // Fill remaining slots with placeholders ?>
-                            <?php for ($i = $quizCount + 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
-                                <i class="fas fa-plus-circle"></i>
-                                <div class="empty-text">Create New Quiz</div>
-                            </div>
-                            <?php endfor; ?>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <?php if (!empty($teacherQuizzes)): ?>
-                        <a href="add-questions.php" class="action-btn">
-                            <i class="fas fa-question-circle"></i> Add Questions
-                        </a>
-                        <?php else: ?>
-                        <a href="create-quiz.php" class="action-btn">
-                            <i class="fas fa-question-circle"></i> Add Questions
-                        </a>
-                        <?php endif; ?>
-                        
-                        <a href="create-quiz.php" class="action-btn">
-                            <i class="fas fa-plus-circle"></i> Create New Quiz
-                        </a>
+
+<!-- QUIZZES CREATED SECTION -->
+<div class="card fade-in">
+    <h2 class="card-title">
+        <i class="fas fa-clipboard-list"></i> My Quizzes
+        <span class="badge badge-primary"><?php echo count($teacherQuizzes); ?></span>
+    </h2>
+    
+    <div class="quiz-grid-section">
+        <div class="quiz-grid">
+            <?php if (empty($teacherQuizzes)): ?>
+                <!-- Show 8 empty placeholders -->
+                <?php for ($i = 1; $i <= 8; $i++): ?>
+                <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
+                    <i class="fas fa-plus-circle"></i>
+                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
+                        Create Quiz <?php echo $i; ?>
                     </div>
                 </div>
-            </div>
-
-            <!-- MY ACTIVITIES SECTION -->
-            <div class="card fade-in">
-                <h2 class="card-title">
-                    <i class="fas fa-tasks"></i> My Activities
-                    <span class="badge badge-purple"><?php echo count($teacherActivities); ?></span>
-                </h2>
-                
-                <div class="quiz-grid-section">
-                    <div class="activity-grid">
-                        <?php if (empty($teacherActivities)): ?>
-                            <!-- Show 8 empty placeholders for activities -->
-                            <?php for ($i = 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
-                                <i class="fas fa-plus-circle"></i>
-                                <div class="empty-text">Create Activity <?php echo $i; ?></div>
-                            </div>
-                            <?php endfor; ?>
-                        <?php else: ?>
-                            <?php 
-                            // Show up to 8 activities
-                            $displayActivities = array_slice($teacherActivities, 0, 8);
-                            $activityCount = 0;
-                            ?>
-                            <?php foreach ($displayActivities as $activity): $activityCount++; ?>
-                            <div class="activity-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)">
-                                <div class="icon-badge"><?php echo $activityCount; ?></div>
-                                <div class="activity-type-icon">
-                                    <i class="fas fa-<?php echo getActivityTypeIcon($activity['activity_type']); ?>"></i>
-                                </div>
-                                <div class="icon-title">
-                                    <?php echo htmlspecialchars(substr($activity['title'], 0, 20)); ?>
-                                    <?php if (strlen($activity['title']) > 20): ?>...<?php endif; ?>
-                                </div>
-                                <div class="icon-stats">
-                                    <div><i class="fas fa-<?php echo getIntelligenceIcon($activity['intelligence_type']); ?>"></i> <?php echo getIntelligenceName($activity['intelligence_type']); ?></div>
-                                    <div><i class="fas fa-<?php echo getWorldIcon($activity['virtual_world']); ?>"></i> <?php echo getWorldName($activity['virtual_world']); ?></div>
-                                </div>
-                                <?php if ($activity['due_date']): ?>
-                                <div class="icon-stats" style="color: #FF9800; font-size: 0.7rem;">
-                                    <i class="fas fa-calendar"></i> Due: <?php echo formatDate($activity['due_date']); ?>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                            <?php endforeach; ?>
-                            
-                            <?php // Fill remaining slots with placeholders ?>
-                            <?php for ($i = $activityCount + 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
-                                <i class="fas fa-plus-circle"></i>
-                                <div class="empty-text">Create New Activity</div>
-                            </div>
-                            <?php endfor; ?>
-                        <?php endif; ?>
-                    </div>
+                <?php endfor; ?>
+            <?php else: ?>
+                <?php 
+                // Show up to 8 quizzes
+                $displayQuizzes = array_slice($teacherQuizzes, 0, 8);
+                $quizCount = 0;
+                ?>
+                <?php foreach ($displayQuizzes as $quiz): $quizCount++; 
+                    // Determine which intelligence icon to show
+                    $intelligenceType = $quiz['intelligence_type'];
+                    $iconImage = "images/quiz-{$intelligenceType}.png";
+                    $defaultIcon = "images/default.jpg";
                     
-                    <div class="action-buttons">
-                        <a href="create-activity.php" class="action-btn">
-                            <i class="fas fa-plus-circle"></i> Create New Activity
-                        </a>
+                    // Check if image exists, otherwise use default
+                    $quizIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
+                ?>
+                <div class="quiz-icon" onclick="viewQuiz(<?php echo $quiz['id']; ?>)">
+                    <div class="icon-badge"><?php echo $quizCount; ?></div>
+                    <!-- Show intelligence type image - FULL RECTANGULAR -->
+                    <div class="thumbnail-container">
+                        <img src="<?php echo $quizIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
+                    </div>
+                    <div class="icon-title" style="text-align: center; width: 100%; padding: 0 5px; height: 2.8em; display: flex; align-items: center; justify-content: center; line-height: 1.2;">
+                        <?php echo htmlspecialchars(substr($quiz['title'], 0, 30)); ?>
+                        <?php if (strlen($quiz['title']) > 30): ?>...<?php endif; ?>
                     </div>
                 </div>
-            </div>
-
-            <!-- STUDENT QUIZ SCORES SECTION -->
-            <div class="card fade-in">
-                <h2 class="card-title">
-                    <i class="fas fa-chart-line"></i> Student Quiz Scores
-                    <span class="badge badge-primary"><?php echo count($teacherQuizzes); ?> quizzes</span>
-                </h2>
+                <?php endforeach; ?>
                 
-                <div class="quiz-grid-section">
-                    <div class="quiz-grid">
-                        <?php if (empty($teacherQuizzes)): ?>
-                            <!-- Show 8 empty placeholders -->
-                            <?php for ($i = 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
-                                <i class="fas fa-plus-circle"></i>
-                                <div class="empty-text">Create Quiz <?php echo $i; ?></div>
-                            </div>
-                            <?php endfor; ?>
-                        <?php else: ?>
-                            <?php 
-                            // Show up to 8 quizzes for viewing scores
-                            $displayQuizScores = array_slice($teacherQuizzes, 0, 8);
-                            $scoreQuizCount = 0;
-                            ?>
-                            <?php foreach ($displayQuizScores as $quiz): $scoreQuizCount++; ?>
-                            <div class="quiz-icon" onclick="window.location.href='quiz-scores.php?quiz_id=<?php echo $quiz['id']; ?>'">
-                                <div class="icon-badge"><?php echo $scoreQuizCount; ?></div>
-                                <div class="icon-main">
-                                    <i class="fas fa-<?php echo getWorldIcon($quiz['virtual_world']); ?>"></i>
-                                </div>
-                                <div class="icon-title">
-                                    <?php echo htmlspecialchars(substr($quiz['title'], 0, 20)); ?>
-                                    <?php if (strlen($quiz['title']) > 20): ?>...<?php endif; ?>
-                                </div>
-                                <div class="icon-stats">
-                                    <div><i class="fas fa-users"></i> <?php echo $quiz['attempt_count']; ?> attempts</div>
-                                </div>
-                                <?php if ($quiz['attempt_count'] > 0): ?>
-                                <div class="icon-score">
-                                    <?php echo number_format($quiz['avg_score'], 1); ?>%
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                            <?php endforeach; ?>
-                            
-                            <?php // Fill remaining slots with placeholders ?>
-                            <?php for ($i = $scoreQuizCount + 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
-                                <i class="fas fa-plus-circle"></i>
-                                <div class="empty-text">Create New Quiz</div>
-                            </div>
-                            <?php endfor; ?>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="action-btn" onclick="exportQuizScores()">
-                            <i class="fas fa-download"></i> Export All Quiz Scores
-                        </button>
+                <?php // Fill remaining slots with placeholders ?>
+                <?php for ($i = $quizCount + 1; $i <= 8; $i++): ?>
+                <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
+                    <i class="fas fa-plus-circle"></i>
+                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
+                        Create New Quiz
                     </div>
                 </div>
-            </div>
-
-            <!-- ACTIVITY GRADES SECTION (Renamed from Activities to Grade) -->
-            <div class="card fade-in">
-                <h2 class="card-title">
-                    <i class="fas fa-check-double"></i> Activity Grades
-                </h2>
-                
-                <div class="quiz-grid-section">
-                    <div class="grading-grid">
-                        <?php if (empty($activitiesToGrade)): ?>
-                            <!-- Show 8 empty placeholders -->
-                            <?php for ($i = 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
-                                <i class="fas fa-check-circle"></i>
-                                <div class="empty-text">No activities yet</div>
-                            </div>
-                            <?php endfor; ?>
-                        <?php else: ?>
-                            <?php 
-                            // Show up to 8 activities for grading
-                            $displayGradingIcons = array_slice($activitiesToGrade, 0, 8);
-                            $gradingCount = 0;
-                            ?>
-                            <?php foreach ($displayGradingIcons as $activity): $gradingCount++; ?>
-                            <div class="grading-icon" onclick="window.location.href='grade-activity.php?activity_id=<?php echo $activity['id']; ?>'">
-                                <?php if ($activity['students_to_grade'] > 0): ?>
-                                <div class="grading-badge pulse"><?php echo $activity['students_to_grade']; ?></div>
-                                <?php endif; ?>
-                                <div class="grading-icon-main">
-                                    <i class="fas fa-<?php echo getActivityTypeIcon($activity['activity_type']); ?>"></i>
-                                </div>
-                                <div class="icon-title">
-                                    <?php echo htmlspecialchars(substr($activity['title'], 0, 20)); ?>
-                                    <?php if (strlen($activity['title']) > 20): ?>...<?php endif; ?>
-                                </div>
-                                <div class="grading-stats <?php echo $activity['students_to_grade'] > 0 ? 'grading-urgent' : 'grading-ready'; ?>">
-                                    <i class="fas fa-users"></i> <?php echo $activity['students_to_grade']; ?> to grade
-                                </div>
-                                <div class="grading-stats">
-                                    <i class="fas fa-check"></i> <?php echo $activity['students_graded']; ?> graded
-                                </div>
-                                <?php if ($activity['last_submission_date']): ?>
-                                <div class="grading-stats" style="font-size: 0.7rem; color: #666;">
-                                    <i class="fas fa-clock"></i> Last: <?php echo formatDate($activity['last_submission_date']); ?>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                            <?php endforeach; ?>
-                            
-                            <?php // Fill remaining slots ?>
-                            <?php for ($i = $gradingCount + 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
-                                <i class="fas fa-check-circle"></i>
-                                <div class="empty-text">Create Activity</div>
-                            </div>
-                            <?php endfor; ?>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        
-                        <button class="action-btn" onclick="viewAllActivities()">
-                            <i class="fas fa-list"></i> Export All Activity Grades
-                        </button>
-                    </div>
-                </div>
-            </div>
-
+                <?php endfor; ?>
+            <?php endif; ?>
         </div>
+        
+        <div class="action-buttons">
+            <?php if (!empty($teacherQuizzes)): ?>
+            <a href="add-questions.php" class="action-btn">
+                <i class="fas fa-question-circle"></i> Add Questions
+            </a>
+            <?php else: ?>
+            <a href="create-quiz.php" class="action-btn">
+                <i class="fas fa-question-circle"></i> Add Questions
+            </a>
+            <?php endif; ?>
+            
+            <a href="create-quiz.php" class="action-btn">
+                <i class="fas fa-plus-circle"></i> Create New Quiz
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- MY ACTIVITIES SECTION -->
+<div class="card fade-in">
+    <h2 class="card-title">
+        <i class="fas fa-tasks"></i> My Activities
+        <span class="badge badge-purple"><?php echo count($teacherActivities); ?></span>
+    </h2>
+    
+    <div class="quiz-grid-section">
+        <div class="activity-grid">
+            <?php if (empty($teacherActivities)): ?>
+                <!-- Show 8 empty placeholders for activities -->
+                <?php for ($i = 1; $i <= 8; $i++): ?>
+                <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                    <i class="fas fa-plus-circle"></i>
+                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
+                        Create Activity <?php echo $i; ?>
+                    </div>
+                </div>
+                <?php endfor; ?>
+            <?php else: ?>
+                <?php 
+                // Show up to 8 activities
+                $displayActivities = array_slice($teacherActivities, 0, 8);
+                $activityCount = 0;
+                
+                // Get average grades for activities
+                $activityGrades = [];
+                foreach ($displayActivities as $activity) {
+                    $gradeStmt = $pdo->prepare("
+                        SELECT AVG(ag.points_earned) as avg_grade, 
+                               COUNT(DISTINCT ag.student_id) as graded_count
+                        FROM activity_grades ag 
+                        WHERE ag.activity_id = ? AND ag.points_earned IS NOT NULL
+                    ");
+                    $gradeStmt->execute([$activity['id']]);
+                    $gradeData = $gradeStmt->fetch(PDO::FETCH_ASSOC);
+                    $activityGrades[$activity['id']] = $gradeData;
+                }
+                ?>
+                <?php foreach ($displayActivities as $activity): $activityCount++; 
+                    // Determine which intelligence icon to show
+                    $intelligenceType = $activity['intelligence_type'];
+                    $iconImage = "images/activity-{$intelligenceType}.png";
+                    $defaultIcon = "images/default.jpg";
+                    
+                    // Check if image exists, otherwise use default
+                    $activityIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
+                    
+                    // Get grade data for this activity
+                    $gradeData = $activityGrades[$activity['id']] ?? null;
+                    $avgGrade = $gradeData['avg_grade'] ?? null;
+                    $gradedCount = $gradeData['graded_count'] ?? 0;
+                ?>
+                <div class="activity-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)">
+                    <div class="icon-badge"><?php echo $activityCount; ?></div>
+                    <!-- Show intelligence type image - FULL RECTANGULAR -->
+                    <div class="thumbnail-container">
+                        <img src="<?php echo $activityIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
+                    </div>
+                    <div class="icon-title" style="text-align: center; width: 100%; padding: 0 5px; height: 2.8em; display: flex; align-items: center; justify-content: center; line-height: 1.2;">
+                        <?php echo htmlspecialchars(substr($activity['title'], 0, 30)); ?>
+                        <?php if (strlen($activity['title']) > 30): ?>...<?php endif; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+                
+                <?php // Fill remaining slots with placeholders ?>
+                <?php for ($i = $activityCount + 1; $i <= 8; $i++): ?>
+                <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                    <i class="fas fa-plus-circle"></i>
+                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
+                        Create New Activity
+                    </div>
+                </div>
+                <?php endfor; ?>
+            <?php endif; ?>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="create-activity.php" class="action-btn">
+                <i class="fas fa-plus-circle"></i> Create New Activity
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- STUDENT QUIZ SCORES SECTION -->
+<div class="card fade-in">
+    <h2 class="card-title">
+        <i class="fas fa-chart-line"></i> Student Quiz Scores
+        <span class="badge badge-primary"><?php echo count($teacherQuizzes); ?> quizzes</span>
+    </h2>
+    
+    <div class="quiz-grid-section">
+        <div class="quiz-grid">
+            <?php if (empty($teacherQuizzes)): ?>
+                <!-- Show 8 empty placeholders -->
+                <?php for ($i = 1; $i <= 8; $i++): ?>
+                <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
+                    <i class="fas fa-plus-circle"></i>
+                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
+                        Create Quiz <?php echo $i; ?>
+                    </div>
+                </div>
+                <?php endfor; ?>
+            <?php else: ?>
+                <?php 
+                // Show up to 8 quizzes for viewing scores
+                $displayQuizScores = array_slice($teacherQuizzes, 0, 8);
+                $scoreQuizCount = 0;
+                ?>
+                <?php foreach ($displayQuizScores as $quiz): $scoreQuizCount++; 
+                    // Determine which intelligence icon to show
+                    $intelligenceType = $quiz['intelligence_type'];
+                    $iconImage = "images/quiz-{$intelligenceType}.png";
+                    $defaultIcon = "images/default.jpg";
+                    
+                    // Check if image exists, otherwise use default
+                    $quizIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
+                ?>
+                <div class="quiz-icon" onclick="window.location.href='quiz-scores.php?quiz_id=<?php echo $quiz['id']; ?>'">
+                    <div class="icon-badge"><?php echo $scoreQuizCount; ?></div>
+                    <!-- Show intelligence type image - FULL RECTANGULAR -->
+                    <div class="thumbnail-container">
+                        <img src="<?php echo $quizIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
+                    </div>
+                    <div class="icon-title" style="text-align: center; width: 100%; padding: 0 5px; height: 2.8em; display: flex; align-items: center; justify-content: center; line-height: 1.2;">
+                        <?php echo htmlspecialchars(substr($quiz['title'], 0, 30)); ?>
+                        <?php if (strlen($quiz['title']) > 30): ?>...<?php endif; ?>
+                    </div>
+                    <?php if ($quiz['attempt_count'] > 0): ?>
+                    <div class="icon-score" style="margin-top: 5px; font-size: 0.9rem; text-align: center; width: 100%; height: 1.2em; color: var(--secondary-green);">
+                        <?php echo number_format($quiz['avg_score'], 1); ?>% Average
+                    </div>
+                    <?php else: ?>
+                    <!-- Show "No Scores Yet" instead of blank space -->
+                    <div class="no-scores" style="margin-top: 5px; font-size: 0.8rem; text-align: center; width: 100%; height: 1.2em; color: #999; font-style: italic;">
+                        No Scores Yet
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+                
+                <?php // Fill remaining slots with placeholders ?>
+                <?php for ($i = $scoreQuizCount + 1; $i <= 8; $i++): ?>
+                <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
+                    <i class="fas fa-plus-circle"></i>
+                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
+                        Create New Quiz
+                    </div>
+                </div>
+                <?php endfor; ?>
+            <?php endif; ?>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="action-btn" onclick="exportQuizScores()">
+                <i class="fas fa-download"></i> Export All Quiz Scores
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ACTIVITY GRADES SECTION (Renamed from Activities to Grade) -->
+<div class="card fade-in">
+    <h2 class="card-title">
+        <i class="fas fa-check-double"></i> Activity Grades
+    </h2>
+    
+    <div class="quiz-grid-section">
+        <div class="grading-grid">
+            <?php if (empty($activitiesToGrade)): ?>
+                <!-- Show 8 empty placeholders -->
+                <?php for ($i = 1; $i <= 8; $i++): ?>
+                <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                    <i class="fas fa-check-circle"></i>
+                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
+                        No activities yet
+                    </div>
+                </div>
+                <?php endfor; ?>
+            <?php else: ?>
+                <?php 
+                // Show up to 8 activities for grading
+                $displayGradingIcons = array_slice($activitiesToGrade, 0, 8);
+                $gradingCount = 0;
+                
+                // Get average grades for these activities too
+                $gradingGrades = [];
+                foreach ($displayGradingIcons as $activity) {
+                    $gradeStmt = $pdo->prepare("
+                        SELECT AVG(ag.points_earned) as avg_grade, 
+                               COUNT(DISTINCT ag.student_id) as graded_count
+                        FROM activity_grades ag 
+                        WHERE ag.activity_id = ? AND ag.points_earned IS NOT NULL
+                    ");
+                    $gradeStmt->execute([$activity['id']]);
+                    $gradeData = $gradeStmt->fetch(PDO::FETCH_ASSOC);
+                    $gradingGrades[$activity['id']] = $gradeData;
+                }
+                ?>
+                <?php foreach ($displayGradingIcons as $activity): $gradingCount++; 
+                    // Determine which intelligence icon to show
+                    $intelligenceType = $activity['intelligence_type'];
+                    $iconImage = "images/activity-{$intelligenceType}.png";
+                    $defaultIcon = "images/default.jpg";
+                    
+                    // Check if image exists, otherwise use default
+                    $activityIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
+                    
+                    // Get grade data for this activity
+                    $gradeData = $gradingGrades[$activity['id']] ?? null;
+                    $avgGrade = $gradeData['avg_grade'] ?? null;
+                    $gradedCount = $gradeData['graded_count'] ?? 0;
+                ?>
+                <div class="grading-icon" onclick="window.location.href='grade-activity.php?activity_id=<?php echo $activity['id']; ?>'">
+                    <?php if ($activity['students_to_grade'] > 0): ?>
+                    <div class="grading-badge pulse"><?php echo $activity['students_to_grade']; ?></div>
+                    <?php endif; ?>
+                    <!-- Show intelligence type image - FULL RECTANGULAR -->
+                    <div class="thumbnail-container">
+                        <img src="<?php echo $activityIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
+                    </div>
+                    <div class="icon-title" style="text-align: center; width: 100%; padding: 0 5px; height: 2.8em; display: flex; align-items: center; justify-content: center; line-height: 1.2;">
+                        <?php echo htmlspecialchars(substr($activity['title'], 0, 30)); ?>
+                        <?php if (strlen($activity['title']) > 30): ?>...<?php endif; ?>
+                    </div>
+                    <?php if ($gradedCount > 0 && $avgGrade !== null): ?>
+                    <div class="activity-grade" style="margin-top: 5px; font-size: 0.9rem; text-align: center; width: 100%; height: 1.2em; color: var(--secondary-green); font-weight: bold;">
+                        <?php echo number_format($avgGrade, 1); ?>% Average
+                    </div>
+                    <?php else: ?>
+                    <!-- Show "No Grades Yet" -->
+                    <div class="no-grades" style="margin-top: 5px; font-size: 0.8rem; text-align: center; width: 100%; height: 1.2em; color: #999; font-style: italic;">
+                        No Grades Yet
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+                
+                <?php // Fill remaining slots ?>
+                <?php for ($i = $gradingCount + 1; $i <= 8; $i++): ?>
+                <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                    <i class="fas fa-check-circle"></i>
+                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
+                        Create Activity
+                    </div>
+                </div>
+                <?php endfor; ?>
+            <?php endif; ?>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="action-btn" onclick="viewAllActivities()">
+                <i class="fas fa-list"></i> Export All Activity Grades
+            </button>
+        </div>
+    </div>
+</div>
 
         <!-- BOTTOM BUTTONS -->
         <div class="bottom-buttons-container fade-in">

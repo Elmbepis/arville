@@ -47,11 +47,6 @@ try {
     $scoreStmt->execute([$_SESSION['user_id']]);
     $studentQuizScores = $scoreStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get all quizzes for score comparison
-    $allQuizzesStmt = $pdo->prepare("SELECT id, title FROM quizzes");
-    $allQuizzesStmt->execute();
-    $allQuizzes = $allQuizzesStmt->fetchAll(PDO::FETCH_ASSOC);
-    
     // ===== NEW: Get Available Activities =====
     // Simplified query - just get basic activity info
     $activitiesStmt = $pdo->prepare("
@@ -64,14 +59,12 @@ try {
     $availableActivities = $activitiesStmt->fetchAll(PDO::FETCH_ASSOC);
     
     // ===== NEW: Get Student's Activity Grades =====
-    // Check if activity_grades table exists, if not, return empty array
     $studentActivityGrades = [];
     try {
-        // First check if the table exists
         $tableCheck = $pdo->query("SHOW TABLES LIKE 'activity_grades'");
         if ($tableCheck->rowCount() > 0) {
             $activityGradesStmt = $pdo->prepare("
-                SELECT ag.*, a.title as activity_title, a.activity_type, a.virtual_world, a.intelligence_type
+                SELECT ag.*, a.title as activity_title, a.activity_type, a.virtual_world, a.intelligence_type, a.max_points
                 FROM activity_grades ag 
                 JOIN activities a ON ag.activity_id = a.id 
                 WHERE ag.student_id = ? 
@@ -81,7 +74,6 @@ try {
             $studentActivityGrades = $activityGradesStmt->fetchAll(PDO::FETCH_ASSOC);
         }
     } catch (PDOException $e) {
-        // If table doesn't exist, just continue with empty array
         $studentActivityGrades = [];
     }
     
@@ -186,6 +178,60 @@ function getActivityTypeIcon($type) {
     ];
     return $icons[$type] ?? 'file-alt';
 }
+
+// ===== NEW: Get ARville worlds data =====
+function getARvilleWorlds() {
+    return [
+        'zoo' => [
+            'name' => 'ARville Zoo', 
+            'desc' => 'Zoology', 
+            'image' => 'vw-zoo.jpg',
+            'link' => '../zoo1.htm'
+        ],
+        'museum' => [
+            'name' => 'ARVille Museum', 
+            'desc' => 'History & Art', 
+            'image' => 'vw-museum.jpg',
+            'link' => '../museum.htm?id=1'
+        ],
+        'ocean' => [
+            'name' => 'Under the Sea', 
+            'desc' => 'Marine Biology', 
+            'image' => 'vw-ocean.jpg',
+            'link' => '../nature.htm?id=1'
+        ],
+        'forest park' => [
+            'name' => 'Forest Park', 
+            'desc' => 'Botany', 
+            'image' => 'vw-forest-park.jpg',
+            'link' => '../park1.htm'
+        ],
+        'arctic' => [
+            'name' => 'Frozen Kingdom', 
+            'desc' => 'Polar Regions', 
+            'image' => 'vw-arctic.jpg',
+            'link' => '../arctic.htm?id=5'
+        ],
+        'farm' => [
+            'name' => 'Farm Village', 
+            'desc' => 'Agriculture', 
+            'image' => 'vw-farm.jpg',
+            'link' => '../farm.htm?id=6'
+        ],
+        'toy world' => [
+            'name' => 'Toy World', 
+            'desc' => 'Fantasy', 
+            'image' => 'vw-toy-world.jpg',
+            'link' => '../village.htm?id=3'
+        ],
+        'candy land' => [
+            'name' => 'Candy Land', 
+            'desc' => 'Fantasy', 
+            'image' => 'vw-candyland.jpg',
+            'link' => '../village.htm?id=1'
+        ]
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -274,21 +320,21 @@ function getActivityTypeIcon($type) {
         .navbar-nav .nav-link:hover {
             color: #4A90E2 !important;
         }
-		
-		.navbar .container {
-		    width: 100%;
-    		max-width: 100%;
-   		    padding-left: 300px;
-  		    padding-right: 300px;
-    		display: flex;
-    		justify-content: space-between;
-    		align-items: center;
-		}
+        
+        .navbar .container {
+            width: 100%;
+            max-width: 100%;
+            padding-left: 300px;
+            padding-right: 300px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-		.navbar .navbar-collapse {
-		    flex-grow: 0; /* Prevents it from taking up extra space */
-		}        
-		
+        .navbar .navbar-collapse {
+            flex-grow: 0; /* Prevents it from taking up extra space */
+        }        
+        
         .bottom-buttons-container {
             margin-bottom: 30px !important; /* Adjust this value as needed */
         }
@@ -307,99 +353,6 @@ function getActivityTypeIcon($type) {
             width: 100%;
             height: auto;
             display: block;
-        }
-        
-        /* ===== MIEL HEADER (KEPT FOR REFERENCE BUT NOT USED) ===== */
-        .miel-header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 25px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            border: 5px solid var(--primary-blue);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .miel-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 8px;
-            background: linear-gradient(90deg, 
-                #4A90E2 0%, /* Blue */
-                #50C878 25%, /* Green */
-                #FFD166 50%, /* Yellow */
-                #FF6B6B 75%, /* Red */
-                #9C27B0 100% /* Purple */
-            );
-        }
-        
-        .miel-logo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .miel-logo-image {
-            max-width: 200px;
-            height: auto;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .miel-logo-image:hover {
-            transform: scale(1.05);
-        }
-        
-        .miel-subtitle {
-            font-size: 1.4rem;
-            color: var(--secondary-green);
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        
-        .miel-tagline {
-            color: #666;
-            font-size: 1rem;
-            max-width: 600px;
-            margin: 0 auto 15px;
-            line-height: 1.4;
-        }
-        
-        .miel-intelligence-icons {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .intelligence-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #F8F9FF;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: var(--primary-blue);
-            border: 2px solid #E0E0E0;
-            transition: all 0.3s;
-        }
-        
-        .intelligence-icon:hover {
-            transform: scale(1.1);
-            border-color: var(--primary-blue);
-            background: white;
-            box-shadow: var(--shadow);
         }
         
         /* ===== DASHBOARD HEADER ===== */
@@ -612,17 +565,20 @@ function getActivityTypeIcon($type) {
             color: var(--text-dark);
         }
         
-        .icon-main {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            color: var(--primary-blue);
-            width: 40px;
-            height: 40px;
+        /* Updated for thumbnail images */
+        .thumbnail-container {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
-            background: rgba(74, 144, 226, 0.1);
+        }
+        
+        .thumbnail-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
         
         .icon-title {
@@ -638,27 +594,19 @@ function getActivityTypeIcon($type) {
             line-height: 1.2em;
         }
         
-        .icon-meta {
+        .icon-third-line {
             font-size: 0.8rem;
             color: #666;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            height: 2.4em;
-            line-height: 1.2em;
+            height: 1.2em;
+            margin-top: 3px;
+            font-style: italic;
         }
         
         .icon-score {
-            font-size: 1.2rem;
+            font-size: 0.9rem;
             font-weight: bold;
             color: var(--secondary-green);
             margin-top: 5px;
-        }
-        
-        /* ===== SCORES SECTION ===== */
-        .scores-section {
-            width: 100%;
         }
         
         /* ===== EMPTY STATES ===== */
@@ -771,29 +719,6 @@ function getActivityTypeIcon($type) {
             border: 2px solid rgba(255, 255, 255, 0.8);
         }
         
-        /* Green button for "Back to Dashboard" */
-        .green-btn {
-            background-color: #50C878 !important;
-            color: white !important;
-            border: none !important;
-            padding: 15px 30px !important;
-            border-radius: 15px !important;
-            font-size: 1.2rem !important;
-            font-weight: bold !important;
-            cursor: pointer !important;
-            transition: all 0.3s !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            gap: 10px !important;
-            text-decoration: none !important;
-        }
-        
-        .green-btn:hover {
-            background-color: #3DAF5E !important;
-            transform: translateY(-3px) !important;
-        }
-        
         /* Red button for logout */
         .red-btn {
             background-color: #FF6B6B !important;
@@ -822,6 +747,137 @@ function getActivityTypeIcon($type) {
             display: none !important;
         }
         
+        /* ===== NEW: EXPLORE ARVILLE WORLDS STYLES ===== */
+        .world-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        /* Optimized virtual world card spacing */
+        .world-option {
+            background: #F8F9FF;
+            border: 3px solid #E0E0E0;
+            border-radius: 15px;
+            padding: 12px; /* Reduced padding */
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Changed from center to flex-start */
+            min-height: 220px; /* Slightly increased height */
+            height: 100%;
+        }
+        
+        .world-option:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-blue);
+        }
+        
+        .world-thumbnail {
+            width: 100%;
+            height: 110px; /* Slightly reduced height */
+            margin-bottom: 8px; /* Reduced margin */
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+        
+        .world-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        
+        /* Placeholder styling */
+        .thumbnail-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        .thumbnail-placeholder i {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .world-info {
+            text-align: center;
+            margin-top: 0;
+            flex-grow: 1; /* Allow content to fill space */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Distribute space evenly */
+            width: 100%;
+            padding: 0 5px; /* Small side padding */
+        }
+        
+        .world-info h3 {
+            font-size: 1rem; /* Slightly smaller */
+            margin-bottom: -18px; /* Reduced margin */
+            color: var(--text-dark);
+            line-height: 1.2;
+            min-height: 2.4em; /* Ensure consistent height for 2 lines */
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Limit to 2 lines */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .world-subtitle {
+            font-size: 0.85rem; /* Smaller font */
+            color: #666;
+            margin-bottom: 10px; /* Added margin for separation */
+            line-height: 1.2;
+            font-weight: 500;
+            min-height: 1.2em; /* Ensure consistent height */
+        }
+        
+        .see-world-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            background-color: #FDD473;
+            color: #2C3E50 !important;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: auto; /* Push to bottom */
+            width: 100%;
+            max-width: 120px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .see-world-link:hover {
+            background-color: #FA7C1F;
+            transform: translateY(-2px);
+            color: white !important;
+            text-decoration: none;
+        }
+        
+        .see-world-link i {
+            font-size: 0.7rem;
+        }
+        
         /* ===== MOBILE RESPONSIVE (SAME AS teacher-dashboard.php) ===== */
         @media (max-width: 768px) {
             .container {
@@ -842,7 +898,8 @@ function getActivityTypeIcon($type) {
             }
             
             .quiz-grid,
-            .empty-grid {
+            .empty-grid,
+            .world-selector {
                 grid-template-columns: repeat(2, 1fr);
                 grid-template-rows: repeat(4, 1fr);
             }
@@ -880,13 +937,45 @@ function getActivityTypeIcon($type) {
                 width: 100%;
                 justify-content: center;
             }
+            
+            /* Mobile adjustments for world options */
+            .world-option {
+                min-height: 200px; /* Smaller on mobile */
+            }
+            
+            .world-thumbnail {
+                height: 100px;
+            }
+            
+            .world-info h3 {
+                font-size: 0.95rem;
+            }
+            
+            .world-subtitle {
+                font-size: 0.8rem;
+            }
+            
+            .see-world-link {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+                max-width: 110px;
+            }
         }
         
         @media (max-width: 480px) {
             .quiz-grid,
-            .empty-grid {
+            .empty-grid,
+            .world-selector {
                 grid-template-columns: repeat(2, 1fr);
                 grid-template-rows: repeat(4, 1fr);
+            }
+            
+            .world-option {
+                min-height: 180px;
+            }
+            
+            .world-thumbnail {
+                height: 90px;
             }
         }
         
@@ -950,22 +1039,21 @@ function getActivityTypeIcon($type) {
 
     <div class="container">
         <!-- DASHBOARD HEADER -->
-<header class="dashboard-header fade-in">
-    <div class="logo">
- 
-        <div>
-            <!-- Replace text title with image -->
-            <img src="images/student-dashboard.jpg" alt="Student Dashboard" style="max-width: 550px; height: auto; ">
-            <p class="subtitle">Work on Quizzes and Activities and Track Your Progress</p>
-        </div>
-    </div>
-    <div class="welcome-message">
-        Hello, <strong><?php echo htmlspecialchars($student['full_name']); ?></strong>!
-        <?php if ($student['class_name']): ?>
-        <br><small>Class: <?php echo htmlspecialchars($student['class_name']); ?></small>
-        <?php endif; ?>
-    </div>
-</header>
+        <header class="dashboard-header fade-in">
+            <div class="logo">
+                <div>
+                    <!-- Replace text title with image -->
+                    <img src="images/student-dashboard.jpg" alt="Student Dashboard" style="max-width: 550px; height: auto;">
+                    <p class="subtitle">Work on Quizzes and Activities and Track Your Progress</p>
+                </div>
+            </div>
+            <div class="welcome-message">
+                Hello, <strong><?php echo htmlspecialchars($student['full_name']); ?></strong>!
+                <?php if ($student['class_name']): ?>
+                <br><small>Class: <?php echo htmlspecialchars($student['class_name']); ?></small>
+                <?php endif; ?>
+            </div>
+        </header>
 
         <!-- HORIZONTAL SECTIONS -->
         <div class="horizontal-sections">
@@ -1024,7 +1112,7 @@ function getActivityTypeIcon($type) {
                 </div>
             </div>
 
-            <!-- RENAMED: MY QUIZZES SECTION (was Available Quizzes) -->
+            <!-- MY QUIZZES SECTION -->
             <div class="card fade-in">
                 <h2 class="card-title">
                     <i class="fas fa-gamepad"></i> My Quizzes
@@ -1047,20 +1135,47 @@ function getActivityTypeIcon($type) {
                             $displayQuizzes = array_slice($availableQuizzes, 0, 8);
                             $quizCount = 0;
                             ?>
-                            <?php foreach ($displayQuizzes as $quiz): $quizCount++; ?>
-                            <div class="quiz-icon" onclick="takeQuiz(<?php echo $quiz['id']; ?>)">
-                                <div class="icon-badge"><?php echo $quizCount; ?></div>
-                                <div class="icon-main">
-                                    <i class="fas fa-<?php echo getWorldIcon($quiz['virtual_world']); ?>"></i>
+                            <?php foreach ($displayQuizzes as $quiz): $quizCount++; 
+                                // Check if student has taken this quiz
+                                $quizTaken = false;
+                                $quizScore = null;
+                                foreach ($studentQuizScores as $score) {
+                                    if ($score['quiz_id'] == $quiz['id']) {
+                                        $quizTaken = true;
+                                        $quizScore = $score['score'];
+                                        break;
+                                    }
+                                }
+                                
+                                // Determine which intelligence icon to show
+                                $intelligenceType = $quiz['intelligence_type'];
+                                $iconImage = "images/quiz-{$intelligenceType}.png";
+                                $defaultIcon = "images/default.jpg";
+                                
+                                // Check if image exists, otherwise use default
+                                $quizIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
+                            ?>
+                            <div class="quiz-icon <?php echo !$quizTaken ? 'not-taken' : ''; ?>" 
+                                 onclick="<?php echo $quizTaken ? 'reviewQuiz(' . $quiz['id'] . ')' : 'takeQuiz(' . $quiz['id'] . ')'; ?>">
+                                <div class="icon-badge <?php echo !$quizTaken ? 'not-taken' : ''; ?>"><?php echo $quizCount; ?></div>
+                                <!-- Show intelligence type image -->
+                                <div class="thumbnail-container">
+                                    <img src="<?php echo $quizIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
                                 </div>
                                 <div class="icon-title">
                                     <?php echo htmlspecialchars(substr($quiz['title'], 0, 20)); ?>
                                     <?php if (strlen($quiz['title']) > 20): ?>...<?php endif; ?>
                                 </div>
-                                <div class="icon-meta">
-                                    <i class="fas fa-<?php echo getIntelligenceIcon($quiz['intelligence_type']); ?>"></i>
-                                    <?php echo getIntelligenceName($quiz['intelligence_type']); ?>
+                                <!-- Third line: Show score or "No Score Yet" -->
+                                <?php if ($quizTaken && $quizScore !== null): ?>
+                                <div class="icon-score" style="color: <?php echo $quizScore >= 80 ? '#50C878' : ($quizScore >= 60 ? '#FF9800' : '#FF6B6B'); ?>;">
+                                    <?php echo number_format($quizScore, 1); ?>%
                                 </div>
+                                <?php else: ?>
+                                <div class="icon-third-line">
+                                    No Score Yet
+                                </div>
+                                <?php endif; ?>
                             </div>
                             <?php endforeach; ?>
                             
@@ -1076,14 +1191,14 @@ function getActivityTypeIcon($type) {
                 </div>
             </div>
 
-            <!-- RENAMED: MY ACTIVITIES SECTION (was Available Activities) -->
+            <!-- MY ACTIVITIES SECTION -->
             <div class="card fade-in">
                 <h2 class="card-title">
                     <i class="fas fa-tasks"></i> My Activities
                     <span class="badge badge-primary"><?php echo count($availableActivities); ?></span>
                 </h2>
                 
-                <div class="scores-section">
+                <div class="quiz-grid-section">
                     <div class="quiz-grid">
                         <?php if (empty($availableActivities)): ?>
                             <!-- Show 8 empty placeholders -->
@@ -1099,20 +1214,52 @@ function getActivityTypeIcon($type) {
                             $displayActivities = array_slice($availableActivities, 0, 8);
                             $activityCount = 0;
                             ?>
-                            <?php foreach ($displayActivities as $activity): $activityCount++; ?>
+                            <?php foreach ($displayActivities as $activity): $activityCount++; 
+                                // Check if student has grade for this activity
+                                $activityGraded = false;
+                                $activityPoints = null;
+                                $maxPoints = $activity['max_points'] ?? 100;
+                                foreach ($studentActivityGrades as $grade) {
+                                    if ($grade['activity_id'] == $activity['id']) {
+                                        $activityGraded = true;
+                                        $activityPoints = $grade['points_earned'];
+                                        $maxPoints = $grade['max_points'] ?? $maxPoints;
+                                        break;
+                                    }
+                                }
+                                
+                                // Determine which intelligence icon to show
+                                $intelligenceType = $activity['intelligence_type'];
+                                $iconImage = "images/activity-{$intelligenceType}.png";
+                                $defaultIcon = "images/default.jpg";
+                                
+                                // Check if image exists, otherwise use default
+                                $activityIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
+                            ?>
                             <div class="quiz-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)">
                                 <div class="icon-badge"><?php echo $activityCount; ?></div>
-                                <div class="icon-main">
-                                    <i class="fas fa-<?php echo getActivityTypeIcon($activity['activity_type']); ?>"></i>
+                                <!-- Show intelligence type image -->
+                                <div class="thumbnail-container">
+                                    <img src="<?php echo $activityIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
                                 </div>
                                 <div class="icon-title">
                                     <?php echo htmlspecialchars(substr($activity['title'], 0, 20)); ?>
                                     <?php if (strlen($activity['title']) > 20): ?>...<?php endif; ?>
                                 </div>
-                                <div class="icon-meta">
-                                    <i class="fas fa-<?php echo getWorldIcon($activity['virtual_world']); ?>"></i>
-                                    <?php echo getActivityTypeName($activity['activity_type']); ?>
+                                <!-- Third line: Show grade or "No Grade Yet" -->
+                                <?php if ($activityGraded && $activityPoints !== null): ?>
+                                <?php 
+                                    $percentage = ($activityPoints / $maxPoints) * 100;
+                                    $color = $percentage >= 80 ? '#50C878' : ($percentage >= 60 ? '#FF9800' : '#FF6B6B');
+                                ?>
+                                <div class="icon-score" style="color: <?php echo $color; ?>;">
+                                    <?php echo $activityPoints; ?>/<?php echo $maxPoints; ?> pts
                                 </div>
+                                <?php else: ?>
+                                <div class="icon-third-line">
+                                    No Grade Yet
+                                </div>
+                                <?php endif; ?>
                             </div>
                             <?php endforeach; ?>
                             
@@ -1128,8 +1275,37 @@ function getActivityTypeIcon($type) {
                 </div>
             </div>
 
-            <!-- REMOVED: My Quiz Scores section -->
-            <!-- REMOVED: My Activity Grades section -->
+            <!-- ===== NEW: EXPLORE ARVILLE WORLDS SECTION (THIRD SECTION) ===== -->
+            <div class="card fade-in">
+                <h2 class="card-title">
+                    <i class="fas fa-globe-americas"></i> Explore ARville Worlds
+                    <span class="badge badge-success">8</span>
+                </h2>
+                
+                <div class="world-selector">
+                    <?php
+                    $worlds = getARvilleWorlds();
+                    foreach ($worlds as $key => $world):
+                        $imagePath = "images/{$world['image']}";
+                        // Check if image exists, fallback to default if not
+                        $actualImage = file_exists($imagePath) ? $imagePath : "images/default-world.jpg";
+                    ?>
+                    <div class="world-option">
+                        <div class="world-thumbnail">
+                            <img src="<?php echo $actualImage; ?>" alt="<?php echo $world['name']; ?>">
+                        </div>
+                        <div class="world-info">
+                            <h3><?php echo $world['name']; ?></h3>
+                            <p class="world-subtitle"><?php echo $world['desc']; ?></p>
+                            <a href="<?php echo $world['link']; ?>" target="_blank" class="see-world-link" onclick="event.stopPropagation();">
+                                <i class="fas fa-external-link-alt"></i> Explore World
+                            </a>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
         </div>
 
         <!-- BOTTOM BUTTONS CONTAINER -->
@@ -1153,7 +1329,7 @@ function getActivityTypeIcon($type) {
             window.location.href = `take-quiz.php?quiz_id=${quizId}`;
         }
         
-        // ===== NEW: Activity functions =====
+        // ===== Activity functions =====
         function viewActivity(activityId) {
             window.location.href = `do-activity.php?activity_id=${activityId}`;
         }
@@ -1182,7 +1358,7 @@ function getActivityTypeIcon($type) {
         });
         
         // Add hover effects
-        document.querySelectorAll('.quiz-icon').forEach(icon => {
+        document.querySelectorAll('.quiz-icon, .world-option').forEach(icon => {
             icon.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-5px)';
             });
@@ -1216,6 +1392,21 @@ function getActivityTypeIcon($type) {
                 }, 500);
             });
         }
+        
+        // World option click handler (optional - can be used for future features)
+        document.querySelectorAll('.world-option').forEach(world => {
+            world.addEventListener('click', function(e) {
+                // Don't trigger if clicking on the "Explore World" link
+                if (e.target.closest('.see-world-link')) {
+                    return;
+                }
+                
+                // Optional: Add functionality when clicking on the world card itself
+                // For now, just show a message
+                const worldName = this.querySelector('h3').textContent;
+                alert(`Exploring ${worldName}! Click the "Explore World" button to enter the ARville world.`);
+            });
+        });
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
