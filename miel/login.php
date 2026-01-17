@@ -121,7 +121,6 @@ if (isset($_SESSION['user_id'])) {
     <title>Login | MIEL - Multiple Intelligence E-Learning</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="mobile-login.css" media="screen">
     <style>
         /* ===== KID-FRIENDLY THEME ===== */
         :root {
@@ -521,7 +520,7 @@ if (isset($_SESSION['user_id'])) {
             animation: fadeIn 0.5s ease;
         }
         
-        /* ===== MOBILE RESPONSIVE ===== */
+        /* ===== MOBILE RESPONSIVE - VISUAL FIXES ONLY ===== */
         @media (max-width: 768px) {
             .container, .narrow-form-container {
                 padding: 10px;
@@ -561,6 +560,11 @@ if (isset($_SESSION['user_id'])) {
             
             .narrow-form-container {
                 max-width: 100%;
+            }
+            
+            /* MOBILE-ONLY: Prevent iOS zoom on form inputs */
+            input, select, textarea {
+                font-size: 16px !important;
             }
         }
         
@@ -866,6 +870,92 @@ if (isset($_SESSION['user_id'])) {
                 }, 500);
             });
         }
+        
+        // ===== MOBILE-ONLY LOGIN FIX (Separate from desktop code) =====
+        // This only runs on mobile devices and won't affect desktop
+        (function() {
+            // Check if we're on a mobile device
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (!isMobile) {
+                console.log('Desktop device - mobile fixes disabled');
+                return; // Exit - don't run mobile code on desktop
+            }
+            
+            console.log('Mobile device detected - applying mobile login fixes');
+            
+            // Wait a moment for the page to fully load
+            setTimeout(function() {
+                // MOBILE FIX 1: Fix login form submission
+                const loginForm = document.getElementById('loginForm');
+                if (loginForm) {
+                    console.log('Mobile: Fixing login form');
+                    
+                    // Get the login button
+                    const loginButton = loginForm.querySelector('button[name="login"]');
+                    if (loginButton) {
+                        // Add mobile-specific touch handling
+                        loginButton.addEventListener('touchend', function(e) {
+                            console.log('Mobile: Login button touched');
+                            
+                            // Prevent double execution
+                            e.preventDefault();
+                            
+                            // Check if form is valid
+                            if (!loginForm.checkValidity()) {
+                                loginForm.reportValidity();
+                                return false;
+                            }
+                            
+                            // Show loading state
+                            const originalHTML = this.innerHTML;
+                            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+                            this.disabled = true;
+                            
+                            // Submit the form
+                            loginForm.submit();
+                            
+                            // Restore button after 3 seconds (in case submission fails)
+                            setTimeout(() => {
+                                this.innerHTML = originalHTML;
+                                this.disabled = false;
+                            }, 3000);
+                        });
+                        
+                        // Also ensure click works
+                        loginButton.addEventListener('click', function(e) {
+                            console.log('Mobile: Login button clicked');
+                            
+                            // Check if form is valid
+                            if (!loginForm.checkValidity()) {
+                                loginForm.reportValidity();
+                                e.preventDefault();
+                                return false;
+                            }
+                            
+                            // Show loading state
+                            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+                            this.disabled = true;
+                        });
+                    }
+                }
+                
+                // MOBILE FIX 2: Ensure inputs don't zoom on iOS
+                document.querySelectorAll('input[type="email"], input[type="password"], input[type="text"]').forEach(input => {
+                    input.style.fontSize = '16px'; // Prevent iOS zoom
+                });
+                
+                // MOBILE FIX 3: Make buttons more tappable
+                document.querySelectorAll('.btn, .top-button, .role-option').forEach(button => {
+                    button.style.minHeight = '44px';
+                    button.style.cursor = 'pointer';
+                });
+                
+                console.log('Mobile fixes applied successfully');
+            }, 500);
+        })();
+        // ===== END MOBILE-ONLY FIX =====
+        
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
