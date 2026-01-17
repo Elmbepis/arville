@@ -176,12 +176,15 @@ function setupControls(camera, EYE_HEIGHT, placeWidth, placeDepth, speedMultipli
             const touchX = touch.clientX;
             const touchY = touch.clientY;
             
+            // Calculate position relative to joystick center
             const deltaX = touchX - joystickCenter.x;
             const deltaY = touchY - joystickCenter.y;
             
+            // Calculate distance from center
             const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             const angle = Math.atan2(deltaY, deltaX);
             
+            // Limit joystick movement to maximum radius
             const limitedDistance = Math.min(distance, maxJoystickDistance);
             
             // Update joystick handle position
@@ -194,14 +197,20 @@ function setupControls(camera, EYE_HEIGHT, placeWidth, placeDepth, speedMultipli
             const deadZone = 15;
             
             if (limitedDistance > deadZone) {
-                // SWAPPED: UP moves backward, DOWN moves forward
-                moveState.forward = deltaY > deadZone;    // DOWN moves forward
-                moveState.backward = deltaY < -deadZone;  // UP moves backward
+                // Calculate normalized direction (0 to 1)
+                const normalizedX = deltaX / limitedDistance;
+                const normalizedY = deltaY / limitedDistance;
                 
-                // REVERSED: Left/right controls swapped
-                moveState.left = deltaX > deadZone;    // RIGHT moves left
-                moveState.right = deltaX < -deadZone;  // LEFT moves right
+                // Set movement states based on direction
+                // Top (negative deltaY) = forward, Bottom (positive deltaY) = backward
+                moveState.forward = normalizedY < -0.3;    // UP: Move forward
+                moveState.backward = normalizedY > 0.3;    // DOWN: Move backward
+                
+                // Right (positive deltaX) = right, Left (negative deltaX) = left  
+                moveState.left = normalizedX < -0.3;       // LEFT: Move left
+                moveState.right = normalizedX > 0.3;       // RIGHT: Move right
             } else {
+                // Reset all movement when joystick is in dead zone
                 moveState.forward = moveState.backward = moveState.left = moveState.right = false;
             }
         }
@@ -210,27 +219,34 @@ function setupControls(camera, EYE_HEIGHT, placeWidth, placeDepth, speedMultipli
             joystickHandle.style.transform = 'translate(0, 0)';
             moveState.forward = moveState.backward = moveState.left = moveState.right = false;
         }
+        
+        // Touch end handler
+        document.addEventListener('touchend', (e) => {
+            joystickActive = false;
+            cameraTouchActive = false;
+            resetJoystick();
+        });
     }
 
-function resetCamera() {
-    if (window.ROOM_INITIAL_POSITION && window.ROOM_INITIAL_ROTATION) {
-        // Reset to the stored room-specific position and rotation
-        camera.position.copy(window.ROOM_INITIAL_POSITION);
-        camera.rotation.copy(window.ROOM_INITIAL_ROTATION);
+    function resetCamera() {
+        if (window.ROOM_INITIAL_POSITION && window.ROOM_INITIAL_ROTATION) {
+            // Reset to the stored room-specific position and rotation
+            camera.position.copy(window.ROOM_INITIAL_POSITION);
+            camera.rotation.copy(window.ROOM_INITIAL_ROTATION);
+            
+            // Also reset yaw and pitch to match the initial rotation
+            yaw = window.ROOM_INITIAL_ROTATION.y;
+            pitch = window.ROOM_INITIAL_ROTATION.x;
+        } else {
+            // Fallback to original behavior if room-specific values aren't set
+            camera.position.set(0, EYE_HEIGHT, 0);
+            camera.rotation.set(0, 0, 0);
+            yaw = 0;
+            pitch = 0;
+        }
         
-        // Also reset yaw and pitch to match the initial rotation
-        yaw = window.ROOM_INITIAL_ROTATION.y;
-        pitch = window.ROOM_INITIAL_ROTATION.x;
-    } else {
-        // Fallback to original behavior if room-specific values aren't set
-        camera.position.set(0, EYE_HEIGHT, 0);
-        camera.rotation.set(0, 0, 0);
-        yaw = 0;
-        pitch = 0;
+        velocity.set(0, 0, 0);
     }
-    
-    velocity.set(0, 0, 0);
-}
 
     // Function to enforce camera boundaries
     function enforceCameraBoundaries() {
