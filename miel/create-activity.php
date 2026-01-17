@@ -1317,11 +1317,11 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                                 'image' => 'vw-forest-park.jpg',
                                 'link' => '../park1.htm'
                             ],
-                            'arctic' => [
-                                'name' => 'Frozen Kingdom', 
-                                'desc' => 'Polar Regions', 
-                                'image' => 'vw-arctic.jpg',
-                                'link' => '../arctic.htm?id=5'
+                            'raptor island' => [
+                                'name' => 'Raptor Island', 
+                                'desc' => 'Mesozoic Era', 
+                                'image' => 'vw-raptor.jpg',
+                                'link' => '../nature.htm?id=2'
                             ],
                             'farm' => [
                                 'name' => 'Farm Village', 
