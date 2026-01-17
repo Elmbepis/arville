@@ -32,10 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $full_name = trim($_POST['full_name']);
             $role = $_POST['role'];
             
-            // FIX: Properly handle grade_level for mobile
-            $grade_level = isset($_POST['grade_level']) && $_POST['grade_level'] !== '' 
-                ? (int)$_POST['grade_level'] 
-                : NULL;
+            // FIX: Properly handle grade_level - NULL for teachers, value for students
+            if ($role === 'student' && isset($_POST['grade_level']) && $_POST['grade_level'] !== '') {
+                $grade_level = (int)$_POST['grade_level'];
+            } else {
+                $grade_level = NULL; // NULL for teachers or empty student value
+            }
             
             $class_name = trim($_POST['class_name'] ?? '');
             
@@ -48,6 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Passwords do not match.';
             } elseif (strlen($password) < 6) {
                 $error = 'Password must be at least 6 characters long.';
+            } elseif ($role === 'student' && (empty($grade_level) || $grade_level < 1 || $grade_level > 12)) {
+                $error = 'Please enter a valid grade level (1-12) for students.';
             } else {
                 // Check if email already exists
                 $checkStmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
@@ -125,6 +129,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
     } catch(PDOException $e) {
         $error = 'Database error: ' . $e->getMessage();
+        // Additional debug info
+        error_log("Database Error Details: " . $e->getMessage());
+        error_log("POST Data: " . print_r($_POST, true));
     }
 }
 
@@ -753,7 +760,7 @@ if (isset($_SESSION['user_id'])) {
                 <div class="student-info <?php echo (isset($_POST['role']) && $_POST['role'] === 'student') || (!isset($_POST['role']) && isset($_POST['register'])) ? 'show' : ''; ?>" id="studentInfo">
                     <div class="form-group">
                         <label class="form-label">
-                            <i class="fas fa-graduation-cap"></i> Grade Level
+                            <i class="fas fa-graduation-cap"></i> Grade Level <span class="text-danger">*</span>
                         </label>
                         <div class="input-with-icon">
                             <i class="fas fa-sort-numeric-up input-icon"></i>
@@ -862,6 +869,19 @@ if (isset($_SESSION['user_id'])) {
             });
         });
         
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (roleInput.value === 'teacher') {
+                if (gradeLevelInput) {
+                    gradeLevelInput.required = false;
+                }
+            } else if (roleInput.value === 'student') {
+                if (gradeLevelInput) {
+                    gradeLevelInput.required = true;
+                }
+            }
+        });
+        
         // Form validation
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             const password = this.querySelector('input[name="password"]').value;
@@ -882,14 +902,19 @@ if (isset($_SESSION['user_id'])) {
                 return false;
             }
             
-            // Student validation
+            // Student validation - only validate grade level for students
             if (role === 'student') {
                 const grade = parseInt(gradeLevel.value);
                 if (isNaN(grade) || grade < 1 || grade > 12) {
                     e.preventDefault();
-                    alert('Please enter a valid grade level (1-12).');
+                    alert('Please enter a valid grade level (1-12) for students.');
                     return false;
                 }
+            }
+            
+            // For teachers, ensure grade_level is cleared
+            if (role === 'teacher' && gradeLevel) {
+                gradeLevel.value = '';
             }
             
             return true;
