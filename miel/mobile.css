@@ -137,6 +137,61 @@
     /* Ensure navbar takes full width on mobile */
     .navbar {
         padding: 10px 0 !important;
+        margin-bottom: 20px !important; /* Add space below navbar */
+    }
+}
+
+/* ===== VERTICAL SPACING BETWEEN SECTIONS ===== */
+@media (max-width: 768px) {
+    /* Add consistent spacing between all sections */
+    .dashboard-header + *,
+    header + *,
+    .page-header + *,
+    .banner + *,
+    .section + *,
+    .row + .row,
+    .card + .card,
+    .container + .container,
+    .col + .col {
+        margin-top: 30px !important; /* Standard gap between sections */
+    }
+    
+    /* Add spacing after title banners */
+    .dashboard-header,
+    .page-title-banner,
+    .dashboard-banner,
+    .banner-title {
+        margin-bottom: 30px !important; /* Space below title banner */
+    }
+    
+    /* Add spacing between form groups */
+    .form-group + .form-group {
+        margin-top: 20px !important;
+    }
+    
+    /* Add spacing between cards in a row */
+    .card-deck .card,
+    .row .card {
+        margin-bottom: 20px !important;
+    }
+    
+    /* Add spacing between buttons */
+    .btn + .btn {
+        margin-top: 15px !important;
+        margin-left: 0 !important;
+    }
+    
+    /* Add spacing between navigation elements */
+    .nav + .content,
+    .navbar + .container {
+        margin-top: 20px !important;
+    }
+    
+    /* Add spacing between dashboard sections */
+    .dashboard-section + .dashboard-section,
+    .stats-container + .action-buttons,
+    .welcome-message + .quick-stats {
+        margin-top: 25px !important;
     }
 }
 
@@ -146,8 +201,8 @@
     .dashboard-header {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 15px !important;
-        margin: 0 auto !important;
+        padding: 20px 15px !important; /* Increased padding */
+        margin: 0 auto 30px auto !important; /* Added bottom margin */
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
@@ -163,7 +218,7 @@
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
-        margin: 0 auto !important;
+        margin: 0 auto 20px auto !important; /* Added bottom margin */
         padding: 0 10px !important;
         box-sizing: border-box !important;
     }
@@ -178,7 +233,7 @@
         max-width: 100% !important;
         height: auto !important;
         display: block !important;
-        margin: 0 auto 15px auto !important;
+        margin: 0 auto 20px auto !important; /* Increased bottom margin */
         padding: 0 10px !important;
         box-sizing: border-box !important;
     }
@@ -198,7 +253,7 @@
         width: 100% !important;
         max-width: 100% !important;
         padding: 0 15px !important;
-        margin: 10px auto !important;
+        margin: 15px auto !important; /* Increased margin */
         font-size: 1rem !important;
         line-height: 1.4 !important;
         text-align: center !important;
@@ -210,8 +265,8 @@
     header .welcome-message {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 15px !important;
-        margin: 10px auto !important;
+        padding: 20px 15px !important; /* Increased padding */
+        margin: 20px auto !important; /* Increased margin */
         font-size: 1.1rem !important;
         text-align: center !important;
         background-color: #f8f9fa !important;
@@ -232,8 +287,8 @@
     .banner-heading {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 0 15px !important;
-        margin: 0 auto 20px auto !important;
+        padding: 20px 15px !important; /* Increased padding */
+        margin: 0 auto 30px auto !important; /* Added bottom margin */
         text-align: center !important;
         font-size: 1.8rem !important;
         line-height: 1.3 !important;
@@ -247,8 +302,8 @@
     .teacher-dashboard-title,
     .student-dashboard-title {
         font-size: 1.5rem !important;
-        padding: 10px 15px !important;
-        margin: 15px auto !important;
+        padding: 15px 15px !important; /* Increased padding */
+        margin: 15px auto 25px auto !important; /* Added bottom margin */
         max-width: 95% !important;
     }
     
@@ -257,8 +312,8 @@
     .dashboard-header,
     .page-header {
         width: 100% !important;
-        padding: 15px !important;
-        margin: 0 auto !important;
+        padding: 20px 15px !important; /* Increased padding */
+        margin: 0 auto 25px auto !important; /* Added bottom margin */
         overflow: hidden !important;
     }
     
@@ -269,7 +324,7 @@
         width: 100% !important;
         max-width: 100% !important;
         padding: 0 10px !important;
-        margin: 0 auto 20px auto !important;
+        margin: 0 auto 25px auto !important; /* Added bottom margin */
         text-align: center !important;
         overflow: hidden !important;
     }
@@ -280,7 +335,7 @@
         width: 100% !important;
         height: auto !important;
         max-width: 500px !important;
-        margin: 0 auto !important;
+        margin: 0 auto 20px auto !important; /* Added bottom margin */
         display: block !important;
     }
 }
@@ -297,7 +352,7 @@
         align-items: center !important;
         justify-content: center !important;
         min-height: calc(100vh - 150px) !important;
-        padding: 20px !important;
+        padding: 25px 20px !important; /* Increased padding */
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
@@ -310,8 +365,9 @@
     .card {
         width: 100% !important;
         max-width: 500px !important;
-        margin: 0 auto !important;
+        margin: 0 auto 25px auto !important; /* Added bottom margin */
         align-self: center !important;
+        padding: 25px 20px !important; /* Increased padding */
     }
     
     /* Center content containers */
@@ -322,6 +378,7 @@
         padding-right: 15px !important;
         max-width: 100% !important;
         overflow: hidden !important;
+        margin-bottom: 25px !important; /* Added bottom margin */
     }
 }
 
@@ -335,7 +392,7 @@
         max-width: 100% !important;
         height: auto !important;
         display: block !important;
-        margin: 0 auto 15px auto !important;
+        margin: 0 auto 25px auto !important; /* Increased bottom margin */
         box-sizing: border-box !important;
     }
     
@@ -345,6 +402,7 @@
         width: 100% !important;
         max-width: 100% !important;
         padding: 0 15px !important;
+        margin-bottom: 25px !important; /* Added bottom margin */
         box-sizing: border-box !important;
     }
     
@@ -355,6 +413,7 @@
         width: 100% !important;
         height: auto !important;
         box-sizing: border-box !important;
+        margin-bottom: 20px !important; /* Added bottom margin */
     }
     
     /* Fix containers that might be causing overflow */
@@ -365,6 +424,7 @@
         overflow: hidden !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
+        margin-bottom: 25px !important; /* Added bottom margin */
     }
 }
 
@@ -378,6 +438,17 @@
         padding-right: 15px !important;
         overflow: hidden !important;
         box-sizing: border-box !important;
+        margin-bottom: 25px !important; /* Added bottom margin */
+    }
+    
+    /* Add spacing to all rows */
+    .row {
+        margin-bottom: 20px !important;
+    }
+    
+    /* Add spacing to all columns */
+    .col, .col-sm, .col-md, .col-lg, .col-xl {
+        margin-bottom: 15px !important;
     }
     
     /* Fix table overflow */
@@ -386,6 +457,7 @@
         overflow-x: auto !important;
         white-space: nowrap !important;
         max-width: 100% !important;
+        margin-bottom: 20px !important; /* Added bottom margin */
     }
     
     /* Prevent horizontal scrolling */
@@ -400,17 +472,31 @@
         min-height: 44px !important;
         padding: 12px 20px !important;
         font-size: 16px !important;
+        margin-bottom: 10px !important; /* Added bottom margin */
     }
     
     /* Prevent iOS zoom on inputs */
     input, select, textarea {
         font-size: 16px !important;
+        margin-bottom: 15px !important; /* Added bottom margin */
     }
     
     /* Ensure all elements stay within bounds */
     * {
         max-width: 100% !important;
         box-sizing: border-box !important;
+    }
+    
+    /* Add spacing to lists */
+    ul, ol {
+        margin-bottom: 20px !important;
+        padding-left: 20px !important;
+    }
+    
+    /* Add spacing to paragraphs */
+    p {
+        margin-bottom: 15px !important;
+        line-height: 1.5 !important;
     }
 }
 
@@ -419,14 +505,15 @@
     /* Form containers */
     .narrow-form-container,
     .form-container {
-        padding: 10px !important;
+        padding: 15px 10px !important; /* Adjusted padding */
         min-height: calc(100vh - 120px) !important;
     }
     
     /* Cards */
     .main-card,
     .form-card {
-        padding: 15px !important;
+        padding: 20px 15px !important; /* Adjusted padding */
+        margin-bottom: 20px !important;
     }
     
     /* Buttons */
@@ -434,6 +521,7 @@
     .btn-submit {
         width: 100% !important;
         max-width: none !important;
+        margin-bottom: 15px !important;
     }
     
     /* Adjust navbar for very small screens */
@@ -452,7 +540,8 @@
     h1.text-center,
     .display-4 {
         font-size: 1.5rem !important;
-        padding: 0 10px !important;
+        padding: 15px 10px !important; /* Adjusted padding */
+        margin-bottom: 25px !important;
     }
     
     /* Fix dashboard images for small screens */
@@ -462,6 +551,7 @@
     header img[alt*="Student"] {
         max-width: 95% !important;
         padding: 0 5px !important;
+        margin-bottom: 20px !important;
     }
     
     /* Dashboard subtitles */
@@ -469,20 +559,33 @@
     header .subtitle {
         font-size: 0.9rem !important;
         padding: 0 10px !important;
+        margin: 15px auto !important;
     }
     
     /* Welcome messages */
     .dashboard-header .welcome-message,
     header .welcome-message {
         font-size: 1rem !important;
-        padding: 12px !important;
+        padding: 15px 12px !important; /* Adjusted padding */
+        margin: 15px auto !important;
     }
     
     /* Fix MIEL banner images for small screens */
     .miel-banner,
     .banner-img {
         max-width: 95% !important;
-        margin: 0 auto !important;
+        margin: 0 auto 15px auto !important; /* Added bottom margin */
+    }
+    
+    /* Reduce spacing on very small screens */
+    .dashboard-header + *,
+    header + *,
+    .page-header + * {
+        margin-top: 20px !important;
+    }
+    
+    .card + .card {
+        margin-top: 15px !important;
     }
 }
 
