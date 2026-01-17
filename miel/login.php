@@ -73,39 +73,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        // LOGIN
+        // LOGIN - SIMPLIFIED VERSION
         elseif (isset($_POST['login'])) {
             $email = trim($_POST['email']);
             $password = $_POST['password'];
             
-            // DEBUG: Log exactly what's received
-            error_log("=== MOBILE LOGIN DEBUG ===");
-            error_log("Raw email: " . $email);
-            error_log("Email length: " . strlen($email));
-            error_log("Email bytes: " . bin2hex($email));
-            error_log("Password length: " . strlen($password));
-            error_log("User Agent: " . $_SERVER['HTTP_USER_AGENT']);
-            
-            // Clean the email for mobile
-            $email = strtolower(trim($email));
-            $email = preg_replace('/\s+/', '', $email); // Remove all whitespace
-            $email = filter_var($email, FILTER_SANITIZE_EMAIL);
-            
-            error_log("Cleaned email: " . $email);
+            // DEBUG: Simple logging
+            error_log("Login attempt for: " . $email);
             
             if (empty($email) || empty($password)) {
                 $error = 'Please enter email and password.';
             } else {
-                // Get user from database - use cleaned email
-                $stmt = $pdo->prepare("SELECT * FROM users WHERE LOWER(email) = ?");
+                // SIMPLE QUERY: Use exact email match first
+                $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
                 $stmt->execute([$email]);
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
                 
-                error_log("Database found user: " . ($user ? 'YES' : 'NO'));
+                error_log("User found: " . ($user ? 'Yes - ID ' . $user['id'] : 'No'));
                 
                 if ($user && password_verify($password, $user['password_hash'])) {
                     // Login successful
-                    error_log("MOBILE LOGIN SUCCESS for: " . $email);
+                    error_log("Login SUCCESS for: " . $email);
                     
                     // Set session variables
                     $_SESSION['user_id'] = $user['id'];
@@ -121,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     exit();
                 } else {
-                    error_log("MOBILE LOGIN FAILED for: " . $email);
+                    error_log("Login FAILED for: " . $email);
                     $error = 'Invalid email or password.';
                 }
             }
@@ -129,9 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
     } catch(PDOException $e) {
         $error = 'Database error: ' . $e->getMessage();
-        // Additional debug info
-        error_log("Database Error Details: " . $e->getMessage());
-        error_log("POST Data: " . print_r($_POST, true));
+        error_log("Database Error: " . $e->getMessage());
     }
 }
 
@@ -940,8 +926,8 @@ if (isset($_SESSION['user_id'])) {
             });
         }
         
-        // ===== MOBILE-ONLY LOGIN FIX (Separate from desktop code) =====
-        // This only runs on mobile devices and won't affect desktop
+        // ===== MINIMAL MOBILE-ONLY FIXES =====
+        // This only runs on mobile devices
         (function() {
             // Check if we're on a mobile device
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -951,80 +937,43 @@ if (isset($_SESSION['user_id'])) {
                 return; // Exit - don't run mobile code on desktop
             }
             
-            console.log('Mobile device detected - applying mobile login fixes');
+            console.log('Mobile device detected - applying minimal fixes');
             
-            // Wait a moment for the page to fully load
+            // Wait for DOM to load
             setTimeout(function() {
-                // MOBILE FIX 1: Clean email and password inputs
-                const loginForm = document.getElementById('loginForm');
-                if (loginForm) {
-                    console.log('Mobile: Fixing login form');
-                    
-                    // Get form inputs
-                    const emailInput = loginForm.querySelector('input[name="email"]');
-                    const passwordInput = loginForm.querySelector('input[name="password"]');
-                    
-                    // Clean email on blur (common mobile issue)
-                    if (emailInput) {
-                        emailInput.addEventListener('blur', function() {
-                            let email = this.value.trim();
-                            email = email.toLowerCase();
-                            email = email.replace(/\s+/g, '');
-                            this.value = email;
-                            console.log('Mobile: Cleaned email to:', email);
-                        });
-                    }
-                    
-                    // Clean email before submission
-                    loginForm.addEventListener('submit', function(e) {
-                        console.log('Mobile: Form submit intercepted');
-                        
-                        // Clean values before submission
-                        if (emailInput) {
-                            let email = emailInput.value.trim();
-                            email = email.toLowerCase();
-                            email = email.replace(/\s+/g, '');
-                            emailInput.value = email;
-                            console.log('Mobile: Final email:', email);
-                        }
-                        
-                        // Show loading state
-                        const loginButton = this.querySelector('button[name="login"]');
-                        if (loginButton) {
-                            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-                            loginButton.disabled = true;
-                        }
-                        
-                        return true;
-                    });
-                }
-                
-                // MOBILE FIX 2: Ensure grade_level is properly handled for teachers
-                if (roleInput && gradeLevelInput) {
-                    // Initialize on page load
-                    if (roleInput.value === 'teacher') {
-                        gradeLevelInput.value = '';
-                        gradeLevelInput.required = false;
-                    }
-                    
-                    // Also handle role changes
-                    roleInput.addEventListener('change', function() {
-                        if (this.value === 'teacher') {
-                            gradeLevelInput.value = '';
-                            gradeLevelInput.required = false;
-                        } else if (this.value === 'student') {
-                            gradeLevelInput.required = true;
-                        }
-                    });
-                }
-                
-                // MOBILE FIX 3: Make buttons more tappable
+                // FIX 1: Only fix touch targets
                 document.querySelectorAll('.btn, .top-button, .role-option').forEach(button => {
                     button.style.minHeight = '44px';
                 });
                 
-                console.log('Mobile fixes applied successfully');
-            }, 500);
+                // FIX 2: Prevent iOS zoom on inputs
+                document.querySelectorAll('input[type="email"], input[type="password"], input[type="text"]').forEach(input => {
+                    input.style.fontSize = '16px';
+                });
+                
+                // FIX 3: Add loading indicator to login button
+                const loginForm = document.getElementById('loginForm');
+                if (loginForm) {
+                    loginForm.addEventListener('submit', function(e) {
+                        const loginButton = this.querySelector('button[name="login"]');
+                        if (loginButton) {
+                            const originalHTML = loginButton.innerHTML;
+                            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+                            loginButton.disabled = true;
+                            
+                            // Restore button after 5 seconds (in case submission fails)
+                            setTimeout(() => {
+                                loginButton.innerHTML = originalHTML;
+                                loginButton.disabled = false;
+                            }, 5000);
+                        }
+                        
+                        return true; // Allow normal form submission
+                    });
+                }
+                
+                console.log('Minimal mobile fixes applied');
+            }, 100);
         })();
         // ===== END MOBILE-ONLY FIX =====
         
