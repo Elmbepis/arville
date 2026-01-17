@@ -376,8 +376,9 @@ function init() {
   });
   
   // Initialize mobile controls using the shared navigation.js
-  // FIXED: Call initMobileControls AFTER everything is set up
-  initMobileControls();
+  setTimeout(() => {
+    initMobileControls();
+  }, 100);
 
   // Initialize ride path
   ridePath = createRidePath();
