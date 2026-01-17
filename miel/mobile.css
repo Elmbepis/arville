@@ -619,3 +619,28 @@ img {
         height: auto !important;
     }
 }
+
+@media (max-width: 768px) {
+    .login-page .miel-banner-container {
+        margin-bottom: 15px !important;
+    }
+    
+    .login-page .navbar {
+        margin-bottom: 15px !important;
+    }
+    
+    .login-page .narrow-form-container {
+        min-height: calc(100vh - 120px) !important;
+        padding-top: 10px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-page .miel-banner-container {
+        margin-bottom: 10px !important;
+    }
+    
+    .login-page .narrow-form-container {
+        min-height: calc(100vh - 100px) !important;
+    }
+}

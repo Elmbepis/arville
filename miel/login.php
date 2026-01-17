@@ -618,7 +618,7 @@ if (isset($_SESSION['user_id'])) {
         }
     </style>
 </head>
-<body>
+<body class="login-page">
     <!-- ARVILLE NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
