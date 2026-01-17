@@ -203,8 +203,9 @@ function setupControls(camera, EYE_HEIGHT, placeWidth, placeDepth, speedMultipli
                 
                 // Set movement states based on direction
                 // Top (negative deltaY) = forward, Bottom (positive deltaY) = backward
-				moveState.forward = normalizedY > 0.3;     // DOWN: Move forward (SWAPPED)
-				moveState.backward = normalizedY < -0.3;   // UP: Move backward (SWAPPED)                
+                moveState.forward = normalizedY < -0.3;    // UP: Move forward
+                moveState.backward = normalizedY > 0.3;    // DOWN: Move backward
+                
                 // Right (positive deltaX) = right, Left (negative deltaX) = left  
                 moveState.left = normalizedX < -0.3;       // LEFT: Move left
                 moveState.right = normalizedX > 0.3;       // RIGHT: Move right
