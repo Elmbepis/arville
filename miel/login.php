@@ -31,7 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $confirm_password = $_POST['confirm_password'];
             $full_name = trim($_POST['full_name']);
             $role = $_POST['role'];
-            $grade_level = $_POST['grade_level'];
+            
+            // FIX: Properly handle grade_level for mobile
+            $grade_level = isset($_POST['grade_level']) && $_POST['grade_level'] !== '' 
+                ? (int)$_POST['grade_level'] 
+                : NULL;
+            
             $class_name = trim($_POST['class_name'] ?? '');
             
             // Validate
@@ -69,15 +74,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = trim($_POST['email']);
             $password = $_POST['password'];
             
+            // DEBUG: Log exactly what's received
+            error_log("=== MOBILE LOGIN DEBUG ===");
+            error_log("Raw email: " . $email);
+            error_log("Email length: " . strlen($email));
+            error_log("Email bytes: " . bin2hex($email));
+            error_log("Password length: " . strlen($password));
+            error_log("User Agent: " . $_SERVER['HTTP_USER_AGENT']);
+            
+            // Clean the email for mobile
+            $email = strtolower(trim($email));
+            $email = preg_replace('/\s+/', '', $email); // Remove all whitespace
+            $email = filter_var($email, FILTER_SANITIZE_EMAIL);
+            
+            error_log("Cleaned email: " . $email);
+            
             if (empty($email) || empty($password)) {
                 $error = 'Please enter email and password.';
             } else {
-                // Get user from database
-                $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+                // Get user from database - use cleaned email
+                $stmt = $pdo->prepare("SELECT * FROM users WHERE LOWER(email) = ?");
                 $stmt->execute([$email]);
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
                 
+                error_log("Database found user: " . ($user ? 'YES' : 'NO'));
+                
                 if ($user && password_verify($password, $user['password_hash'])) {
+                    // Login successful
+                    error_log("MOBILE LOGIN SUCCESS for: " . $email);
+                    
                     // Set session variables
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['user_email'] = $user['email'];
@@ -92,6 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     exit();
                 } else {
+                    error_log("MOBILE LOGIN FAILED for: " . $email);
                     $error = 'Invalid email or password.';
                 }
             }
@@ -566,6 +592,11 @@ if (isset($_SESSION['user_id'])) {
             input, select, textarea {
                 font-size: 16px !important;
             }
+            
+            /* MOBILE: Fix grade_level input for teachers */
+            input[name="grade_level"] {
+                min-height: 44px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -655,7 +686,8 @@ if (isset($_SESSION['user_id'])) {
                     <div class="input-with-icon">
                         <i class="fas fa-at input-icon"></i>
                         <input type="email" name="email" placeholder="Enter your email" required
-                               value="<?php echo isset($_POST['email']) && isset($_POST['login']) ? htmlspecialchars($_POST['email']) : ''; ?>">
+                               value="<?php echo isset($_POST['email']) && isset($_POST['login']) ? htmlspecialchars($_POST['email']) : ''; ?>"
+                               autocapitalize="none" autocorrect="off" spellcheck="false">
                     </div>
                 </div>
                 
@@ -669,7 +701,7 @@ if (isset($_SESSION['user_id'])) {
                     </div>
                 </div>
                 
-                <button type="submit" name="login" class="btn btn-primary btn-login">
+                <button type="submit" name="login" class="btn btn-primary btn-login" id="mobileLoginButton">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </button>
 
@@ -684,7 +716,8 @@ if (isset($_SESSION['user_id'])) {
                     <div class="input-with-icon">
                         <i class="fas fa-at input-icon"></i>
                         <input type="email" name="email" placeholder="Enter your email" required
-                               value="<?php echo isset($_POST['email']) && isset($_POST['register']) ? htmlspecialchars($_POST['email']) : ''; ?>">
+                               value="<?php echo isset($_POST['email']) && isset($_POST['register']) ? htmlspecialchars($_POST['email']) : ''; ?>"
+                               autocapitalize="none" autocorrect="off" spellcheck="false">
                     </div>
                 </div>
                 
@@ -725,7 +758,8 @@ if (isset($_SESSION['user_id'])) {
                         <div class="input-with-icon">
                             <i class="fas fa-sort-numeric-up input-icon"></i>
                             <input type="number" name="grade_level" min="1" max="12" placeholder="Grade (1-12)" 
-                                   value="<?php echo isset($_POST['grade_level']) ? htmlspecialchars($_POST['grade_level']) : ''; ?>">
+                                   value="<?php echo isset($_POST['grade_level']) ? htmlspecialchars($_POST['grade_level']) : ''; ?>"
+                                   id="gradeLevelInput">
                         </div>
                     </div>
                     
@@ -776,6 +810,7 @@ if (isset($_SESSION['user_id'])) {
         const roleOptions = document.querySelectorAll('.role-option');
         const roleInput = document.getElementById('roleInput');
         const studentInfo = document.getElementById('studentInfo');
+        const gradeLevelInput = document.getElementById('gradeLevelInput');
         
         // Form switcher - using top buttons
         topButtons.forEach(button => {
@@ -812,8 +847,17 @@ if (isset($_SESSION['user_id'])) {
                 // Show/hide student info
                 if (option.dataset.role === 'student') {
                     studentInfo.classList.add('show');
+                    // Make grade_level required for students
+                    if (gradeLevelInput) {
+                        gradeLevelInput.required = true;
+                    }
                 } else {
                     studentInfo.classList.remove('show');
+                    // Clear and make grade_level not required for teachers
+                    if (gradeLevelInput) {
+                        gradeLevelInput.value = '';
+                        gradeLevelInput.required = false;
+                    }
                 }
             });
         });
@@ -871,128 +915,93 @@ if (isset($_SESSION['user_id'])) {
             });
         }
         
-// ===== MOBILE-ONLY LOGIN FIX (Separate from desktop code) =====
-// This only runs on mobile devices and won't affect desktop
-(function() {
-    // Check if we're on a mobile device
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    if (!isMobile) {
-        console.log('Desktop device - mobile fixes disabled');
-        return; // Exit - don't run mobile code on desktop
-    }
-    
-    console.log('Mobile device detected - applying mobile login fixes');
-    
-    // Wait a moment for the page to fully load
-    setTimeout(function() {
-        // MOBILE FIX 1: Clean email input for mobile
-        const loginForm = document.getElementById('loginForm');
-        if (loginForm) {
-            console.log('Mobile: Fixing login form');
+        // ===== MOBILE-ONLY LOGIN FIX (Separate from desktop code) =====
+        // This only runs on mobile devices and won't affect desktop
+        (function() {
+            // Check if we're on a mobile device
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             
-            // Get email input
-            const emailInput = loginForm.querySelector('input[name="email"]');
-            const passwordInput = loginForm.querySelector('input[name="password"]');
-            
-            // Clean email on blur (when user leaves the field)
-            if (emailInput) {
-                emailInput.addEventListener('blur', function() {
-                    let email = this.value.trim();
-                    
-                    // Remove any invisible characters (common on mobile)
-                    email = email.replace(/[^\x20-\x7E]/g, '');
-                    
-                    // Fix common mobile email issues
-                    email = email.toLowerCase(); // Force lowercase
-                    email = email.replace(/\s+/g, ''); // Remove all whitespace
-                    
-                    // Remove any trailing/leading dots
-                    email = email.replace(/^\.+|\.+$/g, '');
-                    
-                    console.log('Mobile: Cleaned email from', this.value, 'to', email);
-                    this.value = email;
-                });
-                
-                // Also clean on input (real-time)
-                emailInput.addEventListener('input', function() {
-                    this.value = this.value.toLowerCase();
-                });
+            if (!isMobile) {
+                console.log('Desktop device - mobile fixes disabled');
+                return; // Exit - don't run mobile code on desktop
             }
             
-            // Clean password input (remove invisible chars)
-            if (passwordInput) {
-                passwordInput.addEventListener('blur', function() {
-                    let password = this.value;
-                    
-                    // Remove invisible characters but keep actual password
-                    password = password.replace(/[^\x20-\x7E]/g, '');
-                    
-                    console.log('Mobile: Cleaned password (removed invisible chars)');
-                    this.value = password;
-                });
-            }
+            console.log('Mobile device detected - applying mobile login fixes');
             
-            // MOBILE FIX 2: Fix form submission with cleaned values
-            loginForm.addEventListener('submit', function(e) {
-                console.log('Mobile: Form submit intercepted');
-                
-                // Clean values one more time before submission
-                if (emailInput) {
-                    let email = emailInput.value.trim();
-                    email = email.toLowerCase();
-                    email = email.replace(/\s+/g, '');
-                    email = email.replace(/[^\x20-\x7E]/g, '');
-                    emailInput.value = email;
-                    console.log('Mobile: Final cleaned email:', email);
+            // Wait a moment for the page to fully load
+            setTimeout(function() {
+                // MOBILE FIX 1: Clean email and password inputs
+                const loginForm = document.getElementById('loginForm');
+                if (loginForm) {
+                    console.log('Mobile: Fixing login form');
+                    
+                    // Get form inputs
+                    const emailInput = loginForm.querySelector('input[name="email"]');
+                    const passwordInput = loginForm.querySelector('input[name="password"]');
+                    
+                    // Clean email on blur (common mobile issue)
+                    if (emailInput) {
+                        emailInput.addEventListener('blur', function() {
+                            let email = this.value.trim();
+                            email = email.toLowerCase();
+                            email = email.replace(/\s+/g, '');
+                            this.value = email;
+                            console.log('Mobile: Cleaned email to:', email);
+                        });
+                    }
+                    
+                    // Clean email before submission
+                    loginForm.addEventListener('submit', function(e) {
+                        console.log('Mobile: Form submit intercepted');
+                        
+                        // Clean values before submission
+                        if (emailInput) {
+                            let email = emailInput.value.trim();
+                            email = email.toLowerCase();
+                            email = email.replace(/\s+/g, '');
+                            emailInput.value = email;
+                            console.log('Mobile: Final email:', email);
+                        }
+                        
+                        // Show loading state
+                        const loginButton = this.querySelector('button[name="login"]');
+                        if (loginButton) {
+                            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+                            loginButton.disabled = true;
+                        }
+                        
+                        return true;
+                    });
                 }
                 
-                if (passwordInput) {
-                    let password = passwordInput.value;
-                    password = password.replace(/[^\x20-\x7E]/g, '');
-                    passwordInput.value = password;
-                    console.log('Mobile: Final cleaned password length:', password.length);
+                // MOBILE FIX 2: Ensure grade_level is properly handled for teachers
+                if (roleInput && gradeLevelInput) {
+                    // Initialize on page load
+                    if (roleInput.value === 'teacher') {
+                        gradeLevelInput.value = '';
+                        gradeLevelInput.required = false;
+                    }
+                    
+                    // Also handle role changes
+                    roleInput.addEventListener('change', function() {
+                        if (this.value === 'teacher') {
+                            gradeLevelInput.value = '';
+                            gradeLevelInput.required = false;
+                        } else if (this.value === 'student') {
+                            gradeLevelInput.required = true;
+                        }
+                    });
                 }
                 
-                // Show what's being submitted (for debugging)
-                console.log('Mobile: Submitting with email:', emailInput.value);
-                console.log('Mobile: Submitting with password length:', passwordInput.value.length);
+                // MOBILE FIX 3: Make buttons more tappable
+                document.querySelectorAll('.btn, .top-button, .role-option').forEach(button => {
+                    button.style.minHeight = '44px';
+                });
                 
-                // Check if form is valid
-                if (!this.checkValidity()) {
-                    console.log('Mobile: Form validation failed');
-                    this.reportValidity();
-                    e.preventDefault();
-                    return false;
-                }
-                
-                console.log('Mobile: Form is valid, proceeding...');
-                
-                // Show loading state
-                const loginButton = this.querySelector('button[name="login"]');
-                if (loginButton) {
-                    loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-                    loginButton.disabled = true;
-                }
-                
-                return true;
-            });
-        }
-        
-        // MOBILE FIX 3: Make email field always show lowercase keyboard
-        const emailFields = document.querySelectorAll('input[type="email"]');
-        emailFields.forEach(field => {
-            field.setAttribute('autocapitalize', 'none');
-            field.setAttribute('autocorrect', 'off');
-            field.setAttribute('spellcheck', 'false');
-        });
-        
-        // MOBILE FIX 4: Debug - show what's being typed
-        console.log('Mobile: Added email/password cleaning');
-        
-    }, 500);
-})();
-// ===== END MOBILE-ONLY FIX =====
+                console.log('Mobile fixes applied successfully');
+            }, 500);
+        })();
+        // ===== END MOBILE-ONLY FIX =====
         
     </script>
     
