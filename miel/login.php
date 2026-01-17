@@ -871,90 +871,128 @@ if (isset($_SESSION['user_id'])) {
             });
         }
         
-        // ===== MOBILE-ONLY LOGIN FIX (Separate from desktop code) =====
-        // This only runs on mobile devices and won't affect desktop
-        (function() {
-            // Check if we're on a mobile device
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+// ===== MOBILE-ONLY LOGIN FIX (Separate from desktop code) =====
+// This only runs on mobile devices and won't affect desktop
+(function() {
+    // Check if we're on a mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (!isMobile) {
+        console.log('Desktop device - mobile fixes disabled');
+        return; // Exit - don't run mobile code on desktop
+    }
+    
+    console.log('Mobile device detected - applying mobile login fixes');
+    
+    // Wait a moment for the page to fully load
+    setTimeout(function() {
+        // MOBILE FIX 1: Clean email input for mobile
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            console.log('Mobile: Fixing login form');
             
-            if (!isMobile) {
-                console.log('Desktop device - mobile fixes disabled');
-                return; // Exit - don't run mobile code on desktop
+            // Get email input
+            const emailInput = loginForm.querySelector('input[name="email"]');
+            const passwordInput = loginForm.querySelector('input[name="password"]');
+            
+            // Clean email on blur (when user leaves the field)
+            if (emailInput) {
+                emailInput.addEventListener('blur', function() {
+                    let email = this.value.trim();
+                    
+                    // Remove any invisible characters (common on mobile)
+                    email = email.replace(/[^\x20-\x7E]/g, '');
+                    
+                    // Fix common mobile email issues
+                    email = email.toLowerCase(); // Force lowercase
+                    email = email.replace(/\s+/g, ''); // Remove all whitespace
+                    
+                    // Remove any trailing/leading dots
+                    email = email.replace(/^\.+|\.+$/g, '');
+                    
+                    console.log('Mobile: Cleaned email from', this.value, 'to', email);
+                    this.value = email;
+                });
+                
+                // Also clean on input (real-time)
+                emailInput.addEventListener('input', function() {
+                    this.value = this.value.toLowerCase();
+                });
             }
             
-            console.log('Mobile device detected - applying mobile login fixes');
-            
-            // Wait a moment for the page to fully load
-            setTimeout(function() {
-                // MOBILE FIX 1: Fix login form submission
-                const loginForm = document.getElementById('loginForm');
-                if (loginForm) {
-                    console.log('Mobile: Fixing login form');
+            // Clean password input (remove invisible chars)
+            if (passwordInput) {
+                passwordInput.addEventListener('blur', function() {
+                    let password = this.value;
                     
-                    // Get the login button
-                    const loginButton = loginForm.querySelector('button[name="login"]');
-                    if (loginButton) {
-                        // Add mobile-specific touch handling
-                        loginButton.addEventListener('touchend', function(e) {
-                            console.log('Mobile: Login button touched');
-                            
-                            // Prevent double execution
-                            e.preventDefault();
-                            
-                            // Check if form is valid
-                            if (!loginForm.checkValidity()) {
-                                loginForm.reportValidity();
-                                return false;
-                            }
-                            
-                            // Show loading state
-                            const originalHTML = this.innerHTML;
-                            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-                            this.disabled = true;
-                            
-                            // Submit the form
-                            loginForm.submit();
-                            
-                            // Restore button after 3 seconds (in case submission fails)
-                            setTimeout(() => {
-                                this.innerHTML = originalHTML;
-                                this.disabled = false;
-                            }, 3000);
-                        });
-                        
-                        // Also ensure click works
-                        loginButton.addEventListener('click', function(e) {
-                            console.log('Mobile: Login button clicked');
-                            
-                            // Check if form is valid
-                            if (!loginForm.checkValidity()) {
-                                loginForm.reportValidity();
-                                e.preventDefault();
-                                return false;
-                            }
-                            
-                            // Show loading state
-                            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-                            this.disabled = true;
-                        });
-                    }
+                    // Remove invisible characters but keep actual password
+                    password = password.replace(/[^\x20-\x7E]/g, '');
+                    
+                    console.log('Mobile: Cleaned password (removed invisible chars)');
+                    this.value = password;
+                });
+            }
+            
+            // MOBILE FIX 2: Fix form submission with cleaned values
+            loginForm.addEventListener('submit', function(e) {
+                console.log('Mobile: Form submit intercepted');
+                
+                // Clean values one more time before submission
+                if (emailInput) {
+                    let email = emailInput.value.trim();
+                    email = email.toLowerCase();
+                    email = email.replace(/\s+/g, '');
+                    email = email.replace(/[^\x20-\x7E]/g, '');
+                    emailInput.value = email;
+                    console.log('Mobile: Final cleaned email:', email);
                 }
                 
-                // MOBILE FIX 2: Ensure inputs don't zoom on iOS
-                document.querySelectorAll('input[type="email"], input[type="password"], input[type="text"]').forEach(input => {
-                    input.style.fontSize = '16px'; // Prevent iOS zoom
-                });
+                if (passwordInput) {
+                    let password = passwordInput.value;
+                    password = password.replace(/[^\x20-\x7E]/g, '');
+                    passwordInput.value = password;
+                    console.log('Mobile: Final cleaned password length:', password.length);
+                }
                 
-                // MOBILE FIX 3: Make buttons more tappable
-                document.querySelectorAll('.btn, .top-button, .role-option').forEach(button => {
-                    button.style.minHeight = '44px';
-                    button.style.cursor = 'pointer';
-                });
+                // Show what's being submitted (for debugging)
+                console.log('Mobile: Submitting with email:', emailInput.value);
+                console.log('Mobile: Submitting with password length:', passwordInput.value.length);
                 
-                console.log('Mobile fixes applied successfully');
-            }, 500);
-        })();
-        // ===== END MOBILE-ONLY FIX =====
+                // Check if form is valid
+                if (!this.checkValidity()) {
+                    console.log('Mobile: Form validation failed');
+                    this.reportValidity();
+                    e.preventDefault();
+                    return false;
+                }
+                
+                console.log('Mobile: Form is valid, proceeding...');
+                
+                // Show loading state
+                const loginButton = this.querySelector('button[name="login"]');
+                if (loginButton) {
+                    loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+                    loginButton.disabled = true;
+                }
+                
+                return true;
+            });
+        }
+        
+        // MOBILE FIX 3: Make email field always show lowercase keyboard
+        const emailFields = document.querySelectorAll('input[type="email"]');
+        emailFields.forEach(field => {
+            field.setAttribute('autocapitalize', 'none');
+            field.setAttribute('autocorrect', 'off');
+            field.setAttribute('spellcheck', 'false');
+        });
+        
+        // MOBILE FIX 4: Debug - show what's being typed
+        console.log('Mobile: Added email/password cleaning');
+        
+    }, 500);
+})();
+// ===== END MOBILE-ONLY FIX =====
         
     </script>
     
