@@ -140,6 +140,86 @@
     }
 }
 
+/* ===== DASHBOARD HEADER & IMAGE FIXES ===== */
+@media (max-width: 768px) {
+    /* Fix dashboard header container */
+    .dashboard-header {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 15px !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        overflow: hidden !important;
+    }
+    
+    /* Fix logo container */
+    .dashboard-header .logo,
+    header .logo {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        margin: 0 auto !important;
+        padding: 0 10px !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Fix the oversized dashboard images */
+    .dashboard-header img,
+    header img[alt*="Dashboard"],
+    header img[alt*="Teacher"],
+    header img[alt*="Student"],
+    .dashboard-title-image {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+        margin: 0 auto 15px auto !important;
+        padding: 0 10px !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Override inline styles on mobile */
+    .dashboard-header img[style*="max-width"],
+    header img[style*="max-width"],
+    img[style*="max-width: 550px"] {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+    
+    /* Fix subtitle */
+    .dashboard-header .subtitle,
+    header .subtitle {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 15px !important;
+        margin: 10px auto !important;
+        font-size: 1rem !important;
+        line-height: 1.4 !important;
+        text-align: center !important;
+        word-wrap: break-word !important;
+    }
+    
+    /* Fix welcome message */
+    .dashboard-header .welcome-message,
+    header .welcome-message {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 15px !important;
+        margin: 10px auto !important;
+        font-size: 1.1rem !important;
+        text-align: center !important;
+        background-color: #f8f9fa !important;
+        border-radius: 10px !important;
+        word-wrap: break-word !important;
+    }
+}
+
 /* ===== MIEL TITLE BANNER FIXES (For all dashboard pages) ===== */
 @media (max-width: 768px) {
     /* Fix for MIEL title banners that exceed screen width */
@@ -159,6 +239,7 @@
         line-height: 1.3 !important;
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
+        box-sizing: border-box !important;
     }
     
     /* Specific fix for large MIEL dashboard titles */
@@ -178,6 +259,7 @@
         width: 100% !important;
         padding: 15px !important;
         margin: 0 auto !important;
+        overflow: hidden !important;
     }
     
     /* Center and constrain any banner images */
@@ -189,6 +271,7 @@
         padding: 0 10px !important;
         margin: 0 auto 20px auto !important;
         text-align: center !important;
+        overflow: hidden !important;
     }
     
     .miel-banner,
@@ -217,6 +300,7 @@
         padding: 20px !important;
         width: 100% !important;
         max-width: 100% !important;
+        box-sizing: border-box !important;
     }
     
     /* Center main cards */
@@ -237,6 +321,50 @@
         padding-left: 15px !important;
         padding-right: 15px !important;
         max-width: 100% !important;
+        overflow: hidden !important;
+    }
+}
+
+/* ===== GENERAL IMAGE FIXES FOR ALL PAGES ===== */
+@media (max-width: 768px) {
+    /* Fix all header images */
+    header img,
+    .dashboard-header img,
+    .page-header img,
+    .banner-image {
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+        margin: 0 auto 15px auto !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Fix any image with "dashboard" in alt text */
+    img[alt*="dashboard"],
+    img[alt*="Dashboard"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 15px !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Override any inline styles that might be causing overflow */
+    img[style*="max-width"],
+    img[style*="width"] {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Fix containers that might be causing overflow */
+    header,
+    .dashboard-header,
+    .page-header,
+    .banner-container {
+        overflow: hidden !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
 }
 
@@ -248,6 +376,8 @@
         max-width: 100% !important;
         padding-left: 15px !important;
         padding-right: 15px !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
     }
     
     /* Fix table overflow */
@@ -255,12 +385,14 @@
         display: block !important;
         overflow-x: auto !important;
         white-space: nowrap !important;
+        max-width: 100% !important;
     }
     
     /* Prevent horizontal scrolling */
     body, html {
         max-width: 100% !important;
         overflow-x: hidden !important;
+        position: relative !important;
     }
     
     /* Fix button sizes for touch */
@@ -274,21 +406,30 @@
     input, select, textarea {
         font-size: 16px !important;
     }
+    
+    /* Ensure all elements stay within bounds */
+    * {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
 }
 
 /* ===== VERY SMALL SCREENS ===== */
 @media (max-width: 480px) {
+    /* Form containers */
     .narrow-form-container,
     .form-container {
         padding: 10px !important;
         min-height: calc(100vh - 120px) !important;
     }
     
+    /* Cards */
     .main-card,
     .form-card {
         padding: 15px !important;
     }
     
+    /* Buttons */
     .btn-login,
     .btn-submit {
         width: 100% !important;
@@ -312,6 +453,29 @@
     .display-4 {
         font-size: 1.5rem !important;
         padding: 0 10px !important;
+    }
+    
+    /* Fix dashboard images for small screens */
+    .dashboard-header img,
+    header img[alt*="Dashboard"],
+    header img[alt*="Teacher"],
+    header img[alt*="Student"] {
+        max-width: 95% !important;
+        padding: 0 5px !important;
+    }
+    
+    /* Dashboard subtitles */
+    .dashboard-header .subtitle,
+    header .subtitle {
+        font-size: 0.9rem !important;
+        padding: 0 10px !important;
+    }
+    
+    /* Welcome messages */
+    .dashboard-header .welcome-message,
+    header .welcome-message {
+        font-size: 1rem !important;
+        padding: 12px !important;
     }
     
     /* Fix MIEL banner images for small screens */
@@ -338,5 +502,19 @@
         padding-left: 300px !important;
         padding-right: 300px !important;
         justify-content: space-between !important;
+    }
+}
+
+/* ===== EXTRA SAFEGUARD FOR IMAGES ===== */
+/* This ensures NO image can exceed screen width */
+img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+@media (max-width: 768px) {
+    img {
+        max-width: 100% !important;
+        height: auto !important;
     }
 }
