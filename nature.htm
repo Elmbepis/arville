@@ -137,7 +137,7 @@
   
 </head>
 <body>
-  <div id="info">Virtual Ecosystem | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset</div>
+  <div id="info">Virtual Village | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset | H: Home</div>
   <div id="loading">Loading ecosystem areas...</div>
   
   <!-- Ride Controls -->
@@ -161,9 +161,8 @@
   <script src="universe/js/audio-mappings.js"></script>
   <script src="universe/js/navigation.js"></script>
   <script src="universe/obj_create_park.js"></script>
-  <script src="universe/obj_create_house.js"></script>
   <script src="universe/obj_create_room.js"></script>
-  <script src="universe/obj_create_toyland.js"></script>
+  <script src="universe/obj_create_nature.js"></script>
   <script src="universe/js/sky-effect.js"></script>
   <script src="universe/js/brightenGLB.js"></script>
   <script src="universe/js/darkenGLB.js"></script>
@@ -173,7 +172,7 @@
   <script>
     let scene, camera, renderer;
     const clock = new THREE.Clock();
-    const EYE_HEIGHT = 1.6;
+    const EYE_HEIGHT = 2.5;
     let currentAreas = [];
     let isRiding = false;
     let ridePath = [];
@@ -224,32 +223,17 @@
 
     // CAMERA_LIMITS is now defined in navigation.js
     
-// Replace the entire AREA_POSITIONS object with this function:
-function generateAreaPositions(ecosystemId) {
+function generateAreaPositions(sceneId) {
+  // 6 equal areas, each 66.67 units deep
+  const zSpacing = 400 / 6; // 66.67
+  
   return {
-    // Row 1 (Back row) - Z = -150
-    [`${ecosystemId}a`]: new THREE.Vector3(-75, 0, -150),
-    [`${ecosystemId}b`]: new THREE.Vector3(-25, 0, -150),
-    [`${ecosystemId}c`]: new THREE.Vector3(25, 0, -150),
-    [`${ecosystemId}d`]: new THREE.Vector3(75, 0, -150),
-    
-    // Row 2 - Z = -50
-    [`${ecosystemId}e`]: new THREE.Vector3(-75, 0, -50),
-    [`${ecosystemId}f`]: new THREE.Vector3(-25, 0, -50),
-    [`${ecosystemId}g`]: new THREE.Vector3(25, 0, -50),
-    [`${ecosystemId}h`]: new THREE.Vector3(75, 0, -50),
-    
-    // Row 3 - Z = 50
-    [`${ecosystemId}i`]: new THREE.Vector3(-75, 0, 50),
-    [`${ecosystemId}j`]: new THREE.Vector3(-25, 0, 50),
-    [`${ecosystemId}k`]: new THREE.Vector3(25, 0, 50),
-    [`${ecosystemId}m`]: new THREE.Vector3(75, 0, 50),
-    
-    // Row 4 (Front row) - Z = 150
-    [`${ecosystemId}n`]: new THREE.Vector3(-75, 0, 150),
-    [`${ecosystemId}o`]: new THREE.Vector3(-25, 0, 150),
-    [`${ecosystemId}p`]: new THREE.Vector3(25, 0, 150),
-    [`${ecosystemId}q`]: new THREE.Vector3(75, 0, 150)
+    [`${sceneId}a`]: new THREE.Vector3(0, 0, -167), 
+    [`${sceneId}b`]: new THREE.Vector3(0, 0, -100),   
+    [`${sceneId}c`]: new THREE.Vector3(0, 0, -33),    
+    [`${sceneId}d`]: new THREE.Vector3(0, 0, 33),    
+    [`${sceneId}e`]: new THREE.Vector3(0, 0, 100),    
+    [`${sceneId}f`]: new THREE.Vector3(0, 0, 167)
   };
 }
 
@@ -312,8 +296,8 @@ const AREA_POSITIONS = generateAreaPositions(ecosystemId);
 
     // Simple function to get all area IDs
     function getAvailableAreas() {
-      //const suffix = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'o', 'p', 'q'];
-      const suffix = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'o', 'p', 'q'];
+      //const suffix = ['a', 'b', 'c', 'd', 'e', 'f',];
+      const suffix = ['a', 'b', 'c', 'd', 'e', 'f'];
       return suffix.map(s => `${ecosystemId}${s}`);
     }
 
@@ -353,6 +337,14 @@ function init() {
   window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 60);
   window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0 * Math.PI / 180, 0, 'YXZ');
   
+  // Add H key handler for Home
+  window.addEventListener('keydown', (event) => {
+    if (event.key.toLowerCase() === 'h') {
+      // Navigate to site's index.php
+      window.location.href = 'index.php';
+    }
+  });
+
   // Initialize mobile controls using the shared navigation.js
   setTimeout(() => {
     initMobileControls();
@@ -750,35 +742,54 @@ async function loadAreas() {
   console.log(`&#9989; All areas loaded: ${loadedAreas.length} successful`);
 }
 
-     async function loadAreaContent(areaId) {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = `universe/eco-areas/${ecosystemId}/eco${areaId}.js`;        
+// In nature.htm, modify the loadAreaContent function:
+async function loadAreaContent(areaId) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = `universe/eco-areas/${ecosystemId}/eco${areaId}.js`;
+    
+    // Store area position globally before loading the script
+    window.currentAreaPosition = AREA_POSITIONS[areaId] || new THREE.Vector3(0, 0, 0);
+    window.currentAreaId = areaId;
+    
+    script.onload = () => {
+      // Wait a frame to ensure the area group is created
+      setTimeout(() => {
+        const areaGroup = scene.getObjectByName(`eco-area-${areaId}`);
+        if (areaGroup) {
+          console.log(`&#9989; Found area group: eco-area-${areaId} with ${areaGroup.children.length} children`);
+          
+          // Position the entire area group at world coordinates
+          const areaPosition = AREA_POSITIONS[areaId];
+          areaGroup.position.copy(areaPosition);
+          
+          // Set up a transform for local-to-world conversion
+          areaGroup.updateMatrixWorld(true);
+          
+          currentAreas.push(areaId);
+          console.log(`&#9989; Area ${areaId} loaded and positioned at:`, areaPosition);
+          resolve();
+        } else {
+          console.error(`&#10060; Area group eco-area-${areaId} not found after loading script`);
+          reject(new Error(`Area group not found: eco-area-${areaId}`));
+        }
         
-        script.onload = () => {
-          // Wait a frame to ensure the area group is created
-          setTimeout(() => {
-            const areaGroup = scene.getObjectByName(`ecosystem-area-${areaId}`);
-            if (areaGroup) {
-              console.log(`&#9989; Found area group: area-${areaId} with ${areaGroup.children.length} children`);
-              positionArea(areaId);
-              currentAreas.push(areaId);
-              console.log(`&#9989; Area ${areaId} loaded successfully`);
-              resolve();
-            } else {
-              console.error(`&#10060; Area group area-${areaId} not found after loading script`);
-              reject(new Error(`Area group not found: area-${areaId}`));
-            }
-          }, 0);
-        };
-        
-        script.onerror = () => {
-          reject(new Error(`Area ${areaId} file not found`));
-        };
-        
-        document.head.appendChild(script);
-      });
-    }
+        // Clean up global variables
+        delete window.currentAreaPosition;
+        delete window.currentAreaId;
+      }, 0);
+    };
+    
+    script.onerror = () => {
+      // Clean up global variables on error too
+      delete window.currentAreaPosition;
+      delete window.currentAreaId;
+      reject(new Error(`Area ${areaId} file not found`));
+    };
+    
+    document.head.appendChild(script);
+  });
+}
 
     function positionArea(areaId) {
       const areaGroup = scene.getObjectByName(`ecosystem-area-${areaId}`);
