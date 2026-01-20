@@ -192,7 +192,21 @@
     // Get ecosystemId from URL - fixed to handle numeric IDs
     const urlId = new URLSearchParams(window.location.search).get('id');
     const ecosystemId = urlId || 'default';
+    
     console.log(`&#127757; URL id parameter: ${urlId}, ecosystemId: ${ecosystemId}`);
+    // Set dynamic title based on villageId
+    
+    const TITLE_CONFIG = {
+      'default': 'ARville Virtual Village',
+      '1': 'Sharks and Rays',
+      '2': 'Raptor Island',
+      '3': 'ARville Toy World',
+      '4': 'ARville Robot City'
+    };
+    
+    // Set the page title
+    document.title = TITLE_CONFIG[ecosystemId] || TITLE_CONFIG['default'];
+    console.log(`&#128221; Set page title to: ${document.title}`);
 
     // Texture configuration based on ecosystemId - use numeric keys for ?id=1, ?id=2, etc.
     const TEXTURE_CONFIG = {
