@@ -314,7 +314,7 @@ const AREA_POSITIONS = generateAreaPositions(villageId);
     // Simple function to get all area IDs
     function getAvailableAreas() {
       //const suffix = ['a', 'b', 'c', 'd', 'e', 'f'];
-      const suffix = ['a', ];
+      const suffix = ['a', 'b', 'c', 'd', 'e', 'f'];
       return suffix.map(s => `${villageId}${s}`);
     }
 
@@ -789,20 +789,36 @@ async function loadAreas() {
       });
     }
 
-    function positionArea(areaId) {
-      const areaGroup = scene.getObjectByName(`village2-area-${areaId}`);
-      if (areaGroup && AREA_POSITIONS[areaId]) {
+
+// Replace the current positionArea function with this:
+function positionArea(areaId) {
+    const areaGroup = scene.getObjectByName(`village2-area-${areaId}`);
+    if (areaGroup && AREA_POSITIONS[areaId]) {
         const areaPosition = AREA_POSITIONS[areaId];
+        
+        // Store the original local positions of all objects
+        areaGroup.traverse((child) => {
+            if (child !== areaGroup && child.position) {
+                // Store original local position in userData
+                if (!child.userData.originalLocalPosition) {
+                    child.userData.originalLocalPosition = child.position.clone();
+                }
+            }
+        });
+        
+        // Position the area group at world coordinates
         areaGroup.position.copy(areaPosition);
+        
         console.log(`&#128205; Positioned area ${areaId} at:`, areaPosition);
         console.log(`&#128205; Area group has ${areaGroup.children.length} children`);
         
         // Force update of world matrices
         areaGroup.updateMatrixWorld(true);
-      } else {
+    } else {
         console.error(`&#10060; Could not position area ${areaId}`);
-      }
     }
+}
+
 
     function onWindowResize() {
       camera.aspect = window.innerWidth / window.innerHeight;
