@@ -184,7 +184,7 @@ function getARvilleWorlds() {
     return [
         'zoo' => [
             'name' => 'ARville Zoo', 
-            'desc' => 'Zoology', 
+            'desc' => 'Terrestrial Zoology', 
             'image' => 'vw-zoo.jpg',
             'link' => '../zoo1.htm'
         ],
@@ -195,7 +195,7 @@ function getARvilleWorlds() {
             'link' => '../museum.htm?id=1'
         ],
         'ocean' => [
-            'name' => 'Under the Sea', 
+            'name' => 'Shark Lair', 
             'desc' => 'Marine Biology', 
             'image' => 'vw-ocean.jpg',
             'link' => '../nature.htm?id=1'
@@ -206,17 +206,23 @@ function getARvilleWorlds() {
             'image' => 'vw-forest-park.jpg',
             'link' => '../park1.htm'
         ],
-        'raptor island' => [
-             'name' => 'Raptor Island', 
-             'desc' => 'Mesozoic Era', 
-             'image' => 'vw-raptor.jpg',
-             'link' => '../nature.htm?id=2'
+        'coral reef' => [
+            'name' => 'Rainbow Reef', 
+            'desc' => 'Marine Biology', 
+            'image' => 'vw-coral-reefs.jpg',
+            'link' => '../nature.htm?id=3'
         ],
         'farm' => [
             'name' => 'Farm Village', 
             'desc' => 'Agriculture', 
             'image' => 'vw-farm.jpg',
-            'link' => '../farm.htm?id=6'
+            'link' => '../village2.htm?id=1'
+        ],
+        'raptor island' => [
+             'name' => 'Raptor Island', 
+             'desc' => 'Prehistoric Biology', 
+             'image' => 'vw-raptor.jpg',
+             'link' => '../nature.htm?id=2'
         ],
         'toy world' => [
             'name' => 'Toy World', 
@@ -224,12 +230,6 @@ function getARvilleWorlds() {
             'image' => 'vw-toy-world.jpg',
             'link' => '../village.htm?id=3'
         ],
-        'candy land' => [
-            'name' => 'Candy Land', 
-            'desc' => 'Fantasy', 
-            'image' => 'vw-candyland.jpg',
-            'link' => '../village.htm?id=1'
-        ]
     ];
 }
 ?>
@@ -748,136 +748,140 @@ function getARvilleWorlds() {
             display: none !important;
         }
         
-        /* ===== NEW: EXPLORE ARVILLE WORLDS STYLES ===== */
-        .world-selector {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 10px;
-        }
-        
-        /* Optimized virtual world card spacing */
-        .world-option {
-            background: #F8F9FF;
-            border: 3px solid #E0E0E0;
-            border-radius: 15px;
-            padding: 12px; /* Reduced padding */
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start; /* Changed from center to flex-start */
-            min-height: 220px; /* Slightly increased height */
-            height: 100%;
-        }
-        
-        .world-option:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary-blue);
-        }
-        
-        .world-thumbnail {
-            width: 100%;
-            height: 110px; /* Slightly reduced height */
-            margin-bottom: 8px; /* Reduced margin */
-            border-radius: 10px;
-            overflow: hidden;
-            background: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0; /* Prevent shrinking */
-        }
-        
-        .world-thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 10px;
-        }
-        
-        /* Placeholder styling */
-        .thumbnail-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-            font-size: 0.9rem;
-        }
-        
-        .thumbnail-placeholder i {
-            font-size: 2.5rem;
-            margin-bottom: 5px;
-        }
-        
-        .world-info {
-            text-align: center;
-            margin-top: 0;
-            flex-grow: 1; /* Allow content to fill space */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; /* Distribute space evenly */
-            width: 100%;
-            padding: 0 5px; /* Small side padding */
-        }
-        
-        .world-info h3 {
-            font-size: 1rem; /* Slightly smaller */
-            margin-bottom: -18px; /* Reduced margin */
-            color: var(--text-dark);
-            line-height: 1.2;
-            min-height: 2.4em; /* Ensure consistent height for 2 lines */
-            display: -webkit-box;
-            -webkit-line-clamp: 2; /* Limit to 2 lines */
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        .world-subtitle {
-            font-size: 0.85rem; /* Smaller font */
-            color: #666;
-            margin-bottom: 10px; /* Added margin for separation */
-            line-height: 1.2;
-            font-weight: 500;
-            min-height: 1.2em; /* Ensure consistent height */
-        }
-        
-        .see-world-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            background-color: #FDD473;
-            color: #2C3E50 !important;
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            transition: all 0.3s;
-            margin-top: auto; /* Push to bottom */
-            width: 100%;
-            max-width: 120px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .see-world-link:hover {
-            background-color: #FA7C1F;
-            transform: translateY(-2px);
-            color: white !important;
-            text-decoration: none;
-        }
-        
-        .see-world-link i {
-            font-size: 0.7rem;
-        }
+/* ===== VIRTUAL WORLD SELECTOR ===== */
+.world-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 10px;
+}
+
+/* COMPACT virtual world card - REDUCED SPACING */
+.world-option {
+    background: #F8F9FF;
+    border: 3px solid #E0E0E0;
+    border-radius: 15px;
+    padding: 10px 8px !important; /* Reduced padding */
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 170px !important; /* SIGNIFICANTLY REDUCED height */
+    height: 100%;
+}
+
+.world-option:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-blue);
+}
+
+.world-option.selected {
+    border-color: var(--secondary-green);
+    background: #E8F5E9;
+}
+
+.world-thumbnail {
+    width: 100%;
+    height: 120px !important; /* SIGNIFICANTLY REDUCED height */
+    margin-bottom: 5px !important; /* Reduced margin */
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.world-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* Placeholder styling */
+.thumbnail-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.thumbnail-placeholder i {
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+}
+
+/* COMPACT WORLD INFO CONTAINER - MINIMAL SPACING */
+.world-info {
+    text-align: center;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 0 !important; /* Remove padding */
+    margin: 0 !important; /* Remove margins */
+    justify-content: space-between;
+    height: calc(100% - 90px); /* Fill remaining space after thumbnail */
+}
+
+/* TIGHT TITLE STYLING */
+.world-info h3 {
+    font-size: 0.9rem !important;
+    margin: 5px 0 !important; /* Minimal vertical margin */
+    color: var(--text-dark);
+    line-height: 1.1 !important; /* Very tight line height */
+    min-height: 1.8em !important; /* Reduced minimum height */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    padding: 0 !important;
+    font-weight: bold;
+}
+
+/* COMPACT "SEE WORLD" LINK - TIGHT TO TITLE */
+.see-world-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background-color: #FDD473;
+    color: #2C3E50 !important;
+    text-decoration: none;
+    padding: 3px 8px !important; /* Minimal padding */
+    border-radius: 6px;
+    font-size: 0.7rem !important; /* Smaller font */
+    font-weight: bold;
+    transition: all 0.3s;
+    margin-top: 4px !important; /* Very small top margin */
+    width: 100%;
+    max-width: 100px; /* Smaller width */
+    margin-left: auto;
+    margin-right: auto;
+    height: 30px !important; /* Smaller height */
+    flex-shrink: 0; /* Don't shrink */
+}
+
+.see-world-link:hover {
+    background-color: #FA7C1F;
+    transform: translateY(-2px);
+    color: white !important;
+    text-decoration: none;
+}
+
+.see-world-link i {
+    font-size: 0.6rem !important; /* Smaller icon */
+}
+
         
         /* ===== MOBILE RESPONSIVE (SAME AS teacher-dashboard.php) ===== */
         @media (max-width: 768px) {
@@ -1297,9 +1301,8 @@ function getARvilleWorlds() {
                         </div>
                         <div class="world-info">
                             <h3><?php echo $world['name']; ?></h3>
-                            <p class="world-subtitle"><?php echo $world['desc']; ?></p>
                             <a href="<?php echo $world['link']; ?>" target="_blank" class="see-world-link" onclick="event.stopPropagation();">
-                                <i class="fas fa-external-link-alt"></i> Explore World
+                                <i class="fas fa-external-link-alt"></i> See World
                             </a>
                         </div>
                     </div>
