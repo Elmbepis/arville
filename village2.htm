@@ -864,6 +864,14 @@ function animate() {
         }
     });
     
+	if (window.windmillBlades) {
+        window.windmillBlades.rotation.z += 0.015; // Z-axis rotation
+    }
+    
+	if (window.windmillBlades2) {
+        window.windmillBlades2.rotation.z += 0.01;
+    }
+                
     // ADD ONLY THIS LINE FOR ModelPathSystem
     if (window.ModelPathSystem && window.ModelPathSystem.updateModelAnimations) {
         window.ModelPathSystem.updateModelAnimations(delta);
