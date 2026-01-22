@@ -25,6 +25,18 @@ window.animationAudioMappings = {
     'leopard': {
         'Roarning': 'universe/sounds/zoo/leopard1.mp3',
         'Attack Right Paw': 'universe/sounds/zoo/leopard2.mp3'
+    },
+    
+    'trex': {
+        'Rex|Idle1B': 'universe/sounds/nature/trex.mp3',
+    },
+    
+    'spino': {
+        'Spino|Idle1B': 'universe/sounds/nature/spino.mp3',
+    },
+    
+    'tric': {
+        'Tric|Idle1B': 'universe/sounds/nature/tric.mp3',
     }
     
     // Add new animal mappings here as needed

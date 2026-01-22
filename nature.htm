@@ -157,8 +157,8 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="universe/js/GLTFLoader.js"></script>
-  <script src="universe/js/animation-controller.js"></script>
   <script src="universe/js/audio-mappings.js"></script>
+  <script src="universe/js/animation-controller.js"></script>
   <script src="universe/js/navigation.js"></script>
   <script src="universe/obj_create_park.js"></script>
   <script src="universe/obj_create_house.js"></script>
@@ -856,6 +856,10 @@ function animate() {
         });
     }
     
+    if (window.animationController) {
+    window.animationController.update(camera); // This passes the camera!
+	}
+
     scene.traverse((object) => {
         if (object.userData && object.userData.type === 'bouncing_ball' && object.update) {
             object.update(delta);
