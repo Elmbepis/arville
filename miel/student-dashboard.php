@@ -194,17 +194,17 @@ function getARvilleWorlds() {
             'image' => 'vw-museum.jpg',
             'link' => '../museum.htm?id=1'
         ],
+        'robot city' => [
+            'name' => 'Robot City', 
+            'desc' => 'Tech', 
+            'image' => 'vw-robot-city.jpg',
+            'link' => '../village.htm?id=4'
+        ],
         'ocean' => [
             'name' => 'Shark Lair', 
             'desc' => 'Marine Biology', 
             'image' => 'vw-ocean.jpg',
             'link' => '../nature.htm?id=1'
-        ],
-        'forest park' => [
-            'name' => 'Forest Park', 
-            'desc' => 'Botany', 
-            'image' => 'vw-forest-park.jpg',
-            'link' => '../park1.htm'
         ],
         'coral reef' => [
             'name' => 'Rainbow Reef', 

@@ -1071,29 +1071,29 @@ if (!isset($_GET['created'])) {
                     <div class="world-selector">
                         <?php
                         $worlds = [
-                            'zoo' => [
-                                'name' => 'ARville Zoo', 
-                                'desc' => 'Terrestrial Zoology', 
-                                'image' => 'vw-zoo.jpg',
-                                'link' => '../zoo1.htm'
-                            ],
-                            'museum' => [
-                                'name' => 'ARVille Museum', 
-                                'desc' => 'History & Art', 
-                                'image' => 'vw-museum.jpg',
-                                'link' => '../museum.htm?id=1'
-                            ],
-                            'ocean' => [
-                                'name' => 'Shark Lair', 
-                                'desc' => 'Marine Biology', 
-                                'image' => 'vw-ocean.jpg',
-                                'link' => '../nature.htm?id=1'
-                            ],
-        'forest park' => [
-            'name' => 'Forest Park', 
-            'desc' => 'Botany', 
-            'image' => 'vw-forest-park.jpg',
-            'link' => '../park1.htm'
+        'zoo' => [
+            'name' => 'ARville Zoo', 
+            'desc' => 'Terrestrial Zoology', 
+            'image' => 'vw-zoo.jpg',
+            'link' => '../zoo1.htm'
+        ],
+        'museum' => [
+            'name' => 'ARVille Museum', 
+            'desc' => 'History & Art', 
+            'image' => 'vw-museum.jpg',
+            'link' => '../museum.htm?id=1'
+        ],
+        'robot city' => [
+            'name' => 'Robot City', 
+            'desc' => 'Tech', 
+            'image' => 'vw-robot-city.jpg',
+            'link' => '../village.htm?id=4'
+        ],
+        'ocean' => [
+            'name' => 'Shark Lair', 
+            'desc' => 'Marine Biology', 
+            'image' => 'vw-ocean.jpg',
+            'link' => '../nature.htm?id=1'
         ],
         'coral reef' => [
             'name' => 'Rainbow Reef', 
