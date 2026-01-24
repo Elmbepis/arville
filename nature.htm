@@ -176,7 +176,7 @@
   <script>
     let scene, camera, renderer;
     const clock = new THREE.Clock();
-    const EYE_HEIGHT = 2.5;
+    const EYE_HEIGHT = 5;
     let currentAreas = [];
     let isRiding = false;
     let ridePath = [];
@@ -344,7 +344,7 @@ function init() {
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
   //camera.position.set(0, EYE_HEIGHT, 60); 
   //camera.rotation.set(0, 0 * Math.PI / 180, 0);
-  camera.position.set(0, EYE_HEIGHT, 60); 
+  camera.position.set(0, EYE_HEIGHT, -100); 
   camera.rotation.set(0, 0 * Math.PI / 180, 0);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
