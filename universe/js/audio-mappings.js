@@ -37,6 +37,10 @@ window.animationAudioMappings = {
     
     'tric': {
         'Tric|Idle1B': 'universe/sounds/nature/tric.mp3',
+    },
+    
+    'brach': {
+        'Brach|IdleB': 'universe/sounds/nature/brach.mp3',
     }
     
     // Add new animal mappings here as needed
