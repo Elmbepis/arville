@@ -160,6 +160,10 @@ $smallCategories = [
     ["title" => "ARville Zoo", "tagline" => "A wildlife wonderland where every creature captivates imagination", "icon" => "zoo1a.jpg", "hoverIcon" => "zoo1b.jpg", "link" => "zoo1.htm"],
     ["title" => "ARville Forest Park", "tagline" => "A serene sanctuary where wilderness meets curated beauty", "icon" => "park1a.jpg", "hoverIcon" => "park1b.jpg", "link" => "park1.htm"],
     ["title" => "ARville Museum of Fine Arts", "tagline" => "A gathering of the greatest masterpieces in human history", "icon" => "museum1a.jpg", "hoverIcon" => "museum1b.jpg", "link" => "museum.htm?id=1"],
+    ["title" => "Raptor Island 1", "tagline" => "Where dinosaurs roam once again", "icon" => "raptor1a.jpg", "hoverIcon" => "raptor1b.jpg", "link" => "nature.htm?id=2"],
+    ["title" => "Shark Lair", "tagline" => "Where ocean's chondrichthyan predators live", "icon" => "sharka.jpg", "hoverIcon" => "sharkb.jpg", "link" => "nature.htm?id=1"],
+    ["title" => "Rainbow Reef", "tagline" => "A vibrant undersea paradise of colorful creatures", "icon" => "reef1a.jpg", "hoverIcon" => "reef1b.jpg", "link" => "nature.htm?id=3"],
+    ["title" => "Arville Farm", "tagline" => "A harvest haven where students explore the world of farming", "icon" => "farma.jpg", "hoverIcon" => "farmb.jpg", "link" => "village2.htm?id=1"],
     ["title" => "Kids' Horror Room # 1", "tagline" => "Dancing with Vampirette and Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
     ["title" => "Kids' Horror Room # 2", "tagline" => "Dancing with Clown and Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
     ["title" => "Kids' Horror Room # 3", "tagline" => "Dancing with Zombie and Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
@@ -168,7 +172,7 @@ $smallCategories = [
     ["title" => "Kids' Horror Yard # 3", "tagline" => "Dancing with Teddy and Frankie", "icon" => "yard3a.jpg", "hoverIcon" => "yard3b.jpg", "link" => "yard.htm?id=3"],
 ];
 
-for ($i = 0; $i < 9; $i++) {
+for ($i = 0; $i < 13; $i++) {
     $category = $smallCategories[$i];
     echo "<div class='col-lg-3 col-md-6 col-sm-6'>"; // 4 columns on large screens, 2 columns on medium
     echo "    <div class='small-category text-center'>";
