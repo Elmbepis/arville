@@ -163,7 +163,7 @@ $smallCategories = [
     ["title" => "Shark Lair", "tagline" => "Where ocean's chondrichthyan predators live", "icon" => "sharka.jpg", "hoverIcon" => "sharkb.jpg", "link" => "nature.htm?id=1"],
     ["title" => "Rainbow Reef", "tagline" => "A vibrant undersea paradise of colorful creatures", "icon" => "reef1a.jpg", "hoverIcon" => "reef1b.jpg", "link" => "nature.htm?id=3"],
     ["title" => "Arville Farm", "tagline" => "A harvest haven where students explore the world of farming", "icon" => "farma.jpg", "hoverIcon" => "farmb.jpg", "link" => "village2.htm?id=1"],
-    ["title" => "Medieval Village", "tagline" => "A world of stone and timbered houses where time flows at the pace of nature", "icon" => "medievala.jpg", "hoverIcon" => "medievalb.jpg", "link" => "village2.htm?id=2"],
+    ["title" => "Medieval Square", "tagline" => "A 15th century community bustling with cobbled commerce", "icon" => "medievala.jpg", "hoverIcon" => "medievalb.jpg", "link" => "village2.htm?id=2"],
     ["title" => "Kids' Horror Room # 1", "tagline" => "Dancing with Vampirette and Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
     ["title" => "Kids' Horror Room # 2", "tagline" => "Dancing with Clown and Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
     ["title" => "Kids' Horror Room # 3", "tagline" => "Dancing with Zombie and Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],

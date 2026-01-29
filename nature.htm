@@ -201,7 +201,7 @@
       '1': 'Shark Lair',
       '2': 'Raptor Island',
       '3': 'Rainbow Reef',
-      '4': 'ARville Robot City'
+      '4': 'Virtual Cave'
     };
     
     // Set the page title
@@ -227,8 +227,8 @@
         roads: 'universe/textures/sand2.jpg'
       },
       '4': {
-        ground: 'universe/textures/grass1.jpg',
-        roads: 'universe/textures/concrete2.jpg'
+        ground: 'universe/textures/boulder14.jpg',
+        roads: 'universe/textures/boulder14b.jpg'
       },
     };
 
@@ -342,14 +342,24 @@ function init() {
   scene = new THREE.Scene();
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  //camera.position.set(0, EYE_HEIGHT, 60); 
-  //camera.rotation.set(0, 0 * Math.PI / 180, 0);
   camera.position.set(0, EYE_HEIGHT, 60); 
   camera.rotation.set(0, 0 * Math.PI / 180, 0);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x87CEEB); // Sky blue background
+  
+  // === MODIFIED: Set background based on ecosystemId ===
+  if (ecosystemId === '4') {
+    // Cave ecosystem - pitch black background
+    renderer.setClearColor(0x000000);
+    console.log('&#128371;&#65039; Cave ecosystem (id=4): Setting background to pitch black');
+  } else {
+    // All other ecosystems - sky blue background
+    renderer.setClearColor(0x87CEEB);
+    console.log(`&#127780;&#65039; Ecosystem ${ecosystemId}: Setting background to sky blue`);
+  }
+  // === END MODIFICATION ===
+  
   document.body.appendChild(renderer.domElement);
 
   window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 60);
@@ -451,7 +461,6 @@ function init() {
   setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.8);
   window.addEventListener("resize", onWindowResize);
 }
-
    
  
 function updateRide() {
