@@ -164,6 +164,7 @@ $smallCategories = [
     ["title" => "Rainbow Reef", "tagline" => "A vibrant undersea paradise of colorful creatures", "icon" => "reef1a.jpg", "hoverIcon" => "reef1b.jpg", "link" => "nature.htm?id=3"],
     ["title" => "Arville Farm", "tagline" => "A harvest haven where students explore the world of farming", "icon" => "farma.jpg", "hoverIcon" => "farmb.jpg", "link" => "village2.htm?id=1"],
     ["title" => "Medieval Square", "tagline" => "A 15th century community bustling with cobbled commerce", "icon" => "medievala.jpg", "hoverIcon" => "medievalb.jpg", "link" => "village2.htm?id=2"],
+    ["title" => "70's Strip Mall", "tagline" => "Your portal to vintage vibes and classic convenience, preserved in time", "icon" => "strip-malla.jpg", "hoverIcon" => "strip-mallb.jpg", "link" => "village2.htm?id=3"],
     ["title" => "Spooky Mansion Letter Hunt: A-H", "tagline" => "Find A-H objects with Vampirette & Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
     ["title" => "Creepy Room Letter Hunt: I-Q", "tagline" => "Find I-Q objects with Clown & Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
     ["title" => "Secret Attic Letter Hunt: R-Z", "tagline" => "Find R-Z objects with Zombie & Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
@@ -172,7 +173,7 @@ $smallCategories = [
     ["title" => "Friendly Monster Mood Match", "tagline" => "Name feelings like joy and surprise with Redhot and Bones", "icon" => "yard2a.jpg", "hoverIcon" => "yard2b.jpg", "link" => "yard.htm?id=2"],
     ];
 
-for ($i = 0; $i < 14; $i++) {
+for ($i = 0; $i < 15; $i++) {
     $category = $smallCategories[$i];
     echo "<div class='col-lg-3 col-md-6 col-sm-6'>"; // 4 columns on large screens, 2 columns on medium
     echo "    <div class='small-category text-center'>";
