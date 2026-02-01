@@ -192,7 +192,7 @@
     const villageId = urlId || 'default';
     console.log(`&#127757; URL id parameter: ${urlId}, villageId: ${villageId}`);
     
-    const EYE_HEIGHT = villageId === '3' ? 1.6 : 3;
+    const EYE_HEIGHT = villageId === '3' ? 2 : 3;
 
     // Set dynamic title based on villageId
     const TITLE_CONFIG = {
@@ -601,120 +601,123 @@ function toggleRide() {
       console.log('&#9989; Village base created successfully');
     }
 
-    function createRectangularPathway() {
-      // Create a rectangular pathway around the village
-      const pathwayWidth = 6;
-      const pathwayHeight = 0.05;
+function createRectangularPathway() {
+  // Create a rectangular pathway around the village
+  // MODIFIED: Make roads 1.5X wider for id=3
+  const pathwayWidth = villageId === '3' ? 8 : 6;  // 1.5X wider for id=3
+  const pathwayHeight = 0.05;
+  
+  // Use PLACE dimensions
+  const rectWidth = PLACE_WIDTH - 90;
+  const rectDepth = PLACE_DEPTH - 90;
+  
+  // Create road material - using the texture based on villageId
+  const roadMat = new THREE.MeshLambertMaterial({ 
+      color: 0x666666 // Default road color
+  });
+  
+  // Load road texture based on villageId
+  if (window.textureLoader) {
+      try {
+          const roadTexture = window.textureLoader.load(currentTextures.roads);
+          roadTexture.wrapS = THREE.RepeatWrapping;
+          roadTexture.wrapT = THREE.RepeatWrapping;
+          roadTexture.repeat.set(4, 4); 
+          roadMat.map = roadTexture;
+          console.log(`&#9989; Road texture loaded: ${currentTextures.roads}`);
+      } catch (error) {
+          console.error(`&#10060; Failed to load road texture: ${currentTextures.roads}, using default color:`, error);
+      }
+  }
+  
+  const halfRectWidth = rectWidth / 2;
+  const halfRectDepth = rectDepth / 2;
+  const adjustedHalfWidth = halfRectWidth - pathwayWidth/2;
+  const adjustedHalfDepth = halfRectDepth - pathwayWidth/2;
+  
+  // Helper function to create pathway segments with proper texture scaling
+  function createPathSegment(width, depth) {
+      const geometry = new THREE.PlaneGeometry(width, depth);
+      const uvAttribute = geometry.attributes.uv;
       
-      // Use PLACE dimensions
-      const rectWidth = PLACE_WIDTH - 90;
-      const rectDepth = PLACE_DEPTH - 90;
+      // Calculate how many times the texture should repeat based on segment size
+      // Using pathwayWidth as the base unit for texture scale
+      const repeatX = width / pathwayWidth;
+      const repeatY = depth / pathwayWidth;
       
-      // Create road material - using the texture based on villageId
-      const roadMat = new THREE.MeshLambertMaterial({ 
-          color: 0x666666 // Default road color
-      });
-      
-      // Load road texture based on villageId
-      if (window.textureLoader) {
-          try {
-              const roadTexture = window.textureLoader.load(currentTextures.roads);
-              roadTexture.wrapS = THREE.RepeatWrapping;
-              roadTexture.wrapT = THREE.RepeatWrapping;
-              roadTexture.repeat.set(4, 4); 
-              roadMat.map = roadTexture;
-              console.log(`&#9989; Road texture loaded: ${currentTextures.roads}`);
-          } catch (error) {
-              console.error(`&#10060; Failed to load road texture: ${currentTextures.roads}, using default color:`, error);
-          }
+      // Scale UV coordinates to repeat the texture properly
+      for (let i = 0; i < uvAttribute.count; i++) {
+          const u = uvAttribute.getX(i);
+          const v = uvAttribute.getY(i);
+          uvAttribute.setXY(i, u * repeatX, v * repeatY);
       }
       
-      const halfRectWidth = rectWidth / 2;
-      const halfRectDepth = rectDepth / 2;
-      const adjustedHalfWidth = halfRectWidth - pathwayWidth/2;
-      const adjustedHalfDepth = halfRectDepth - pathwayWidth/2;
-      
-      // Helper function to create pathway segments with proper texture scaling
-      function createPathSegment(width, depth) {
-          const geometry = new THREE.PlaneGeometry(width, depth);
-          const uvAttribute = geometry.attributes.uv;
-          
-          // Calculate how many times the texture should repeat based on segment size
-          // Using pathwayWidth as the base unit for texture scale
-          const repeatX = width / pathwayWidth;
-          const repeatY = depth / pathwayWidth;
-          
-          // Scale UV coordinates to repeat the texture properly
-          for (let i = 0; i < uvAttribute.count; i++) {
-              const u = uvAttribute.getX(i);
-              const v = uvAttribute.getY(i);
-              uvAttribute.setXY(i, u * repeatX, v * repeatY);
-          }
-          
-          uvAttribute.needsUpdate = true;
-          return geometry;
-      }
-      
-      // Top border (positive Z) - LONGER SIDE
-      const topPath = new THREE.Mesh(
-          createPathSegment(rectWidth, pathwayWidth),
-          roadMat
-      );
-      topPath.rotation.x = -Math.PI / 2;
-      topPath.position.set(0, pathwayHeight, adjustedHalfDepth);
-      
-      // Bottom border (negative Z) - LONGER SIDE
-      const bottomPath = new THREE.Mesh(
-          createPathSegment(rectWidth, pathwayWidth),
-          roadMat
-      );
-      bottomPath.rotation.x = -Math.PI / 2;
-      bottomPath.position.set(0, pathwayHeight, -adjustedHalfDepth);
-      
-      // Left border (negative X) - SHORTER SIDE
-      const leftPath = new THREE.Mesh(
-          createPathSegment(pathwayWidth, rectDepth - 6),
-          roadMat
-      );
-      leftPath.rotation.x = -Math.PI / 2;
-      leftPath.position.set(-adjustedHalfWidth, pathwayHeight, 0);
-      
-      // Right border (positive X) - SHORTER SIDE
-      const rightPath = new THREE.Mesh(
-          createPathSegment(pathwayWidth, rectDepth - 6),
-          roadMat
-      );
-      rightPath.rotation.x = -Math.PI / 2;
-      rightPath.position.set(adjustedHalfWidth, pathwayHeight, 0);
-      
-      // Add border paths to scene
-      scene.add(topPath, bottomPath, leftPath, rightPath);
-      
-      // Add 2 additional short roads parallel to the shorter sides (horizontal roads)
-      const shortRoadWidth = 6;
-      const spacing = (rectDepth - 6) / 6;
-      
-      // First short road (upper third)
-      const shortRoad1 = new THREE.Mesh(
-          createPathSegment(rectWidth - 6, shortRoadWidth),
-          roadMat
-      );
-      shortRoad1.rotation.x = -Math.PI / 2;
-      shortRoad1.position.set(0, pathwayHeight + 0.001, spacing);
-      
-      // Second short road (lower third)
-      const shortRoad2 = new THREE.Mesh(
-          createPathSegment(rectWidth - 6, shortRoadWidth),
-          roadMat
-      );
-      shortRoad2.rotation.x = -Math.PI / 2;
-      shortRoad2.position.set(0, pathwayHeight + 0.001, -spacing);
-      
-      // Add short roads to scene
-      scene.add(shortRoad1, shortRoad2);
-      
-      console.log('&#128295; Rectangular pathway created with proper texture scaling');
-    }
+      uvAttribute.needsUpdate = true;
+      return geometry;
+  }
+  
+  // Top border (positive Z) - LONGER SIDE
+  const topPath = new THREE.Mesh(
+      createPathSegment(rectWidth, pathwayWidth),
+      roadMat
+  );
+  topPath.rotation.x = -Math.PI / 2;
+  topPath.position.set(0, pathwayHeight, adjustedHalfDepth);
+  
+  // Bottom border (negative Z) - LONGER SIDE
+  const bottomPath = new THREE.Mesh(
+      createPathSegment(rectWidth, pathwayWidth),
+      roadMat
+  );
+  bottomPath.rotation.x = -Math.PI / 2;
+  bottomPath.position.set(0, pathwayHeight, -adjustedHalfDepth);
+  
+  // Left border (negative X) - SHORTER SIDE
+  const leftPath = new THREE.Mesh(
+      createPathSegment(pathwayWidth, rectDepth - 6),
+      roadMat
+  );
+  leftPath.rotation.x = -Math.PI / 2;
+  leftPath.position.set(-adjustedHalfWidth, pathwayHeight, 0);
+  
+  // Right border (positive X) - SHORTER SIDE
+  const rightPath = new THREE.Mesh(
+      createPathSegment(pathwayWidth, rectDepth - 6),
+      roadMat
+  );
+  rightPath.rotation.x = -Math.PI / 2;
+  rightPath.position.set(adjustedHalfWidth, pathwayHeight, 0);
+  
+  // Add border paths to scene
+  scene.add(topPath, bottomPath, leftPath, rightPath);
+  
+  // Add 2 additional short roads parallel to the shorter sides (horizontal roads)
+  // MODIFIED: Use pathwayWidth for short roads as well
+  const shortRoadWidth = pathwayWidth;  // Use the same width for consistency
+  const spacing = (rectDepth - 6) / 6;
+  
+  // First short road (upper third)
+  const shortRoad1 = new THREE.Mesh(
+      createPathSegment(rectWidth - 6, shortRoadWidth),
+      roadMat
+  );
+  shortRoad1.rotation.x = -Math.PI / 2;
+  shortRoad1.position.set(0, pathwayHeight + 0.001, spacing);
+  
+  // Second short road (lower third)
+  const shortRoad2 = new THREE.Mesh(
+      createPathSegment(rectWidth - 6, shortRoadWidth),
+      roadMat
+  );
+  shortRoad2.rotation.x = -Math.PI / 2;
+  shortRoad2.position.set(0, pathwayHeight + 0.001, -spacing);
+  
+  // Add short roads to scene
+  scene.add(shortRoad1, shortRoad2);
+  
+  console.log(`&#128739;&#65039; Rectangular pathway created with width: ${pathwayWidth} (${villageId === '3' ? '1.5X wider for Commercial Center' : 'standard width'})`);
+}
+
 
 async function loadAreas() {
   const loadingDiv = document.getElementById('loading');
