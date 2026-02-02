@@ -377,13 +377,13 @@ function init() {
 
   // OPTIMIZED NATURAL OUTDOOR LIGHTING
   // 1. Strong hemisphere light with sky/ground colors
-  const hemiLight = new THREE.HemisphereLight(0x88CCFF, 0x228822, 1.2);
+  const hemiLight = new THREE.HemisphereLight(0x88CCFF, 0x228822, 1.5);
   hemiLight.position.set(0, 50, 0);
   scene.add(hemiLight);
 
   // 2. Main sunlight (afternoon sun position)
   const sunLight = new THREE.DirectionalLight(0xFFFFDD, 0.9);
-  sunLight.position.set(30, 40, 20);
+  sunLight.position.set(0, 60, 0);
   sunLight.castShadow = true;
   
   // Optimized shadow settings
