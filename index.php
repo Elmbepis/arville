@@ -1,34 +1,50 @@
 <?php
 
 //Preload mouseover icons
+//Preload mouseover icons
 echo "<script>
         function preloadImages() {
             const images = [
+                // Large category hover images
                 'images/candyland2.jpg',
                 'images/zombiezone2.jpg',
                 'images/toyworld2.jpg',
                 'images/robotcity2.jpg',
-                'images/spacecolony2.jpg', 
+                
+                // Small category hover images
                 'images/zoo1b.jpg',
                 'images/park1b.jpg',
                 'images/museum1b.jpg',
-                'images/room1b.jpg',
-                'images/room2b.jpg',
-                'images/room3b.jpg'
+                'images/raptor1b.jpg',
+                'images/sharkb.jpg',
+                'images/reef1b.jpg',
+                'images/farmb.jpg',
+                'images/medievalb.jpg',
+                'images/strip-mallb.jpg',
+                'images/room11b.jpg',
+                'images/room12b.jpg',
+                'images/room13b.jpg',
                 'images/yard1b.jpg',
                 'images/yard2b.jpg',
                 'images/yard3b.jpg'
             ];
+            
+            console.log('Preloading ' + images.length + ' hover images...');
+            
             images.forEach((src) => {
                 const img = new Image();
                 img.src = src;
+                // Optional: Log any images that fail to load
+                img.onerror = function() {
+                    console.warn('Failed to preload image:', src);
+                };
             });
         }
 
         // Call the preloadImages function when the document is ready
         window.addEventListener('DOMContentLoaded', preloadImages);
     </script>";
-            
+                
 // Responsive homepage structure for ARville Network with Bootstrap integration
 echo "<!DOCTYPE html>";
 echo "<html lang='en'>";
@@ -164,7 +180,7 @@ $smallCategories = [
     ["title" => "Rainbow Reef", "tagline" => "A vibrant undersea paradise of colorful creatures", "icon" => "reef1a.jpg", "hoverIcon" => "reef1b.jpg", "link" => "nature.htm?id=3"],
     ["title" => "Arville Farm", "tagline" => "A harvest haven where students explore the world of farming", "icon" => "farma.jpg", "hoverIcon" => "farmb.jpg", "link" => "village2.htm?id=1"],
     ["title" => "Medieval Square", "tagline" => "A 15th century community bustling with cobbled commerce", "icon" => "medievala.jpg", "hoverIcon" => "medievalb.jpg", "link" => "village2.htm?id=2"],
-    ["title" => "70's Strip Mall", "tagline" => "Your portal to vintage vibes and classic convenience, preserved in time", "icon" => "strip-malla.jpg", "hoverIcon" => "strip-mallb.jpg", "link" => "village2.htm?id=3"],
+    ["title" => "Suburban Strip Mall", "tagline" => "Where neighborhood spirit and modern convenience converge", "icon" => "strip-malla.jpg", "hoverIcon" => "strip-mallb.jpg", "link" => "village2.htm?id=3"],
     ["title" => "Spooky Mansion Letter Hunt: A-H", "tagline" => "Find A-H objects with Vampirette & Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
     ["title" => "Creepy Room Letter Hunt: I-Q", "tagline" => "Find I-Q objects with Clown & Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
     ["title" => "Secret Attic Letter Hunt: R-Z", "tagline" => "Find R-Z objects with Zombie & Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
