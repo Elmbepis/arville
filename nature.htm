@@ -206,7 +206,6 @@
     
     // Set the page title
     document.title = TITLE_CONFIG[ecosystemId] || TITLE_CONFIG['default'];
-    console.log(`&#128221; Set page title to: ${document.title}`);
 
     // Texture configuration based on ecosystemId - use numeric keys for ?id=1, ?id=2, etc.
     const TEXTURE_CONFIG = {
@@ -234,10 +233,6 @@
 
     // Get texture paths for current ecosystemId
     const currentTextures = TEXTURE_CONFIG[ecosystemId] || TEXTURE_CONFIG['default'];
-    console.log(`&#127912; Using textures for ecosystemId: ${ecosystemId}`);
-    console.log(`&#127793; Ground texture: ${currentTextures.ground}`);
-    console.log(`&#128739;&#65039; Road texture: ${currentTextures.roads}`);
-    console.log(`&#128193; Available configs:`, Object.keys(TEXTURE_CONFIG));
 
     // CAMERA_LIMITS is now defined in navigation.js
     
@@ -442,8 +437,6 @@ function init() {
   const overheadLight = new THREE.DirectionalLight(0xFFFFFF, 0.3);
   overheadLight.position.set(0, 25, 0);
   scene.add(overheadLight);
-
-  console.log('&#128161; Natural outdoor lighting: Sun + Sky + 4 cardinal directions + overhead');
 
   // First load obj_create_ecosystem, then create ecosystem and load areas
   loadObjectCreator().then(() => {
@@ -859,21 +852,17 @@ function animate() {
         window.updateAllAnimations(delta);
     }
 
-    if (window.spinningTops && window.spinningTops.length > 0) {
-        window.spinningTops.forEach(top => {
-            if (top && top.update) top.update(delta);
+	if (window.batModels) {
+        window.batModels.forEach((bat, index) => {
+            if (bat.userData && bat.userData.applyZRotation) {
+                bat.userData.applyZRotation.call(bat);
+            }
         });
     }
-    
+                
     if (window.animationController) {
     window.animationController.update(camera); // This passes the camera!
 	}
-
-    scene.traverse((object) => {
-        if (object.userData && object.userData.type === 'bouncing_ball' && object.update) {
-            object.update(delta);
-        }
-    });
     
     renderer.render(scene, camera);
 }
