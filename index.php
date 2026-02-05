@@ -182,7 +182,7 @@ $smallCategories = [
     ["title" => "Rainbow Reef", "tagline" => "A vibrant undersea paradise of colorful creatures", "icon" => "reef1a.jpg", "hoverIcon" => "reef1b.jpg", "link" => "nature.htm?id=3"],
     ["title" => "Arville Farm", "tagline" => "A harvest haven where students explore the world of farming", "icon" => "farma.jpg", "hoverIcon" => "farmb.jpg", "link" => "village2.htm?id=1"],
     ["title" => "Medieval Square", "tagline" => "A 15th century community bustling with cobbled commerce", "icon" => "medievala.jpg", "hoverIcon" => "medievalb.jpg", "link" => "village2.htm?id=2"],
-    ["title" => "Suburban Strip Mall", "tagline" => "Where neighborhood spirit and modern convenience converge", "icon" => "strip-malla.jpg", "hoverIcon" => "strip-mallb.jpg", "link" => "village2.htm?id=3"],
+    ["title" => "70s Suburban Strip Mall", "tagline" => "Your portal to vintage vibes and classic convenience, preserved in time", "icon" => "strip-malla.jpg", "hoverIcon" => "strip-mallb.jpg", "link" => "village2.htm?id=3"],
     ["title" => "Cobra Cavern", "tagline" => "A cave where niche-dwelling animals compete for survival", "icon" => "cavea.jpg", "hoverIcon" => "caveb.jpg", "link" => "nature.htm?id=4"],
     ["title" => "African Savanna", "tagline" => "A sun-kissed grassland where the great circle of life unfolds", "icon" => "savannaa.jpg", "hoverIcon" => "savannab.jpg", "link" => "nature.htm?id=5"],
     ["title" => "Spooky Mansion Letter Hunt: A-H", "tagline" => "Find A-H objects with Vampirette & Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],

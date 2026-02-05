@@ -176,8 +176,6 @@
   <script>
     let scene, camera, renderer;
     const clock = new THREE.Clock();
-    const EYE_HEIGHT = 5;
-    let currentAreas = [];
     let isRiding = false;
     let ridePath = [];
     let currentRidePoint = 0;
@@ -193,6 +191,8 @@
     const urlId = new URLSearchParams(window.location.search).get('id');
     const ecosystemId = urlId || 'default';
     
+	const EYE_HEIGHT = ecosystemId === '6' ? 15 : 5;    let currentAreas = [];
+
     console.log(`&#127757; URL id parameter: ${urlId}, ecosystemId: ${ecosystemId}`);
     // Set dynamic title based on villageId
     
@@ -203,6 +203,7 @@
       '3': 'Rainbow Reef',
       '4': 'Virtual Cave',
       '5': 'African Savanna',
+      '6': 'Cetacean Abyss',
     };
     
     // Set the page title
@@ -233,6 +234,10 @@
       '5': {
         ground: 'universe/textures/soil-grass4.jpg',
         roads: 'universe/textures/soil-grass4b.jpg'
+      },
+      '6': {
+        ground: 'universe/textures/sand4.jpg',
+        roads: 'universe/textures/sand4b.jpg'
       },
     };
 
