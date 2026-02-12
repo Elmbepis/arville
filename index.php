@@ -27,6 +27,7 @@ echo "<script>
                 'images/cetaceanb.jpg',
                 'images/campb.jpg',
                 'images/castleb.jpg',
+                'images/gas-stnb.jpg',
                 'images/room11b.jpg',
                 'images/room12b.jpg',
                 'images/room13b.jpg',
@@ -193,6 +194,7 @@ $smallCategories = [
     ["title" => "African Savanna", "tagline" => "A sun-kissed grassland where the great circle of life unfolds", "icon" => "savannaa.jpg", "hoverIcon" => "savannab.jpg", "link" => "nature.htm?id=5"],
     ["title" => "ARville Scouting Camp", "tagline" => "A piece of virtual wilderness where your magical outdoor adventures never end", "icon" => "campa.jpg", "hoverIcon" => "campb.jpg", "link" => "village2.htm?id=4"],
     ["title" => "Cetacean Cove", "tagline" => "A deep blue sanctuary where ocean giants find shelter", "icon" => "cetaceana.jpg", "hoverIcon" => "cetaceanb.jpg", "link" => "nature.htm?id=6"],
+    ["title" => "Local Gas Station", "tagline" => "A friendly neighborhood stop where thirsty giants roll in to fill up", "icon" => "gas-stna.jpg", "hoverIcon" => "gas-stnb.jpg", "link" => "village2.htm?id=7"],
     ["title" => "Spooky Mansion Letter Hunt: A-H", "tagline" => "Find A-H objects with Vampirette & Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
     ["title" => "Creepy Room Letter Hunt: I-Q", "tagline" => "Find I-Q objects with Clown & Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
     ["title" => "Secret Attic Letter Hunt: R-Z", "tagline" => "Find R-Z objects with Zombie & Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
@@ -201,7 +203,7 @@ $smallCategories = [
     ["title" => "Friendly Monster Mood Match", "tagline" => "Name feelings like joy and surprise with Redhot and Bones", "icon" => "yard2a.jpg", "hoverIcon" => "yard2b.jpg", "link" => "yard.htm?id=2"],
     ];
 
-for ($i = 0; $i < 21; $i++) {
+for ($i = 0; $i < 22; $i++) {
     $category = $smallCategories[$i];
     echo "<div class='col-lg-3 col-md-6 col-sm-6'>"; // 4 columns on large screens, 2 columns on medium
     echo "    <div class='small-category text-center'>";
