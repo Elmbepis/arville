@@ -372,6 +372,7 @@ function init() {
   // Set camera start position based on villageId
   const cameraConfig = CAMERA_START_POSITIONS[villageId] || CAMERA_START_POSITIONS['1'];
   
+  //camera.position.set(0, 4, -90); 
   camera.position.set(cameraConfig.x, cameraConfig.y, cameraConfig.z); 
   camera.rotation.set(0, cameraConfig.rotation * Math.PI / 180, 0);
 
