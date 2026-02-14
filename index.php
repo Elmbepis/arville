@@ -28,6 +28,7 @@ echo "<script>
                 'images/campb.jpg',
                 'images/castleb.jpg',
                 'images/gas-stnb.jpg',
+                'images/marsb.jpg',
                 'images/room11b.jpg',
                 'images/room12b.jpg',
                 'images/room13b.jpg',
@@ -187,7 +188,7 @@ $smallCategories = [
     ["title" => "Rainbow Reef", "tagline" => "A vibrant undersea paradise of colorful creatures", "icon" => "reef1a.jpg", "hoverIcon" => "reef1b.jpg", "link" => "nature.htm?id=3"],
     ["title" => "Arville Farm", "tagline" => "A harvest haven where students explore the world of farming", "icon" => "farma.jpg", "hoverIcon" => "farmb.jpg", "link" => "village2.htm?id=1"],
     ["title" => "Medieval Square", "tagline" => "A 15th century community bustling with cobbled commerce", "icon" => "medievala.jpg", "hoverIcon" => "medievalb.jpg", "link" => "village2.htm?id=2"],
-    ["title" => "70s Suburban Strip Mall", "tagline" => "Your portal to vintage vibes and classic convenience, preserved in time", "icon" => "strip-malla.jpg", "hoverIcon" => "strip-mallb.jpg", "link" => "village2.htm?id=3"],
+    ["title" => "Martian Settlement", "tagline" => "A glimpse of how pioneering humans will soon settle on the rusty soil of Mars", "icon" => "marsa.jpg", "hoverIcon" => "marsb.jpg", "link" => "village2.htm?id=8"],
     ["title" => "Small Medieval Castle", "tagline" => "A piece of virtual wilderness where your magical outdoor adventures never end", "icon" => "castlea.jpg", "hoverIcon" => "castleb.jpg", "link" => "village2.htm?id=5"],
     ["title" => "Cobra Cavern", "tagline" => "A cave where niche-dwelling animals compete for survival", "icon" => "cavea.jpg", "hoverIcon" => "caveb.jpg", "link" => "nature.htm?id=4"],
     ["title" => "ARville Playground", "tagline" => "A kaleidoscope of playful fun and memories where your curiosity runs free", "icon" => "playgrounda.jpg", "hoverIcon" => "playgroundb.jpg", "link" => "village2.htm?id=6"],
@@ -195,6 +196,7 @@ $smallCategories = [
     ["title" => "ARville Scouting Camp", "tagline" => "A piece of virtual wilderness where your magical outdoor adventures never end", "icon" => "campa.jpg", "hoverIcon" => "campb.jpg", "link" => "village2.htm?id=4"],
     ["title" => "Cetacean Cove", "tagline" => "A deep blue sanctuary where ocean giants find shelter", "icon" => "cetaceana.jpg", "hoverIcon" => "cetaceanb.jpg", "link" => "nature.htm?id=6"],
     ["title" => "ARville Motor Stop", "tagline" => "A friendly neighborhood spot where thirsty giants roll in to fill up", "icon" => "gas-stna.jpg", "hoverIcon" => "gas-stnb.jpg", "link" => "village2.htm?id=7"],
+    ["title" => "70s Suburban Strip Mall", "tagline" => "Your portal to vintage vibes and classic convenience, preserved in time", "icon" => "strip-malla.jpg", "hoverIcon" => "strip-mallb.jpg", "link" => "village2.htm?id=3"],
     ["title" => "Spooky Mansion Letter Hunt: A-H", "tagline" => "Find A-H objects with Vampirette & Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
     ["title" => "Creepy Room Letter Hunt: I-Q", "tagline" => "Find I-Q objects with Clown & Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
     ["title" => "Secret Attic Letter Hunt: R-Z", "tagline" => "Find R-Z objects with Zombie & Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
@@ -203,7 +205,7 @@ $smallCategories = [
     ["title" => "Friendly Monster Mood Match", "tagline" => "Name feelings like joy and surprise with Redhot and Bones", "icon" => "yard2a.jpg", "hoverIcon" => "yard2b.jpg", "link" => "yard.htm?id=2"],
     ];
 
-for ($i = 0; $i < 22; $i++) {
+for ($i = 0; $i < 23; $i++) {
     $category = $smallCategories[$i];
     echo "<div class='col-lg-3 col-md-6 col-sm-6'>"; // 4 columns on large screens, 2 columns on medium
     echo "    <div class='small-category text-center'>";
