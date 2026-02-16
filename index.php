@@ -226,12 +226,12 @@ echo "        <div style='height: 30px;'></div>";
 echo "        <div class='row g-4'>";
 
 $miniExperiences = [
-    ["title" => "Spooky Mansion Letter Hunt: A-H", "tagline" => "Find A-H objects with Vampirette & Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
-    ["title" => "Creepy Room Letter Hunt: I-Q", "tagline" => "Find I-Q objects with Clown & Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
-    ["title" => "Secret Attic Letter Hunt: R-Z", "tagline" => "Find R-Z objects with Zombie & Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
-    ["title" => "Full Moon Fun with Numbers: S-Z", "tagline" => "Count to 10 with with Wolfie & Pumpkin", "icon" => "yard1a.jpg", "hoverIcon" => "yard1b.jpg", "link" => "yard.htm?id=1"],
-    ["title" => "Shadowy Quest for Living Things", "tagline" => "Find living things at night with Teddy and Frankie", "icon" => "yard3a.jpg", "hoverIcon" => "yard3b.jpg", "link" => "yard.htm?id=3"],
-    ["title" => "Friendly Monster Mood Match", "tagline" => "Name feelings like joy and surprise with Redhot and Bones", "icon" => "yard2a.jpg", "hoverIcon" => "yard2b.jpg", "link" => "yard.htm?id=2"],
+    ["title" => "Creepy Room Fun", "tagline" => "Vampirette and Witch twirling on creaky floorboards", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
+    ["title" => "Spooky Dungeon Riot", "tagline" => "Clown and Scarecrow busting moves in torchlight", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
+    ["title" => "Secret Attic Frolic", "tagline" => "Zombie and Zombiette grooving among forgotten treasures", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
+    ["title" => "Full Moon Merriment", "tagline" => "Wolfie and Pumpkin shaking on moonlit grass", "icon" => "yard1a.jpg", "hoverIcon" => "yard1b.jpg", "link" => "yard.htm?id=1"],
+    ["title" => "Shadowy Sideshow", "tagline" => "Teddy and Frankie jiggling on cracked ground", "icon" => "yard3a.jpg", "hoverIcon" => "yard3b.jpg", "link" => "yard.htm?id=3"],
+    ["title" => "Lava-hot Jamboree", "tagline" => "Redhot and Bones stomping over steaming stones", "icon" => "yard2a.jpg", "hoverIcon" => "yard2b.jpg", "link" => "yard.htm?id=2"],
 ];
 
 for ($i = 0; $i < 6; $i++) {
