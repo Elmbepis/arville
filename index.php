@@ -227,7 +227,7 @@ echo "        <div class='row g-4'>";
 
 $miniExperiences = [
     ["title" => "Creepy Room Fun", "tagline" => "Vampirette and Witch twirling on creaky floorboards", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
-    ["title" => "Spooky Dungeon Riot", "tagline" => "Clown and Scarecrow busting moves in torchlight", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
+    ["title" => "Spooky Dungeon Riot", "tagline" => "Clown and Scarecrow busting moves in chilly damp air", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
     ["title" => "Secret Attic Frolic", "tagline" => "Zombie and Zombiette grooving among forgotten treasures", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
     ["title" => "Full Moon Merriment", "tagline" => "Wolfie and Pumpkin shaking on moonlit grass", "icon" => "yard1a.jpg", "hoverIcon" => "yard1b.jpg", "link" => "yard.htm?id=1"],
     ["title" => "Shadowy Sideshow", "tagline" => "Teddy and Frankie jiggling on cracked ground", "icon" => "yard3a.jpg", "hoverIcon" => "yard3b.jpg", "link" => "yard.htm?id=3"],
