@@ -158,7 +158,7 @@ $largeCategories = [
 // Display only first 4 as large landscape images
 for ($i = 0; $i < 4; $i++) {
     $category = $largeCategories[$i];
-    echo "<div class='col-lg-6 col-md-6'>"; // 2 columns on large screens
+    echo "<div class='col-lg-6 col-md-6 col-12'>"; // 2 columns on large, 1 column on mobile (col-12)
     echo "    <div class='large-category text-center'>";
     echo "        <a href='{$category['link']}'>";
     echo "            <img src='images/{$category['icon']}' class='large-category-icon img-fluid mb-1' alt='{$category['title']}' style='width: 92%; max-width: 480px; height: 280px; object-fit: cover; border-radius: 10px;' data-original-src='images/{$category['icon']}' data-hover-src='images/{$category['hoverIcon']}'>";
@@ -199,17 +199,11 @@ $smallCategories = [
     ["title" => "ARville Motor Stop", "tagline" => "A friendly neighborhood spot where thirsty giants roll in to fill up", "icon" => "gas-stna.jpg", "hoverIcon" => "gas-stnb.jpg", "link" => "village2.htm?id=7"],
     ["title" => "70s Suburban Strip Mall", "tagline" => "Your portal to vintage vibes and classic convenience, preserved in time", "icon" => "strip-malla.jpg", "hoverIcon" => "strip-mallb.jpg", "link" => "village2.htm?id=3"],
     ["title" => "Taiga Hinterland", "tagline" => "Where log cabins nestle among the pines and wolves roam the frozen terrain", "icon" => "taigaa.jpg", "hoverIcon" => "taigab.jpg", "link" => "nature.htm?id=7"],
-    ["title" => "Spooky Mansion Letter Hunt: A-H", "tagline" => "Find A-H objects with Vampirette & Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
-    ["title" => "Creepy Room Letter Hunt: I-Q", "tagline" => "Find I-Q objects with Clown & Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
-    ["title" => "Secret Attic Letter Hunt: R-Z", "tagline" => "Find R-Z objects with Zombie & Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
-    ["title" => "Full Moon Fun with Numbers: S-Z", "tagline" => "Count to 10 with with Wolfie & Pumpkin", "icon" => "yard1a.jpg", "hoverIcon" => "yard1b.jpg", "link" => "yard.htm?id=1"],
-    ["title" => "Shadowy Quest for Living Things", "tagline" => "Find living things at night with Teddy and Frankie", "icon" => "yard3a.jpg", "hoverIcon" => "yard3b.jpg", "link" => "yard.htm?id=3"],
-    ["title" => "Friendly Monster Mood Match", "tagline" => "Name feelings like joy and surprise with Redhot and Bones", "icon" => "yard2a.jpg", "hoverIcon" => "yard2b.jpg", "link" => "yard.htm?id=2"],
     ];
 
-for ($i = 0; $i < 24; $i++) {
+for ($i = 0; $i < 18; $i++) {
     $category = $smallCategories[$i];
-    echo "<div class='col-lg-3 col-md-6 col-sm-6'>"; // 4 columns on large screens, 2 columns on medium
+    echo "<div class='col-lg-3 col-md-6 col-6'>"; // 4 columns on large, 2 columns on mobile (col-6)
     echo "    <div class='small-category text-center'>";
     echo "        <a href='{$category['link']}'>";
     echo "            <img src='images/{$category['icon']}' class='small-category-icon img-fluid mb-2' alt='{$category['title']}' style='width: 220px; height: 220px; object-fit: cover; border-radius: 10px;' data-original-src='images/{$category['icon']}' data-hover-src='images/{$category['hoverIcon']}'>";
@@ -224,9 +218,42 @@ echo "        </div>";
 echo "    </div>";
 echo "</section>";
 
-// Mouseover script for both large and small images
+// MINI XR EXPERIENCES SECTION - New third section with 5 columns and 3 columns on mobile
+echo "<section class='mini-xr-experiences py-5' id='mini-xr-experiences' style='background-color: #ffffff;'>";
+echo "    <div class='container'>";
+echo "        <h2 class='text-center mb-4'>Mini XR Experiences for Bite-Size Fun</h2>";
+echo "        <div style='height: 30px;'></div>";
+echo "        <div class='row g-4'>";
+
+$miniExperiences = [
+    ["title" => "Spooky Mansion Letter Hunt: A-H", "tagline" => "Find A-H objects with Vampirette & Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
+    ["title" => "Creepy Room Letter Hunt: I-Q", "tagline" => "Find I-Q objects with Clown & Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
+    ["title" => "Secret Attic Letter Hunt: R-Z", "tagline" => "Find R-Z objects with Zombie & Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
+    ["title" => "Full Moon Fun with Numbers: S-Z", "tagline" => "Count to 10 with with Wolfie & Pumpkin", "icon" => "yard1a.jpg", "hoverIcon" => "yard1b.jpg", "link" => "yard.htm?id=1"],
+    ["title" => "Shadowy Quest for Living Things", "tagline" => "Find living things at night with Teddy and Frankie", "icon" => "yard3a.jpg", "hoverIcon" => "yard3b.jpg", "link" => "yard.htm?id=3"],
+    ["title" => "Friendly Monster Mood Match", "tagline" => "Name feelings like joy and surprise with Redhot and Bones", "icon" => "yard2a.jpg", "hoverIcon" => "yard2b.jpg", "link" => "yard.htm?id=2"],
+];
+
+for ($i = 0; $i < 6; $i++) {
+    $experience = $miniExperiences[$i];
+    echo "<div class='col-lg-15 col-md-4 col-4'>"; // 5 columns on large, 3 columns on mobile (col-4)
+    echo "    <div class='mini-experience text-center'>";
+    echo "        <a href='{$experience['link']}'>";
+    echo "            <img src='images/{$experience['icon']}' class='mini-experience-icon img-fluid mb-2' alt='{$experience['title']}' style='width: 180px; height: 180px; object-fit: cover; border-radius: 10px;' data-original-src='images/{$experience['icon']}' data-hover-src='images/{$experience['hoverIcon']}'>";
+    echo "        </a>";
+    echo "        <h4 style='font-size: 1.1rem; margin-top: 8px;'>{$experience['title']}</h4>";
+    echo "        <p style='font-size: 0.9rem; margin-top: 4px;'>{$experience['tagline']}</p>";
+    echo "    </div>";
+    echo "</div>";
+}
+
+echo "        </div>";
+echo "    </div>";
+echo "</section>";
+
+// Mouseover script for all images
 echo "<script>";
-echo "    document.querySelectorAll('.large-category-icon, .small-category-icon').forEach(function(img) {";
+echo "    document.querySelectorAll('.large-category-icon, .small-category-icon, .mini-experience-icon').forEach(function(img) {";
 echo "        img.addEventListener('mouseover', function() {";
 echo "            this.src = this.getAttribute('data-hover-src');";
 echo "        });";
@@ -238,29 +265,40 @@ echo "</script>";
 
 // Responsive styling for mobile
 echo "<style>";
+echo "    /* Custom 5-column layout for large screens */";
+echo "    .col-lg-15 {";
+echo "        flex: 0 0 20%;";
+echo "        max-width: 20%;";
+echo "    }";
+echo "    ";
 echo "    /* Large images responsive adjustments */";
 echo "    @media (max-width: 1200px) {";
 echo "        .large-category-icon {";
 echo "            width: 95% !important;";
 echo "            max-width: 420px !important;";
-echo "            height: 260px !important;"; // Adjusted: 260px (from 220px)
+echo "            height: 260px !important;";
 echo "        }";
 echo "    }";
 echo "    @media (max-width: 992px) {";
 echo "        .large-category-icon {";
 echo "            width: 90% !important;";
 echo "            max-width: 380px !important;";
-echo "            height: 240px !important;"; // Adjusted: 240px (from 200px)
+echo "            height: 240px !important;";
 echo "        }";
 echo "        .large-category h3 {";
 echo "            font-size: 1.3rem !important;";
+echo "        }";
+echo "        /* Reset 5-column to 4 columns on medium screens */";
+echo "        .col-lg-15 {";
+echo "            flex: 0 0 25%;";
+echo "            max-width: 25%;";
 echo "        }";
 echo "    }";
 echo "    @media (max-width: 768px) {";
 echo "        .large-category-icon {";
 echo "            width: 95% !important;";
 echo "            max-width: 350px !important;";
-echo "            height: 210px !important;"; // Adjusted: 210px (from 180px)
+echo "            height: 210px !important;";
 echo "        }";
 echo "        .large-category h3 {";
 echo "            font-size: 1.2rem !important;";
@@ -269,12 +307,17 @@ echo "        .large-category p {";
 echo "            font-size: 0.95rem !important;";
 echo "            max-width: 90% !important;";
 echo "        }";
+echo "        /* Reset 5-column to 3 columns on tablets */";
+echo "        .col-lg-15 {";
+echo "            flex: 0 0 33.333%;";
+echo "            max-width: 33.333%;";
+echo "        }";
 echo "    }";
 echo "    @media (max-width: 576px) {";
 echo "        .large-category-icon {";
 echo "            width: 100% !important;";
 echo "            max-width: 300px !important;";
-echo "            height: 190px !important;"; // Adjusted: 190px (from 160px)
+echo "            height: 190px !important;";
 echo "        }";
 echo "        .large-category h3 {";
 echo "            font-size: 1.1rem !important;";
@@ -285,60 +328,61 @@ echo "        }";
 echo "        .col-lg-6 {";
 echo "            margin-bottom: 30px;";
 echo "        }";
+echo "        /* 5-column becomes 3 columns on small screens (already set above) */";
 echo "    }";
 echo "    ";
 echo "    /* Small images responsive adjustments */";
 echo "    @media (max-width: 1200px) {";
-echo "        .small-category-icon {";
-echo "            width: 200px !important;";
-echo "            height: 200px !important;";
-echo "        }";
-echo "    }";
-echo "    @media (max-width: 992px) {";
-echo "        .small-category-icon {";
+echo "        .small-category-icon, .mini-experience-icon {";
 echo "            width: 180px !important;";
 echo "            height: 180px !important;";
 echo "        }";
-echo "        .small-category h4 {";
+echo "    }";
+echo "    @media (max-width: 992px) {";
+echo "        .small-category-icon, .mini-experience-icon {";
+echo "            width: 160px !important;";
+echo "            height: 160px !important;";
+echo "        }";
+echo "        .small-category h4, .mini-experience h4 {";
 echo "            font-size: 1.1rem !important;";
 echo "        }";
 echo "    }";
 echo "    @media (max-width: 768px) {";
-echo "        .small-category-icon {";
-echo "            width: 160px !important;";
-echo "            height: 160px !important;";
+echo "        .small-category-icon, .mini-experience-icon {";
+echo "            width: 140px !important;";
+echo "            height: 140px !important;";
 echo "        }";
-echo "        .small-category h4 {";
+echo "        .small-category h4, .mini-experience h4 {";
 echo "            font-size: 1rem !important;";
 echo "        }";
-echo "        .small-category p {";
+echo "        .small-category p, .mini-experience p {";
 echo "            font-size: 0.9rem !important;";
 echo "        }";
 echo "    }";
 echo "    @media (max-width: 576px) {";
-echo "        .small-category-icon {";
-echo "            width: 140px !important;";
-echo "            height: 140px !important;";
-echo "        }";
-echo "        .small-category h4 {";
-echo "            font-size: 0.95rem !important;";
-echo "        }";
-echo "        .small-category p {";
-echo "            font-size: 0.85rem !important;";
-echo "        }";
-echo "        .col-lg-3 {";
-echo "            margin-bottom: 25px;";
-echo "        }";
-echo "    }";
-echo "    @media (max-width: 480px) {";
-echo "        .small-category-icon {";
+echo "        .small-category-icon, .mini-experience-icon {";
 echo "            width: 120px !important;";
 echo "            height: 120px !important;";
 echo "        }";
-echo "        .small-category h4 {";
+echo "        .small-category h4, .mini-experience h4 {";
+echo "            font-size: 0.95rem !important;";
+echo "        }";
+echo "        .small-category p, .mini-experience p {";
+echo "            font-size: 0.85rem !important;";
+echo "        }";
+echo "        .col-lg-3, .col-lg-15 {";
+echo "            margin-bottom: 20px;";
+echo "        }";
+echo "    }";
+echo "    @media (max-width: 480px) {";
+echo "        .small-category-icon, .mini-experience-icon {";
+echo "            width: 100px !important;";
+echo "            height: 100px !important;";
+echo "        }";
+echo "        .small-category h4, .mini-experience h4 {";
 echo "            font-size: 0.9rem !important;";
 echo "        }";
-echo "        .small-category p {";
+echo "        .small-category p, .mini-experience p {";
 echo "            font-size: 0.8rem !important;";
 echo "        }";
 echo "    }";
