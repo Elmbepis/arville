@@ -29,6 +29,7 @@ echo "<script>
                 'images/castleb.jpg',
                 'images/gas-stnb.jpg',
                 'images/marsb.jpg',
+                'images/taigab.jpg',
                 'images/room11b.jpg',
                 'images/room12b.jpg',
                 'images/room13b.jpg',
@@ -88,8 +89,8 @@ echo "</nav>";
 // Hero Section
 echo "<header class='hero text-center py-5 bg-primary text-white'>";
 echo "    <div class='container'>";
-echo "        <h1 class='display-4 hero-title'>Step into the World of ARville:<br/>Where Business and Leisure Become Immersive</h1>";
-echo "        <p class='lead hero-subtitle'>Explore magical online Extended Reality (XR) experiences or avail of our web XR marketing plans to revolutionize your business.</p>";
+echo "        <h1 class='display-4 hero-title'>Step into the World of ARville:<br/>Where Business, Education, and Leisure Become Immersive</h1>";
+echo "        <p class='lead hero-subtitle'>Explore magical online Extended Reality (XR) experiences or avail of our web XR offerings to promote your school or business.</p>";
 echo "    </div>";
 echo "</header>";
 
@@ -197,6 +198,7 @@ $smallCategories = [
     ["title" => "Cetacean Cove", "tagline" => "A deep blue sanctuary where ocean giants find shelter", "icon" => "cetaceana.jpg", "hoverIcon" => "cetaceanb.jpg", "link" => "nature.htm?id=6"],
     ["title" => "ARville Motor Stop", "tagline" => "A friendly neighborhood spot where thirsty giants roll in to fill up", "icon" => "gas-stna.jpg", "hoverIcon" => "gas-stnb.jpg", "link" => "village2.htm?id=7"],
     ["title" => "70s Suburban Strip Mall", "tagline" => "Your portal to vintage vibes and classic convenience, preserved in time", "icon" => "strip-malla.jpg", "hoverIcon" => "strip-mallb.jpg", "link" => "village2.htm?id=3"],
+    ["title" => "Taiga Hinterland", "tagline" => "Where log cabins nestle among the pines and wolves roam at the edge of firelight", "icon" => "taigaa.jpg", "hoverIcon" => "taigab.jpg", "link" => "nature.htm?id=7"],
     ["title" => "Spooky Mansion Letter Hunt: A-H", "tagline" => "Find A-H objects with Vampirette & Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
     ["title" => "Creepy Room Letter Hunt: I-Q", "tagline" => "Find I-Q objects with Clown & Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
     ["title" => "Secret Attic Letter Hunt: R-Z", "tagline" => "Find R-Z objects with Zombie & Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
@@ -205,7 +207,7 @@ $smallCategories = [
     ["title" => "Friendly Monster Mood Match", "tagline" => "Name feelings like joy and surprise with Redhot and Bones", "icon" => "yard2a.jpg", "hoverIcon" => "yard2b.jpg", "link" => "yard.htm?id=2"],
     ];
 
-for ($i = 0; $i < 23; $i++) {
+for ($i = 0; $i < 24; $i++) {
     $category = $smallCategories[$i];
     echo "<div class='col-lg-3 col-md-6 col-sm-6'>"; // 4 columns on large screens, 2 columns on medium
     echo "    <div class='small-category text-center'>";

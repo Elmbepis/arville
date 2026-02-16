@@ -191,8 +191,22 @@
     const urlId = new URLSearchParams(window.location.search).get('id');
     const ecosystemId = urlId || 'default';
     
-	const EYE_HEIGHT = ecosystemId === '6' ? 15 : 5;    let currentAreas = [];
-
+// Eye height configuration per ID
+    const EYE_HEIGHT_CONFIG = {
+      'default': 5,   // Default eye height
+      '1': 5,         // Shark Lair - standard
+      '2': 5,         // Raptor Island - standard  
+      '3': 5,         // Rainbow Reef - standard
+      '4': 3,         // Virtual Cave - lower (crouching)
+      '5': 5,         // African Savanna - standard
+      '6': 15,        // Cetacean Abyss - higher (aerial view)
+      '7': 2,         // Arctic Domain - standard
+    };
+    
+    // Get eye height based on ecosystemId
+    const EYE_HEIGHT = EYE_HEIGHT_CONFIG[ecosystemId] || EYE_HEIGHT_CONFIG['default'];
+    
+    let currentAreas = [];
     console.log(`&#127757; URL id parameter: ${urlId}, ecosystemId: ${ecosystemId}`);
     // Set dynamic title based on villageId
     
