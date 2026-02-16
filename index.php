@@ -198,7 +198,7 @@ $smallCategories = [
     ["title" => "Cetacean Cove", "tagline" => "A deep blue sanctuary where ocean giants find shelter", "icon" => "cetaceana.jpg", "hoverIcon" => "cetaceanb.jpg", "link" => "nature.htm?id=6"],
     ["title" => "ARville Motor Stop", "tagline" => "A friendly neighborhood spot where thirsty giants roll in to fill up", "icon" => "gas-stna.jpg", "hoverIcon" => "gas-stnb.jpg", "link" => "village2.htm?id=7"],
     ["title" => "70s Suburban Strip Mall", "tagline" => "Your portal to vintage vibes and classic convenience, preserved in time", "icon" => "strip-malla.jpg", "hoverIcon" => "strip-mallb.jpg", "link" => "village2.htm?id=3"],
-    ["title" => "Taiga Hinterland", "tagline" => "Where log cabins nestle among the pines and wolves roam at the edge of firelight", "icon" => "taigaa.jpg", "hoverIcon" => "taigab.jpg", "link" => "nature.htm?id=7"],
+    ["title" => "Taiga Hinterland", "tagline" => "Where log cabins nestle among the pines and wolves roam the frozen terrain", "icon" => "taigaa.jpg", "hoverIcon" => "taigab.jpg", "link" => "nature.htm?id=7"],
     ["title" => "Spooky Mansion Letter Hunt: A-H", "tagline" => "Find A-H objects with Vampirette & Witch", "icon" => "room11a.jpg", "hoverIcon" => "room11b.jpg", "link" => "room.htm?id=11"],
     ["title" => "Creepy Room Letter Hunt: I-Q", "tagline" => "Find I-Q objects with Clown & Scarecrow", "icon" => "room12a.jpg", "hoverIcon" => "room12b.jpg", "link" => "room.htm?id=12"],
     ["title" => "Secret Attic Letter Hunt: R-Z", "tagline" => "Find R-Z objects with Zombie & Zombiette", "icon" => "room13a.jpg", "hoverIcon" => "room13b.jpg", "link" => "room.htm?id=13"],
