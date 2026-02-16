@@ -89,14 +89,14 @@ echo "</nav>";
 // Hero Section
 echo "<header class='hero text-center py-5 bg-primary text-white'>";
 echo "    <div class='container'>";
-echo "        <h1 class='display-4 hero-title'>Step into the World of ARville:<br/>Where Business, Education, and Leisure Become Immersive</h1>";
+echo "        <h1 class='display-4 hero-title'>Step into the World of ARville:<br/>Where Education, Business, and Entertainment Become Immersive</h1>";
 echo "        <p class='lead hero-subtitle'>Explore magical online Extended Reality (XR) experiences or avail of our web XR offerings to promote your school or business.</p>";
 echo "    </div>";
 echo "</header>";
 
 echo "<style>";
 echo "    .hero-title {";
-echo "        font-size: 3rem;";
+echo "        font-size: 2.9rem;";
 echo "    }";
 echo "    .hero-subtitle {";
 echo "        font-size: 1.5rem;";
