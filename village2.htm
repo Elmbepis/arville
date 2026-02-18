@@ -204,6 +204,7 @@
       '6': { x: 0, y: 5, z: 50, rotation: 0 }, 
       '7': { x: -10, y: 4, z: 60, rotation: 0 }, 
       '8': { x: 0, y: EYE_HEIGHT, z: 60, rotation: 0 }, // Default
+      '9': { x: 0, y: 4, z: 30, rotation: 0 }, // Default
     };
 
     // Set dynamic title based on villageId
@@ -217,6 +218,7 @@
       '6': 'ARville Playground',
       '7': 'ARville Motor Stop',
       '8': 'Martian Settlement',
+      '9': 'Desert Village',
     };
     
     // Set the page title
@@ -260,6 +262,10 @@
       '8': {
         ground: 'universe/textures/nature/mars1.jpg',
         roads: 'universe/textures/nature/mars1b.jpg'
+      },
+      '9': {
+        ground: 'universe/textures/sand5.jpg',
+        roads: 'universe/textures/sand5b.jpg'
       },
     };
 
@@ -378,9 +384,9 @@ function init() {
   // Set camera start position based on villageId
   const cameraConfig = CAMERA_START_POSITIONS[villageId] || CAMERA_START_POSITIONS['1'];
   
-  //camera.position.set(0, 4, -90); 
   camera.position.set(cameraConfig.x, cameraConfig.y, cameraConfig.z); 
   camera.rotation.set(0, cameraConfig.rotation * Math.PI / 180, 0);
+  //camera.position.set(0, 4, 20); 
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
