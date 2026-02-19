@@ -75,6 +75,26 @@ class VirtualWorldSelector {
                 image: 'vw-mars.jpg',
                 link: '../village2.htm?id=8'
             },
+            'playground': {
+                name: 'ARville Playground',
+                image: 'vw-playground.jpg',
+                link: '../village2.htm?id=6'
+            },
+            'cetacean': {
+                name: 'Cetacean Cove',
+                image: 'vw-cetacean.jpg',
+                link: '../nature.htm?id=6'
+            },
+            'taiga': {
+                name: 'Taiga Hinterland',
+                image: 'vw-taiga.jpg',
+                link: '../nature.htm?id=7'
+            },
+            'castle': {
+                name: 'Small Medieval Castle',
+                image: 'vw-castle.jpg',
+                link: '../village2.htm?id=5'
+            },
         };
         
         this.selectedWorld = this.options.selectedWorld;

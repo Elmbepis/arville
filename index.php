@@ -31,6 +31,7 @@ echo "<script>
                 'images/marsb.jpg',
                 'images/taigab.jpg',
                 'images/desertb.jpg',
+                'images/fw-pondb.jpg',
                 'images/room11b.jpg',
                 'images/room12b.jpg',
                 'images/room13b.jpg',
@@ -200,10 +201,11 @@ $smallCategories = [
     ["title" => "ARville Motor Stop", "tagline" => "A friendly neighborhood spot where thirsty giants roll in to fill up", "icon" => "gas-stna.jpg", "hoverIcon" => "gas-stnb.jpg", "link" => "village2.htm?id=7"],
     ["title" => "70s Suburban Strip Mall", "tagline" => "Your portal to vintage vibes and classic convenience, preserved in time", "icon" => "strip-malla.jpg", "hoverIcon" => "strip-mallb.jpg", "link" => "village2.htm?id=3"],
     ["title" => "Taiga Hinterland", "tagline" => "Where log cabins nestle among pines and wolves roam the frozen terrain", "icon" => "taigaa.jpg", "hoverIcon" => "taigab.jpg", "link" => "nature.htm?id=7"],
-    ["title" => "Desert Village", "tagline" => "Where humble stone dwellings bear witness to life carved from clay and sun-scorched soil", "icon" => "deserta.jpg", "hoverIcon" => "desertb.jpg", "link" => "village2.htm?id=9"],
+    ["title" => "Desert Village", "tagline" => "Where humble stone dwellings bear witness to life lived on sun-scorched sand", "icon" => "deserta.jpg", "hoverIcon" => "desertb.jpg", "link" => "village2.htm?id=9"],
+    ["title" => "Freshwater Fiefdom", "tagline" => "Where monster fish reign among lush emerald gardens", "icon" => "fw-ponda.jpg", "hoverIcon" => "fw-pondb.jpg", "link" => "nature.htm?id=8"],
     ];
 
-for ($i = 0; $i < 19; $i++) {
+for ($i = 0; $i < 20; $i++) {
     $category = $smallCategories[$i];
     echo "<div class='col-lg-3 col-md-6 col-6'>"; // 4 columns on large, 2 columns on mobile (col-6)
     echo "    <div class='small-category text-center'>";
