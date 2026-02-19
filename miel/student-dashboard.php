@@ -36,7 +36,7 @@ try {
     $quizStmt->execute();
     $availableQuizzes = $quizStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get student's quiz scores (renamed from My Scores to My Quiz Scores)
+    // Get student's quiz scores
     $scoreStmt = $pdo->prepare("
         SELECT s.*, q.title as quiz_title, q.virtual_world, q.intelligence_type
         FROM scores s 
@@ -47,8 +47,7 @@ try {
     $scoreStmt->execute([$_SESSION['user_id']]);
     $studentQuizScores = $scoreStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // ===== NEW: Get Available Activities =====
-    // Simplified query - just get basic activity info
+    // Get Available Activities
     $activitiesStmt = $pdo->prepare("
         SELECT a.*, u.full_name as teacher_name 
         FROM activities a 
@@ -58,7 +57,7 @@ try {
     $activitiesStmt->execute();
     $availableActivities = $activitiesStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // ===== NEW: Get Student's Activity Grades =====
+    // Get Student's Activity Grades
     $studentActivityGrades = [];
     try {
         $tableCheck = $pdo->query("SHOW TABLES LIKE 'activity_grades'");
@@ -108,52 +107,7 @@ function getIntelligenceName($type) {
     return $names[$type] ?? $type;
 }
 
-// Get intelligence icon
-function getIntelligenceIcon($type) {
-    $icons = [
-        'linguistic' => 'book',
-        'logical' => 'calculator',
-        'spatial' => 'palette',
-        'kinesthetic' => 'running',
-        'musical' => 'music',
-        'interpersonal' => 'users',
-        'intrapersonal' => 'user',
-        'naturalist' => 'leaf'
-    ];
-    return $icons[$type] ?? 'question-circle';
-}
-
-// Get world name
-function getWorldName($world) {
-    $names = [
-        'zoo' => 'Zoo',
-        'museum' => 'Museum',
-        'forest' => 'Forest',
-        'ocean' => 'Ocean',
-        'farm' => 'Farm',
-        'space' => 'Space',
-        'city' => 'City',
-        'arctic' => 'Arctic'
-    ];
-    return $names[$world] ?? $world;
-}
-
-// Get world icon
-function getWorldIcon($world) {
-    $icons = [
-        'zoo' => 'paw',
-        'museum' => 'landmark',
-        'forest' => 'tree',
-        'ocean' => 'water',
-        'farm' => 'tractor',
-        'space' => 'rocket',
-        'city' => 'city',
-        'arctic' => 'icicles'
-    ];
-    return $icons[$world] ?? 'globe';
-}
-
-// ===== NEW: Get activity type name =====
+// Get activity type name
 function getActivityTypeName($type) {
     $names = [
         'essay' => 'Essay',
@@ -165,73 +119,6 @@ function getActivityTypeName($type) {
     ];
     return $names[$type] ?? ucfirst($type);
 }
-
-// ===== NEW: Get activity type icon =====
-function getActivityTypeIcon($type) {
-    $icons = [
-        'essay' => 'file-alt',
-        'project' => 'tasks',
-        'presentation' => 'presentation',
-        'experiment' => 'flask',
-        'performance' => 'theater-masks',
-        'portfolio' => 'briefcase'
-    ];
-    return $icons[$type] ?? 'file-alt';
-}
-
-// ===== NEW: Get ARville worlds data =====
-function getARvilleWorlds() {
-    return [
-        'zoo' => [
-            'name' => 'ARville Zoo', 
-            'desc' => 'Terrestrial Zoology', 
-            'image' => 'vw-zoo.jpg',
-            'link' => '../zoo1.htm'
-        ],
-        'museum' => [
-            'name' => 'ARVille Museum', 
-            'desc' => 'History & Art', 
-            'image' => 'vw-museum.jpg',
-            'link' => '../museum.htm?id=1'
-        ],
-        'robot city' => [
-            'name' => 'Robot City', 
-            'desc' => 'Tech', 
-            'image' => 'vw-robot-city.jpg',
-            'link' => '../village.htm?id=4'
-        ],
-        'ocean' => [
-            'name' => 'Shark Lair', 
-            'desc' => 'Marine Biology', 
-            'image' => 'vw-ocean.jpg',
-            'link' => '../nature.htm?id=1'
-        ],
-        'coral reef' => [
-            'name' => 'Rainbow Reef', 
-            'desc' => 'Marine Biology', 
-            'image' => 'vw-coral-reefs.jpg',
-            'link' => '../nature.htm?id=3'
-        ],
-        'farm' => [
-            'name' => 'Farm Village', 
-            'desc' => 'Agriculture', 
-            'image' => 'vw-farm.jpg',
-            'link' => '../village2.htm?id=1'
-        ],
-        'raptor island' => [
-             'name' => 'Raptor Island', 
-             'desc' => 'Prehistoric Biology', 
-             'image' => 'vw-raptor.jpg',
-             'link' => '../nature.htm?id=2'
-        ],
-        'toy world' => [
-            'name' => 'Toy World', 
-            'desc' => 'Fantasy', 
-            'image' => 'vw-toy-world.jpg',
-            'link' => '../village.htm?id=3'
-        ],
-    ];
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -241,9 +128,9 @@ function getARvilleWorlds() {
     <title>Student Dashboard | MIEL - Multiple Intelligence E-Learning</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-	<link rel="stylesheet" href="mobile.css" media="screen">
+    <link rel="stylesheet" href="mobile.css" media="screen">
     <style>
-        /* ===== KID-FRIENDLY THEME (SAME AS teacher-dashboard.php) ===== */
+        /* ===== KID-FRIENDLY THEME ===== */
         :root {
             --primary-blue: #4A90E2;
             --secondary-green: #50C878;
@@ -266,7 +153,6 @@ function getARvilleWorlds() {
             padding: 0px;
             min-height: 100vh;
             position: relative;
-            /* Fallback gradient background */
             background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
         }
         
@@ -281,8 +167,8 @@ function getARvilleWorlds() {
             background-image: url('background-tile.jpg');
             background-repeat: repeat;
             background-size: 1980px 1080px;
-            opacity: 0.9; /* Full opacity for the image */
-            z-index: -1; /* Lower z-index than the overlay */
+            opacity: 0.9;
+            z-index: -1;
         }
 
         body::after {
@@ -292,12 +178,12 @@ function getARvilleWorlds() {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(248, 249, 255, 0.3); /* Reduced from 0.85 to 0.3 */
-            z-index: -3; /* Higher z-index than the image */
+            background: rgba(248, 249, 255, 0.3);
+            z-index: -3;
         }
         
         .container {
-            max-width: 800px; /* SAME WIDTH AS create-quiz.php */
+            max-width: 800px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -305,9 +191,6 @@ function getARvilleWorlds() {
         
         .navbar {
             margin-bottom: 30px;
-        }
-        
-        .navbar {
             font-family: 'Arial', sans-serif !important;
             font-weight: 300 !important;
         }
@@ -333,13 +216,9 @@ function getARvilleWorlds() {
         }
 
         .navbar .navbar-collapse {
-            flex-grow: 0; /* Prevents it from taking up extra space */
+            flex-grow: 0;
         }        
         
-        .bottom-buttons-container {
-            margin-bottom: 30px !important; /* Adjust this value as needed */
-        }
-
         /* ===== MIEL BANNER ===== */
         .miel-banner-container {
             text-align: center;
@@ -405,7 +284,7 @@ function getARvilleWorlds() {
             margin-bottom: 30px;
         }
         
-        /* ===== CARD STYLES (SAME AS teacher-dashboard.php) ===== */
+        /* ===== CARD STYLES ===== */
         .card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: var(--border-radius);
@@ -566,7 +445,6 @@ function getARvilleWorlds() {
             color: var(--text-dark);
         }
         
-        /* Updated for thumbnail images */
         .thumbnail-container {
             width: 60px;
             height: 60px;
@@ -611,13 +489,6 @@ function getARvilleWorlds() {
         }
         
         /* ===== EMPTY STATES ===== */
-        .empty-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 15px;
-        }
-        
         .empty-icon {
             aspect-ratio: 1/1;
             background: #F0F0F0;
@@ -661,49 +532,112 @@ function getARvilleWorlds() {
             color: white;
         }
         
-        .badge-warning {
-            background: var(--accent-yellow);
-            color: var(--text-dark);
+        /* ===== VIRTUAL WORLD SELECTOR STYLES ===== */
+        .world-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
         }
-        
-        /* ===== STANDARDIZED BUTTON STYLES ===== */
-        /* Blue functional buttons -> Yellow on hover */
-        .action-btn {
-            flex: 0 0 auto;
-            padding: 12px 25px;
-            border: none;
+
+        .world-option {
+            background: #F8F9FF;
+            border: 3px solid #E0E0E0;
             border-radius: 15px;
-            font-weight: bold;
-            cursor: pointer;
+            padding: 10px 8px;
+            text-align: center;
+            cursor: default;
             transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 170px;
+            height: 100%;
+        }
+
+        .world-option:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-blue);
+        }
+
+        .world-thumbnail {
+            width: 100%;
+            height: 120px;
+            margin-bottom: 5px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .world-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .world-info {
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            justify-content: space-between;
+            height: calc(100% - 90px);
+        }
+
+        .world-info h3 {
+            font-size: 0.9rem;
+            margin: 5px 0;
+            color: var(--text-dark);
+            line-height: 1.1;
+            min-height: 1.8em;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            padding: 0;
+            font-weight: bold;
+        }
+
+        .see-world-link {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            font-size: 1.2rem;
+            gap: 4px;
+            background-color: #FDD473;
+            color: #2C3E50 !important;
             text-decoration: none;
-            color: white;
-            background-color: #4A90E2 !important; /* BLUE for functional buttons */
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 4px;
+            width: 100%;
+            max-width: 100px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 30px;
+            flex-shrink: 0;
         }
-        
-        .action-btn:hover {
-            background-color: #FFD166 !important; /* YELLOW on hover */
-            transform: translateY(-3px);
-            color: #2C3E50 !important;
+
+        .see-world-link:hover {
+            background-color: #FA7C1F;
+            transform: translateY(-2px);
+            color: white !important;
+            text-decoration: none;
         }
-        
-        /* Override specific button colors to be blue */
-        .action-btn-primary,
-        .action-btn-success,
-        .action-btn-warning {
-            background-color: #4A90E2 !important; /* All functional buttons BLUE */
-        }
-        
-        .action-btn-primary:hover,
-        .action-btn-success:hover,
-        .action-btn-warning:hover {
-            background-color: #FFD166 !important; /* All functional buttons YELLOW on hover */
-            color: #2C3E50 !important;
+
+        .see-world-link i {
+            font-size: 0.6rem;
         }
         
         /* ===== BOTTOM BUTTONS CONTAINER ===== */
@@ -720,7 +654,6 @@ function getARvilleWorlds() {
             border: 2px solid rgba(255, 255, 255, 0.8);
         }
         
-        /* Red button for logout */
         .red-btn {
             background-color: #FF6B6B !important;
             color: white !important;
@@ -743,147 +676,7 @@ function getARvilleWorlds() {
             transform: translateY(-3px) !important;
         }
         
-        /* Hide original logout section */
-        .logout-section {
-            display: none !important;
-        }
-        
-/* ===== VIRTUAL WORLD SELECTOR ===== */
-.world-selector {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 15px;
-    margin-top: 10px;
-}
-
-/* COMPACT virtual world card - REDUCED SPACING */
-.world-option {
-    background: #F8F9FF;
-    border: 3px solid #E0E0E0;
-    border-radius: 15px;
-    padding: 10px 8px !important; /* Reduced padding */
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 170px !important; /* SIGNIFICANTLY REDUCED height */
-    height: 100%;
-}
-
-.world-option:hover {
-    transform: translateY(-5px);
-    border-color: var(--primary-blue);
-}
-
-.world-option.selected {
-    border-color: var(--secondary-green);
-    background: #E8F5E9;
-}
-
-.world-thumbnail {
-    width: 100%;
-    height: 120px !important; /* SIGNIFICANTLY REDUCED height */
-    margin-bottom: 5px !important; /* Reduced margin */
-    border-radius: 10px;
-    overflow: hidden;
-    background: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.world-thumbnail img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
-}
-
-/* Placeholder styling */
-.thumbnail-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #999;
-    font-size: 0.9rem;
-}
-
-.thumbnail-placeholder i {
-    font-size: 2.5rem;
-    margin-bottom: 5px;
-}
-
-/* COMPACT WORLD INFO CONTAINER - MINIMAL SPACING */
-.world-info {
-    text-align: center;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    padding: 0 !important; /* Remove padding */
-    margin: 0 !important; /* Remove margins */
-    justify-content: space-between;
-    height: calc(100% - 90px); /* Fill remaining space after thumbnail */
-}
-
-/* TIGHT TITLE STYLING */
-.world-info h3 {
-    font-size: 0.9rem !important;
-    margin: 5px 0 !important; /* Minimal vertical margin */
-    color: var(--text-dark);
-    line-height: 1.1 !important; /* Very tight line height */
-    min-height: 1.8em !important; /* Reduced minimum height */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    padding: 0 !important;
-    font-weight: bold;
-}
-
-/* COMPACT "SEE WORLD" LINK - TIGHT TO TITLE */
-.see-world-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    background-color: #FDD473;
-    color: #2C3E50 !important;
-    text-decoration: none;
-    padding: 3px 8px !important; /* Minimal padding */
-    border-radius: 6px;
-    font-size: 0.7rem !important; /* Smaller font */
-    font-weight: bold;
-    transition: all 0.3s;
-    margin-top: 4px !important; /* Very small top margin */
-    width: 100%;
-    max-width: 100px; /* Smaller width */
-    margin-left: auto;
-    margin-right: auto;
-    height: 30px !important; /* Smaller height */
-    flex-shrink: 0; /* Don't shrink */
-}
-
-.see-world-link:hover {
-    background-color: #FA7C1F;
-    transform: translateY(-2px);
-    color: white !important;
-    text-decoration: none;
-}
-
-.see-world-link i {
-    font-size: 0.6rem !important; /* Smaller icon */
-}
-
-        
-        /* ===== MOBILE RESPONSIVE (SAME AS teacher-dashboard.php) ===== */
+        /* ===== MOBILE RESPONSIVE ===== */
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -903,7 +696,6 @@ function getARvilleWorlds() {
             }
             
             .quiz-grid,
-            .empty-grid,
             .world-selector {
                 grid-template-columns: repeat(2, 1fr);
                 grid-template-rows: repeat(4, 1fr);
@@ -922,42 +714,23 @@ function getARvilleWorlds() {
                 grid-template-columns: 1fr;
             }
             
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .action-btn {
-                width: 100%;
-            }
-            
-            /* Bottom buttons on mobile */
             .bottom-buttons-container {
                 flex-direction: column;
                 gap: 10px;
                 padding: 20px;
             }
             
-            .bottom-buttons-container button,
-            .bottom-buttons-container a {
+            .bottom-buttons-container button {
                 width: 100%;
                 justify-content: center;
             }
             
-            /* Mobile adjustments for world options */
             .world-option {
-                min-height: 200px; /* Smaller on mobile */
+                min-height: 200px;
             }
             
             .world-thumbnail {
                 height: 100px;
-            }
-            
-            .world-info h3 {
-                font-size: 0.95rem;
-            }
-            
-            .world-subtitle {
-                font-size: 0.8rem;
             }
             
             .see-world-link {
@@ -969,10 +742,8 @@ function getARvilleWorlds() {
         
         @media (max-width: 480px) {
             .quiz-grid,
-            .empty-grid,
             .world-selector {
-                grid-template-columns: repeat(2, 1fr);
-                grid-template-rows: repeat(4, 1fr);
+                grid-template-columns: 1fr;
             }
             
             .world-option {
@@ -984,7 +755,7 @@ function getARvilleWorlds() {
             }
         }
         
-        /* ===== ANIMATIONS (SAME AS teacher-dashboard.php) ===== */
+        /* ===== ANIMATIONS ===== */
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
@@ -1001,18 +772,6 @@ function getARvilleWorlds() {
         
         .fade-in {
             animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes rainbow {
-            0% { color: #4A90E2; }
-            25% { color: #50C878; }
-            50% { color: #FFD166; }
-            75% { color: #FF6B6B; }
-            100% { color: #9C27B0; }
-        }
-        
-        .rainbow {
-            animation: rainbow 3s ease infinite;
         }
     </style>
 </head>
@@ -1047,7 +806,6 @@ function getARvilleWorlds() {
         <header class="dashboard-header fade-in">
             <div class="logo">
                 <div>
-                    <!-- Replace text title with image -->
                     <img src="images/student-dashboard.jpg" alt="Student Dashboard" style="max-width: 550px; height: auto;">
                     <p class="subtitle">Work on Quizzes and Activities and Track Your Progress</p>
                 </div>
@@ -1127,7 +885,6 @@ function getARvilleWorlds() {
                 <div class="quiz-grid-section">
                     <div class="quiz-grid">
                         <?php if (empty($availableQuizzes)): ?>
-                            <!-- Show 8 empty placeholders -->
                             <?php for ($i = 1; $i <= 8; $i++): ?>
                             <div class="empty-icon">
                                 <i class="fas fa-plus-circle"></i>
@@ -1136,12 +893,10 @@ function getARvilleWorlds() {
                             <?php endfor; ?>
                         <?php else: ?>
                             <?php 
-                            // Show up to 8 quizzes
                             $displayQuizzes = array_slice($availableQuizzes, 0, 8);
                             $quizCount = 0;
                             ?>
                             <?php foreach ($displayQuizzes as $quiz): $quizCount++; 
-                                // Check if student has taken this quiz
                                 $quizTaken = false;
                                 $quizScore = null;
                                 foreach ($studentQuizScores as $score) {
@@ -1152,18 +907,14 @@ function getARvilleWorlds() {
                                     }
                                 }
                                 
-                                // Determine which intelligence icon to show
                                 $intelligenceType = $quiz['intelligence_type'];
                                 $iconImage = "images/quiz-{$intelligenceType}.png";
                                 $defaultIcon = "images/default.jpg";
-                                
-                                // Check if image exists, otherwise use default
                                 $quizIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
                             ?>
                             <div class="quiz-icon <?php echo !$quizTaken ? 'not-taken' : ''; ?>" 
                                  onclick="<?php echo $quizTaken ? 'reviewQuiz(' . $quiz['id'] . ')' : 'takeQuiz(' . $quiz['id'] . ')'; ?>">
                                 <div class="icon-badge <?php echo !$quizTaken ? 'not-taken' : ''; ?>"><?php echo $quizCount; ?></div>
-                                <!-- Show intelligence type image -->
                                 <div class="thumbnail-container">
                                     <img src="<?php echo $quizIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
                                 </div>
@@ -1171,20 +922,16 @@ function getARvilleWorlds() {
                                     <?php echo htmlspecialchars(substr($quiz['title'], 0, 20)); ?>
                                     <?php if (strlen($quiz['title']) > 20): ?>...<?php endif; ?>
                                 </div>
-                                <!-- Third line: Show score or "No Score Yet" -->
                                 <?php if ($quizTaken && $quizScore !== null): ?>
                                 <div class="icon-score" style="color: <?php echo $quizScore >= 80 ? '#50C878' : ($quizScore >= 60 ? '#FF9800' : '#FF6B6B'); ?>;">
                                     <?php echo number_format($quizScore, 1); ?>%
                                 </div>
                                 <?php else: ?>
-                                <div class="icon-third-line">
-                                    No Score Yet
-                                </div>
+                                <div class="icon-third-line">No Score Yet</div>
                                 <?php endif; ?>
                             </div>
                             <?php endforeach; ?>
                             
-                            <?php // Fill remaining slots with placeholders ?>
                             <?php for ($i = $quizCount + 1; $i <= 8; $i++): ?>
                             <div class="empty-icon">
                                 <i class="fas fa-plus-circle"></i>
@@ -1206,7 +953,6 @@ function getARvilleWorlds() {
                 <div class="quiz-grid-section">
                     <div class="quiz-grid">
                         <?php if (empty($availableActivities)): ?>
-                            <!-- Show 8 empty placeholders -->
                             <?php for ($i = 1; $i <= 8; $i++): ?>
                             <div class="empty-icon">
                                 <i class="fas fa-plus-circle"></i>
@@ -1215,12 +961,10 @@ function getARvilleWorlds() {
                             <?php endfor; ?>
                         <?php else: ?>
                             <?php 
-                            // Show up to 8 activities
                             $displayActivities = array_slice($availableActivities, 0, 8);
                             $activityCount = 0;
                             ?>
                             <?php foreach ($displayActivities as $activity): $activityCount++; 
-                                // Check if student has grade for this activity
                                 $activityGraded = false;
                                 $activityPoints = null;
                                 $maxPoints = $activity['max_points'] ?? 100;
@@ -1233,17 +977,13 @@ function getARvilleWorlds() {
                                     }
                                 }
                                 
-                                // Determine which intelligence icon to show
                                 $intelligenceType = $activity['intelligence_type'];
                                 $iconImage = "images/activity-{$intelligenceType}.png";
                                 $defaultIcon = "images/default.jpg";
-                                
-                                // Check if image exists, otherwise use default
                                 $activityIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
                             ?>
                             <div class="quiz-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)">
                                 <div class="icon-badge"><?php echo $activityCount; ?></div>
-                                <!-- Show intelligence type image -->
                                 <div class="thumbnail-container">
                                     <img src="<?php echo $activityIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
                                 </div>
@@ -1251,7 +991,6 @@ function getARvilleWorlds() {
                                     <?php echo htmlspecialchars(substr($activity['title'], 0, 20)); ?>
                                     <?php if (strlen($activity['title']) > 20): ?>...<?php endif; ?>
                                 </div>
-                                <!-- Third line: Show grade or "No Grade Yet" -->
                                 <?php if ($activityGraded && $activityPoints !== null): ?>
                                 <?php 
                                     $percentage = ($activityPoints / $maxPoints) * 100;
@@ -1261,14 +1000,11 @@ function getARvilleWorlds() {
                                     <?php echo $activityPoints; ?>/<?php echo $maxPoints; ?> pts
                                 </div>
                                 <?php else: ?>
-                                <div class="icon-third-line">
-                                    No Grade Yet
-                                </div>
+                                <div class="icon-third-line">No Grade Yet</div>
                                 <?php endif; ?>
                             </div>
                             <?php endforeach; ?>
                             
-                            <?php // Fill remaining slots with placeholders ?>
                             <?php for ($i = $activityCount + 1; $i <= 8; $i++): ?>
                             <div class="empty-icon">
                                 <i class="fas fa-plus-circle"></i>
@@ -1280,36 +1016,15 @@ function getARvilleWorlds() {
                 </div>
             </div>
 
-            <!-- ===== NEW: EXPLORE ARVILLE WORLDS SECTION (THIRD SECTION) ===== -->
+            <!-- EXPLORE ARVILLE WORLDS SECTION - USING REUSABLE COMPONENT -->
             <div class="card fade-in">
                 <h2 class="card-title">
                     <i class="fas fa-globe-americas"></i> Explore ARville Worlds
                     <span class="badge badge-success">8</span>
                 </h2>
                 
-                <div class="world-selector">
-                    <?php
-                    $worlds = getARvilleWorlds();
-                    foreach ($worlds as $key => $world):
-                        $imagePath = "images/{$world['image']}";
-                        // Check if image exists, fallback to default if not
-                        $actualImage = file_exists($imagePath) ? $imagePath : "images/default-world.jpg";
-                    ?>
-                    <div class="world-option">
-                        <div class="world-thumbnail">
-                            <img src="<?php echo $actualImage; ?>" alt="<?php echo $world['name']; ?>">
-                        </div>
-                        <div class="world-info">
-                            <h3><?php echo $world['name']; ?></h3>
-                            <a href="<?php echo $world['link']; ?>" target="_blank" class="see-world-link" onclick="event.stopPropagation();">
-                                <i class="fas fa-external-link-alt"></i> See World
-                            </a>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
+                <div id="virtual-world-selector-container"></div>
             </div>
-
         </div>
 
         <!-- BOTTOM BUTTONS CONTAINER -->
@@ -1323,7 +1038,21 @@ function getARvilleWorlds() {
     </div>
 
     <!-- JAVASCRIPT -->
+    <script src="virtual-world-selector.js"></script>
     <script>
+        // Initialize Virtual World Selector in display-only mode for students
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const worldSelector = new VirtualWorldSelector({
+                    containerId: 'virtual-world-selector-container',
+                    displayOnly: true // This makes it display-only with no selection functionality
+                });
+                console.log('Virtual World Selector initialized for student dashboard');
+            } catch (error) {
+                console.error('Error initializing Virtual World Selector:', error);
+            }
+        });
+
         // Quiz functions
         function takeQuiz(quizId) {
             window.location.href = `take-quiz.php?quiz_id=${quizId}`;
@@ -1333,13 +1062,9 @@ function getARvilleWorlds() {
             window.location.href = `take-quiz.php?quiz_id=${quizId}`;
         }
         
-        // ===== Activity functions =====
+        // Activity functions
         function viewActivity(activityId) {
             window.location.href = `do-activity.php?activity_id=${activityId}`;
-        }
-        
-        function reviewActivity(activityId) {
-            window.location.href = `activity-grade.php?activity_id=${activityId}`;
         }
         
         // Auto-refresh every 30 seconds
@@ -1362,7 +1087,7 @@ function getARvilleWorlds() {
         });
         
         // Add hover effects
-        document.querySelectorAll('.quiz-icon, .world-option').forEach(icon => {
+        document.querySelectorAll('.quiz-icon').forEach(icon => {
             icon.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-5px)';
             });
@@ -1390,27 +1115,11 @@ function getARvilleWorlds() {
                 this.classList.toggle('bounce');
                 alert('MIEL - Multiple Intelligence Experiential Learning\nPersonalized learning for every student!');
                 
-                // Remove bounce class after animation completes
                 setTimeout(() => {
                     this.classList.remove('bounce');
                 }, 500);
             });
         }
-        
-        // World option click handler (optional - can be used for future features)
-        document.querySelectorAll('.world-option').forEach(world => {
-            world.addEventListener('click', function(e) {
-                // Don't trigger if clicking on the "Explore World" link
-                if (e.target.closest('.see-world-link')) {
-                    return;
-                }
-                
-                // Optional: Add functionality when clicking on the world card itself
-                // For now, just show a message
-                const worldName = this.querySelector('h3').textContent;
-                alert(`Exploring ${worldName}! Click the "Explore World" button to enter the ARville world.`);
-            });
-        });
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

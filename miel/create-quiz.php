@@ -112,6 +112,9 @@ if (isset($_GET['created'])) {
 if (!isset($_GET['created'])) {
     unset($_SESSION['quiz_created']);
 }
+
+// Set selected world from POST or default
+$selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['virtual_world'] : 'zoo';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -121,7 +124,7 @@ if (!isset($_GET['created'])) {
     <title>Create Quiz | MIEL - Multiple Intelligence E-Learning</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-	<link rel="stylesheet" href="mobile.css" media="screen">
+    <link rel="stylesheet" href="mobile.css" media="screen">
     <style>
         /* ===== KID-FRIENDLY THEME (SAME AS teacher-dashboard.php) ===== */
         :root {
@@ -161,8 +164,8 @@ if (!isset($_GET['created'])) {
             background-image: url('background-tile.jpg');
             background-repeat: repeat;
             background-size: 1980px 1080px;
-            opacity: 0.9; /* Full opacity for the image */
-            z-index: -1; /* Lower z-index than the overlay */
+            opacity: 0.9;
+            z-index: -1;
         }
 
         body::after {
@@ -172,12 +175,12 @@ if (!isset($_GET['created'])) {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(248, 249, 255, 0.3); /* Reduced from 0.85 to 0.3 */
-            z-index: -3; /* Higher z-index than the image */
+            background: rgba(248, 249, 255, 0.3);
+            z-index: -3;
         }
         
         .container {
-            max-width: 800px; /* SAME WIDTH AS teacher-dashboard.php */
+            max-width: 800px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -189,39 +192,39 @@ if (!isset($_GET['created'])) {
         }
         
         .navbar {
-   		 font-family: 'Arial', sans-serif !important;
-   		 font-weight: 300 !important;
-		}
+            font-family: 'Arial', sans-serif !important;
+            font-weight: 300 !important;
+        }
 
-		.navbar-nav .nav-link {
-	    font-size: 1.0rem !important;
-    	color: #333 !important;
-    	transition: color 0.3s ease !important;
-    	margin-bottom: -70px !important;
-		}
+        .navbar-nav .nav-link {
+            font-size: 1.0rem !important;
+            color: #333 !important;
+            transition: color 0.3s ease !important;
+            margin-bottom: -70px !important;
+        }
 
-		.navbar-nav .nav-link:hover {
-	    color: #4A90E2 !important;
-		}
-		
-		.navbar-brand {
-    	margin-bottom: -50px !important;
-		}
-		
-		.navbar .container {
-		    width: 100%;
-    		max-width: 100%;
-   		    padding-left: 300px;
-  		    padding-right: 300px;
-    		display: flex;
-    		justify-content: space-between;
-    		align-items: center;
-		}
+        .navbar-nav .nav-link:hover {
+            color: #4A90E2 !important;
+        }
+        
+        .navbar-brand {
+            margin-bottom: -50px !important;
+        }
+        
+        .navbar .container {
+            width: 100%;
+            max-width: 100%;
+            padding-left: 300px;
+            padding-right: 300px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-		.navbar .navbar-collapse {
-		    flex-grow: 0; /* Prevents it from taking up extra space */
-		}        
-		
+        .navbar .navbar-collapse {
+            flex-grow: 0;
+        }        
+        
         /* ===== MIEL BANNER ===== */
         .miel-banner-container {
             text-align: center;
@@ -236,99 +239,6 @@ if (!isset($_GET['created'])) {
             width: 100%;
             height: auto;
             display: block;
-        }
-        
-        /* ===== MIEL HEADER (KEPT FOR REFERENCE BUT NOT USED) ===== */
-        .miel-header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 25px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            border: 5px solid var(--primary-blue);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .miel-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 8px;
-            background: linear-gradient(90deg, 
-                #4A90E2 0%, /* Blue */
-                #50C878 25%, /* Green */
-                #FFD166 50%, /* Yellow */
-                #FF6B6B 75%, /* Red */
-                #9C27B0 100% /* Purple */
-            );
-        }
-        
-        .miel-logo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .miel-logo-image {
-            max-width: 200px;
-            height: auto;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .miel-logo-image:hover {
-            transform: scale(1.05);
-        }
-        
-        .miel-subtitle {
-            font-size: 1.4rem;
-            color: var(--secondary-green);
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        
-        .miel-tagline {
-            color: #666;
-            font-size: 1rem;
-            max-width: 600px;
-            margin: 0 auto 15px;
-            line-height: 1.4;
-        }
-        
-        .miel-intelligence-icons {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .intelligence-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #F8F9FF;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: var(--primary-blue);
-            border: 2px solid #E0E0E0;
-            transition: all 0.3s;
-        }
-        
-        .intelligence-icon:hover {
-            transform: scale(1.1);
-            border-color: var(--primary-blue);
-            background: white;
-            box-shadow: var(--shadow);
         }
         
         /* ===== DASHBOARD HEADER ===== */
@@ -496,140 +406,118 @@ if (!isset($_GET['created'])) {
         .intrapersonal-icon { color: #795548; background: rgba(121, 85, 72, 0.1); }
         .naturalist-icon { color: #8BC34A; background: rgba(139, 195, 74, 0.1); }
         
-/* ===== VIRTUAL WORLD SELECTOR ===== */
-.world-selector {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 15px;
-    margin-top: 10px;
-}
+        /* ===== VIRTUAL WORLD SELECTOR ===== */
+        .world-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
 
-/* COMPACT virtual world card - REDUCED SPACING */
-.world-option {
-    background: #F8F9FF;
-    border: 3px solid #E0E0E0;
-    border-radius: 15px;
-    padding: 10px 8px !important; /* Reduced padding */
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 170px !important; /* SIGNIFICANTLY REDUCED height */
-    height: 100%;
-}
+        .world-option {
+            background: #F8F9FF;
+            border: 3px solid #E0E0E0;
+            border-radius: 15px;
+            padding: 10px 8px !important;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 170px !important;
+            height: 100%;
+        }
 
-.world-option:hover {
-    transform: translateY(-5px);
-    border-color: var(--primary-blue);
-}
+        .world-option:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-blue);
+        }
 
-.world-option.selected {
-    border-color: var(--secondary-green);
-    background: #E8F5E9;
-}
+        .world-option.selected {
+            border-color: var(--secondary-green);
+            background: #E8F5E9;
+        }
 
-.world-thumbnail {
-    width: 100%;
-    height: 120px !important; /* SIGNIFICANTLY REDUCED height */
-    margin-bottom: 5px !important; /* Reduced margin */
-    border-radius: 10px;
-    overflow: hidden;
-    background: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
+        .world-thumbnail {
+            width: 100%;
+            height: 120px !important;
+            margin-bottom: 5px !important;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
 
-.world-thumbnail img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
-}
+        .world-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
 
-/* Placeholder styling */
-.thumbnail-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #999;
-    font-size: 0.9rem;
-}
+        .world-info {
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            padding: 0 !important;
+            margin: 0 !important;
+            justify-content: space-between;
+            height: calc(100% - 90px);
+        }
 
-.thumbnail-placeholder i {
-    font-size: 2.5rem;
-    margin-bottom: 5px;
-}
+        .world-info h3 {
+            font-size: 0.9rem !important;
+            margin: 5px 0 !important;
+            color: var(--text-dark);
+            line-height: 1.1 !important;
+            min-height: 1.8em !important;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            padding: 0 !important;
+            font-weight: bold;
+        }
 
-/* COMPACT WORLD INFO CONTAINER - MINIMAL SPACING */
-.world-info {
-    text-align: center;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    padding: 0 !important; /* Remove padding */
-    margin: 0 !important; /* Remove margins */
-    justify-content: space-between;
-    height: calc(100% - 90px); /* Fill remaining space after thumbnail */
-}
+        .see-world-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background-color: #FDD473;
+            color: #2C3E50 !important;
+            text-decoration: none;
+            padding: 3px 8px !important;
+            border-radius: 6px;
+            font-size: 0.7rem !important;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 4px !important;
+            width: 100%;
+            max-width: 100px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 30px !important;
+            flex-shrink: 0;
+        }
 
-/* TIGHT TITLE STYLING */
-.world-info h3 {
-    font-size: 0.9rem !important;
-    margin: 5px 0 !important; /* Minimal vertical margin */
-    color: var(--text-dark);
-    line-height: 1.1 !important; /* Very tight line height */
-    min-height: 1.8em !important; /* Reduced minimum height */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    padding: 0 !important;
-    font-weight: bold;
-}
+        .see-world-link:hover {
+            background-color: #FA7C1F;
+            transform: translateY(-2px);
+            color: white !important;
+            text-decoration: none;
+        }
 
-/* COMPACT "SEE WORLD" LINK - TIGHT TO TITLE */
-.see-world-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    background-color: #FDD473;
-    color: #2C3E50 !important;
-    text-decoration: none;
-    padding: 3px 8px !important; /* Minimal padding */
-    border-radius: 6px;
-    font-size: 0.7rem !important; /* Smaller font */
-    font-weight: bold;
-    transition: all 0.3s;
-    margin-top: 4px !important; /* Very small top margin */
-    width: 100%;
-    max-width: 100px; /* Smaller width */
-    margin-left: auto;
-    margin-right: auto;
-    height: 30px !important; /* Smaller height */
-    flex-shrink: 0; /* Don't shrink */
-}
-
-.see-world-link:hover {
-    background-color: #FA7C1F;
-    transform: translateY(-2px);
-    color: white !important;
-    text-decoration: none;
-}
-
-.see-world-link i {
-    font-size: 0.6rem !important; /* Smaller icon */
-}
-
+        .see-world-link i {
+            font-size: 0.6rem !important;
+        }
         
         /* ===== BUTTONS ===== */
         .btn {
@@ -692,14 +580,13 @@ if (!isset($_GET['created'])) {
         }
         
         /* ===== STANDARDIZED BUTTON STYLES ===== */
-        /* Blue functional buttons -> Yellow on hover */
         .btn-success, .btn-secondary {
-            background-color: #4A90E2 !important; /* BLUE for functional buttons */
+            background-color: #4A90E2 !important;
             color: white !important;
         }
         
         .btn-success:hover, .btn-secondary:hover {
-            background-color: #FFD166 !important; /* YELLOW on hover */
+            background-color: #FFD166 !important;
             transform: translateY(-3px);
             color: #2C3E50 !important;
         }
@@ -718,7 +605,6 @@ if (!isset($_GET['created'])) {
             border: 2px solid rgba(255, 255, 255, 0.8);
         }     
            
-        /* Green button for "Back to Dashboard" */
         .green-btn {
             background-color: #50C878 !important;
             color: white !important;
@@ -741,7 +627,6 @@ if (!isset($_GET['created'])) {
             transform: translateY(-3px) !important;
         }
         
-        /* Red button for logout */
         .red-btn {
             background-color: #FF6B6B !important;
             color: white !important;
@@ -764,7 +649,7 @@ if (!isset($_GET['created'])) {
             transform: translateY(-3px) !important;
         }
         
-        /* ===== MOBILE RESPONSIVE (SAME AS teacher-dashboard.php) ===== */
+        /* ===== MOBILE RESPONSIVE ===== */
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -797,7 +682,6 @@ if (!isset($_GET['created'])) {
                 width: 100%;
             }
             
-            /* Bottom buttons on mobile */
             .bottom-buttons-container {
                 flex-direction: column;
                 gap: 10px;
@@ -810,9 +694,8 @@ if (!isset($_GET['created'])) {
                 justify-content: center;
             }
             
-            /* Mobile adjustments for world options */
             .world-option {
-                min-height: 200px; /* Smaller on mobile */
+                min-height: 200px;
             }
             
             .world-thumbnail {
@@ -821,10 +704,6 @@ if (!isset($_GET['created'])) {
             
             .world-info h3 {
                 font-size: 0.95rem;
-            }
-            
-            .world-subtitle {
-                font-size: 0.8rem;
             }
             
             .see-world-link {
@@ -862,7 +741,7 @@ if (!isset($_GET['created'])) {
             }
         }
         
-        /* ===== ANIMATIONS (SAME AS teacher-dashboard.php) ===== */
+        /* ===== ANIMATIONS ===== */
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
@@ -969,9 +848,8 @@ if (!isset($_GET['created'])) {
         <!-- DASHBOARD HEADER -->
         <header class="dashboard-header fade-in">
             <div class="logo">
-                
                 <div>
-<img src="images/create-quiz.jpg" alt="Create Quiz for Arville Metaverse" style="max-width: 450 px; height: auto; margin-bottom: 10px;">
+                    <img src="images/create-quiz.jpg" alt="Create Quiz for Arville Metaverse" style="max-width: 450px; height: auto; margin-bottom: 10px;">
                     <p class="subtitle">Design a fun quiz for your students based on ARville worlds!</p>
                 </div>
             </div>
@@ -1063,86 +941,12 @@ if (!isset($_GET['created'])) {
                     </div>
                 </div>
 
-                <!-- VIRTUAL WORLD SELECTOR -->
+                <!-- VIRTUAL WORLD SELECTOR (NOW USING THE REUSABLE COMPONENT) -->
                 <div class="form-group">
                     <label class="form-label">
                         <i class="fas fa-globe-americas"></i> Choose Virtual World
                     </label>
-                    <div class="world-selector">
-                        <?php
-                        $worlds = [
-        'zoo' => [
-            'name' => 'ARville Zoo', 
-            'desc' => 'Terrestrial Zoology', 
-            'image' => 'vw-zoo.jpg',
-            'link' => '../zoo1.htm'
-        ],
-        'museum' => [
-            'name' => 'ARVille Museum', 
-            'desc' => 'History & Art', 
-            'image' => 'vw-museum.jpg',
-            'link' => '../museum.htm?id=1'
-        ],
-        'robot city' => [
-            'name' => 'Robot City', 
-            'desc' => 'Tech', 
-            'image' => 'vw-robot-city.jpg',
-            'link' => '../village.htm?id=4'
-        ],
-        'ocean' => [
-            'name' => 'Shark Lair', 
-            'desc' => 'Marine Biology', 
-            'image' => 'vw-ocean.jpg',
-            'link' => '../nature.htm?id=1'
-        ],
-        'coral reef' => [
-            'name' => 'Rainbow Reef', 
-            'desc' => 'Marine Biology', 
-            'image' => 'vw-coral-reefs.jpg',
-            'link' => '../nature.htm?id=3'
-        ],
-        'farm' => [
-            'name' => 'Farm Village', 
-            'desc' => 'Agriculture', 
-            'image' => 'vw-farm.jpg',
-            'link' => '../village2.htm?id=1'
-        ],
-        'raptor island' => [
-             'name' => 'Raptor Island', 
-             'desc' => 'Prehistoric Biology', 
-             'image' => 'vw-raptor.jpg',
-             'link' => '../nature.htm?id=2'
-        ],
-        'toy world' => [
-            'name' => 'Toy World', 
-            'desc' => 'Fantasy', 
-            'image' => 'vw-toy-world.jpg',
-            'link' => '../village.htm?id=3'
-        ],
-    ];
-                        
-                        $selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['virtual_world'] : 'zoo';
-                        
-                        foreach ($worlds as $key => $world):
-                            $isSelected = $selectedWorld === $key;
-                            $imagePath = "images/{$world['image']}";
-                            // Check if image exists, fallback to default if not
-                            $actualImage = file_exists($imagePath) ? $imagePath : "images/default-world.jpg";
-                        ?>
-                        <div class="world-option <?php echo $isSelected ? 'selected' : ''; ?>" data-world="<?php echo $key; ?>">
-                            <div class="world-thumbnail">
-                                <img src="<?php echo $actualImage; ?>" alt="<?php echo $world['name']; ?>">
-                            </div>
-                            <div class="world-info">
-                                <h3><?php echo $world['name']; ?></h3>
-                                <a href="<?php echo $world['link']; ?>" target="_blank" class="see-world-link" onclick="event.stopPropagation();">
-                                    <i class="fas fa-external-link-alt"></i> See World
-                                </a>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <input type="hidden" name="virtual_world" id="virtualWorld" value="<?php echo $selectedWorld; ?>">
+                    <div id="virtual-world-selector-container"></div>
                 </div>
 
                 <!-- ACTION BUTTONS -->
@@ -1169,26 +973,34 @@ if (!isset($_GET['created'])) {
                 <i class="fas fa-tachometer-alt"></i> Back to Dashboard
             </a>
             
-<form method="POST" action="logout.php" style="display: inline;">
-    <button type="submit" name="logout" class="red-btn">
-        <i class="fas fa-sign-out-alt"></i> Logout
-    </button>
-</form>
-
+            <form method="POST" action="logout.php" style="display: inline;">
+                <button type="submit" name="logout" class="red-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
         </div>
     </div>
 
     <!-- JAVASCRIPT -->
+    <script src="virtual-world-selector.js"></script>
     <script>
         // DOM Elements
         const intelligenceOptions = document.querySelectorAll('.intelligence-option');
-        const worldOptions = document.querySelectorAll('.world-option');
         const intelligenceInput = document.getElementById('intelligenceType');
-        const virtualWorldInput = document.getElementById('virtualWorld');
         const quizForm = document.getElementById('quizForm');
         const titleInput = document.getElementById('quizTitle');
         const titleError = document.getElementById('titleError');
         const submitBtn = document.getElementById('submitBtn');
+
+        // Initialize Virtual World Selector
+        const worldSelector = new VirtualWorldSelector({
+            containerId: 'virtual-world-selector-container',
+            selectedWorld: '<?php echo $selectedWorld; ?>',
+            onWorldChange: function(worldKey, worldData) {
+                console.log('World changed to:', worldKey, worldData.name);
+                // You can add additional logic here if needed
+            }
+        });
 
         // Intelligence Type Selector
         intelligenceOptions.forEach(option => {
@@ -1196,20 +1008,6 @@ if (!isset($_GET['created'])) {
                 intelligenceOptions.forEach(o => o.classList.remove('selected'));
                 option.classList.add('selected');
                 intelligenceInput.value = option.dataset.intelligence;
-            });
-        });
-
-        // World Selector - updated to ignore clicks on the "See World" link
-        worldOptions.forEach(option => {
-            option.addEventListener('click', (e) => {
-                // Don't trigger selection if clicking on the "See World" link
-                if (e.target.closest('.see-world-link')) {
-                    return;
-                }
-                
-                worldOptions.forEach(o => o.classList.remove('selected'));
-                option.classList.add('selected');
-                virtualWorldInput.value = option.dataset.world;
             });
         });
 
