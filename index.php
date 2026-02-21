@@ -204,7 +204,7 @@ $smallCategories = [
     ["title" => "Taiga Hinterland", "tagline" => "Where log cabins nestle among pines and wolves roam the frozen terrain", "icon" => "taigaa.jpg", "hoverIcon" => "taigab.jpg", "link" => "nature.htm?id=7"],
     ["title" => "Desert Village", "tagline" => "Where humble stone dwellings bear witness to life lived on sun-scorched sand", "icon" => "deserta.jpg", "hoverIcon" => "desertb.jpg", "link" => "village2.htm?id=9"],
     ["title" => "Freshwater Fiefdom", "tagline" => "Where monster fish reign among lush emerald gardens", "icon" => "fw-ponda.jpg", "hoverIcon" => "fw-pondb.jpg", "link" => "nature.htm?id=8"],
-    ["title" => "Beatbox Meadow", "tagline" => "A sunlit field where magical objects unlock rhythmic loops for musical ears", "icon" => "meadowa.jpg", "hoverIcon" => "meadowb.jpg", "link" => "nature.htm?id=9"],
+    ["title" => "Butterfly Meadow", "tagline" => "A sunlit field where blue butterflies waltz with wildflowers from dawn to dusk", "icon" => "meadowa.jpg", "hoverIcon" => "meadowb.jpg", "link" => "nature.htm?id=9"],
     ];
 
 for ($i = 0; $i < 21; $i++) {

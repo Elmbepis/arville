@@ -155,7 +155,7 @@
     <div id="center-tap-area"></div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="universe/js/three.min.js"></script>
   <script src="universe/js/GLTFLoader.js"></script>
   <script src="universe/js/animation-controller.js"></script>
   <script src="universe/js/audio-mappings.js"></script>
@@ -204,7 +204,8 @@
       '6': { x: 0, y: 5, z: 50, rotation: 0 }, 
       '7': { x: -10, y: 4, z: 60, rotation: 0 }, 
       '8': { x: 0, y: EYE_HEIGHT, z: 60, rotation: 0 }, // Default
-      '9': { x: 0, y: 4, z: 30, rotation: 0 }, // Default
+      '9': { x: 0, y: 4, z: 30, rotation: 0 }, 
+      '10': { x: 0, y: EYE_HEIGHT, z: 30, rotation: 0 },
     };
 
     // Set dynamic title based on villageId
@@ -219,6 +220,7 @@
       '7': 'ARville Motor Stop',
       '8': 'Martian Settlement',
       '9': 'Desert Village',
+      '10': 'Beatbox Toon Town',
     };
     
     // Set the page title
@@ -266,6 +268,10 @@
       '9': {
         ground: 'universe/textures/sand5.jpg',
         roads: 'universe/textures/sand5b.jpg'
+      },
+      '10': {
+        ground: 'universe/textures/sea1.jpg',
+        roads: 'universe/textures/sea1b.jpg'
       },
     };
 
@@ -491,11 +497,17 @@ function init() {
   });
 
   // Use the shared navigation controls - pass PLACE dimensions with normal speed
-  setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.8);
-  window.addEventListener("resize", onWindowResize);
+let speedMultiplier = 0.8; // Default speed
+
+if (villageId === '10') {
+    speedMultiplier = 1.5; // 1.5x faster (0.8 × 1.5 = 1.2)
+    console.log('&#128640; Speed boosted 1.5x for Beatbox Toon Town!');
 }
 
-   
+setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, speedMultiplier);  
+  
+  window.addEventListener("resize", onWindowResize);
+}
  
 function updateRide() {
   if (!isRiding) return;
