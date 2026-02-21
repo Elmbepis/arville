@@ -194,7 +194,7 @@ $smallCategories = [
     ["title" => "Arville Farm", "tagline" => "A harvest haven where students explore the world of farming", "icon" => "farma.jpg", "hoverIcon" => "farmb.jpg", "link" => "village2.htm?id=1"],
     ["title" => "Medieval Square", "tagline" => "A 15th century community bustling with cobbled commerce", "icon" => "medievala.jpg", "hoverIcon" => "medievalb.jpg", "link" => "village2.htm?id=2"],
     ["title" => "Martian Settlement", "tagline" => "A glimpse of how pioneering humans will soon settle on the rusty soil of Mars", "icon" => "marsa.jpg", "hoverIcon" => "marsb.jpg", "link" => "village2.htm?id=8"],
-    ["title" => "Small Medieval Castle", "tagline" => "A piece of virtual wilderness where your magical outdoor adventures never end", "icon" => "castlea.jpg", "hoverIcon" => "castleb.jpg", "link" => "village2.htm?id=5"],
+    ["title" => "Small Medieval Castle", "tagline" => "A fortress of stone where echoes of the past still linger", "icon" => "castlea.jpg", "hoverIcon" => "castleb.jpg", "link" => "village2.htm?id=5"],
     ["title" => "Cobra Cavern", "tagline" => "A cave where niche-dwelling animals compete for survival", "icon" => "cavea.jpg", "hoverIcon" => "caveb.jpg", "link" => "nature.htm?id=4"],
     ["title" => "ARville Playground", "tagline" => "A kaleidoscope of playful fun and memories where your curiosity runs free", "icon" => "playgrounda.jpg", "hoverIcon" => "playgroundb.jpg", "link" => "village2.htm?id=6"],
     ["title" => "African Savanna", "tagline" => "A sun-kissed grassland where the great circle of life unfolds", "icon" => "savannaa.jpg", "hoverIcon" => "savannab.jpg", "link" => "nature.htm?id=5"],
