@@ -207,7 +207,7 @@
       '9': { x: 0, y: 4, z: 30, rotation: 0 }, 
       '10': { x: 0, y: EYE_HEIGHT, z: 30, rotation: 0 },
       '11': { x: 0, y: 8, z: -5, rotation: 0 }, 
-      '12': { x: 0, y: 4, z: 60, rotation: 0 },
+      '12': { x: 5, y: 6, z: 60, rotation: 0 },
     };
 
     // Set dynamic title based on villageId
@@ -224,7 +224,7 @@
       '9': 'Desert Village',
       '10': 'Beatbox Toon Town',
       '11': 'Virtual Taj Mahal',
-      '12': 'Pixie Pixel Village',
+      '12': 'Fuschia Fairyland',
     };
     
     // Set the page title
@@ -282,8 +282,8 @@
         roads: 'universe/textures/grass2b.jpg'
       },
       '12': {
-        ground: 'universe/textures/general/ube1.jpg',
-        roads: 'universe/textures/general/ube1b.jpg'
+        ground: 'universe/textures/general/fuschia1.jpg',
+        roads: 'universe/textures/general/fuschia1b.jpg'
       },
     };
 
@@ -512,7 +512,7 @@ function init() {
 let speedMultiplier = 0.8; // Default speed
 
 if (villageId === '10') {
-    speedMultiplier = 1.5; // 1.5x faster (0.8 × 1.5 = 1.2)
+    speedMultiplier = 1.5; // 1.5x faster 
     console.log('&#128640; Speed boosted 1.5x for Beatbox Toon Town!');
 }
 

@@ -35,6 +35,7 @@ echo "<script>
                 'images/meadowb.jpg',
                 'images/beatboxb.jpg',
                 'images/tajmahalb.jpg',
+                'images/fairylandb.jpg',
                 'images/room11b.jpg',
                 'images/room12b.jpg',
                 'images/room13b.jpg',
@@ -209,9 +210,10 @@ $smallCategories = [
     ["title" => "Beatbox Toon Town", "tagline" => "A whimsical world where magical objects unlock rhythmic loops for musical vibes", "icon" => "beatboxa.jpg", "hoverIcon" => "beatboxb.jpg", "link" => "village2.htm?id=10"],
     ["title" => "Freshwater Fiefdom", "tagline" => "Where monster fish reign among lush emerald gardens", "icon" => "fw-ponda.jpg", "hoverIcon" => "fw-pondb.jpg", "link" => "nature.htm?id=8"],
     ["title" => "Virtual Taj Mahal", "tagline" => "A monument of love, reimagined in pixels for all the world to see", "icon" => "tajmahala.jpg", "hoverIcon" => "tajmahalb.jpg", "link" => "village2.htm?id=11"],
+    ["title" => "Fuschia Fairyland", "tagline" => "A dazzling realm where pink fairies flit in a wonderland of colors", "icon" => "fairylanda.jpg", "hoverIcon" => "fairylandb.jpg", "link" => "village2.htm?id=12"],
     ];
 
-for ($i = 0; $i < 23; $i++) {
+for ($i = 0; $i < 24; $i++) {
     $category = $smallCategories[$i];
     echo "<div class='col-lg-3 col-md-6 col-6'>"; // 4 columns on large, 2 columns on mobile (col-6)
     echo "    <div class='small-category text-center'>";
