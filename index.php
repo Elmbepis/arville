@@ -212,7 +212,7 @@ $smallCategories = [
     ["title" => "Freshwater Fiefdom", "tagline" => "Where monster fish reign among lush emerald gardens", "icon" => "fw-ponda.jpg", "hoverIcon" => "fw-pondb.jpg", "link" => "nature.htm?id=8"],
     ["title" => "Virtual Taj Mahal", "tagline" => "A monument of love, reimagined in pixels for all the world to see", "icon" => "tajmahala.jpg", "hoverIcon" => "tajmahalb.jpg", "link" => "village2.htm?id=11"],
     ["title" => "Fuschia Fairyland", "tagline" => "A dazzling realm where pink fairies flit in a wonderland of colors", "icon" => "fairylanda.jpg", "hoverIcon" => "fairylandb.jpg", "link" => "village2.htm?id=12"],
-    ["title" => "Red Gnome Treasure Patrol", "tagline" => "Where five chests of gold rest under the watch of red warrior gnome twins", "icon" => "gnomea.jpg", "hoverIcon" => "gnomeb.jpg", "link" => "village2.htm?id=13"],
+    ["title" => "Red Gnome Treasure Patrol", "tagline" => "Where chests of gold rest under the watch of red warrior gnomes", "icon" => "gnomea.jpg", "hoverIcon" => "gnomeb.jpg", "link" => "village2.htm?id=13"],
     ];
 
 for ($i = 0; $i < 25; $i++) {
