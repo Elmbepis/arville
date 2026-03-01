@@ -414,7 +414,7 @@ function init() {
   
   camera.position.set(cameraConfig.x, cameraConfig.y, cameraConfig.z); 
   camera.rotation.set(0, cameraConfig.rotation * Math.PI / 180, 0);
-  //camera.position.set(0, 4, -40); 
+  //camera.position.set(0, 4, -60); 
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -523,6 +523,11 @@ let speedMultiplier = 0.8; // Default speed
 
 if (villageId === '10') {
     speedMultiplier = 1.5; // 1.5x faster 
+    console.log('&#128640; Speed boosted 1.5x for Beatbox Toon Town!');
+}
+
+if (villageId === '14') {
+    speedMultiplier = 1.2; // 1.5x faster 
     console.log('&#128640; Speed boosted 1.5x for Beatbox Toon Town!');
 }
 
