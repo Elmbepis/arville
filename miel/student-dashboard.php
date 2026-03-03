@@ -468,18 +468,6 @@ function getActivityTypeName($type) {
             color: var(--text-dark);
         }
         
-        .grade-range-badge {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(74, 144, 226, 0.2);
-            color: var(--primary-blue);
-            font-size: 0.7rem;
-            padding: 3px 6px;
-            border-radius: 10px;
-            font-weight: bold;
-        }
-        
         .thumbnail-container {
             width: 60px;
             height: 60px;
@@ -949,9 +937,12 @@ function getActivityTypeName($type) {
                                 $iconImage = "images/quiz-{$intelligenceType}.png";
                                 $defaultIcon = "images/default.jpg";
                                 $quizIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
+                                
+                                // Determine which quiz file to use based on type
+                                $quizFile = ($quiz['type'] == 'inworld') ? 'take-quiz2.php' : 'take-quiz.php';
                             ?>
                             <div class="quiz-icon <?php echo !$quizTaken ? 'not-taken' : ''; ?>" 
-                                 onclick="<?php echo $quizTaken ? 'reviewQuiz(' . $quiz['id'] . ')' : 'takeQuiz(' . $quiz['id'] . ')'; ?>">
+                                 onclick="<?php echo $quizTaken ? 'reviewQuiz(\'' . $quizFile . '\', ' . $quiz['id'] . ')' : 'takeQuiz(\'' . $quizFile . '\', ' . $quiz['id'] . ')'; ?>">
                                 <div class="icon-badge <?php echo !$quizTaken ? 'not-taken' : ''; ?>"><?php echo $quizCount; ?></div>
                                 <div class="thumbnail-container">
                                     <img src="<?php echo $quizIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
@@ -1022,7 +1013,6 @@ function getActivityTypeName($type) {
                             ?>
                             <div class="quiz-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)">
                                 <div class="icon-badge"><?php echo $activityCount; ?></div>
-                                
                                 <div class="thumbnail-container">
                                     <img src="<?php echo $activityIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
                                 </div>
@@ -1092,13 +1082,13 @@ function getActivityTypeName($type) {
             }
         });
 
-        // Quiz functions
-        function takeQuiz(quizId) {
-            window.location.href = `take-quiz.php?quiz_id=${quizId}`;
+        // Quiz functions - updated to accept quiz file parameter
+        function takeQuiz(quizFile, quizId) {
+            window.location.href = `${quizFile}?quiz_id=${quizId}`;
         }
         
-        function reviewQuiz(quizId) {
-            window.location.href = `take-quiz.php?quiz_id=${quizId}`;
+        function reviewQuiz(quizFile, quizId) {
+            window.location.href = `${quizFile}?quiz_id=${quizId}`;
         }
         
         // Activity functions

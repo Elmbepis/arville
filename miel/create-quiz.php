@@ -71,9 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
             $statusMessage = "Error: A quiz with this title already exists. Please choose a different title.";
             $statusType = 'error';
         } else {
-            // Insert into quizzes table with grade range
-            $quizSql = "INSERT INTO quizzes (teacher_id, grade_start, grade_end, title, description, intelligence_type, virtual_world, created_at) 
-                        VALUES (:teacher_id, :grade_start, :grade_end, :title, :description, :intelligence_type, :virtual_world, NOW())";
+            // Insert into quizzes table with grade range and quiz type
+            $quizSql = "INSERT INTO quizzes (teacher_id, grade_start, grade_end, title, description, intelligence_type, virtual_world, type, created_at) 
+                        VALUES (:teacher_id, :grade_start, :grade_end, :title, :description, :intelligence_type, :virtual_world, :type, NOW())";
             
             $quizStmt = $pdo->prepare($quizSql);
             $quizStmt->execute([
@@ -83,7 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
                 ':title' => $_POST['quiz_title'],
                 ':description' => $_POST['quiz_description'],
                 ':intelligence_type' => $_POST['intelligence_type'],
-                ':virtual_world' => $_POST['virtual_world']
+                ':virtual_world' => $_POST['virtual_world'],
+                ':type' => $_POST['quiz_type']
             ]);
             
             $savedQuizId = $pdo->lastInsertId();
@@ -117,6 +118,9 @@ if (!isset($_GET['created'])) {
 
 // Set selected world from POST or default
 $selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['virtual_world'] : 'zoo';
+
+// Set selected quiz type from POST or default
+$selectedQuizType = isset($_POST['quiz_type']) && !$formSubmitted ? $_POST['quiz_type'] : 'offworld';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -400,6 +404,49 @@ $selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['vir
                 transform: rotate(90deg);
                 margin: 5px 0;
             }
+        }
+        
+        /* ===== QUIZ TYPE SELECTOR STYLES ===== */
+        .quiz-type-selector {
+            position: relative;
+            margin-top: 10px;
+        }
+        
+        .quiz-type-selector select {
+            width: 100%;
+            border: 3px solid #E0E0E0;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            transition: all 0.3s;
+            background-color: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url(data:image/svg+xml;charset=UTF-8,%3csvg\ xmlns=\'http://www.w3.org/2000/svg\'\ viewBox=\'0\ 0\ 24\ 24\'\ fill=\'none\'\ stroke=\'%234A90E2\'\ stroke-width=\'2\'\ stroke-linecap=\'round\'\ stroke-linejoin=\'round\'%3e%3cpolyline\ points=\'6\ 9\ 12\ 15\ 18\ 9\'%3e%3c/polyline%3e%3c/svg%3e);
+            background-repeat: no-repeat;
+            background-position:  right 15px;
+            background-size: 15px; padding-left:50px; padding-right:15px; padding-top:15px; padding-bottom:15px
+        }
+        
+        .quiz-type-selector select:hover {
+            border-color: var(--primary-blue);
+        }
+        
+        .quiz-type-selector select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+        
+        .quiz-type-selector i.input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-blue);
+            font-size: 1.2rem;
+            z-index: 1;
+            pointer-events: none;
         }
         
         /* ===== INTELLIGENCE TYPE SELECTOR ===== */
@@ -992,6 +1039,20 @@ $selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['vir
                         </div>
                     </div>
                     <div id="gradeError" class="error-message" style="color: #FF6B6B; margin-top: 5px; font-size: 0.9rem; display: none;"></div>
+                </div>
+
+                <!-- QUIZ TYPE SELECTOR (NEW) -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-gamepad"></i> Quiz Type
+                    </label>
+                    <div class="quiz-type-selector">
+                        <i class="fas fa-globe input-icon"></i>
+                        <select name="quiz_type" id="quizType" required>
+                            <option value="offworld" <?php echo $selectedQuizType == 'offworld' ? 'selected' : ''; ?>>Off-World (Standard Worksheet)</option>
+                            <option value="inworld" <?php echo $selectedQuizType == 'inworld' ? 'selected' : ''; ?>>In-World (Interactive 3D Experience)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- INTELLIGENCE TYPE SELECTOR -->
