@@ -71,13 +71,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
             $statusMessage = "Error: A quiz with this title already exists. Please choose a different title.";
             $statusType = 'error';
         } else {
-            // Insert into quizzes table with ACTUAL teacher ID from session
-            $quizSql = "INSERT INTO quizzes (teacher_id, title, description, intelligence_type, virtual_world, created_at) 
-                        VALUES (:teacher_id, :title, :description, :intelligence_type, :virtual_world, NOW())";
+            // Insert into quizzes table with grade range
+            $quizSql = "INSERT INTO quizzes (teacher_id, grade_start, grade_end, title, description, intelligence_type, virtual_world, created_at) 
+                        VALUES (:teacher_id, :grade_start, :grade_end, :title, :description, :intelligence_type, :virtual_world, NOW())";
             
             $quizStmt = $pdo->prepare($quizSql);
             $quizStmt->execute([
-                ':teacher_id' => $teacher_id, // Use actual teacher ID from session
+                ':teacher_id' => $teacher_id,
+                ':grade_start' => $_POST['grade_start'],
+                ':grade_end' => $_POST['grade_end'],
                 ':title' => $_POST['quiz_title'],
                 ':description' => $_POST['quiz_description'],
                 ':intelligence_type' => $_POST['intelligence_type'],
@@ -333,6 +335,71 @@ $selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['vir
         textarea {
             min-height: 100px;
             resize: vertical;
+        }
+        
+        /* ===== GRADE RANGE SELECTOR STYLES ===== */
+        .grade-range-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .grade-range-container select {
+            width: 100%;
+            border: 3px solid #E0E0E0;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            transition: all 0.3s;
+            background-color: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url(data:image/svg+xml;charset=UTF-8,%3csvg\ xmlns=\'http://www.w3.org/2000/svg\'\ viewBox=\'0\ 0\ 24\ 24\'\ fill=\'none\'\ stroke=\'%234A90E2\'\ stroke-width=\'2\'\ stroke-linecap=\'round\'\ stroke-linejoin=\'round\'%3e%3cpolyline\ points=\'6\ 9\ 12\ 15\ 18\ 9\'%3e%3c/polyline%3e%3c/svg%3e);
+            background-repeat: no-repeat;
+            background-position:  right 15px;
+            background-size: 15px; padding-left:45px; padding-right:15px; padding-top:15px; padding-bottom:15px
+        }
+
+        .grade-range-container select:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .grade-range-container select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        .grade-range-container span {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            background: rgba(74, 144, 226, 0.1);
+            padding: 10px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .grade-range-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .grade-range-container select {
+                padding: 12px 12px 12px 40px;
+                font-size: 1rem;
+            }
+            
+            .grade-range-container span {
+                transform: rotate(90deg);
+                margin: 5px 0;
+            }
         }
         
         /* ===== INTELLIGENCE TYPE SELECTOR ===== */
@@ -879,7 +946,7 @@ $selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['vir
             <?php endif; ?>
             
             <form method="POST" action="create-quiz.php" id="quizForm" class="<?php echo $formSubmitted ? 'form-disabled' : ''; ?>">
-                <!-- QUIZ INFO SECTION -->
+                <!-- QUIZ TITLE SECTION -->
                 <div class="form-group">
                     <label class="form-label">
                         <i class="fas fa-heading"></i> Quiz Title
@@ -890,6 +957,41 @@ $selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['vir
                                value="<?php echo isset($_POST['quiz_title']) && !$formSubmitted ? htmlspecialchars($_POST['quiz_title']) : ''; ?>">
                     </div>
                     <div id="titleError" class="error-message"></div>
+                </div>
+
+                <!-- GRADE LEVEL RANGE SELECTOR -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-graduation-cap"></i> Grade Level Range
+                    </label>
+                    <div class="grade-range-container">
+                        <div style="flex: 1; position: relative;">
+                            <i class="fas fa-sort-numeric-up" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-blue); z-index: 1;"></i>
+                            <select name="grade_start" id="gradeStart" required style="padding-left: 45px;">
+                                <option value="" disabled <?php echo !isset($_POST['grade_start']) ? 'selected' : ''; ?>>From Grade</option>
+                                <?php for($i = 1; $i <= 12; $i++): ?>
+                                <option value="<?php echo $i; ?>" <?php echo (isset($_POST['grade_start']) && $_POST['grade_start'] == $i) ? 'selected' : ''; ?>>
+                                    Grade <?php echo $i; ?>
+                                </option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
+                        
+                        <span>to</span>
+                        
+                        <div style="flex: 1; position: relative;">
+                            <i class="fas fa-sort-numeric-down" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-blue); z-index: 1;"></i>
+                            <select name="grade_end" id="gradeEnd" required style="padding-left: 45px;">
+                                <option value="" disabled <?php echo !isset($_POST['grade_end']) ? 'selected' : ''; ?>>To Grade</option>
+                                <?php for($i = 1; $i <= 12; $i++): ?>
+                                <option value="<?php echo $i; ?>" <?php echo (isset($_POST['grade_end']) && $_POST['grade_end'] == $i) ? 'selected' : ''; ?>>
+                                    Grade <?php echo $i; ?>
+                                </option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="gradeError" class="error-message" style="color: #FF6B6B; margin-top: 5px; font-size: 0.9rem; display: none;"></div>
                 </div>
 
                 <!-- INTELLIGENCE TYPE SELECTOR -->
@@ -941,7 +1043,7 @@ $selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['vir
                     </div>
                 </div>
 
-                <!-- VIRTUAL WORLD SELECTOR (NOW USING THE REUSABLE COMPONENT) -->
+                <!-- VIRTUAL WORLD SELECTOR -->
                 <div class="form-group">
                     <label class="form-label">
                         <i class="fas fa-globe-americas"></i> Choose Virtual World
@@ -991,6 +1093,9 @@ $selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['vir
         const titleInput = document.getElementById('quizTitle');
         const titleError = document.getElementById('titleError');
         const submitBtn = document.getElementById('submitBtn');
+        const gradeStart = document.getElementById('gradeStart');
+        const gradeEnd = document.getElementById('gradeEnd');
+        const gradeError = document.getElementById('gradeError');
 
         // Initialize Virtual World Selector
         const worldSelector = new VirtualWorldSelector({
@@ -1010,6 +1115,28 @@ $selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['vir
                 intelligenceInput.value = option.dataset.intelligence;
             });
         });
+
+        // Grade range validation
+        function validateGradeRange() {
+            if (gradeStart.value && gradeEnd.value) {
+                const start = parseInt(gradeStart.value);
+                const end = parseInt(gradeEnd.value);
+                
+                if (end < start) {
+                    gradeError.textContent = 'End grade cannot be less than start grade!';
+                    gradeError.style.display = 'block';
+                    return false;
+                } else {
+                    gradeError.textContent = '';
+                    gradeError.style.display = 'none';
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        gradeStart.addEventListener('change', validateGradeRange);
+        gradeEnd.addEventListener('change', validateGradeRange);
 
         // Check for duplicate title (AJAX call to self)
         async function checkDuplicateTitle(title) {
@@ -1042,6 +1169,11 @@ $selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['vir
                 titleError.textContent = 'Please enter a quiz title!';
                 titleError.style.display = 'block';
                 titleInput.focus();
+                return false;
+            }
+            
+            // Validate grade range
+            if (!validateGradeRange()) {
                 return false;
             }
             

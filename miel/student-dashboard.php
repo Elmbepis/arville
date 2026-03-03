@@ -23,7 +23,9 @@ try {
     $studentStmt->execute([$_SESSION['user_id']]);
     $student = $studentStmt->fetch(PDO::FETCH_ASSOC);
     
-    // Get available quizzes for student's grade level
+    $studentGrade = $student['grade_level'];
+    
+    // Get available quizzes for student's grade level (where student's grade is within quiz grade range)
     $quizStmt = $pdo->prepare("
         SELECT q.*, u.full_name as teacher_name 
         FROM quizzes q 
@@ -31,9 +33,11 @@ try {
         WHERE q.id IN (
             SELECT quiz_id FROM questions GROUP BY quiz_id HAVING COUNT(*) > 0
         )
+        AND q.grade_start <= :student_grade 
+        AND q.grade_end >= :student_grade
         ORDER BY q.created_at DESC
     ");
-    $quizStmt->execute();
+    $quizStmt->execute([':student_grade' => $studentGrade]);
     $availableQuizzes = $quizStmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Get student's quiz scores
@@ -47,14 +51,16 @@ try {
     $scoreStmt->execute([$_SESSION['user_id']]);
     $studentQuizScores = $scoreStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get Available Activities
+    // Get Available Activities for student's grade level (where student's grade is within activity grade range)
     $activitiesStmt = $pdo->prepare("
         SELECT a.*, u.full_name as teacher_name 
         FROM activities a 
         JOIN users u ON a.teacher_id = u.id 
+        WHERE a.grade_start <= :student_grade 
+        AND a.grade_end >= :student_grade
         ORDER BY a.created_at DESC
     ");
-    $activitiesStmt->execute();
+    $activitiesStmt->execute([':student_grade' => $studentGrade]);
     $availableActivities = $activitiesStmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Get Student's Activity Grades
@@ -276,6 +282,23 @@ function getActivityTypeName($type) {
             margin-top: -5px;
         }
         
+        /* Grade level badge */
+        .grade-badge {
+            display: inline-block;
+            background: var(--accent-yellow);
+            color: var(--text-dark);
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .grade-badge i {
+            margin-right: 5px;
+            color: var(--primary-blue);
+        }
+        
         /* ===== HORIZONTAL SECTIONS ===== */
         .horizontal-sections {
             display: flex;
@@ -443,6 +466,18 @@ function getActivityTypeName($type) {
         .icon-badge.not-taken {
             background: var(--accent-yellow);
             color: var(--text-dark);
+        }
+        
+        .grade-range-badge {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(74, 144, 226, 0.2);
+            color: var(--primary-blue);
+            font-size: 0.7rem;
+            padding: 3px 6px;
+            border-radius: 10px;
+            font-weight: bold;
         }
         
         .thumbnail-container {
@@ -816,6 +851,9 @@ function getActivityTypeName($type) {
                 <br><small>Class: <?php echo htmlspecialchars($student['class_name']); ?></small>
                 <?php endif; ?>
             </div>
+            <div class="grade-badge">
+                <i class="fas fa-graduation-cap"></i> Your Grade Level: <?php echo $student['grade_level']; ?>
+            </div>
         </header>
 
         <!-- HORIZONTAL SECTIONS -->
@@ -878,7 +916,7 @@ function getActivityTypeName($type) {
             <!-- MY QUIZZES SECTION -->
             <div class="card fade-in">
                 <h2 class="card-title">
-                    <i class="fas fa-gamepad"></i> My Quizzes
+                    <i class="fas fa-gamepad"></i> My Quizzes (Grade <?php echo $student['grade_level']; ?>)
                     <span class="badge badge-primary"><?php echo count($availableQuizzes); ?></span>
                 </h2>
                 
@@ -888,7 +926,7 @@ function getActivityTypeName($type) {
                             <?php for ($i = 1; $i <= 8; $i++): ?>
                             <div class="empty-icon">
                                 <i class="fas fa-plus-circle"></i>
-                                <div class="empty-text">Quiz <?php echo $i; ?></div>
+                                <div class="empty-text">No Quiz Yet</div>
                             </div>
                             <?php endfor; ?>
                         <?php else: ?>
@@ -927,7 +965,7 @@ function getActivityTypeName($type) {
                                     <?php echo number_format($quizScore, 1); ?>%
                                 </div>
                                 <?php else: ?>
-                                <div class="icon-third-line">No Score Yet</div>
+                                <div class="icon-third-line">Not Started</div>
                                 <?php endif; ?>
                             </div>
                             <?php endforeach; ?>
@@ -946,7 +984,7 @@ function getActivityTypeName($type) {
             <!-- MY ACTIVITIES SECTION -->
             <div class="card fade-in">
                 <h2 class="card-title">
-                    <i class="fas fa-tasks"></i> My Activities
+                    <i class="fas fa-tasks"></i> My Activities (Grade <?php echo $student['grade_level']; ?>)
                     <span class="badge badge-primary"><?php echo count($availableActivities); ?></span>
                 </h2>
                 
@@ -956,7 +994,7 @@ function getActivityTypeName($type) {
                             <?php for ($i = 1; $i <= 8; $i++): ?>
                             <div class="empty-icon">
                                 <i class="fas fa-plus-circle"></i>
-                                <div class="empty-text">Activity <?php echo $i; ?></div>
+                                <div class="empty-text">No Activity Yet</div>
                             </div>
                             <?php endfor; ?>
                         <?php else: ?>
@@ -984,6 +1022,7 @@ function getActivityTypeName($type) {
                             ?>
                             <div class="quiz-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)">
                                 <div class="icon-badge"><?php echo $activityCount; ?></div>
+                                
                                 <div class="thumbnail-container">
                                     <img src="<?php echo $activityIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
                                 </div>
@@ -1000,7 +1039,7 @@ function getActivityTypeName($type) {
                                     <?php echo $activityPoints; ?>/<?php echo $maxPoints; ?> pts
                                 </div>
                                 <?php else: ?>
-                                <div class="icon-third-line">No Grade Yet</div>
+                                <div class="icon-third-line">Not Started</div>
                                 <?php endif; ?>
                             </div>
                             <?php endforeach; ?>

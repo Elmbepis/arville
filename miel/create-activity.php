@@ -116,6 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
         $instructions = $_POST['activity_instructions'] ?? '';
         $max_points = intval($_POST['max_points']) > 0 ? intval($_POST['max_points']) : 100;
         $due_date = !empty($_POST['due_date']) ? $_POST['due_date'] : null;
+        $grade_start = intval($_POST['grade_start']);
+        $grade_end = intval($_POST['grade_end']);
         
         if ($isEditMode && $editActivityId) {
             // EDIT MODE: Update existing activity
@@ -130,9 +132,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
                 $statusMessage = "Error: Another activity with this title already exists. Please choose a different title.";
                 $statusType = 'error';
             } else {
-                // Update existing activity
+                // Update existing activity with grade range
                 $activitySql = "UPDATE activities 
                               SET title = :title, 
+                                  grade_start = :grade_start,
+                                  grade_end = :grade_end,
                                   description = :description, 
                                   intelligence_type = :intelligence_type, 
                                   virtual_world = :virtual_world,
@@ -145,6 +149,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
                 $activityStmt = $pdo->prepare($activitySql);
                 $activityStmt->execute([
                     ':title' => $title,
+                    ':grade_start' => $grade_start,
+                    ':grade_end' => $grade_end,
                     ':description' => $_POST['activity_description'],
                     ':intelligence_type' => $_POST['intelligence_type'],
                     ':virtual_world' => $_POST['virtual_world'],
@@ -167,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
             }
             
         } else {
-            // CREATE MODE: Insert new activity
+            // CREATE MODE: Insert new activity with grade range
             
             // Check for duplicate title
             $checkSql = "SELECT COUNT(*) as count FROM activities WHERE title = :title";
@@ -179,15 +185,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
                 $statusMessage = "Error: An activity with this title already exists. Please choose a different title.";
                 $statusType = 'error';
             } else {
-                // Insert new activity
-                $activitySql = "INSERT INTO activities (teacher_id, title, description, intelligence_type, virtual_world, 
+                // Insert new activity with grade range
+                $activitySql = "INSERT INTO activities (teacher_id, grade_start, grade_end, title, description, intelligence_type, virtual_world, 
                               activity_type, instructions, max_points, due_date, created_at) 
-                              VALUES (:teacher_id, :title, :description, :intelligence_type, :virtual_world, 
+                              VALUES (:teacher_id, :grade_start, :grade_end, :title, :description, :intelligence_type, :virtual_world, 
                                       :activity_type, :instructions, :max_points, :due_date, NOW())";
                 
                 $activityStmt = $pdo->prepare($activitySql);
                 $activityStmt->execute([
                     ':teacher_id' => $teacher_id,
+                    ':grade_start' => $grade_start,
+                    ':grade_end' => $grade_end,
                     ':title' => $title,
                     ':description' => $_POST['activity_description'],
                     ':intelligence_type' => $_POST['intelligence_type'],
@@ -255,6 +263,8 @@ function getFormValue($fieldName) {
 $activity_title = getFormValue('title');
 $activity_description = getFormValue('description');
 $activity_instructions = getFormValue('instructions');
+$grade_start_val = $activityData ? $activityData['grade_start'] : (isset($_POST['grade_start']) ? $_POST['grade_start'] : '');
+$grade_end_val = $activityData ? $activityData['grade_end'] : (isset($_POST['grade_end']) ? $_POST['grade_end'] : '');
 $max_points_val = $activityData ? $activityData['max_points'] : (isset($_POST['max_points']) ? $_POST['max_points'] : 100);
 $due_date_val = $activityData ? ($activityData['due_date'] ? date('Y-m-d', strtotime($activityData['due_date'])) : '') : (isset($_POST['due_date']) ? $_POST['due_date'] : '');
 $selected_intelligence = $activityData ? $activityData['intelligence_type'] : (isset($_POST['intelligence_type']) ? $_POST['intelligence_type'] : 'linguistic');
@@ -270,7 +280,7 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
     <title><?php echo $isEditMode ? 'Edit' : 'Create'; ?> Activity | MIEL - Multiple Intelligence E-Learning</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-	<link rel="stylesheet" href="mobile.css" media="screen">
+    <link rel="stylesheet" href="mobile.css" media="screen">
     <style>
         /* ===== KID-FRIENDLY THEME (SAME AS teacher-dashboard.php) ===== */
         :root {
@@ -338,39 +348,39 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
         }
         
         .navbar {
-   		 font-family: 'Arial', sans-serif !important;
-   		 font-weight: 300 !important;
-		}
+            font-family: 'Arial', sans-serif !important;
+            font-weight: 300 !important;
+        }
 
-		.navbar-nav .nav-link {
-	    font-size: 1.0rem !important;
-    	color: #333 !important;
-    	transition: color 0.3s ease !important;
-    	margin-bottom: -70px !important;
-		}
+        .navbar-nav .nav-link {
+            font-size: 1.0rem !important;
+            color: #333 !important;
+            transition: color 0.3s ease !important;
+            margin-bottom: -70px !important;
+        }
 
-		.navbar-nav .nav-link:hover {
-	    color: #4A90E2 !important;
-		}
-		
-		.navbar-brand {
-    	margin-bottom: -50px !important;
-		}
-		
-		.navbar .container {
-		    width: 100%;
-    		max-width: 100%;
-   		    padding-left: 300px;
-  		    padding-right: 300px;
-    		display: flex;
-    		justify-content: space-between;
-    		align-items: center;
-		}
+        .navbar-nav .nav-link:hover {
+            color: #4A90E2 !important;
+        }
+        
+        .navbar-brand {
+            margin-bottom: -50px !important;
+        }
+        
+        .navbar .container {
+            width: 100%;
+            max-width: 100%;
+            padding-left: 300px;
+            padding-right: 300px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-		.navbar .navbar-collapse {
-		    flex-grow: 0; /* Prevents it from taking up extra space */
-		}        
-		
+        .navbar .navbar-collapse {
+            flex-grow: 0; /* Prevents it from taking up extra space */
+        }        
+        
         /* ===== MIEL BANNER ===== */
         .miel-banner-container {
             text-align: center;
@@ -459,6 +469,71 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
             backdrop-filter: blur(5px);
             border: 2px solid rgba(255, 255, 255, 0.8);
             margin-bottom: 30px;
+        }
+        
+        /* ===== GRADE RANGE SELECTOR STYLES ===== */
+        .grade-range-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .grade-range-container select {
+            width: 100%;
+            border: 3px solid #E0E0E0;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            transition: all 0.3s;
+            background-color: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url(data:image/svg+xml;charset=UTF-8,%3csvg\ xmlns=\'http://www.w3.org/2000/svg\'\ viewBox=\'0\ 0\ 24\ 24\'\ fill=\'none\'\ stroke=\'%234A90E2\'\ stroke-width=\'2\'\ stroke-linecap=\'round\'\ stroke-linejoin=\'round\'%3e%3cpolyline\ points=\'6\ 9\ 12\ 15\ 18\ 9\'%3e%3c/polyline%3e%3c/svg%3e);
+            background-repeat: no-repeat;
+            background-position:  right 15px;
+            background-size: 15px; padding-left:45px; padding-right:15px; padding-top:15px; padding-bottom:15px
+        }
+
+        .grade-range-container select:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .grade-range-container select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        .grade-range-container span {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            background: rgba(74, 144, 226, 0.1);
+            padding: 10px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .grade-range-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .grade-range-container select {
+                padding: 12px 12px 12px 40px;
+                font-size: 1rem;
+            }
+            
+            .grade-range-container span {
+                transform: rotate(90deg);
+                margin: 5px 0;
+            }
         }
         
         /* ===== FORM ELEMENTS ===== */
@@ -1160,7 +1235,7 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
             <?php endif; ?>
             
             <form method="POST" action="create-activity.php<?php echo $isEditMode ? "?edit=$editActivityId" : ''; ?>" id="activityForm" class="<?php echo $formSubmitted ? 'form-disabled' : ''; ?>">
-                <!-- ACTIVITY INFO SECTION -->
+                <!-- ACTIVITY TITLE SECTION -->
                 <div class="form-group">
                     <label class="form-label">
                         <i class="fas fa-heading"></i> Activity Title
@@ -1171,6 +1246,41 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                                value="<?php echo $activity_title; ?>">
                     </div>
                     <div id="titleError" class="error-message"></div>
+                </div>
+
+                <!-- GRADE LEVEL RANGE SELECTOR -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-graduation-cap"></i> Grade Level Range
+                    </label>
+                    <div class="grade-range-container">
+                        <div style="flex: 1; position: relative;">
+                            <i class="fas fa-sort-numeric-up" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-blue); z-index: 1;"></i>
+                            <select name="grade_start" id="gradeStart" required style="padding-left: 45px;">
+                                <option value="" disabled <?php echo $grade_start_val === '' ? 'selected' : ''; ?>>From Grade</option>
+                                <?php for($i = 1; $i <= 12; $i++): ?>
+                                <option value="<?php echo $i; ?>" <?php echo ($grade_start_val == $i) ? 'selected' : ''; ?>>
+                                    Grade <?php echo $i; ?>
+                                </option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
+                        
+                        <span>to</span>
+                        
+                        <div style="flex: 1; position: relative;">
+                            <i class="fas fa-sort-numeric-down" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-blue); z-index: 1;"></i>
+                            <select name="grade_end" id="gradeEnd" required style="padding-left: 45px;">
+                                <option value="" disabled <?php echo $grade_end_val === '' ? 'selected' : ''; ?>>To Grade</option>
+                                <?php for($i = 1; $i <= 12; $i++): ?>
+                                <option value="<?php echo $i; ?>" <?php echo ($grade_end_val == $i) ? 'selected' : ''; ?>>
+                                    Grade <?php echo $i; ?>
+                                </option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="gradeError" class="error-message" style="color: #FF6B6B; margin-top: 5px; font-size: 0.9rem; display: none;"></div>
                 </div>
 
                 <!-- ACTIVITY TYPE SELECTOR -->
@@ -1350,6 +1460,9 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
         const titleError = document.getElementById('titleError');
         const submitBtn = document.getElementById('submitBtn');
         const dueDateInput = document.getElementById('dueDate');
+        const gradeStart = document.getElementById('gradeStart');
+        const gradeEnd = document.getElementById('gradeEnd');
+        const gradeError = document.getElementById('gradeError');
         const isEditMode = <?php echo $isEditMode ? 'true' : 'false'; ?>;
         const editActivityId = <?php echo $editActivityId ? "'$editActivityId'" : 'null'; ?>;
 
@@ -1385,6 +1498,28 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                 intelligenceInput.value = option.dataset.intelligence;
             });
         });
+
+        // Grade range validation
+        function validateGradeRange() {
+            if (gradeStart.value && gradeEnd.value) {
+                const start = parseInt(gradeStart.value);
+                const end = parseInt(gradeEnd.value);
+                
+                if (end < start) {
+                    gradeError.textContent = 'End grade cannot be less than start grade!';
+                    gradeError.style.display = 'block';
+                    return false;
+                } else {
+                    gradeError.textContent = '';
+                    gradeError.style.display = 'none';
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        gradeStart.addEventListener('change', validateGradeRange);
+        gradeEnd.addEventListener('change', validateGradeRange);
 
         // Check for duplicate title (AJAX call to self)
         async function checkDuplicateTitle(title) {
@@ -1422,6 +1557,11 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                 titleError.textContent = 'Please enter an activity title!';
                 titleError.style.display = 'block';
                 titleInput.focus();
+                return false;
+            }
+            
+            // Validate grade range
+            if (!validateGradeRange()) {
                 return false;
             }
             
