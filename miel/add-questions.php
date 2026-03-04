@@ -83,6 +83,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if ($_POST['action'] === 'add_question') {
             $question_type = $_POST['question_type'] ?? 'multiple_choice';
             
+            // Check if quiz is inworld when adding click_on questions
+            if ($question_type === 'click_on' && $quiz_info && $quiz_info['type'] !== 'inworld') {
+                $statusMessage = "Click-on questions can only be added to in-world quizzes!";
+                $statusType = 'error';
+            } else {
+            
             // Validate required fields based on question type
             if (empty($_POST['question_text'])) {
                 $statusMessage = "Please enter the question text!";
@@ -192,6 +198,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         $statusMessage = "Fill in the blank question added successfully!";
                         $statusType = 'success';
                     }
+                } elseif ($question_type === 'click_on') {
+                    // Validate click_on answer
+                    if (empty($_POST['model_name'])) {
+                        $statusMessage = "Please enter the model name to click on!";
+                        $statusType = 'error';
+                    } else {
+                        // For Click on: Store model name in option A
+                        $options = [
+                            'A' => $_POST['model_name'] ?? '',
+                            'world_key' => $_POST['world_key'] ?? ($quiz_info['virtual_world'] ?? '')
+                        ];
+                        $correct_answer = 'A'; // Always A for click_on
+                        
+                        // Store question type in options array
+                        $options['question_type'] = $question_type;
+                        
+                        // Set qtype value (CK for Click)
+                        $qtype = 'CK';
+                        
+                        $insertStmt = $pdo->prepare("
+                            INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
+                            VALUES (?, ?, ?, ?, ?)
+                        ");
+                        
+                        $insertStmt->execute([
+                            $quiz_id,
+                            $qtype,
+                            $_POST['question_text'],
+                            json_encode($options),
+                            $correct_answer
+                        ]);
+                        
+                        $statusMessage = "Click-on question added successfully!";
+                        $statusType = 'success';
+                    }
                 }
                 
                 if ($statusType === 'success') {
@@ -202,6 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $_POST['option_c'] = '';
                     $_POST['option_d'] = '';
                     $_POST['fill_answer'] = '';
+                    $_POST['model_name'] = '';
                     $_POST['question_type'] = 'multiple_choice';
                     $_POST['correct_answer'] = 'A';
                     
@@ -213,6 +255,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     // Update quiz info question count
                     $quiz_info['question_count'] = count($questions);
                 }
+            }
             }
             
         } elseif ($_POST['action'] === 'delete_question' && isset($_POST['question_id'])) {
@@ -309,7 +352,8 @@ function getQuestionTypeName($type) {
     $names = [
         'multiple_choice' => 'Multiple Choice',
         'true_false' => 'True/False',
-        'fill_blank' => 'Fill in the Blank'
+        'fill_blank' => 'Fill in the Blank',
+        'click_on' => 'Click On'
     ];
     return $names[$type] ?? $type;
 }
@@ -319,7 +363,8 @@ function getQuestionTypeIcon($type) {
     $icons = [
         'multiple_choice' => 'list-ol',
         'true_false' => 'check-circle',
-        'fill_blank' => 'pen'
+        'fill_blank' => 'pen',
+        'click_on' => 'mouse-pointer'
     ];
     return $icons[$type] ?? 'question-circle';
 }
@@ -329,7 +374,8 @@ function getQtypeName($qtype) {
     $names = [
         'MC' => 'Multiple Choice',
         'TF' => 'True/False',
-        'FB' => 'Fill in Blank'
+        'FB' => 'Fill in Blank',
+        'CK' => 'Click On'
     ];
     return $names[$qtype] ?? $qtype;
 }
@@ -442,7 +488,7 @@ function getQtypeName($qtype) {
 		.navbar .navbar-collapse {
 		    flex-grow: 0; /* Prevents it from taking up extra space */
 		}        
-		
+        
         /* ===== MIEL BANNER ===== */
         .miel-banner-container {
             text-align: center;
@@ -697,6 +743,26 @@ function getQtypeName($qtype) {
             color: #666;
         }
         
+        .quiz-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            background: #E0E0E0;
+            margin-left: 10px;
+        }
+        
+        .quiz-type-badge.inworld {
+            background: rgba(80, 200, 120, 0.2);
+            color: #2E7D32;
+        }
+        
+        .quiz-type-badge.offworld {
+            background: rgba(74, 144, 226, 0.2);
+            color: var(--primary-blue);
+        }
+        
         /* ===== FORM ELEMENTS ===== */
         .form-group {
             margin-bottom: 25px;
@@ -747,7 +813,7 @@ function getQtypeName($qtype) {
         /* ===== QUESTION TYPE SELECTOR ===== */
         .question-type-selector {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
             margin-top: 10px;
         }
@@ -775,6 +841,17 @@ function getQtypeName($qtype) {
         .question-type-option.selected {
             border-color: var(--secondary-green);
             background: #E8F5E9;
+        }
+        
+        .question-type-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        .question-type-option.disabled:hover {
+            transform: none;
+            border-color: #E0E0E0;
         }
         
         .question-type-icon-small {
@@ -808,6 +885,7 @@ function getQtypeName($qtype) {
         .multiple-choice-icon { color: #4CAF50; background: rgba(76, 175, 80, 0.1); }
         .true-false-icon { color: #2196F3; background: rgba(33, 150, 243, 0.1); }
         .fill-blank-icon { color: #9C27B0; background: rgba(156, 39, 176, 0.1); }
+        .click-on-icon { color: #FF9800; background: rgba(255, 152, 0, 0.1); }
         
         /* ===== OPTIONS GRID ===== */
         .options-grid {
@@ -1301,6 +1379,7 @@ function getQtypeName($qtype) {
                                 <?php echo ($quiz_id == $quiz['id']) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($quiz['title']); ?> 
                             (<?php echo getIntelligenceName($quiz['intelligence_type']); ?> - <?php echo getWorldName($quiz['virtual_world']); ?>)
+                            [<?php echo $quiz['type'] == 'inworld' ? '3D' : 'Standard'; ?>]
                             - <?php echo $quiz['question_count']; ?> questions
                         </option>
                         <?php endforeach; ?>
@@ -1325,7 +1404,12 @@ function getQtypeName($qtype) {
                     <i class="fas fa-<?php echo getWorldIcon($quiz_info['virtual_world']); ?>"></i>
                 </div>
                 <div class="quiz-details">
-                    <div class="quiz-title"><?php echo htmlspecialchars($quiz_info['title']); ?></div>
+                    <div class="quiz-title">
+                        <?php echo htmlspecialchars($quiz_info['title']); ?>
+                        <span class="quiz-type-badge <?php echo $quiz_info['type']; ?>">
+                            <?php echo $quiz_info['type'] == 'inworld' ? '&#127757; In-World' : '&#128196; Off-World'; ?>
+                        </span>
+                    </div>
                     <div><?php echo htmlspecialchars($quiz_info['description']); ?></div>
                     <div class="quiz-meta">
                         <div class="meta-item">
@@ -1363,22 +1447,30 @@ function getQtypeName($qtype) {
                         $questionTypes = [
                             'multiple_choice' => ['icon' => 'list-ol', 'name' => 'Multiple Choice', 'desc' => '4 options, select correct one'],
                             'true_false' => ['icon' => 'check-circle', 'name' => 'True/False', 'desc' => 'Select correct answer'],
-                            'fill_blank' => ['icon' => 'pen', 'name' => 'Fill in Blank', 'desc' => 'Student types answer']
+                            'fill_blank' => ['icon' => 'pen', 'name' => 'Fill in Blank', 'desc' => 'Student types answer'],
+                            'click_on' => ['icon' => 'mouse-pointer', 'name' => 'Click On', 'desc' => 'Click object in 3D world']
                         ];
                         
                         $selectedType = isset($_POST['question_type']) ? $_POST['question_type'] : 'multiple_choice';
+                        $isInworld = $quiz_info['type'] == 'inworld';
                         
                         foreach ($questionTypes as $key => $type):
                             $isSelected = $selectedType === $key;
+                            $isClickOn = $key === 'click_on';
+                            $disabled = $isClickOn && !$isInworld;
                         ?>
-                        <div class="question-type-option <?php echo $isSelected ? 'selected' : ''; ?>" 
-                             data-question-type="<?php echo $key; ?>">
+                        <div class="question-type-option <?php echo $isSelected ? 'selected' : ''; ?> <?php echo $disabled ? 'disabled' : ''; ?>" 
+                             data-question-type="<?php echo $key; ?>"
+                             <?php if ($disabled): ?>title="Click-on questions are only available for in-world quizzes"<?php endif; ?>>
                             <div class="question-type-icon-small <?php echo str_replace('_', '-', $key); ?>-icon">
                                 <i class="fas fa-<?php echo $type['icon']; ?>"></i>
                             </div>
                             <div class="question-type-info">
                                 <h4><?php echo $type['name']; ?></h4>
                                 <p><?php echo $type['desc']; ?></p>
+                                <?php if ($isClickOn && !$isInworld): ?>
+                                <span style="color: #FF6B6B; font-size: 0.7rem;">Requires in-world quiz</span>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -1502,6 +1594,35 @@ function getQtypeName($qtype) {
                             Students will see: "________________" and need to type the correct answer
                         </div>
                     </div>
+                    
+                    <?php elseif ($selectedType === 'click_on'): ?>
+                    <!-- CLICK ON OPTION -->
+                    <div class="form-group" id="clickOnOptions">
+                        <label class="form-label">
+                            <i class="fas fa-mouse-pointer"></i> Object to Click On
+                            <span style="font-size: 0.9rem; color: var(--secondary-green); margin-left: 10px;">
+                                <i class="fas fa-info-circle"></i> Student clicks on object in 3D world
+                            </span>
+                        </label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-cube input-icon" style="color: #FF9800;"></i>
+                            <input type="text" name="model_name" 
+                                   placeholder="Enter the model name (e.g., 'Fish', 'Tree', 'Chair')..." 
+                                   required
+                                   value="<?php echo isset($_POST['model_name']) ? htmlspecialchars($_POST['model_name']) : ''; ?>">
+                        </div>
+                        <input type="hidden" name="world_key" value="<?php echo $quiz_info['virtual_world']; ?>">
+                        <!-- Hidden radio for correct answer (always A for click_on) -->
+                        <input type="hidden" name="correct_answer" value="A">
+                        <div style="margin-top: 10px; padding: 10px; background: #FFF3E0; border-radius: 10px; font-size: 0.9rem;">
+                            <i class="fas fa-lightbulb" style="color: #FF9800; margin-right: 5px;"></i>
+                            <strong>How it works:</strong> Student clicks on any object in the 3D world. Only clicking on the object with model name <strong>"<?php echo isset($_POST['model_name']) ? htmlspecialchars($_POST['model_name']) : '[model name]'; ?>"</strong> will be correct.
+                        </div>
+                        <div style="margin-top: 10px; padding: 10px; background: #E8F5E9; border-radius: 10px; font-size: 0.9rem;">
+                            <i class="fas fa-globe" style="color: var(--primary-blue); margin-right: 5px;"></i>
+                            World: <strong><?php echo getWorldName($quiz_info['virtual_world']); ?></strong> (key: <?php echo $quiz_info['virtual_world']; ?>)
+                        </div>
+                    </div>
                     <?php endif; ?>
                 </div>
                 
@@ -1595,6 +1716,24 @@ function getQtypeName($qtype) {
                             </div>
                         </div>
                     </div>
+                    
+                    <?php elseif ($question_type === 'click_on'): ?>
+                    <div class="question-options">
+                        <div class="question-option correct" style="grid-column: span 2; background: #FFF3E0;">
+                            <div class="option-letter-small" style="background: #FF9800;">CK</div>
+                            <div>
+                                <strong>Click on:</strong> <?php echo htmlspecialchars($options['A'] ?? ''); ?>
+                                <?php if (isset($options['world_key'])): ?>
+                                <span style="margin-left: 10px; color: var(--primary-blue);">
+                                    <i class="fas fa-globe"></i> <?php echo getWorldName($options['world_key']); ?>
+                                </span>
+                                <?php endif; ?>
+                            </div>
+                            <div style="margin-left: auto; color: #FF9800;">
+                                <i class="fas fa-mouse-pointer"></i>
+                            </div>
+                        </div>
+                    </div>
                     <?php endif; ?>
                     
                     <div class="question-actions">
@@ -1653,16 +1792,24 @@ function getQtypeName($qtype) {
     </div>
 
     <!-- JAVASCRIPT -->
+    <script src="virtual-world-selector.js"></script>
     <script>
         // DOM Elements
         const questionTypeOptions = document.querySelectorAll('.question-type-option');
         const questionTypeInput = document.getElementById('questionType');
         const questionForm = document.getElementById('questionForm');
         const optionsContainer = document.getElementById('optionsContainer');
+        const isInworld = <?php echo $quiz_info && $quiz_info['type'] == 'inworld' ? 'true' : 'false'; ?>;
         
         // Question Type Selector
         questionTypeOptions.forEach(option => {
             option.addEventListener('click', () => {
+                // Skip if disabled
+                if (option.classList.contains('disabled')) {
+                    alert('Click-on questions are only available for in-world quizzes!');
+                    return;
+                }
+                
                 questionTypeOptions.forEach(o => o.classList.remove('selected'));
                 option.classList.add('selected');
                 questionTypeInput.value = option.dataset.questionType;
@@ -1771,6 +1918,30 @@ function getQtypeName($qtype) {
                         </div>
                     </div>
                 `;
+            } else if (questionType === 'click_on') {
+                optionsContainer.innerHTML = `
+                    <div class="form-group" id="clickOnOptions">
+                        <label class="form-label">
+                            <i class="fas fa-mouse-pointer"></i> Object to Click On
+                            <span style="font-size: 0.9rem; color: var(--secondary-green); margin-left: 10px;">
+                                <i class="fas fa-info-circle"></i> Student clicks on object in 3D world
+                            </span>
+                        </label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-cube input-icon" style="color: #FF9800;"></i>
+                            <input type="text" name="model_name" 
+                                   placeholder="Enter the model name (e.g., 'Fish', 'Tree', 'Chair')..." 
+                                   required>
+                        </div>
+                        <input type="hidden" name="world_key" value="<?php echo $quiz_info ? $quiz_info['virtual_world'] : ''; ?>">
+                        <!-- Hidden radio for correct answer (always A for click_on) -->
+                        <input type="hidden" name="correct_answer" value="A">
+                        <div style="margin-top: 10px; padding: 10px; background: #FFF3E0; border-radius: 10px; font-size: 0.9rem;">
+                            <i class="fas fa-lightbulb" style="color: #FF9800; margin-right: 5px;"></i>
+                            <strong>How it works:</strong> Student clicks on any object in the 3D world. Only clicking on the object with the correct model name will be correct.
+                        </div>
+                    </div>
+                `;
             }
         }
         
@@ -1812,6 +1983,14 @@ function getQtypeName($qtype) {
                         e.preventDefault();
                         alert('Please enter the correct answer for fill in the blank!');
                         fillAnswer.focus();
+                        return false;
+                    }
+                } else if (questionType === 'click_on') {
+                    const modelName = document.querySelector('input[name="model_name"]');
+                    if (!modelName.value.trim()) {
+                        e.preventDefault();
+                        alert('Please enter the model name to click on!');
+                        modelName.focus();
                         return false;
                     }
                 }
