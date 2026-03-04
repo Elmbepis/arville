@@ -145,9 +145,9 @@ if (isset($_POST['submit_activity'])) {
                         $fileSize = $files['size'][$i];
                         $fileExtension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
                         
-                        // Check file size (10MB limit)
-                        if ($fileSize > 10 * 1024 * 1024) {
-                            $errors[] = "File too large (max 10MB): $originalName";
+                        // Check file size (1 MB limit)
+                        if ($fileSize > 1 * 1024 * 1024) {
+                            $errors[] = "File too large (max 1 MB): $originalName";
                             continue;
                         }
                         
