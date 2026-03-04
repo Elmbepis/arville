@@ -2,6 +2,10 @@
 // view-activity.php
 session_start();
 
+// Error reporting for debugging (remove in production)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Redirect to login if not logged in
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'student') {
     header('Location: login.php');
@@ -63,11 +67,18 @@ try {
 // Handle multiple file uploads AND website links
 if (isset($_POST['submit_activity'])) {
     try {
-        $uploadDir = 'activities/';
+        // Use absolute path for better reliability on online servers
+        $uploadDir = __DIR__ . '/activities/';
         
-        // Create activities directory if it doesn't exist
+        // Create activities directory with proper permissions if it doesn't exist
         if (!file_exists($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
+            mkdir($uploadDir, 0755, true); // 0755 for better security
+            chmod($uploadDir, 0755); // Ensure correct permissions are set
+        }
+        
+        // Verify directory is writable
+        if (!is_writable($uploadDir)) {
+            throw new Exception("Upload directory is not writable. Please check permissions.");
         }
         
         $uploadedFiles = [];
@@ -106,10 +117,23 @@ if (isset($_POST['submit_activity'])) {
                     } else {
                         $imageFileCount++;
                     }
+                } elseif ($files['error'][$i] !== UPLOAD_ERR_NO_FILE) {
+                    // Handle upload errors
+                    $uploadErrors = [
+                        UPLOAD_ERR_INI_SIZE => 'File exceeds upload_max_filesize',
+                        UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE directive',
+                        UPLOAD_ERR_PARTIAL => 'File was only partially uploaded',
+                        UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder',
+                        UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
+                        UPLOAD_ERR_EXTENSION => 'File upload stopped by extension'
+                    ];
+                    $errorCode = $files['error'][$i];
+                    $errorMessage = isset($uploadErrors[$errorCode]) ? $uploadErrors[$errorCode] : 'Unknown upload error';
+                    $errors[] = "Upload error for {$files['name'][$i]}: $errorMessage";
                 }
             }
             
-            // Second pass: upload files with proper naming
+            // Second pass: upload files with proper naming and permission setting
             if (empty($errors)) {
                 $textCounter = 1;
                 $imageCounter = 1;
@@ -142,16 +166,19 @@ if (isset($_POST['submit_activity'])) {
                         
                         // Move uploaded file
                         if (move_uploaded_file($fileTmpName, $uploadPath)) {
+                            // Set proper file permissions (readable by web server, writable only by owner)
+                            chmod($uploadPath, 0644);
+                            
                             $uploadedFiles[] = [
                                 'type' => $fileCategory,
                                 'original_name' => $originalName,
                                 'our_name' => $ourFileName,
-                                'path' => $uploadPath,
+                                'path' => 'activities/' . $ourFileName, // Store relative path for database
                                 'size' => $fileSize,
                                 'uploaded' => date('Y-m-d H:i:s')
                             ];
                         } else {
-                            $errors[] = "Failed to upload: $originalName";
+                            $errors[] = "Failed to move uploaded file: $originalName";
                         }
                     }
                 }
@@ -231,8 +258,9 @@ if (isset($_POST['submit_activity'])) {
             $error = "No files or streaming links were submitted.";
         }
         
-    } catch(PDOException $e) {
+    } catch(Exception $e) {
         $error = "Error processing submission: " . $e->getMessage();
+        error_log("Upload error: " . $e->getMessage());
     }
 }
 
@@ -402,7 +430,7 @@ function getFileExtension($filename) {
     <title>View Activity | MIEL - Multiple Intelligence E-Learning</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-	<link rel="stylesheet" href="mobile.css" media="screen">
+    <link rel="stylesheet" href="mobile.css" media="screen">
     <style>
         /* ===== KID-FRIENDLY THEME (EXACTLY SAME AS student-dashboard.php) ===== */
         :root {
