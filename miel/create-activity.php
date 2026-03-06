@@ -133,6 +133,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
                 $statusType = 'error';
             } else {
                 // Update existing activity with grade range
+                // FIXED: Use virtual_world_name instead of virtual_world to save the display name
+                $virtualWorld = isset($_POST['virtual_world_name']) ? $_POST['virtual_world_name'] : 'Meadowbrooke';
+                
                 $activitySql = "UPDATE activities 
                               SET title = :title, 
                                   grade_start = :grade_start,
@@ -153,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
                     ':grade_end' => $grade_end,
                     ':description' => $_POST['activity_description'],
                     ':intelligence_type' => $_POST['intelligence_type'],
-                    ':virtual_world' => $_POST['virtual_world'],
+                    ':virtual_world' => $virtualWorld,
                     ':activity_type' => $activity_type,
                     ':instructions' => $instructions,
                     ':max_points' => $max_points,
@@ -185,6 +188,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
                 $statusMessage = "Error: An activity with this title already exists. Please choose a different title.";
                 $statusType = 'error';
             } else {
+                // FIXED: Use virtual_world_name instead of virtual_world to save the display name
+                $virtualWorld = isset($_POST['virtual_world_name']) ? $_POST['virtual_world_name'] : 'Meadowbrooke';
+                
                 // Insert new activity with grade range
                 $activitySql = "INSERT INTO activities (teacher_id, grade_start, grade_end, title, description, intelligence_type, virtual_world, 
                               activity_type, instructions, max_points, due_date, created_at) 
@@ -199,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
                     ':title' => $title,
                     ':description' => $_POST['activity_description'],
                     ':intelligence_type' => $_POST['intelligence_type'],
-                    ':virtual_world' => $_POST['virtual_world'],
+                    ':virtual_world' => $virtualWorld,
                     ':activity_type' => $activity_type,
                     ':instructions' => $instructions,
                     ':max_points' => $max_points,
@@ -268,7 +274,7 @@ $grade_end_val = $activityData ? $activityData['grade_end'] : (isset($_POST['gra
 $max_points_val = $activityData ? $activityData['max_points'] : (isset($_POST['max_points']) ? $_POST['max_points'] : 100);
 $due_date_val = $activityData ? ($activityData['due_date'] ? date('Y-m-d', strtotime($activityData['due_date'])) : '') : (isset($_POST['due_date']) ? $_POST['due_date'] : '');
 $selected_intelligence = $activityData ? $activityData['intelligence_type'] : (isset($_POST['intelligence_type']) ? $_POST['intelligence_type'] : 'linguistic');
-$selected_world = $activityData ? $activityData['virtual_world'] : (isset($_POST['virtual_world']) ? $_POST['virtual_world'] : 'zoo');
+$selected_world = $activityData ? $activityData['virtual_world'] : (isset($_POST['virtual_world_name']) ? $_POST['virtual_world_name'] : 'Meadowbrooke');
 $selected_activity_type = $activityData ? $activityData['activity_type'] : (isset($_POST['activity_type']) ? $_POST['activity_type'] : 'essay');
 ?>
 
@@ -1371,6 +1377,8 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                         <i class="fas fa-globe-americas"></i> Choose Virtual World
                     </label>
                     <div id="virtual-world-selector-container"></div>
+                    <!-- Hidden input to store the selected world name -->
+                    <input type="hidden" name="virtual_world_name" id="virtualWorldInput" value="<?php echo htmlspecialchars($selected_world); ?>">
                 </div>
 
                 <!-- INSTRUCTIONS -->
@@ -1463,15 +1471,18 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
         const gradeStart = document.getElementById('gradeStart');
         const gradeEnd = document.getElementById('gradeEnd');
         const gradeError = document.getElementById('gradeError');
+        const virtualWorldInput = document.getElementById('virtualWorldInput');
         const isEditMode = <?php echo $isEditMode ? 'true' : 'false'; ?>;
         const editActivityId = <?php echo $editActivityId ? "'$editActivityId'" : 'null'; ?>;
 
         // Initialize Virtual World Selector
         const worldSelector = new VirtualWorldSelector({
             containerId: 'virtual-world-selector-container',
-            selectedWorld: '<?php echo $selected_world; ?>',
+            selectedWorld: '<?php echo strtolower($selected_world); ?>',
             onWorldChange: function(worldKey, worldData) {
-                console.log('World changed to:', worldKey, worldData.name);
+                console.log('World changed - Key:', worldKey, 'Name:', worldData.name);
+                // Save the display name (e.g., "Rainbow Reef") not the key (e.g., "coral reef")
+                virtualWorldInput.value = worldData.name;
             }
         });
 
@@ -1573,6 +1584,12 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                     pointsInput.focus();
                     return false;
                 }
+            }
+            
+            // Check if virtual world is selected
+            if (!virtualWorldInput.value) {
+                alert('Please select a virtual world!');
+                return false;
             }
             
             // Check for duplicate title

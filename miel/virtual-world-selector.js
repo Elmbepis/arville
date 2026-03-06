@@ -143,14 +143,40 @@ class VirtualWorldSelector {
         
         container.innerHTML = html;
         
-        // Only add hidden input if not in display-only mode
-        if (!this.options.displayOnly && !document.getElementById('virtualWorld')) {
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = this.options.inputName;
-            hiddenInput.id = 'virtualWorld';
-            hiddenInput.value = this.selectedWorld;
-            container.parentNode.appendChild(hiddenInput);
+        // Only add hidden inputs if not in display-only mode
+        if (!this.options.displayOnly) {
+            // Remove any existing hidden inputs with these IDs
+            const existingKeyInput = document.getElementById('virtualWorldKey');
+            const existingNameInput = document.getElementById('virtualWorldName');
+            const existingLinkInput = document.getElementById('virtualWorldLink');
+            
+            if (existingKeyInput) existingKeyInput.remove();
+            if (existingNameInput) existingNameInput.remove();
+            if (existingLinkInput) existingLinkInput.remove();
+            
+            // Create hidden input for the KEY
+            const keyInput = document.createElement('input');
+            keyInput.type = 'hidden';
+            keyInput.name = 'virtual_world_key';
+            keyInput.id = 'virtualWorldKey';
+            keyInput.value = this.selectedWorld;
+            container.parentNode.appendChild(keyInput);
+            
+            // Create hidden input for the NAME/TITLE
+            const nameInput = document.createElement('input');
+            nameInput.type = 'hidden';
+            nameInput.name = 'virtual_world_name';
+            nameInput.id = 'virtualWorldName';
+            nameInput.value = this.worlds[this.selectedWorld] ? this.worlds[this.selectedWorld].name : '';
+            container.parentNode.appendChild(nameInput);
+            
+            // Create hidden input for the LINK
+            const linkInput = document.createElement('input');
+            linkInput.type = 'hidden';
+            linkInput.name = 'virtual_world_link';
+            linkInput.id = 'virtualWorldLink';
+            linkInput.value = this.worlds[this.selectedWorld] ? this.worlds[this.selectedWorld].link : '';
+            container.parentNode.appendChild(linkInput);
         }
     }
     
@@ -159,7 +185,9 @@ class VirtualWorldSelector {
         if (!container) return;
         
         const worldOptions = container.querySelectorAll('.world-option');
-        const hiddenInput = document.getElementById('virtualWorld');
+        const keyInput = document.getElementById('virtualWorldKey');
+        const nameInput = document.getElementById('virtualWorldName');
+        const linkInput = document.getElementById('virtualWorldLink');
         
         worldOptions.forEach(option => {
             option.addEventListener('click', (e) => {
@@ -167,6 +195,7 @@ class VirtualWorldSelector {
                 if (e.target.closest('.see-world-link')) return;
                 
                 const worldKey = option.dataset.world;
+                const worldData = this.worlds[worldKey];
                 
                 // Remove selected class from all options
                 worldOptions.forEach(opt => opt.classList.remove('selected'));
@@ -174,27 +203,45 @@ class VirtualWorldSelector {
                 // Add selected class to clicked option
                 option.classList.add('selected');
                 
-                // Update hidden input
-                if (hiddenInput) {
-                    hiddenInput.value = worldKey;
-                }
-                
                 // Update selected world
                 this.selectedWorld = worldKey;
                 
-                // Trigger callback if provided
+                // Update all three hidden inputs
+                if (keyInput) {
+                    keyInput.value = worldKey;
+                }
+                
+                if (nameInput) {
+                    nameInput.value = worldData.name;
+                }
+                
+                if (linkInput) {
+                    linkInput.value = worldData.link;
+                }
+                
+                // Trigger callback if provided - passing key and full world data
                 if (typeof this.options.onWorldChange === 'function') {
-                    this.options.onWorldChange(worldKey, this.worlds[worldKey]);
+                    this.options.onWorldChange(worldKey, worldData);
                 }
             });
         });
     }
     
-    // Method to get currently selected world
+    // Method to get currently selected world (returns all data)
     getSelectedWorld() {
         return {
             key: this.selectedWorld,
             data: this.worlds[this.selectedWorld]
+        };
+    }
+    
+    // Method to get all world data as JSON
+    getAllWorldData() {
+        return {
+            key: this.selectedWorld,
+            name: this.worlds[this.selectedWorld]?.name || '',
+            link: this.worlds[this.selectedWorld]?.link || '',
+            image: this.worlds[this.selectedWorld]?.image || ''
         };
     }
     
@@ -203,6 +250,23 @@ class VirtualWorldSelector {
         if (this.worlds[worldKey]) {
             this.selectedWorld = worldKey;
             this.render(); // Re-render with new selection
+            
+            // Update all three hidden inputs
+            const keyInput = document.getElementById('virtualWorldKey');
+            const nameInput = document.getElementById('virtualWorldName');
+            const linkInput = document.getElementById('virtualWorldLink');
+            
+            if (keyInput) {
+                keyInput.value = worldKey;
+            }
+            
+            if (nameInput) {
+                nameInput.value = this.worlds[worldKey].name;
+            }
+            
+            if (linkInput) {
+                linkInput.value = this.worlds[worldKey].link;
+            }
         }
     }
 }

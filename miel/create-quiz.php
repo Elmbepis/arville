@@ -71,6 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
             $statusMessage = "Error: A quiz with this title already exists. Please choose a different title.";
             $statusType = 'error';
         } else {
+            // FIXED: Get the world NAME from virtual_world_name (contains display name like "Rainbow Reef")
+            $virtualWorld = isset($_POST['virtual_world_name']) ? $_POST['virtual_world_name'] : 'Meadowbrooke';
+            
             // Insert into quizzes table with grade range and quiz type
             $quizSql = "INSERT INTO quizzes (teacher_id, grade_start, grade_end, title, description, intelligence_type, virtual_world, type, created_at) 
                         VALUES (:teacher_id, :grade_start, :grade_end, :title, :description, :intelligence_type, :virtual_world, :type, NOW())";
@@ -83,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
                 ':title' => $_POST['quiz_title'],
                 ':description' => $_POST['quiz_description'],
                 ':intelligence_type' => $_POST['intelligence_type'],
-                ':virtual_world' => $_POST['virtual_world'],
+                ':virtual_world' => $virtualWorld,
                 ':type' => $_POST['quiz_type']
             ]);
             
@@ -117,7 +120,7 @@ if (!isset($_GET['created'])) {
 }
 
 // Set selected world from POST or default
-$selectedWorld = isset($_POST['virtual_world']) && !$formSubmitted ? $_POST['virtual_world'] : 'zoo';
+$selectedWorld = isset($_POST['virtual_world_name']) && !$formSubmitted ? $_POST['virtual_world_name'] : 'Meadowbrooke';
 
 // Set selected quiz type from POST or default
 $selectedQuizType = isset($_POST['quiz_type']) && !$formSubmitted ? $_POST['quiz_type'] : 'offworld';
@@ -1110,6 +1113,8 @@ $selectedQuizType = isset($_POST['quiz_type']) && !$formSubmitted ? $_POST['quiz
                         <i class="fas fa-globe-americas"></i> Choose Virtual World
                     </label>
                     <div id="virtual-world-selector-container"></div>
+                    <!-- Hidden input to store the selected world name (e.g., "Rainbow Reef", not "coral reef") -->
+                    <input type="hidden" name="virtual_world_name" id="virtualWorldInput" value="<?php echo htmlspecialchars($selectedWorld); ?>">
                 </div>
 
                 <!-- ACTION BUTTONS -->
@@ -1157,14 +1162,16 @@ $selectedQuizType = isset($_POST['quiz_type']) && !$formSubmitted ? $_POST['quiz
         const gradeStart = document.getElementById('gradeStart');
         const gradeEnd = document.getElementById('gradeEnd');
         const gradeError = document.getElementById('gradeError');
+        const virtualWorldInput = document.getElementById('virtualWorldInput');
 
         // Initialize Virtual World Selector
         const worldSelector = new VirtualWorldSelector({
             containerId: 'virtual-world-selector-container',
-            selectedWorld: '<?php echo $selectedWorld; ?>',
+            selectedWorld: '<?php echo strtolower($selectedWorld); ?>', // Convert to lowercase for the selector to match keys
             onWorldChange: function(worldKey, worldData) {
-                console.log('World changed to:', worldKey, worldData.name);
-                // You can add additional logic here if needed
+                console.log('World changed - Key:', worldKey, 'Name:', worldData.name);
+                // IMPORTANT: Save the display name (e.g., "Rainbow Reef") not the key (e.g., "coral reef")
+                virtualWorldInput.value = worldData.name;
             }
         });
 
@@ -1235,6 +1242,12 @@ $selectedQuizType = isset($_POST['quiz_type']) && !$formSubmitted ? $_POST['quiz
             
             // Validate grade range
             if (!validateGradeRange()) {
+                return false;
+            }
+            
+            // Check if virtual world is selected
+            if (!virtualWorldInput.value) {
+                alert('Please select a virtual world!');
                 return false;
             }
             

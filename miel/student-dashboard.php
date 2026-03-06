@@ -570,7 +570,7 @@ function getActivityTypeName($type) {
             border-radius: 15px;
             padding: 10px 8px;
             text-align: center;
-            cursor: default;
+            cursor: pointer;
             transition: all 0.3s;
             display: flex;
             flex-direction: column;
@@ -1049,7 +1049,7 @@ function getActivityTypeName($type) {
             <div class="card fade-in">
                 <h2 class="card-title">
                     <i class="fas fa-globe-americas"></i> Explore ARville Worlds
-                    <span class="badge badge-success">8</span>
+                    <span class="badge badge-success">16</span>
                 </h2>
                 
                 <div id="virtual-world-selector-container"></div>
@@ -1069,14 +1069,53 @@ function getActivityTypeName($type) {
     <!-- JAVASCRIPT -->
     <script src="virtual-world-selector.js"></script>
     <script>
-        // Initialize Virtual World Selector in display-only mode for students
+        // Global variable to store world data from the selector
+        let worldSelectorInstance = null;
+
+        // Initialize Virtual World Selector with click handling
         document.addEventListener('DOMContentLoaded', function() {
             try {
-                const worldSelector = new VirtualWorldSelector({
+                worldSelectorInstance = new VirtualWorldSelector({
                     containerId: 'virtual-world-selector-container',
-                    displayOnly: true // This makes it display-only with no selection functionality
+                    displayOnly: false, // Allow clicking
+                    onWorldChange: function(worldKey, worldData) {
+                        // This function is called when a world is selected/clicked
+                        console.log('World clicked - Key:', worldKey, 'Name:', worldData.name, 'Link:', worldData.link);
+                        
+                        // Open the world in a new tab using the link from worldData
+                        if (worldData && worldData.link) {
+                            console.log('Opening URL:', worldData.link);
+                            window.open(worldData.link, '_blank');
+                        } else {
+                            console.error('No link found for world:', worldData);
+                            alert('This world link is not available yet.');
+                        }
+                    }
                 });
-                console.log('Virtual World Selector initialized for student dashboard');
+                console.log('Virtual World Selector initialized with click handling');
+                
+                // Function to open a world by its name (useful for quiz links)
+                window.openWorldByName = function(worldName) {
+                    if (!worldSelectorInstance || !worldSelectorInstance.worlds) {
+                        console.error('World selector not initialized');
+                        return false;
+                    }
+                    
+                    // Find the world by its name
+                    for (const [key, worldData] of Object.entries(worldSelectorInstance.worlds)) {
+                        if (worldData.name === worldName) {
+                            console.log('Found world:', worldName, 'with URL:', worldData.link);
+                            if (worldData.link) {
+                                window.open(worldData.link, '_blank');
+                                return true;
+                            }
+                        }
+                    }
+                    
+                    console.error('World not found with name:', worldName);
+                    return false;
+                };
+                
             } catch (error) {
                 console.error('Error initializing Virtual World Selector:', error);
             }

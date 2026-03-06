@@ -171,6 +171,8 @@
   <script src="universe/js/GLB-movements.js"></script>
   <script src="universe/js/aquatic-atmosphere.js"></script>
   <script src="universe/js/modelPath.js"></script>
+  <script src="universe/js/quiz-giver.js"></script>
+  <script src="universe/js/clickedObject.js"></script>
 
   <script>
     let scene, camera, renderer;
@@ -963,9 +965,20 @@ function animate() {
         window.ModelPathSystem.updateModelAnimations(delta);
     }
     
+    if (typeof window.updateModularAnimations === 'function') {
+        window.updateModularAnimations(delta);
+    }
+    
     renderer.render(scene, camera);
 }
 
+</script>
+
+<script>
+// Make THREE.js objects available for quiz system (doesn't affect normal operation)
+window.threeScene = scene;
+window.threeCamera = camera;
+window.threeRenderer = renderer;
 </script>
 </body>
 </html>
