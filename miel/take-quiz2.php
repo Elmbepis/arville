@@ -10,7 +10,6 @@ if (!isset($_SESSION['user_id'])) {
 
 // Get parameters
 $quiz_id = isset($_GET['quiz_id']) ? intval($_GET['quiz_id']) : 0;
-$village_id = isset($_GET['id']) ? $_GET['id'] : '6';
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 
 // Database configuration
@@ -32,8 +31,8 @@ if ($action === 'get_questions') {
         $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         
-        // Get quiz details
-        $quizStmt = $pdo->prepare("SELECT id, title FROM quizzes WHERE id = ?");
+        // Get quiz details including virtual_world
+        $quizStmt = $pdo->prepare("SELECT id, title, virtual_world FROM quizzes WHERE id = ?");
         $quizStmt->execute([$quiz_id]);
         $quiz = $quizStmt->fetch(PDO::FETCH_ASSOC);
         
@@ -69,6 +68,7 @@ if ($action === 'get_questions') {
             'success' => true,
             'quiz_id' => $quiz_id,
             'quiz_title' => $quiz['title'],
+            'virtual_world' => $quiz['virtual_world'],
             'questions' => $formatted
         ]);
         exit();
@@ -187,6 +187,13 @@ if ($action === 'save_score') {
             z-index: 1000;
             color: #2C3E50;
             display: none;
+            transition: all 0.3s ease;
+        }
+        
+        /* Smaller overlay for click object questions only */
+        #quiz-overlay.ck-question {
+            width: 320px;
+            padding: 15px;
         }
         
         #quiz-progress {
@@ -223,21 +230,62 @@ if ($action === 'save_score') {
             background: #FF9800;
         }
         
-        .question-text {
-            font-size: 18px;
+        .world-badge {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 3px solid #4A90E2;
             font-weight: bold;
-            margin-bottom: 20px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .world-badge i {
             color: #4A90E2;
+            margin-right: 8px;
+        }
+        
+        /* Regular question text for non-CK questions */
+        .question-text {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #4A90E2;
+            line-height: 1.4;
+        }
+        
+        /* Click Object specific styling - smaller font */
+        .click-question-text {
+            font-size: 22px;  /* Reduced from 28px */
+            font-weight: bold;
+            margin: 10px 0 8px 0;  /* Reduced margins */
+            color: #4A90E2;
+            line-height: 1.3;
+            text-align: center;
+        }
+        
+        .click-instruction-small {
+            font-size: 14px;  /* Slightly smaller */
+            font-weight: 300;
+            color: #888888;
+            text-align: center;
+            margin-bottom: 10px;  /* Reduced margin */
+            font-style: italic;
         }
         
         .option {
             background: #f8f9ff;
             border: 3px solid #e0e0e0;
             border-radius: 12px;
-            padding: 12px 15px;
-            margin-bottom: 8px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.2s;
+            font-size: 18px;
         }
         
         .option:hover {
@@ -255,50 +303,9 @@ if ($action === 'save_score') {
             padding: 15px;
             border: 3px solid #e0e0e0;
             border-radius: 12px;
-            font-size: 16px;
+            font-size: 18px;
             margin: 10px 0;
             box-sizing: border-box;
-        }
-        
-        .click-instruction {
-            background: #fff3e0;
-            border-left: 5px solid #FF9800;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 10px;
-            font-size: 16px;
-        }
-        
-        .click-instruction strong {
-            color: #FF9800;
-            font-size: 20px;
-        }
-        
-        .message-area {
-            background: #f0f0f0;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-            text-align: center;
-            min-height: 50px;
-            font-size: 16px;
-        }
-        
-        .next-btn {
-            background: #50C878;
-            color: white;
-            border: none;
-            padding: 15px 25px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-        }
-        
-        .next-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
         }
         
         .progress-bar {
@@ -340,17 +347,9 @@ if ($action === 'save_score') {
         .click-popup.incorrect {
             background: #FF6B6B;
         }
-        
-        .model-hint {
-            background: #e8f4fd;
-            border: 2px dashed #4A90E2;
-            padding: 10px;
-            border-radius: 10px;
-            margin-top: 10px;
-            text-align: center;
-            font-size: 14px;
-        }
     </style>
+    <!-- Include virtual-world-selector.js -->
+    <script src="virtual-world-selector.js"></script>
 </head>
 <body>
     <div id="loading">
@@ -359,6 +358,11 @@ if ($action === 'save_score') {
             <p>Preparing your 3D adventure...</p>
             <div class="spinner"></div>
         </div>
+    </div>
+
+    <!-- World Badge -->
+    <div id="world-badge" class="world-badge">
+        <i>&#127758;</i> <span id="world-name">Loading world...</span>
     </div>
 
     <!-- Quiz UI -->
@@ -378,24 +382,146 @@ if ($action === 'save_score') {
     
     <div class="click-popup" id="click-popup"></div>
 
-    <!-- Load the village in iframe with quiz parameter to activate double-click -->
-    <iframe src="/arville/village2.htm?id=<?php echo $village_id; ?>&quiz=1" id="village-frame" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+    <!-- Container for the dynamically created iframe -->
+    <div id="iframe-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;"></div>
 
     <script>
         const quizId = <?php echo $quiz_id; ?>;
-        const villageId = '<?php echo $village_id; ?>';
         
         // Quiz state
         let questions = [];
         let currentIndex = 0;
         let answers = [];
         let clickTimer = null;
+        let autoAdvanceTimer = null;
         let lastClickedModel = null;
         let awaitingClick = false;
         
-        // Debug function - now only logs to console, no visual panel
+        // Debug function
         function debug(msg) {
             console.log('[QUIZ] ' + msg);
+        }
+        
+        // Handle H key to go home
+        function goHome() {
+            window.location.href = '../index.php';
+        }
+        
+        // Listen for H key in parent window
+        window.addEventListener('keydown', function(event) {
+            if (event.key.toLowerCase() === 'h') {
+                goHome();
+            }
+        });
+        
+        // Clean up quiz UI when leaving
+        function cleanupQuizUI() {
+            // Hide all quiz UI elements
+            const quizOverlay = document.getElementById('quiz-overlay');
+            const quizProgress = document.getElementById('quiz-progress');
+            const worldBadge = document.getElementById('world-badge');
+            const loading = document.getElementById('loading');
+            
+            if (quizOverlay) quizOverlay.style.display = 'none';
+            if (quizProgress) quizProgress.style.display = 'none';
+            if (worldBadge) worldBadge.style.display = 'none';
+            if (loading) loading.style.display = 'none';
+            
+            // Clear any timers
+            if (clickTimer) clearTimeout(clickTimer);
+            if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+        }
+        
+        // Listen for page unload or navigation
+        window.addEventListener('beforeunload', function() {
+            cleanupQuizUI();
+        });
+        
+        // Create iframe with the world link from virtual-world-selector.js
+        function createIframe(worldName) {
+            // Create a temporary container for the selector
+            const tempContainer = document.createElement('div');
+            tempContainer.id = 'temp-selector';
+            tempContainer.style.display = 'none';
+            document.body.appendChild(tempContainer);
+            
+            // Initialize selector to access world data
+            const selector = new VirtualWorldSelector({
+                displayOnly: true,
+                containerId: 'temp-selector'
+            });
+            
+            // Find the world by name (case-insensitive)
+            const normalizedSearch = (worldName || '').toLowerCase().trim();
+            let foundWorld = null;
+            
+            // Search through all worlds to find a name match
+            for (const [key, world] of Object.entries(selector.worlds)) {
+                if (world.name.toLowerCase() === normalizedSearch) {
+                    foundWorld = world;
+                    debug(`Found world: ${world.name} (${key})`);
+                    break;
+                }
+            }
+            
+            // If not found by exact match, try partial match
+            if (!foundWorld) {
+                for (const [key, world] of Object.entries(selector.worlds)) {
+                    if (world.name.toLowerCase().includes(normalizedSearch) || 
+                        normalizedSearch.includes(world.name.toLowerCase())) {
+                        foundWorld = world;
+                        debug(`Found partial match: ${world.name} (${key})`);
+                        break;
+                    }
+                }
+            }
+            
+            // Default to playground if still not found
+            if (!foundWorld) {
+                debug(`World "${worldName}" not found, defaulting to playground`);
+                foundWorld = selector.worlds['playground'];
+            }
+            
+            // Get the link
+            let worldLink = foundWorld.link;
+            
+            // Add quiz parameter
+            worldLink += (worldLink.includes('?') ? '&' : '?') + 'quiz=1';
+            
+            debug(`Opening world: ${foundWorld.name} at ${worldLink}`);
+            
+            // Create the iframe
+            const container = document.getElementById('iframe-container');
+            container.innerHTML = ''; // Clear any existing iframe
+            
+            const iframe = document.createElement('iframe');
+            iframe.id = 'village-frame';
+            iframe.src = worldLink;
+            iframe.style.position = 'fixed';
+            iframe.style.top = '0';
+            iframe.style.left = '0';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            
+            container.appendChild(iframe);
+            
+            // Setup iframe load event
+            iframe.onload = function() {
+                debug('Iframe loaded');
+                setTimeout(injectIframeBridge, 3000);
+            };
+            
+            // Display world name
+            document.getElementById('world-name').textContent = foundWorld.name;
+            document.getElementById('world-badge').style.display = 'block';
+            
+            // Clean up temporary container
+            setTimeout(() => {
+                if (tempContainer && tempContainer.parentNode) {
+                    tempContainer.parentNode.removeChild(tempContainer);
+                }
+            }, 100);
         }
         
         // Load questions from our own API
@@ -407,11 +533,18 @@ if ($action === 'save_score') {
                 
                 if (data.success) {
                     questions = data.questions;
+                    
                     document.getElementById('total-q').textContent = questions.length;
+                    
+                    // Create and load the iframe with the correct world
+                    createIframe(data.virtual_world);
+                    
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('quiz-overlay').style.display = 'block';
                     document.getElementById('quiz-progress').style.display = 'block';
+                    
                     debug(`Loaded ${questions.length} questions`);
+                    debug(`Virtual world: ${data.virtual_world}`);
                     
                     loadQuestion(0);
                 } else {
@@ -434,56 +567,69 @@ if ($action === 'save_score') {
             awaitingClick = (q.type === 'CK');
             lastClickedModel = null;
             
+            // Add or remove CK class from quiz overlay based on question type
+            const quizOverlay = document.getElementById('quiz-overlay');
+            if (q.type === 'CK') {
+                quizOverlay.classList.add('ck-question');
+            } else {
+                quizOverlay.classList.remove('ck-question');
+            }
+            
             let html = `
                 <div class="quiz-header">
                     <span class="badge ${q.type === 'CK' ? 'ck' : ''}">Question ${index + 1}</span>
                     <span class="badge ${q.type === 'CK' ? 'ck' : ''}">${getTypeName(q.type)}</span>
                 </div>
-                <div class="question-text">${q.text}</div>
             `;
             
             if (q.type === 'CK') {
+                // Click Object: Smaller centered question, small gray instruction
                 html += `
-                    <div class="click-instruction">
-                        <strong>&#128269; Find and double-click on: ${q.modelName}</strong>
-                    </div>
-                    <div class="message-area" id="message-area">
-                        Explore the 3D world and double-click on the object...
-                    </div>
-                    <div class="model-hint">
-                        Look for: ${q.modelName}
-                    </div>
+                    <div class="click-question-text">${q.text}</div>
+                    <div class="click-instruction-small">Reminder: you need to double-click.</div>
                 `;
-            } else if (q.type === 'MC') {
-                html += '<div class="options-container">';
-                if (q.options) {
-                    // Shuffle options
-                    const entries = Object.entries(q.options);
-                    const shuffled = entries.sort(() => Math.random() - 0.5);
-                    
-                    for (let [letter, text] of shuffled) {
-                        html += `<div class="option" onclick="selectOption('${letter}')">${letter}. ${text}</div>`;
+            } else {
+                // Other question types: Regular styling (unchanged)
+                html += `<div class="question-text">${q.text}</div>`;
+                
+                if (q.type === 'MC') {
+                    html += '<div class="options-container">';
+                    if (q.options) {
+                        // Filter out any non-letter keys (like 'question_type')
+                        const validOptions = {};
+                        for (let key in q.options) {
+                            // Only include single-letter keys (A, B, C, D)
+                            if (key.length === 1 && key.match(/[A-D]/i)) {
+                                validOptions[key] = q.options[key];
+                            }
+                        }
+                        
+                        // Convert to array and shuffle
+                        const entries = Object.entries(validOptions);
+                        const shuffled = entries.sort(() => Math.random() - 0.5);
+                        
+                        for (let [letter, text] of shuffled) {
+                            // Display only the text, no letter prefix
+                            html += `<div class="option" onclick="selectOption('${letter}')">${text}</div>`;
+                        }
                     }
+                    html += '</div>';
+                } else if (q.type === 'TF') {
+                    html += `
+                        <div class="options-container">
+                            <div class="option" onclick="selectOption('A')">True</div>
+                            <div class="option" onclick="selectOption('B')">False</div>
+                        </div>
+                    `;
+                } else if (q.type === 'FB') {
+                    html += `
+                        <div class="options-container">
+                            <input type="text" class="fill-input" id="fill-input" placeholder="Type your answer...">
+                        </div>
+                    `;
                 }
-                html += '</div><div class="message-area" id="message-area"></div>';
-            } else if (q.type === 'TF') {
-                html += `
-                    <div class="options-container">
-                        <div class="option" onclick="selectOption('A')">A. True</div>
-                        <div class="option" onclick="selectOption('B')">B. False</div>
-                    </div>
-                    <div class="message-area" id="message-area"></div>
-                `;
-            } else if (q.type === 'FB') {
-                html += `
-                    <div class="options-container">
-                        <input type="text" class="fill-input" id="fill-input" placeholder="Type your answer...">
-                    </div>
-                    <div class="message-area" id="message-area"></div>
-                `;
             }
             
-            html += `<button class="next-btn" id="next-btn" onclick="nextQuestion()" disabled>Next Question</button>`;
             document.getElementById('question-container').innerHTML = html;
             
             if (q.type === 'FB') {
@@ -508,22 +654,27 @@ if ($action === 'save_score') {
             
             const q = questions[currentIndex];
             answers[currentIndex] = letter;
-            document.getElementById('next-btn').disabled = false;
             
             const isCorrect = letter === q.correct;
-            const messageArea = document.getElementById('message-area');
-            if (messageArea) {
-                if (isCorrect) {
-                    messageArea.innerHTML = '&#9989; Correct!';
-                    messageArea.style.color = '#50C878';
-                    showClickPopup('&#9989; Correct!', true);
-                } else {
-                    let correctText = q.type === 'MC' ? q.options[q.correct] : (q.correct === 'A' ? 'True' : 'False');
-                    messageArea.innerHTML = `&#10060; Correct answer: ${correctText}`;
-                    messageArea.style.color = '#FF6B6B';
-                    showClickPopup('&#10060; Incorrect', false);
-                }
+            
+            if (isCorrect) {
+                showClickPopup('Correct!', true);
+            } else {
+                showClickPopup('Sorry, that is incorrect.', false);
             }
+            
+            // Clear any existing timer
+            if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+            
+            // Automatically go to next question after 3 seconds
+            autoAdvanceTimer = setTimeout(() => {
+                if (currentIndex + 1 < questions.length) {
+                    currentIndex++;
+                    loadQuestion(currentIndex);
+                } else {
+                    completeQuiz();
+                }
+            }, 3000);
         }
         
         // Check fill blank
@@ -533,21 +684,27 @@ if ($action === 'save_score') {
                 const q = questions[currentIndex];
                 const answer = input.value.trim();
                 answers[currentIndex] = answer;
-                document.getElementById('next-btn').disabled = false;
                 
                 const isCorrect = answer.toLowerCase() === q.correct.toLowerCase();
-                const messageArea = document.getElementById('message-area');
-                if (messageArea) {
-                    if (isCorrect) {
-                        messageArea.innerHTML = '&#9989; Correct!';
-                        messageArea.style.color = '#50C878';
-                        showClickPopup('&#9989; Correct!', true);
-                    } else {
-                        messageArea.innerHTML = `&#10060; Correct answer: ${q.correct}`;
-                        messageArea.style.color = '#FF6B6B';
-                        showClickPopup('&#10060; Incorrect', false);
-                    }
+                
+                if (isCorrect) {
+                    showClickPopup('Correct!', true);
+                } else {
+                    showClickPopup('Sorry, that is incorrect.', false);
                 }
+                
+                // Clear any existing timer
+                if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+                
+                // Automatically go to next question after 3 seconds
+                autoAdvanceTimer = setTimeout(() => {
+                    if (currentIndex + 1 < questions.length) {
+                        currentIndex++;
+                        loadQuestion(currentIndex);
+                    } else {
+                        completeQuiz();
+                    }
+                }, 3000);
             }
         }
         
@@ -563,13 +720,9 @@ if ($action === 'save_score') {
             
             debug(`Object clicked in iframe: ${modelName}`);
             
-            // Show what was clicked
-            showClickPopup(`Clicked: ${modelName}`);
-            
             // Clear any previous timer
             if (clickTimer) clearTimeout(clickTimer);
-            
-            const messageArea = document.getElementById('message-area');
+            if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
             
             // Check if clicked object matches the expected model
             const expectedModel = q.modelName.toLowerCase();
@@ -579,33 +732,33 @@ if ($action === 'save_score') {
             const isCorrect = clickedModel.includes(expectedModel) || expectedModel.includes(clickedModel);
             
             if (isCorrect) {
-                messageArea.innerHTML = `&#9989; Correct! You found the ${q.modelName}!`;
-                messageArea.style.color = '#50C878';
-                showClickPopup('&#9989; Correct!', true);
+                showClickPopup('Correct!', true);
                 
-                // Save answer and enable next button
+                // Save answer
                 answers[currentIndex] = modelName;
-                document.getElementById('next-btn').disabled = false;
                 awaitingClick = false;
                 
                 debug(`&#9989; Correct answer for Q${currentIndex+1}: ${modelName}`);
             } else {
-                messageArea.innerHTML = `&#10060; That's "${modelName}". Looking for "${q.modelName}". Keep exploring!`;
-                messageArea.style.color = '#FF6B6B';
-                showClickPopup('&#10060; Try again', false);
+                // WRONG ANSWER
+                showClickPopup('Sorry, that is incorrect.', false);
                 
-                debug(`&#10060; Wrong object: clicked "${modelName}", expected "${q.modelName}"`);
+                // Save wrong answer
+                answers[currentIndex] = null;
+                awaitingClick = false;
+                
+                debug(`&#10060; Wrong answer for Q${currentIndex+1}`);
             }
             
-            // Auto-clear message after 3 seconds for wrong answers
-            if (!isCorrect) {
-                clickTimer = setTimeout(() => {
-                    if (awaitingClick) {
-                        messageArea.innerHTML = 'Keep looking for the ' + q.modelName + '...';
-                        messageArea.style.color = '#2C3E50';
-                    }
-                }, 3000);
-            }
+            // Automatically go to next question after 3 seconds
+            autoAdvanceTimer = setTimeout(() => {
+                if (currentIndex + 1 < questions.length) {
+                    currentIndex++;
+                    loadQuestion(currentIndex);
+                } else {
+                    completeQuiz();
+                }
+            }, 3000);
         }
         
         // Show click popup
@@ -616,16 +769,6 @@ if ($action === 'save_score') {
             popup.className = isCorrect === true ? 'click-popup correct' : 
                             isCorrect === false ? 'click-popup incorrect' : 'click-popup';
             setTimeout(() => popup.style.display = 'none', 1500);
-        }
-        
-        // Next question
-        function nextQuestion() {
-            if (currentIndex + 1 < questions.length) {
-                currentIndex++;
-                loadQuestion(currentIndex);
-            } else {
-                completeQuiz();
-            }
         }
         
         // Complete quiz
@@ -679,7 +822,7 @@ if ($action === 'save_score') {
             const names = {
                 'MC': 'Multiple Choice',
                 'TF': 'True/False',
-                'FB': 'Fill Blank',
+                'FB': 'Fill in the Blank',
                 'CK': 'Click Object'
             };
             return names[type] || type;
@@ -691,12 +834,19 @@ if ($action === 'save_score') {
             
             if (event.data.type === 'objectClicked') {
                 handleObjectClick(event.data.modelName);
+            } else if (event.data.type === 'goHome') {
+                goHome();
             }
         });
         
         // Inject bridge script into iframe to connect with clickedObject.js
         function injectIframeBridge() {
             const iframe = document.getElementById('village-frame');
+            
+            if (!iframe) {
+                debug('Iframe not found for bridge injection');
+                return;
+            }
             
             try {
                 const iframeWin = iframe.contentWindow;
@@ -720,6 +870,15 @@ if ($action === 'save_score') {
                             }
                         }
                         
+                        // Check if we're in quiz mode
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const isQuizMode = urlParams.get('quiz') === '1' || (window.parent && window.parent !== window);
+                        
+                        if (!isQuizMode) {
+                            console.log('&#128277; Bridge disabled - not in quiz mode');
+                            return;
+                        }
+                        
                         // Wait for clickedObject.js to be ready
                         let checkInterval = setInterval(function() {
                             if (typeof camera !== 'undefined' && typeof scene !== 'undefined') {
@@ -736,6 +895,7 @@ if ($action === 'save_score') {
                                             const match = text.match(/Selected: (.+)/);
                                             if (match && match[1]) {
                                                 sendClickToParent(match[1]);
+                                                // Don't prevent default - allow normal navigation
                                             }
                                         }
                                     }, 100);
@@ -744,6 +904,17 @@ if ($action === 'save_score') {
                                 console.log('&#9989; Bridge initialized - double-clicks will be sent to parent');
                             }
                         }, 500);
+                        
+                        // Listen for H key to go home
+                        document.addEventListener('keydown', function(e) {
+                            if (e.key.toLowerCase() === 'h') {
+                                if (window.parent) {
+                                    window.parent.postMessage({
+                                        type: 'goHome'
+                                    }, '*');
+                                }
+                            }
+                        });
                     })();
                 `;
                 
@@ -753,12 +924,6 @@ if ($action === 'save_score') {
                 debug('Could not inject bridge: ' + e.message);
             }
         }
-        
-        // Wait for iframe to load
-        document.getElementById('village-frame').onload = function() {
-            debug('Iframe loaded');
-            setTimeout(injectIframeBridge, 3000);
-        };
         
         // Start loading questions
         loadQuestions();
