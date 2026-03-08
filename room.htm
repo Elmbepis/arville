@@ -121,7 +121,7 @@
   </style>
 </head>
 <body>
-  <div id="info">Virtual Room | WASD: Move | Mouse: Look Around | R: Reset Position | H: Home</div>
+  <div id="info">Virtual Room | WASD: Move | Q/E: Fly Up/Down | Mouse: Look Around | R: Reset Position | H: Home</div>
   <div id="loading">Preparing venue...</div>
   <div id="debug-console">DEBUG CONSOLE:<br></div>
   
@@ -202,6 +202,7 @@
     let scene, camera, renderer;
     const clock = new THREE.Clock();
     const EYE_HEIGHT = 3.5;
+    const WALL_HEIGHT = 16; // Ceiling height
 
     // Room dimensions for navigation
     const PLACE_WIDTH = 40;
@@ -212,7 +213,9 @@
       minX: -19,  // Left wall boundary
       maxX: 19,   // Right wall boundary
       minZ: -24,  // Back wall boundary
-      maxZ: 24    // Front wall boundary
+      maxZ: 24,   // Front wall boundary
+      minY: 2,  // Floor level (slightly above floor)
+      maxY: 10  // Ceiling level (slightly below ceiling)
     };
 
     // Function to get URL parameter
@@ -221,6 +224,12 @@
       const roomNum = urlParams.get('id');
       return roomNum && !isNaN(roomNum) && roomNum > 0 ? roomNum : '1';
     }
+
+    // Track key states for fly controls
+    const keyState = {
+      q: false,
+      e: false
+    };
 
     init();
     animate();
@@ -252,11 +261,25 @@
         return;
       }
 
-      // Add H key handler for Home
+      // Add key handlers for fly controls (Q/E)
       window.addEventListener('keydown', (event) => {
-        if (event.key.toLowerCase() === 'h') {
-          // Navigate to site's index.php
+        const key = event.key.toLowerCase();
+        
+        // Home key (H)
+        if (key === 'h') {
           window.location.href = 'index.php';
+        }
+        
+        // Fly controls
+        if (key === 'q' || key === 'e') {
+          keyState[key] = true;
+        }
+      });
+
+      window.addEventListener('keyup', (event) => {
+        const key = event.key.toLowerCase();
+        if (key === 'q' || key === 'e') {
+          keyState[key] = false;
         }
       });
 
@@ -301,6 +324,16 @@
       
       camera.userData.update = function() {
         if (originalUpdate) originalUpdate.call(this);
+        
+        // Handle fly controls (Q/E)
+        const moveSpeed = 0.15;
+        if (keyState.q) {
+          camera.position.y -= moveSpeed;
+        }
+        if (keyState.e) {
+          camera.position.y += moveSpeed;
+        }
+        
         applyRoomBoundaries();
       };
     }
@@ -308,7 +341,7 @@
     function applyRoomBoundaries() {
       camera.position.x = THREE.MathUtils.clamp(camera.position.x, Room_CAMERA_LIMITS.minX, Room_CAMERA_LIMITS.maxX);
       camera.position.z = THREE.MathUtils.clamp(camera.position.z, Room_CAMERA_LIMITS.minZ, Room_CAMERA_LIMITS.maxZ);
-      camera.position.y = EYE_HEIGHT;
+      camera.position.y = THREE.MathUtils.clamp(camera.position.y, Room_CAMERA_LIMITS.minY, Room_CAMERA_LIMITS.maxY);
     }
 
     function createRoomStructure() {
@@ -404,7 +437,7 @@
           loadingDiv.style.display = 'none';
           if (!window.isMobile) {
             document.getElementById('instructions').textContent = 
-              `Room ${roomNumber} ready | Use WASD to move and mouse to look around | H: Home`;
+              `Room ${roomNumber} ready | WASD: Move | Q/E: Fly Up/Down | Mouse: Look Around | R: Reset | H: Home`;
           }
           debugLog('Room loaded - disabling debug');
           
@@ -417,7 +450,7 @@
         loadingDiv.style.display = 'none';
         if (!window.isMobile) {
           document.getElementById('instructions').textContent = 
-            `Room ${roomNumber} ready (no objects) | Use WASD to move and mouse to look around | H: Home`;
+            `Room ${roomNumber} ready (no objects) | WASD: Move | Q/E: Fly Up/Down | Mouse: Look Around | R: Reset | H: Home`;
         }
         // Still disable debugging
         setTimeout(disableDebugging, 500);
