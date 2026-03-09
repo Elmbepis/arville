@@ -171,6 +171,7 @@
   <script src="universe/js/GLB-movements.js"></script>
   <script src="universe/js/aquatic-atmosphere.js"></script>
   <script src="universe/js/modelPath.js"></script>
+  <script src="universe/js/clickedObject.js"></script>
 
   <script>
     let scene, camera, renderer;
@@ -866,6 +867,14 @@ function animate() {
         window.ModelPathSystem.updateModelAnimations(delta);
     }
     
+ 	// Call all registered area update functions
+    if (window.areaUpdateFunctions && window.areaUpdateFunctions.length > 0) {
+        window.areaUpdateFunctions.forEach(fn => {
+            if (typeof fn === 'function') {
+                fn(delta);
+            }
+        });
+    }    
     renderer.render(scene, camera);
 }
 
