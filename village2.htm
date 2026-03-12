@@ -173,6 +173,7 @@
   <script src="universe/js/modelPath.js"></script>
   <script src="universe/js/quiz-giver.js"></script>
   <script src="universe/js/clickedObject.js"></script>
+  <script src="universe/obj_create_model.js"></script>
 
   <script>
     let scene, camera, renderer;
@@ -212,6 +213,7 @@
       '12': { x: 0, y: 6, z: 60, rotation: 0 },
       '13': { x: 0, y: 8, z: 65, rotation: 0 },
       '14': { x: 0, y: 15, z: 60, rotation: 0 },
+      '15': { x: 0, y: EYE_HEIGHT, z: 60, rotation: 0 }, // Default
     };
 
     // Set dynamic title based on villageId
@@ -220,7 +222,7 @@
       '1': 'ARville Farm',
       '2': 'Virtual Medieval Square',
       '3': '70s Suburban Strip Mall',
-      '4': 'Arville Scouting Camp',
+      '4': 'ARville Scouting Camp',
       '5': 'Medieval Castle',
       '6': 'ARville Playground',
       '7': 'ARville Motor Stop',
@@ -229,6 +231,9 @@
       '10': 'Beatbox Toon Town',
       '11': 'Virtual Taj Mahal',
       '12': 'Fuschia Fairyland',
+      '13': 'Red Gnome Treasure Patrol',
+      '14': 'ARville Future City',
+      '15': 'Food World',
     };
     
     // Set the page title
@@ -296,6 +301,10 @@
       '14': {
         ground: 'universe/textures/metal12.jpg',
         roads: 'universe/textures/rubber1.jpg'
+      },
+      '15': {
+        ground: 'universe/textures/cracker1.jpg',
+        roads: 'universe/textures/cracker1b.jpg'
       },
     };
 
