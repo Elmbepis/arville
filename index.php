@@ -38,6 +38,7 @@ echo "<script>
                 'images/fairylandb.jpg',
                 'images/gnomeb.jpg',
                 'images/futuristicb.jpg',
+                'images/junk-foodb.jpg',
                 'images/room11b.jpg',
                 'images/room12b.jpg',
                 'images/room13b.jpg',
@@ -209,15 +210,16 @@ $smallCategories = [
     ["title" => "Taiga Hinterland", "tagline" => "Where log cabins nestle among pines and wolves roam the frozen terrain", "icon" => "taigaa.jpg", "hoverIcon" => "taigab.jpg", "link" => "nature.htm?id=7"],
     ["title" => "Desert Village", "tagline" => "Where humble stone dwellings bear witness to life lived on sun-scorched sand", "icon" => "deserta.jpg", "hoverIcon" => "desertb.jpg", "link" => "village2.htm?id=9"],
     ["title" => "Butterfly Meadow", "tagline" => "A sunlit field where blue butterflies waltz with wildflowers from dawn to dusk", "icon" => "meadowa.jpg", "hoverIcon" => "meadowb.jpg", "link" => "nature.htm?id=9"],
-    ["title" => "Beatbox Toon Town", "tagline" => "A whimsical world where magical objects unlock rhythmic loops for musical vibes", "icon" => "beatboxa.jpg", "hoverIcon" => "beatboxb.jpg", "link" => "village2.htm?id=10"],
+    ["title" => "Junk Food Junction", "tagline" => "A flavor-packed detour where indulgence wins and nutrition loses", "icon" => "junk-fooda.jpg", "hoverIcon" => "junk-foodb.jpg", "link" => "village2.htm?id=15"],
     ["title" => "Freshwater Fiefdom", "tagline" => "Where monster fish reign among lush emerald gardens", "icon" => "fw-ponda.jpg", "hoverIcon" => "fw-pondb.jpg", "link" => "nature.htm?id=8"],
     ["title" => "Virtual Taj Mahal", "tagline" => "A monument of love, reimagined in pixels for all the world to see", "icon" => "tajmahala.jpg", "hoverIcon" => "tajmahalb.jpg", "link" => "village2.htm?id=11"],
     ["title" => "Fuschia Fairyland", "tagline" => "A dazzling realm where pink fairies flit in a wonderland of colors", "icon" => "fairylanda.jpg", "hoverIcon" => "fairylandb.jpg", "link" => "village2.htm?id=12"],
     ["title" => "Red Gnome Treasure Patrol", "tagline" => "Where chests of gold rest under the watch of red warrior gnomes", "icon" => "gnomea.jpg", "hoverIcon" => "gnomeb.jpg", "link" => "village2.htm?id=13"],
+    ["title" => "Beatbox Toon Town", "tagline" => "A whimsical world where magical objects unlock rhythmic loops for musical vibes", "icon" => "beatboxa.jpg", "hoverIcon" => "beatboxb.jpg", "link" => "village2.htm?id=10"],
     ["title" => "Futuristic City", "tagline" => "A gleaming metropolis where neon lights dazzle and vehicles defy gravity", "icon" => "futuristica.jpg", "hoverIcon" => "futuristicb.jpg", "link" => "village2.htm?id=14"],
     ];
 
-for ($i = 0; $i < 26; $i++) {
+for ($i = 0; $i < 27; $i++) {
     $category = $smallCategories[$i];
     echo "<div class='col-lg-3 col-md-6 col-6'>"; // 4 columns on large, 2 columns on mobile (col-6)
     echo "    <div class='small-category text-center'>";
