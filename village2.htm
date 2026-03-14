@@ -173,7 +173,15 @@
   <script src="universe/js/modelPath.js"></script>
   <script src="universe/js/quiz-giver.js"></script>
   <script src="universe/js/clickedObject.js"></script>
-  <script src="universe/obj_create_model.js"></script>
+
+  <!-- Conditionally load obj_create_model.js only for id=15 or 16 -->
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    if (id === '15' || id === '16') {
+      document.write('<script src="universe/obj_create_model.js"><\/script>');
+    }
+ </script>
 
   <script>
     let scene, camera, renderer;
@@ -213,7 +221,7 @@
       '12': { x: 0, y: 6, z: 60, rotation: 0 },
       '13': { x: 0, y: 8, z: 65, rotation: 0 },
       '14': { x: 0, y: 15, z: 60, rotation: 0 },
-      '15': { x: 0, y: EYE_HEIGHT, z: 60, rotation: 0 }, // Default
+      '15': { x: 0, y: 10, z: 50, rotation: 0 }, 
     };
 
     // Set dynamic title based on villageId
@@ -222,7 +230,7 @@
       '1': 'ARville Farm',
       '2': 'Virtual Medieval Square',
       '3': '70s Suburban Strip Mall',
-      '4': 'ARville Scouting Camp',
+      '4': 'Arville Scouting Camp',
       '5': 'Medieval Castle',
       '6': 'ARville Playground',
       '7': 'ARville Motor Stop',
