@@ -217,7 +217,7 @@ $smallCategories = [
     ["title" => "Fuschia Fairyland", "tagline" => "A dazzling realm where pink fairies flit in a wonderland of colors", "icon" => "fairylanda.jpg", "hoverIcon" => "fairylandb.jpg", "link" => "village2.htm?id=12"],
     ["title" => "Red Gnome Treasure Patrol", "tagline" => "Where chests of gold rest under the watch of red warrior gnomes", "icon" => "gnomea.jpg", "hoverIcon" => "gnomeb.jpg", "link" => "village2.htm?id=13"],
     ["title" => "Beatbox Toon Town", "tagline" => "A whimsical world where magical objects unlock rhythmic loops for musical vibes", "icon" => "beatboxa.jpg", "hoverIcon" => "beatboxb.jpg", "link" => "village2.htm?id=10"],
-    ["title" => "Healthy Food Hub", "tagline" => "A nourishing stop where wellness wins and flavor thrives", "icon" => "healthy-fooda.jpg", "hoverIcon" => "healthy-foodb.jpg", "link" => "village2.htm?id=16"],
+    ["title" => "Healthy Food Haven", "tagline" => "A nourishing destination where wellness wins while flavor thrives", "icon" => "healthy-fooda.jpg", "hoverIcon" => "healthy-foodb.jpg", "link" => "village2.htm?id=16"],
     ["title" => "Futuristic City", "tagline" => "A gleaming metropolis where neon lights dazzle and vehicles defy gravity", "icon" => "futuristica.jpg", "hoverIcon" => "futuristicb.jpg", "link" => "village2.htm?id=14"],
     ];
 
