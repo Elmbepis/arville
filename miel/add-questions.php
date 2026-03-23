@@ -23,6 +23,10 @@ $statusMessage = '';
 $statusType = '';
 $teacherQuizzes = [];
 
+// For editing a question
+$edit_question_id = isset($_GET['edit']) ? intval($_GET['edit']) : 0;
+$edit_question_data = null;
+
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -72,6 +76,19 @@ try {
         }
     }
     
+    // If editing a question, fetch its data
+    if ($edit_question_id > 0 && $quiz_id > 0) {
+        $editStmt = $pdo->prepare("SELECT * FROM questions WHERE id = ? AND quiz_id = ?");
+        $editStmt->execute([$edit_question_id, $quiz_id]);
+        $edit_question_data = $editStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$edit_question_data) {
+            $statusMessage = "Question not found or you don't have permission to edit it.";
+            $statusType = 'error';
+            $edit_question_id = 0;
+        }
+    }
+    
 } catch(PDOException $e) {
     $statusMessage = "Database error: " . $e->getMessage();
     $statusType = 'error';
@@ -80,8 +97,10 @@ try {
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     try {
-        if ($_POST['action'] === 'add_question') {
+        if ($_POST['action'] === 'add_question' || $_POST['action'] === 'update_question') {
             $question_type = $_POST['question_type'] ?? 'multiple_choice';
+            $isUpdate = ($_POST['action'] === 'update_question');
+            $question_id = $isUpdate ? intval($_POST['question_id']) : 0;
             
             // Check if quiz is inworld when adding click_on questions
             if ($question_type === 'click_on' && $quiz_info && $quiz_info['type'] !== 'inworld') {
@@ -119,20 +138,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         // Set qtype value
                         $qtype = 'MC';
                         
-                        $insertStmt = $pdo->prepare("
-                            INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
-                            VALUES (?, ?, ?, ?, ?)
-                        ");
-                        
-                        $insertStmt->execute([
-                            $quiz_id,
-                            $qtype,
-                            $_POST['question_text'],
-                            json_encode($options),
-                            $correct_answer  // Use the selected correct answer
-                        ]);
-                        
-                        $statusMessage = "Multiple choice question added successfully!";
+                        if ($isUpdate) {
+                            $updateStmt = $pdo->prepare("
+                                UPDATE questions 
+                                SET qtype = ?, question_text = ?, options = ?, correct_answer = ? 
+                                WHERE id = ? AND quiz_id = ?
+                            ");
+                            $updateStmt->execute([
+                                $qtype,
+                                $_POST['question_text'],
+                                json_encode($options),
+                                $correct_answer,
+                                $question_id,
+                                $quiz_id
+                            ]);
+                            $statusMessage = "Multiple choice question updated successfully!";
+                        } else {
+                            $insertStmt = $pdo->prepare("
+                                INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
+                                VALUES (?, ?, ?, ?, ?)
+                            ");
+                            $insertStmt->execute([
+                                $quiz_id,
+                                $qtype,
+                                $_POST['question_text'],
+                                json_encode($options),
+                                $correct_answer
+                            ]);
+                            $statusMessage = "Multiple choice question added successfully!";
+                        }
                         $statusType = 'success';
                     }
                 } elseif ($question_type === 'true_false') {
@@ -148,20 +182,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     // Set qtype value
                     $qtype = 'TF';
                     
-                    $insertStmt = $pdo->prepare("
-                        INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
-                        VALUES (?, ?, ?, ?, ?)
-                    ");
-                    
-                    $insertStmt->execute([
-                        $quiz_id,
-                        $qtype,
-                        $_POST['question_text'],
-                        json_encode($options),
-                        $correct_answer  // Use the selected correct answer (A or B)
-                    ]);
-                    
-                    $statusMessage = "True/False question added successfully!";
+                    if ($isUpdate) {
+                        $updateStmt = $pdo->prepare("
+                            UPDATE questions 
+                            SET qtype = ?, question_text = ?, options = ?, correct_answer = ? 
+                            WHERE id = ? AND quiz_id = ?
+                        ");
+                        $updateStmt->execute([
+                            $qtype,
+                            $_POST['question_text'],
+                            json_encode($options),
+                            $correct_answer,
+                            $question_id,
+                            $quiz_id
+                        ]);
+                        $statusMessage = "True/False question updated successfully!";
+                    } else {
+                        $insertStmt = $pdo->prepare("
+                            INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
+                            VALUES (?, ?, ?, ?, ?)
+                        ");
+                        $insertStmt->execute([
+                            $quiz_id,
+                            $qtype,
+                            $_POST['question_text'],
+                            json_encode($options),
+                            $correct_answer
+                        ]);
+                        $statusMessage = "True/False question added successfully!";
+                    }
                     $statusType = 'success';
                     
                 } elseif ($question_type === 'fill_blank') {
@@ -182,20 +231,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         // Set qtype value
                         $qtype = 'FB';
                         
-                        $insertStmt = $pdo->prepare("
-                            INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
-                            VALUES (?, ?, ?, ?, ?)
-                        ");
-                        
-                        $insertStmt->execute([
-                            $quiz_id,
-                            $qtype,
-                            $_POST['question_text'],
-                            json_encode($options),
-                            $correct_answer
-                        ]);
-                        
-                        $statusMessage = "Fill in the blank question added successfully!";
+                        if ($isUpdate) {
+                            $updateStmt = $pdo->prepare("
+                                UPDATE questions 
+                                SET qtype = ?, question_text = ?, options = ?, correct_answer = ? 
+                                WHERE id = ? AND quiz_id = ?
+                            ");
+                            $updateStmt->execute([
+                                $qtype,
+                                $_POST['question_text'],
+                                json_encode($options),
+                                $correct_answer,
+                                $question_id,
+                                $quiz_id
+                            ]);
+                            $statusMessage = "Fill in the blank question updated successfully!";
+                        } else {
+                            $insertStmt = $pdo->prepare("
+                                INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
+                                VALUES (?, ?, ?, ?, ?)
+                            ");
+                            $insertStmt->execute([
+                                $quiz_id,
+                                $qtype,
+                                $_POST['question_text'],
+                                json_encode($options),
+                                $correct_answer
+                            ]);
+                            $statusMessage = "Fill in the blank question added successfully!";
+                        }
                         $statusType = 'success';
                     }
                 } elseif ($question_type === 'click_on') {
@@ -217,35 +281,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         // Set qtype value (CK for Click)
                         $qtype = 'CK';
                         
-                        $insertStmt = $pdo->prepare("
-                            INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
-                            VALUES (?, ?, ?, ?, ?)
-                        ");
-                        
-                        $insertStmt->execute([
-                            $quiz_id,
-                            $qtype,
-                            $_POST['question_text'],
-                            json_encode($options),
-                            $correct_answer
-                        ]);
-                        
-                        $statusMessage = "Click-on question added successfully!";
+                        if ($isUpdate) {
+                            $updateStmt = $pdo->prepare("
+                                UPDATE questions 
+                                SET qtype = ?, question_text = ?, options = ?, correct_answer = ? 
+                                WHERE id = ? AND quiz_id = ?
+                            ");
+                            $updateStmt->execute([
+                                $qtype,
+                                $_POST['question_text'],
+                                json_encode($options),
+                                $correct_answer,
+                                $question_id,
+                                $quiz_id
+                            ]);
+                            $statusMessage = "Click-on question updated successfully!";
+                        } else {
+                            $insertStmt = $pdo->prepare("
+                                INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
+                                VALUES (?, ?, ?, ?, ?)
+                            ");
+                            $insertStmt->execute([
+                                $quiz_id,
+                                $qtype,
+                                $_POST['question_text'],
+                                json_encode($options),
+                                $correct_answer
+                            ]);
+                            $statusMessage = "Click-on question added successfully!";
+                        }
                         $statusType = 'success';
                     }
                 }
                 
                 if ($statusType === 'success') {
-                    // Clear form (keep quiz_id)
-                    $_POST['question_text'] = '';
-                    $_POST['option_a'] = '';
-                    $_POST['option_b'] = '';
-                    $_POST['option_c'] = '';
-                    $_POST['option_d'] = '';
-                    $_POST['fill_answer'] = '';
-                    $_POST['model_name'] = '';
-                    $_POST['question_type'] = 'multiple_choice';
-                    $_POST['correct_answer'] = 'A';
+                    // Clear edit mode and form data
+                    $edit_question_id = 0;
+                    $edit_question_data = null;
                     
                     // Refresh questions list
                     $questionStmt = $pdo->prepare("SELECT * FROM questions WHERE quiz_id = ? ORDER BY id");
@@ -254,6 +326,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     
                     // Update quiz info question count
                     $quiz_info['question_count'] = count($questions);
+                    
+                    // Redirect to remove edit parameter from URL
+                    header("Location: add-questions.php?quiz_id=$quiz_id");
+                    exit();
                 }
             }
             }
@@ -272,6 +348,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             
             // Update quiz info question count
             $quiz_info['question_count'] = count($questions);
+            
+            // Clear edit mode if editing the deleted question
+            if ($edit_question_id == $_POST['question_id']) {
+                $edit_question_id = 0;
+                $edit_question_data = null;
+                header("Location: add-questions.php?quiz_id=$quiz_id");
+                exit();
+            }
             
         } elseif ($_POST['action'] === 'select_quiz') {
             // Just update the selected quiz
@@ -378,6 +462,28 @@ function getQtypeName($qtype) {
         'CK' => 'Click On'
     ];
     return $names[$qtype] ?? $qtype;
+}
+
+// Helper to get form values for editing
+function getEditValue($editData, $key, $default = '') {
+    if (!$editData) return $default;
+    
+    $options = json_decode($editData['options'], true);
+    if (!is_array($options)) $options = [];
+    
+    switch($key) {
+        case 'question_text': return $editData['question_text'] ?? $default;
+        case 'question_type': return $options['question_type'] ?? 'multiple_choice';
+        case 'correct_answer': return $editData['correct_answer'] ?? $default;
+        case 'option_a': return $options['A'] ?? $default;
+        case 'option_b': return $options['B'] ?? $default;
+        case 'option_c': return $options['C'] ?? $default;
+        case 'option_d': return $options['D'] ?? $default;
+        case 'fill_answer': return $options['A'] ?? $default;
+        case 'model_name': return $options['A'] ?? $default;
+        case 'world_key': return $options['world_key'] ?? $default;
+        default: return $default;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -989,7 +1095,7 @@ function getQtypeName($qtype) {
             font-weight: bold;
             margin-bottom: 15px;
             font-size: 1.1rem;
-            padding-right: 40px;
+            padding-right: 80px;
         }
         
         .question-type-badge {
@@ -1059,6 +1165,16 @@ function getQtypeName($qtype) {
             justify-content: center;
         }
         
+        .edit-btn {
+            background: #FFD166;
+            color: #2C3E50;
+        }
+        
+        .edit-btn:hover {
+            background: #E6B800;
+            transform: scale(1.1);
+        }
+        
         .delete-btn {
             background: #FF6B6B;
             color: white;
@@ -1067,6 +1183,23 @@ function getQtypeName($qtype) {
         .delete-btn:hover {
             background: #FF4757;
             transform: scale(1.1);
+        }
+        
+        /* Edit mode indicator */
+        .edit-mode-badge {
+            background: #FFD166;
+            color: #2C3E50;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .edit-mode-badge i {
+            font-size: 1rem;
         }
         
         /* ===== BUTTONS ===== */
@@ -1112,6 +1245,16 @@ function getQtypeName($qtype) {
         
         .btn-secondary:hover {
             background: #E6B800;
+        }
+        
+        .btn-warning {
+            background: #FFD166;
+            color: var(--text-dark);
+        }
+        
+        .btn-warning:hover {
+            background: #E6B800;
+            transform: translateY(-3px);
         }
         
         .button-group {
@@ -1301,6 +1444,10 @@ function getQtypeName($qtype) {
                 width: 100%;
                 justify-content: center;
             }
+            
+            .question-text {
+                padding-right: 70px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -1347,9 +1494,8 @@ function getQtypeName($qtype) {
         <!-- DASHBOARD HEADER -->
         <header class="dashboard-header fade-in">
             <div class="logo">
- 
                 <div>
-<img src="images/add-questions.jpg" alt="Create Quiz for Arville Metaverse" style="max-width: 450px; height: auto; margin-bottom: 10px;">
+                    <img src="images/add-questions.jpg" alt="Create Quiz for Arville Metaverse" style="max-width: 450px; height: auto; margin-bottom: 10px;">
                     <p class="subtitle">Add more questions to a quiz you've created for your students!</p>
                 </div>
             </div>
@@ -1432,9 +1578,22 @@ function getQtypeName($qtype) {
                 </div>
             </div>
             
-            <!-- ADD QUESTION FORM -->
+            <!-- Edit Mode Indicator -->
+            <?php if ($edit_question_data): ?>
+            <div class="edit-mode-badge">
+                <i class="fas fa-edit"></i> Editing Question
+                <a href="add-questions.php?quiz_id=<?php echo $quiz_id; ?>" class="btn btn-sm" style="background: #2C3E50; color: white; padding: 4px 12px; border-radius: 20px; text-decoration: none; margin-left: 10px;">
+                    <i class="fas fa-times"></i> Cancel Edit
+                </a>
+            </div>
+            <?php endif; ?>
+            
+            <!-- ADD/EDIT QUESTION FORM -->
             <form method="POST" action="add-questions.php?quiz_id=<?php echo $quiz_id; ?>" id="questionForm">
-                <input type="hidden" name="action" value="add_question">
+                <input type="hidden" name="action" value="<?php echo $edit_question_data ? 'update_question' : 'add_question'; ?>">
+                <?php if ($edit_question_data): ?>
+                <input type="hidden" name="question_id" value="<?php echo $edit_question_data['id']; ?>">
+                <?php endif; ?>
                 <input type="hidden" name="selected_quiz_id" value="<?php echo $quiz_id; ?>">
                 
                 <!-- QUESTION TYPE SELECTOR -->
@@ -1451,7 +1610,7 @@ function getQtypeName($qtype) {
                             'click_on' => ['icon' => 'mouse-pointer', 'name' => 'Click On', 'desc' => 'Click object in 3D world']
                         ];
                         
-                        $selectedType = isset($_POST['question_type']) ? $_POST['question_type'] : 'multiple_choice';
+                        $selectedType = $edit_question_data ? getEditValue($edit_question_data, 'question_type') : (isset($_POST['question_type']) ? $_POST['question_type'] : 'multiple_choice');
                         $isInworld = $quiz_info['type'] == 'inworld';
                         
                         foreach ($questionTypes as $key => $type):
@@ -1486,13 +1645,19 @@ function getQtypeName($qtype) {
                     <div class="input-with-icon">
                         <i class="fas fa-pencil-alt input-icon"></i>
                         <textarea name="question_text" id="questionText" 
-                                  placeholder="Enter your question here..." required><?php echo isset($_POST['question_text']) ? htmlspecialchars($_POST['question_text']) : ''; ?></textarea>
+                                  placeholder="Enter your question here..." required><?php 
+                            echo htmlspecialchars($edit_question_data ? getEditValue($edit_question_data, 'question_text') : (isset($_POST['question_text']) ? $_POST['question_text'] : '')); 
+                        ?></textarea>
                     </div>
                 </div>
                 
                 <!-- DYNAMIC OPTIONS BASED ON QUESTION TYPE -->
                 <div id="optionsContainer">
-                    <?php if ($selectedType === 'multiple_choice'): ?>
+                    <?php 
+                    $selectedType = $edit_question_data ? getEditValue($edit_question_data, 'question_type') : (isset($_POST['question_type']) ? $_POST['question_type'] : 'multiple_choice');
+                    $correctAnswer = $edit_question_data ? getEditValue($edit_question_data, 'correct_answer') : (isset($_POST['correct_answer']) ? $_POST['correct_answer'] : 'A');
+                    
+                    if ($selectedType === 'multiple_choice'): ?>
                     <!-- MULTIPLE CHOICE OPTIONS -->
                     <div class="form-group" id="multipleChoiceOptions">
                         <label class="form-label">
@@ -1513,7 +1678,7 @@ function getQtypeName($qtype) {
                                     <div style="margin-left: auto;">
                                         <input type="radio" name="correct_answer" 
                                                value="<?php echo $letter; ?>" 
-                                               <?php echo (isset($_POST['correct_answer']) && $_POST['correct_answer'] == $letter) ? 'checked' : ($index == 0 ? 'checked' : ''); ?>
+                                               <?php echo ($correctAnswer == $letter) ? 'checked' : ''; ?>
                                                style="transform: scale(1.2);">
                                         <small style="color: var(--secondary-green); margin-left: 5px;">
                                             <i class="fas fa-check"></i> Correct
@@ -1525,7 +1690,7 @@ function getQtypeName($qtype) {
                                     <input type="text" name="option_<?php echo strtolower($letter); ?>" 
                                            placeholder="Enter option <?php echo $letter; ?>..." 
                                            required
-                                           value="<?php echo isset($_POST['option_' . strtolower($letter)]) ? htmlspecialchars($_POST['option_' . strtolower($letter)]) : ''; ?>">
+                                           value="<?php echo htmlspecialchars($edit_question_data ? getEditValue($edit_question_data, 'option_' . strtolower($letter)) : (isset($_POST['option_' . strtolower($letter)]) ? $_POST['option_' . strtolower($letter)] : '')); ?>">
                                 </div>
                             </div>
                             <?php endforeach; ?>
@@ -1556,7 +1721,7 @@ function getQtypeName($qtype) {
                                     <div style="margin-left: auto;">
                                         <input type="radio" name="correct_answer" 
                                                value="<?php echo $letter; ?>"
-                                               <?php echo (isset($_POST['correct_answer']) && $_POST['correct_answer'] == $letter) ? 'checked' : ($letter == 'A' ? 'checked' : ''); ?>
+                                               <?php echo ($correctAnswer == $letter) ? 'checked' : ''; ?>
                                                style="transform: scale(1.2);">
                                         <small style="color: var(--secondary-green); margin-left: 5px;">
                                             <i class="fas fa-check"></i> Correct
@@ -1585,7 +1750,7 @@ function getQtypeName($qtype) {
                             <input type="text" name="fill_answer" 
                                    placeholder="Enter the correct answer for fill in the blank..." 
                                    required
-                                   value="<?php echo isset($_POST['fill_answer']) ? htmlspecialchars($_POST['fill_answer']) : ''; ?>">
+                                   value="<?php echo htmlspecialchars($edit_question_data ? getEditValue($edit_question_data, 'fill_answer') : (isset($_POST['fill_answer']) ? $_POST['fill_answer'] : '')); ?>">
                         </div>
                         <!-- Hidden radio for correct answer (always A for fill in blank) -->
                         <input type="hidden" name="correct_answer" value="A">
@@ -1609,14 +1774,14 @@ function getQtypeName($qtype) {
                             <input type="text" name="model_name" 
                                    placeholder="Enter the model name (e.g., 'Fish', 'Tree', 'Chair')..." 
                                    required
-                                   value="<?php echo isset($_POST['model_name']) ? htmlspecialchars($_POST['model_name']) : ''; ?>">
+                                   value="<?php echo htmlspecialchars($edit_question_data ? getEditValue($edit_question_data, 'model_name') : (isset($_POST['model_name']) ? $_POST['model_name'] : '')); ?>">
                         </div>
                         <input type="hidden" name="world_key" value="<?php echo $quiz_info['virtual_world']; ?>">
                         <!-- Hidden radio for correct answer (always A for click_on) -->
                         <input type="hidden" name="correct_answer" value="A">
                         <div style="margin-top: 10px; padding: 10px; background: #FFF3E0; border-radius: 10px; font-size: 0.9rem;">
                             <i class="fas fa-lightbulb" style="color: #FF9800; margin-right: 5px;"></i>
-                            <strong>How it works:</strong> Student clicks on any object in the 3D world. Only clicking on the object with model name <strong>"<?php echo isset($_POST['model_name']) ? htmlspecialchars($_POST['model_name']) : '[model name]'; ?>"</strong> will be correct.
+                            <strong>How it works:</strong> Student clicks on any object in the 3D world. Only clicking on the object with model name <strong>"<?php echo htmlspecialchars($edit_question_data ? getEditValue($edit_question_data, 'model_name') : (isset($_POST['model_name']) ? $_POST['model_name'] : '[model name]')); ?>"</strong> will be correct.
                         </div>
                         <div style="margin-top: 10px; padding: 10px; background: #E8F5E9; border-radius: 10px; font-size: 0.9rem;">
                             <i class="fas fa-globe" style="color: var(--primary-blue); margin-right: 5px;"></i>
@@ -1626,11 +1791,17 @@ function getQtypeName($qtype) {
                     <?php endif; ?>
                 </div>
                 
-                <!-- BUTTONS (UPDATED - REMOVED CREATE NEW QUIZ) -->
+                <!-- BUTTONS -->
                 <div class="button-group">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-plus-circle"></i> Add Question
+                    <button type="submit" class="btn <?php echo $edit_question_data ? 'btn-warning' : 'btn-primary'; ?>">
+                        <i class="fas <?php echo $edit_question_data ? 'fa-save' : 'fa-plus-circle'; ?>"></i> 
+                        <?php echo $edit_question_data ? 'Update Question' : 'Add Question'; ?>
                     </button>
+                    <?php if ($edit_question_data): ?>
+                    <a href="add-questions.php?quiz_id=<?php echo $quiz_id; ?>" class="btn btn-primary">
+                        <i class="fas fa-plus-circle"></i> Add New Question
+                    </a>
+                    <?php endif; ?>
                     <button type="reset" class="btn btn-primary">
                         <i class="fas fa-redo"></i> Clear Form
                     </button>
@@ -1645,7 +1816,8 @@ function getQtypeName($qtype) {
                         <i class="fas fa-list"></i> Existing Questions (<?php echo count($questions); ?>)
                     </h3>
                     <div style="color: #666; font-size: 0.9rem;">
-                        Click <i class="fas fa-trash-alt" style="color: #FF6B6B;"></i> to delete
+                        <i class="fas fa-edit" style="color: #FFD166;"></i> Edit | 
+                        <i class="fas fa-trash-alt" style="color: #FF6B6B;"></i> Delete
                     </div>
                 </div>
                 
@@ -1737,6 +1909,9 @@ function getQtypeName($qtype) {
                     <?php endif; ?>
                     
                     <div class="question-actions">
+                        <a href="add-questions.php?quiz_id=<?php echo $quiz_id; ?>&edit=<?php echo $question['id']; ?>" class="action-btn edit-btn" title="Edit Question">
+                            <i class="fas fa-edit"></i>
+                        </a>
                         <form method="POST" action="add-questions.php?quiz_id=<?php echo $quiz_id; ?>" 
                               style="display: inline;" onsubmit="return confirm('Delete this question?');">
                             <input type="hidden" name="action" value="delete_question">
@@ -1801,6 +1976,55 @@ function getQtypeName($qtype) {
         const optionsContainer = document.getElementById('optionsContainer');
         const isInworld = <?php echo $quiz_info && $quiz_info['type'] == 'inworld' ? 'true' : 'false'; ?>;
         
+        // Function to get current form values for preservation during type switch
+        function getCurrentFormValues() {
+            const values = {
+                question_text: document.getElementById('questionText')?.value || '',
+                correct_answer: document.querySelector('input[name="correct_answer"]:checked')?.value || 'A'
+            };
+            
+            // Get type-specific values
+            const optionA = document.querySelector('input[name="option_a"]');
+            const optionB = document.querySelector('input[name="option_b"]');
+            const optionC = document.querySelector('input[name="option_c"]');
+            const optionD = document.querySelector('input[name="option_d"]');
+            const fillAnswer = document.querySelector('input[name="fill_answer"]');
+            const modelName = document.querySelector('input[name="model_name"]');
+            
+            if (optionA) values.option_a = optionA.value;
+            if (optionB) values.option_b = optionB.value;
+            if (optionC) values.option_c = optionC.value;
+            if (optionD) values.option_d = optionD.value;
+            if (fillAnswer) values.fill_answer = fillAnswer.value;
+            if (modelName) values.model_name = modelName.value;
+            
+            return values;
+        }
+        
+        // Function to set form values after type switch
+        function setFormValues(values) {
+            if (values.question_text) document.getElementById('questionText').value = values.question_text;
+            
+            // Set correct answer radio
+            const correctRadio = document.querySelector(`input[name="correct_answer"][value="${values.correct_answer}"]`);
+            if (correctRadio) correctRadio.checked = true;
+            
+            // Set type-specific fields
+            const optionA = document.querySelector('input[name="option_a"]');
+            const optionB = document.querySelector('input[name="option_b"]');
+            const optionC = document.querySelector('input[name="option_c"]');
+            const optionD = document.querySelector('input[name="option_d"]');
+            const fillAnswer = document.querySelector('input[name="fill_answer"]');
+            const modelName = document.querySelector('input[name="model_name"]');
+            
+            if (optionA && values.option_a) optionA.value = values.option_a;
+            if (optionB && values.option_b) optionB.value = values.option_b;
+            if (optionC && values.option_c) optionC.value = values.option_c;
+            if (optionD && values.option_d) optionD.value = values.option_d;
+            if (fillAnswer && values.fill_answer) fillAnswer.value = values.fill_answer;
+            if (modelName && values.model_name) modelName.value = values.model_name;
+        }
+        
         // Question Type Selector
         questionTypeOptions.forEach(option => {
             option.addEventListener('click', () => {
@@ -1810,12 +2034,19 @@ function getQtypeName($qtype) {
                     return;
                 }
                 
+                // Save current form values before changing type
+                const savedValues = getCurrentFormValues();
+                
                 questionTypeOptions.forEach(o => o.classList.remove('selected'));
                 option.classList.add('selected');
-                questionTypeInput.value = option.dataset.questionType;
+                const newType = option.dataset.questionType;
+                questionTypeInput.value = newType;
                 
                 // Update form options based on selected type
-                updateQuestionForm(option.dataset.questionType);
+                updateQuestionForm(newType);
+                
+                // Restore saved values where applicable
+                setTimeout(() => setFormValues(savedValues), 10);
             });
         });
         
