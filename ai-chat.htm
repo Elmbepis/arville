@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chat - Virtual Assistant</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      font-family: Arial, sans-serif;
+    }
+    
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 100;
+      font-family: monospace;
+      text-align: center;
+    }
+    
+    /* Hide navigation instructions */
+    #info, #instructions {
+      display: none;
+    }
+    
+    /* Debug Console - Hidden */
+    #debug-console {
+      display: none;
+    }
+    
+    /* Home hint */
+    #home-hint {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.5);
+      color: rgba(255,255,255,0.6);
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-family: monospace;
+      z-index: 1000;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">Loading AI Assistant...<br><span id="room-status"></span></div>
+  <div id="debug-console"></div>
+  <div id="home-hint">Press H to return home</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="universe/js/GLTFLoader.js"></script>
+  <script src="universe/js/animation-controller.js"></script>
+  <script src="universe/obj_create_park.js"></script>
+  <script src="universe/obj_create_room.js"></script>
+  <script src="universe/obj_create_model.js"></script>
+  <script src="universe/js/modelPath.js"></script>
+  <script src="universe/js/GLB-movements.js"></script>
+
+  <script>
+    let scene, camera, renderer;
+    const clock = new THREE.Clock();
+    const EYE_HEIGHT = 3.5;
+    const WALL_HEIGHT = 16;
+
+    // Room dimensions
+    const PLACE_WIDTH = 40;
+    const PLACE_DEPTH = 50;
+
+    // Fixed camera position (no movement)
+    const FIXED_CAMERA_POSITION = new THREE.Vector3(0, 4, 8);
+    const FIXED_CAMERA_ROTATION = new THREE.Euler(0, 0, 0, 'YXZ');
+
+    // Home URL
+    const HOME_URL = 'index.php';
+
+    // Get room number from URL
+    function getRoomNumber() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomNum = urlParams.get('id');
+      return roomNum && !isNaN(roomNum) && roomNum > 0 ? roomNum : '50'; // Default to room 50
+    }
+
+    const ROOM_NUMBER = getRoomNumber();
+    document.getElementById('room-status').innerHTML = `Room ${ROOM_NUMBER}`;
+
+    // Initialize texture loader BEFORE loading room
+    window.textureLoader = new THREE.TextureLoader();
+    console.log('&#9989; Texture loader initialized');
+
+    init();
+    animate();
+
+    function init() {
+      console.log(`AI Chat - Initializing Room ${ROOM_NUMBER}...`);
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      
+      // Fixed camera position - no movement
+      camera.position.copy(FIXED_CAMERA_POSITION);
+      camera.rotation.copy(FIXED_CAMERA_ROTATION);
+
+      renderer = new THREE.WebGLRenderer({ 
+        antialias: true,
+        powerPreference: "high-performance"
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x202020);
+      document.body.appendChild(renderer.domElement);
+
+      // Only allow H key for home navigation
+      window.addEventListener('keydown', (event) => {
+        const key = event.key.toLowerCase();
+        
+        // Home key (H) - navigate back
+        if (key === 'h') {
+          console.log('Navigating to home...');
+          window.location.href = HOME_URL;
+        }
+        
+        // Prevent all other keys from affecting the page
+        if (key !== 'h') {
+          event.preventDefault();
+          return false;
+        }
+      });
+
+      // NO mouse controls - camera is fixed
+      camera.userData = {
+        update: function() {}
+      };
+
+      // Lighting setup
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+      hemiLight.position.set(0, 20, 0);
+      scene.add(hemiLight);
+
+      const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(ambient);
+
+      // Add directional light from front
+      const frontLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      frontLight.position.set(0, 5, 10);
+      scene.add(frontLight);
+
+      // Add back rim light
+      const backLight = new THREE.DirectionalLight(0xffaa88, 0.5);
+      backLight.position.set(0, 5, -5);
+      scene.add(backLight);
+
+      console.log('AI Chat - Creating room structure...');
+      createRoomStructure();
+
+      // Load room objects based on room number
+      loadRoomObjects(ROOM_NUMBER);
+
+      window.addEventListener("resize", onWindowResize);
+    }
+
+    function createRoomStructure() {
+      const roomWidth = 40;
+      const roomDepth = 50;
+      const wallHeight = 16;
+
+      const placeholderMat = new THREE.MeshLambertMaterial({ 
+        color: 0x888888,
+        transparent: true,
+        opacity: 0.3
+      });
+
+      const placeholderWallMat = new THREE.MeshLambertMaterial({ 
+        color: 0xaaaaaa,
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.DoubleSide
+      });
+
+      // Floor
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), placeholderMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.name = 'room-floor';
+      scene.add(floor);
+
+      // Walls
+      const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), placeholderWallMat);
+      backWall.position.set(0, wallHeight / 2, -roomDepth / 2);
+      backWall.name = 'room-back-wall';
+      scene.add(backWall);
+
+      const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), placeholderWallMat);
+      frontWall.position.set(0, wallHeight / 2, roomDepth / 2);
+      frontWall.rotation.y = Math.PI;
+      frontWall.name = 'room-front-wall';
+      scene.add(frontWall);
+
+      const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), placeholderWallMat);
+      leftWall.rotation.y = Math.PI / 2;
+      leftWall.position.set(-roomWidth / 2, wallHeight / 2, 0);
+      leftWall.name = 'room-left-wall';
+      scene.add(leftWall);
+
+      const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(roomDepth, wallHeight), placeholderWallMat);
+      rightWall.rotation.y = -Math.PI / 2;
+      rightWall.position.set(roomWidth / 2, wallHeight / 2, 0);
+      rightWall.name = 'room-right-wall';
+      scene.add(rightWall);
+
+      // Ceiling
+      const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), placeholderMat);
+      ceiling.rotation.x = Math.PI / 2;
+      ceiling.position.y = wallHeight;
+      ceiling.name = 'room-ceiling';
+      scene.add(ceiling);
+
+      console.log('Room structure created');
+    }
+
+    function loadRoomObjects(roomNumber) {
+      const loadingDiv = document.getElementById('loading');
+      loadingDiv.innerHTML = `Loading AI Assistant...<br>Room ${roomNumber}<br><span style="font-size:12px;">Please wait...</span>`;
+
+      // Load the specific room script (room50.js for room 50, etc.)
+      const script = document.createElement('script');
+      script.src = `universe/rooms/room${roomNumber}.js?v=${Date.now()}`;
+      
+      script.onload = () => {
+        console.log(`&#9989; Room ${roomNumber} loaded successfully`);
+        setTimeout(() => {
+          loadingDiv.style.display = 'none';
+        }, 500);
+      };
+      
+      script.onerror = () => {
+        console.error(`Failed to load room ${roomNumber}.js`);
+        loadingDiv.innerHTML = `Error loading room ${roomNumber}.<br>Please check that room${roomNumber}.js exists.`;
+      };
+      
+      document.head.appendChild(script);
+    }
+
+    // Apply texture function - now with textureLoader available
+    window.applyRoomTexture = function(meshName, texturePath, repeatX = 1, repeatY = 1) {
+      const mesh = scene.getObjectByName(meshName);
+      if (mesh && window.textureLoader) {
+        try {
+          const texture = window.textureLoader.load(texturePath);
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(repeatX, repeatY);
+          
+          // Preserve the existing material side property
+          const currentSide = mesh.material ? mesh.material.side : THREE.FrontSide;
+          mesh.material = new THREE.MeshLambertMaterial({ 
+            map: texture,
+            side: currentSide
+          });
+          console.log(`&#9989; Applied texture to ${meshName}: ${texturePath}`);
+        } catch (error) {
+          console.error(`Failed to apply texture to ${meshName}:`, error);
+        }
+      } else {
+        console.warn(`Cannot apply texture to ${meshName}: mesh or textureLoader not found`);
+      }
+    };
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      // Update animations if available
+      if (window.updateAllAnimations) {
+        window.updateAllAnimations(clock.getDelta());
+      }
+      
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+</html>
