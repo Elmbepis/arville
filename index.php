@@ -39,6 +39,7 @@ echo "<script>
                 'images/gnomeb.jpg',
                 'images/futuristicb.jpg',
                 'images/foodb.jpg',
+                'images/alienb.jpg',
                 'images/room11b.jpg',
                 'images/room12b.jpg',
                 'images/room13b.jpg',
@@ -203,12 +204,12 @@ $smallCategories = [
     ["title" => "Cobra Cavern", "tagline" => "A cave where niche-dwelling animals compete for survival", "icon" => "cavea.jpg", "hoverIcon" => "caveb.jpg", "link" => "nature.htm?id=4"],
     ["title" => "ARville Playground", "tagline" => "A kaleidoscope of playful fun and memories where your curiosity runs free", "icon" => "playgrounda.jpg", "hoverIcon" => "playgroundb.jpg", "link" => "village2.htm?id=6"],
     ["title" => "African Savanna", "tagline" => "A sun-kissed grassland where the great circle of life unfolds", "icon" => "savannaa.jpg", "hoverIcon" => "savannab.jpg", "link" => "nature.htm?id=5"],
+    ["title" => "Alien Planet", "tagline" => "A gleaming metropolis where neon lights dazzle and vehicles defy gravity", "icon" => "aliena.jpg", "hoverIcon" => "alienb.jpg", "link" => "village2.htm?id=16"],
     ["title" => "ARville Scouting Camp", "tagline" => "A piece of virtual wilderness where your magical outdoor adventures never end", "icon" => "campa.jpg", "hoverIcon" => "campb.jpg", "link" => "village2.htm?id=4"],
-    ["title" => "Cetacean Cove", "tagline" => "A deep blue sanctuary where ocean giants find shelter", "icon" => "cetaceana.jpg", "hoverIcon" => "cetaceanb.jpg", "link" => "nature.htm?id=6"],
-    ["title" => "ARville Motor Stop", "tagline" => "A friendly neighborhood spot where thirsty giants roll in to fill up", "icon" => "gas-stna.jpg", "hoverIcon" => "gas-stnb.jpg", "link" => "village2.htm?id=7"],
+    ["title" => "Desert Village", "tagline" => "Where humble stone dwellings bear witness to life lived on sun-scorched sand", "icon" => "deserta.jpg", "hoverIcon" => "desertb.jpg", "link" => "village2.htm?id=9"],
     ["title" => "70s Suburban Strip Mall", "tagline" => "Your portal to vintage vibes and classic convenience, preserved in time", "icon" => "malla.jpg", "hoverIcon" => "mallb.jpg", "link" => "village2.htm?id=3"],
     ["title" => "Taiga Hinterland", "tagline" => "Where log cabins nestle among pines and wolves roam the frozen terrain", "icon" => "taigaa.jpg", "hoverIcon" => "taigab.jpg", "link" => "nature.htm?id=7"],
-    ["title" => "Desert Village", "tagline" => "Where humble stone dwellings bear witness to life lived on sun-scorched sand", "icon" => "deserta.jpg", "hoverIcon" => "desertb.jpg", "link" => "village2.htm?id=9"],
+    ["title" => "ARville Motor Stop", "tagline" => "A friendly neighborhood spot where thirsty giants roll in to fill up", "icon" => "gas-stna.jpg", "hoverIcon" => "gas-stnb.jpg", "link" => "village2.htm?id=7"],
     ["title" => "Butterfly Meadow", "tagline" => "A sunlit field where blue butterflies waltz with wildflowers from dawn to dusk", "icon" => "meadowa.jpg", "hoverIcon" => "meadowb.jpg", "link" => "nature.htm?id=9"],
     ["title" => "Food Court Face-Off", "tagline" => "A flavor-packed arena where indulgence competes with nutrition", "icon" => "fooda.jpg", "hoverIcon" => "foodb.jpg", "link" => "village2.htm?id=15"],
     ["title" => "Freshwater Fiefdom", "tagline" => "Where monster fish reign among lush emerald gardens", "icon" => "fw-ponda.jpg", "hoverIcon" => "fw-pondb.jpg", "link" => "nature.htm?id=8"],
@@ -216,10 +217,11 @@ $smallCategories = [
     ["title" => "Fuschia Fairyland", "tagline" => "A dazzling realm where pink fairies flit in a wonderland of colors", "icon" => "fairylanda.jpg", "hoverIcon" => "fairylandb.jpg", "link" => "village2.htm?id=12"],
     ["title" => "Red Gnome Treasure Patrol", "tagline" => "Where chests of gold rest under the watch of red warrior gnomes", "icon" => "gnomea.jpg", "hoverIcon" => "gnomeb.jpg", "link" => "village2.htm?id=13"],
     ["title" => "Beatbox Toon Town", "tagline" => "A whimsical world where magical objects unlock rhythmic loops for musical vibes", "icon" => "beatboxa.jpg", "hoverIcon" => "beatboxb.jpg", "link" => "village2.htm?id=10"],
+    ["title" => "Cetacean Cove", "tagline" => "A deep blue sanctuary where ocean giants find shelter", "icon" => "cetaceana.jpg", "hoverIcon" => "cetaceanb.jpg", "link" => "nature.htm?id=6"],
     ["title" => "Futuristic City", "tagline" => "A gleaming metropolis where neon lights dazzle and vehicles defy gravity", "icon" => "futuristica.jpg", "hoverIcon" => "futuristicb.jpg", "link" => "village2.htm?id=14"],
     ];
 
-for ($i = 0; $i < 27; $i++) {
+for ($i = 0; $i < 28; $i++) {
     $category = $smallCategories[$i];
     echo "<div class='col-lg-3 col-md-6 col-6'>"; // 4 columns on large, 2 columns on mobile (col-6)
     echo "    <div class='small-category text-center'>";
