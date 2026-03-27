@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mic Volume &#8594; Servo Test - AP Mode</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      text-align: center;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 600px;
+    }
+    h1 { color: white; margin-bottom: 20px; }
+    .wifi-info {
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 12px;
+      color: #ffaa00;
+    }
+    .status-panel {
+      background: rgba(0,0,0,0.7);
+      padding: 20px;
+      border-radius: 15px;
+      margin: 20px 0;
+    }
+    .status-led {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #f00;
+      margin-right: 10px;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+    .status-text { color: #0f0; font-family: monospace; }
+    .meter {
+      width: 100%;
+      height: 30px;
+      background: #333;
+      border-radius: 15px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    .meter-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #4CAF50, #FFC107, #F44336);
+      transition: width 0.05s;
+      border-radius: 15px;
+    }
+    .angle-display {
+      background: #000;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 20px 0;
+      font-size: 24px;
+      font-weight: bold;
+      color: #ffaa00;
+      font-family: monospace;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      margin: 10px;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: bold;
+    }
+    button.stop-btn { background: #f44336; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .volume-value {
+      font-size: 36px;
+      font-weight: bold;
+      color: #fff;
+      margin: 10px 0;
+    }
+    .log {
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 12px;
+      height: 120px;
+      overflow-y: auto;
+      text-align: left;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>&#127908; Mic Volume &#8594; Servo Test</h1>
+    <div class="wifi-info">
+      &#128225; Connect to WiFi: <strong>ElfMouth</strong> | Password: <strong>12345678</strong><br>
+      Then refresh this page
+    </div>
+    
+    <div class="status-panel">
+      <span class="status-led" id="esp-led"></span>
+      <span class="status-text" id="esp-status">ESP32: Connecting...</span>
+    </div>
+    
+    <div class="meter">
+      <div class="meter-fill" id="meter-fill"></div>
+    </div>
+    
+    <div class="volume-value">
+      Volume: <span id="volume-value">0</span>%
+    </div>
+    
+    <div class="angle-display">
+      Servo Angle: <span id="angle-display">0</span>°
+    </div>
+    
+    <div>
+      <button id="startMicBtn">&#127908; START MICROPHONE</button>
+      <button id="stopMicBtn" class="stop-btn" disabled>&#9209; STOP MIC</button>
+      <button id="testServoBtn">&#128295; TEST SERVO (0°&#8594;120°&#8594;0°)</button>
+    </div>
+    
+    <div class="log" id="log">
+      > Ready.<br>
+      > 1. Connect to WiFi: ElfMouth (password: 12345678)<br>
+      > 2. Refresh this page<br>
+      > 3. Click "Start Microphone" and speak!<br>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // ESP32 Access Point Mode - Fixed IP: 192.168.4.1
+    // ============================================
+    let espSocket = null;
+    let espConnected = false;
+    let currentAngle = 0;
+    
+    // Audio context for microphone volume
+    let audioContext = null;
+    let mediaStream = null;
+    let sourceNode = null;
+    let analyserNode = null;
+    let animationFrameId = null;
+    let isMicActive = false;
+    
+    // ESP32 AP Mode - always this IP
+    const ESP32_IP = '192.168.4.1';
+    const ESP32_PORT = 81;
+    
+    // Servo limits
+    const MIN_ANGLE = 0;
+    const MAX_ANGLE = 120;
+    
+    function addLog(msg) {
+      const logDiv = document.getElementById('log');
+      const timestamp = new Date().toLocaleTimeString();
+      logDiv.innerHTML += `<br>> [${timestamp}] ${msg}`;
+      logDiv.scrollTop = logDiv.scrollHeight;
+      console.log(msg);
+    }
+    
+    function connectESP32() {
+      addLog(`Connecting to ws://${ESP32_IP}:${ESP32_PORT}...`);
+      
+      try {
+        espSocket = new WebSocket(`ws://${ESP32_IP}:${ESP32_PORT}`);
+        
+        espSocket.onopen = () => {
+          addLog('&#9989; Connected to ESP32!');
+          espConnected = true;
+          updateESPStatus(true, 'Connected');
+          sendAngle(0);
+        };
+        
+        espSocket.onclose = () => {
+          addLog('&#10060; ESP32 disconnected');
+          espConnected = false;
+          updateESPStatus(false, 'Disconnected');
+          // Try to reconnect every 3 seconds
+          setTimeout(connectESP32, 3000);
+        };
+        
+        espSocket.onerror = (error) => {
+          addLog('&#10060; Connection error - make sure connected to "ElfMouth" WiFi');
+          espConnected = false;
+          updateESPStatus(false, 'Check WiFi');
+        };
+        
+        espSocket.onmessage = (event) => {
+          console.log('ESP32:', event.data);
+        };
+        
+      } catch (error) {
+        addLog('&#10060; Failed to connect: ' + error);
+        setTimeout(connectESP32, 3000);
+      }
+    }
+    
+    function updateESPStatus(connected, message) {
+      const led = document.getElementById('esp-led');
+      const status = document.getElementById('esp-status');
+      
+      if (connected) {
+        led.style.background = '#0f0';
+        led.style.animation = 'none';
+      } else {
+        led.style.background = '#f00';
+        led.style.animation = 'pulse 1s infinite';
+      }
+      status.textContent = `ESP32: ${message}`;
+    }
+    
+    function sendAngle(angle) {
+      if (!espConnected || !espSocket || espSocket.readyState !== WebSocket.OPEN) {
+        return false;
+      }
+      
+      const message = JSON.stringify({
+        type: 'mouth',
+        angle: Math.round(angle)
+      });
+      
+      try {
+        espSocket.send(message);
+        document.getElementById('angle-display').textContent = Math.round(angle);
+        return true;
+      } catch (error) {
+        addLog('&#10060; Send error: ' + error);
+        return false;
+      }
+    }
+    
+    // ============================================
+    // Microphone Volume Detection
+    // ============================================
+    async function startMicrophone() {
+      if (isMicActive) {
+        addLog('Mic already active');
+        return;
+      }
+      
+      try {
+        addLog('&#127908; Requesting microphone access...');
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        
+        sourceNode = audioContext.createMediaStreamSource(mediaStream);
+        analyserNode = audioContext.createAnalyser();
+        analyserNode.fftSize = 256;
+        
+        sourceNode.connect(analyserNode);
+        
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
+        
+        isMicActive = true;
+        addLog('&#9989; Microphone active! Speak to move the servo.');
+        
+        document.getElementById('startMicBtn').disabled = true;
+        document.getElementById('stopMicBtn').disabled = false;
+        
+        // Start volume monitoring
+        startVolumeMonitoring();
+        
+      } catch (error) {
+        addLog('&#10060; Microphone error: ' + error.message);
+        alert('Could not access microphone. Please check permissions.');
+      }
+    }
+    
+    function startVolumeMonitoring() {
+      const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+      
+      function updateVolume() {
+        if (!isMicActive || !analyserNode) return;
+        
+        analyserNode.getByteTimeDomainData(dataArray);
+        
+        // Calculate RMS volume
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          const v = (dataArray[i] - 128) / 128;
+          sum += v * v;
+        }
+        let rms = Math.sqrt(sum / dataArray.length);
+        
+        // Convert to percentage (0-100)
+        let volumePercent = Math.min(100, Math.floor(rms * 100 * 1.5));
+        
+        // Map volume to servo angle (0-120°)
+        let mappedAngle = 0;
+        if (volumePercent > 5) {
+          mappedAngle = MIN_ANGLE + (volumePercent / 100) * MAX_ANGLE;
+          mappedAngle = Math.min(MAX_ANGLE, Math.max(MIN_ANGLE, mappedAngle));
+        }
+        
+        // Update UI
+        document.getElementById('volume-value').textContent = volumePercent;
+        document.getElementById('meter-fill').style.width = volumePercent + '%';
+        
+        // Send to servo (only if angle changed significantly)
+        if (Math.abs(mappedAngle - currentAngle) > 2) {
+          currentAngle = mappedAngle;
+          sendAngle(currentAngle);
+        }
+        
+        animationFrameId = requestAnimationFrame(updateVolume);
+      }
+      
+      updateVolume();
+    }
+    
+    function stopMicrophone() {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      
+      if (sourceNode) {
+        sourceNode.disconnect();
+        sourceNode = null;
+      }
+      
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+      }
+      
+      if (analyserNode) {
+        analyserNode = null;
+      }
+      
+      isMicActive = false;
+      addLog('&#9209; Microphone stopped');
+      
+      document.getElementById('startMicBtn').disabled = false;
+      document.getElementById('stopMicBtn').disabled = true;
+      
+      // Reset servo to closed
+      currentAngle = 0;
+      sendAngle(0);
+      document.getElementById('volume-value').textContent = '0';
+      document.getElementById('meter-fill').style.width = '0%';
+    }
+    
+    // ============================================
+    // Test Servo (No Mic)
+    // ============================================
+    let testInterval = null;
+    
+    function testServoSweep() {
+      if (testInterval) {
+        clearInterval(testInterval);
+        testInterval = null;
+        addLog('Test stopped');
+        sendAngle(0);
+        return;
+      }
+      
+      addLog('&#128295; Testing servo: sweeping 0° &#8594; 120° &#8594; 0°');
+      let angle = 0;
+      let direction = 1;
+      
+      testInterval = setInterval(() => {
+        angle += direction * 5;
+        
+        if (angle >= MAX_ANGLE) {
+          angle = MAX_ANGLE;
+          direction = -1;
+        } else if (angle <= MIN_ANGLE) {
+          angle = MIN_ANGLE;
+          direction = 1;
+          // Stop after one full cycle
+          if (angle === MIN_ANGLE && direction === 1) {
+            clearInterval(testInterval);
+            testInterval = null;
+            addLog('&#9989; Test complete');
+            return;
+          }
+        }
+        
+        currentAngle = angle;
+        sendAngle(angle);
+        document.getElementById('angle-display').textContent = Math.round(angle);
+      }, 50);
+    }
+    
+    // ============================================
+    // Initialize
+    // ============================================
+    function init() {
+      connectESP32();
+      
+      document.getElementById('startMicBtn').onclick = startMicrophone;
+      document.getElementById('stopMicBtn').onclick = stopMicrophone;
+      document.getElementById('testServoBtn').onclick = testServoSweep;
+    }
+    
+    init();
+  </script>
+</body>
+</html>

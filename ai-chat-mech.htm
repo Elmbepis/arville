@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elf Character - 3D Room with Physical Mouth</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      font-family: Arial, sans-serif;
+    }
+    
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 100;
+      font-family: monospace;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+    
+    #status-panel {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.7);
+      color: #0f0;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 12px;
+      z-index: 1000;
+      pointer-events: none;
+      backdrop-filter: blur(5px);
+    }
+    
+    #home-hint {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.5);
+      color: rgba(255,255,255,0.7);
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: monospace;
+      z-index: 1000;
+      pointer-events: none;
+    }
+    
+    .status-led {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #f00;
+      margin-right: 8px;
+      animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 0.3; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1.2); }
+    }
+    
+    #controls {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.6);
+      padding: 10px;
+      border-radius: 10px;
+      display: flex;
+      gap: 10px;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+    
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    button:hover { background: #45a049; }
+    button.speak-btn { background: #2196F3; }
+    button.mic-btn { background: #FF9800; }
+    button.stop-btn { background: #f44336; }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    Loading Christmas Room...<br>
+    <span id="room-status"></span><br>
+    <span style="font-size:12px;">Click anywhere to speak to the elf!</span>
+  </div>
+  
+  <div id="status-panel">
+    <span class="status-led" id="esp-led"></span>
+    <span id="esp-status">ESP32: Connecting...</span>
+  </div>
+  
+  <div id="home-hint">
+    &#127876; Press H to return home | &#128483;&#65039; Click to speak
+  </div>
+  
+  <div id="controls">
+    <button id="testServoBtn" class="stop-btn">&#128295; Test Servo</button>
+    <button id="testSpeechBtn" class="speak-btn">&#128483;&#65039; Test Speech</button>
+    <button id="micBtn" class="mic-btn">&#127908; Mic Mode</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="universe/js/GLTFLoader.js"></script>
+  <script src="universe/js/animation-controller.js"></script>
+  <script src="universe/obj_create_park.js"></script>
+  <script src="universe/obj_create_room.js"></script>
+  <script src="universe/obj_create_model.js"></script>
+  <script src="universe/js/modelPath.js"></script>
+  <script src="universe/js/GLB-movements.js"></script>
+
+  <script>
+    // ============================================
+    // ESP32 WebSocket - Access Point Mode
+    // ============================================
+    let espSocket = null;
+    let espConnected = false;
+    let currentAngle = 0;
+    let isSpeaking = false;
+    let isMicActive = false;
+    let testInterval = null;
+    
+    // ENHANCED SERVO SETTINGS - BIGGER MOVEMENT!
+    const MIN_ANGLE = 5;      // Slightly open (not completely closed)
+    const MAX_ANGLE = 140;    // Much wider opening (was 120)
+    const SENSITIVITY = 2.2;  // Higher sensitivity multiplier (was 1.5)
+    
+    // Audio for mic mode
+    let audioContext = null;
+    let mediaStream = null;
+    let analyserNode = null;
+    let animationFrameId = null;
+    
+    const ESP32_IP = '192.168.4.1';
+    const ESP32_PORT = 81;
+    
+    // ============================================
+    // ESP32 Connection
+    // ============================================
+    function connectESP32() {
+      try {
+        espSocket = new WebSocket(`ws://${ESP32_IP}:${ESP32_PORT}`);
+        
+        espSocket.onopen = () => {
+          console.log('&#9989; Connected to ESP32');
+          espConnected = true;
+          updateESPStatus(true, 'Connected');
+          sendServoAngle(MIN_ANGLE);
+        };
+        
+        espSocket.onclose = () => {
+          console.log('&#10060; ESP32 disconnected');
+          espConnected = false;
+          updateESPStatus(false, 'Disconnected');
+          setTimeout(connectESP32, 3000);
+        };
+        
+        espSocket.onerror = () => {
+          espConnected = false;
+          updateESPStatus(false, 'Check WiFi');
+        };
+        
+        espSocket.onmessage = (event) => {
+          console.log('ESP32:', event.data);
+        };
+        
+      } catch (error) {
+        console.error('Connection error:', error);
+        setTimeout(connectESP32, 3000);
+      }
+    }
+    
+    function updateESPStatus(connected, message) {
+      const led = document.getElementById('esp-led');
+      const status = document.getElementById('esp-status');
+      
+      if (connected) {
+        led.style.background = '#0f0';
+        led.style.animation = 'none';
+      } else {
+        led.style.background = '#f00';
+        led.style.animation = 'pulse 1s infinite';
+      }
+      status.textContent = `ESP32: ${message}`;
+    }
+    
+    function sendServoAngle(angle) {
+      if (!espConnected || !espSocket || espSocket.readyState !== WebSocket.OPEN) {
+        return false;
+      }
+      
+      const clampedAngle = Math.min(MAX_ANGLE, Math.max(MIN_ANGLE, Math.round(angle)));
+      const message = JSON.stringify({ type: 'mouth', angle: clampedAngle });
+      
+      try {
+        espSocket.send(message);
+        currentAngle = clampedAngle;
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+    
+    // ============================================
+    // ENHANCED LIP-SYNC - Bigger Movement!
+    // ============================================
+    let speechSynth = window.speechSynthesis;
+    let lipSyncTimer = null;
+    
+    function calculateMouthIntensity(word, char) {
+      // Enhanced intensity calculation for bigger movements
+      let intensity = 0.2;
+      
+      // Vowel intensity (much higher for dramatic effect)
+      if ('aeiou'.includes(char)) {
+        intensity = 0.85;
+        if ('ao'.includes(char)) intensity = 1.0;  // Fully open for A and O
+      } 
+      // Consonants that open mouth
+      else if ('bcdfgpstw'.includes(char)) {
+        intensity = 0.65;
+      }
+      else if ('mn'.includes(char)) {
+        intensity = 0.5;
+      }
+      
+      // Boost based on word length/vowels
+      if (word) {
+        const vowelCount = (word.match(/[aeiou]/gi) || []).length;
+        const wordBoost = Math.min(0.3, (vowelCount / Math.max(1, word.length)) * 0.5);
+        intensity = Math.min(1.0, intensity + wordBoost);
+      }
+      
+      // Apply sensitivity multiplier
+      intensity = Math.min(1.0, intensity * SENSITIVITY);
+      
+      return intensity;
+    }
+    
+    function speakWithLipSync(text) {
+      // Cancel any ongoing speech
+      if (speechSynth.speaking || speechSynth.pending) {
+        speechSynth.cancel();
+      }
+      if (lipSyncTimer) {
+        clearInterval(lipSyncTimer);
+        lipSyncTimer = null;
+      }
+      
+      console.log(`&#128483;&#65039; Speaking: "${text.substring(0, 80)}..."`);
+      isSpeaking = true;
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      
+      let wordIndex = 0;
+      const words = text.split(' ');
+      
+      // Word-level lip-sync
+      utterance.onboundary = (event) => {
+        if (event.name === 'word' && wordIndex < words.length) {
+          const word = words[wordIndex];
+          const vowelCount = (word.match(/[aeiou]/gi) || []).length;
+          let intensity = 0.3 + (vowelCount / Math.max(1, word.length)) * 0.7;
+          intensity = Math.min(1.0, intensity * SENSITIVITY);
+          
+          const targetAngle = MIN_ANGLE + intensity * (MAX_ANGLE - MIN_ANGLE);
+          sendServoAngle(targetAngle);
+          wordIndex++;
+        }
+      };
+      
+      utterance.onend = () => {
+        isSpeaking = false;
+        sendServoAngle(MIN_ANGLE);
+        if (lipSyncTimer) clearInterval(lipSyncTimer);
+        updateDigitalCharacterMouth(0);
+      };
+      
+      utterance.onerror = () => {
+        isSpeaking = false;
+        sendServoAngle(MIN_ANGLE);
+        if (lipSyncTimer) clearInterval(lipSyncTimer);
+      };
+      
+      // Character-level lip-sync for smoother animation
+      let charIndex = 0;
+      lipSyncTimer = setInterval(() => {
+        if (!isSpeaking || !speechSynth.speaking) return;
+        
+        if (charIndex < text.length) {
+          const char = text[charIndex].toLowerCase();
+          const intensity = calculateMouthIntensity(words[Math.floor(charIndex / 5)] || '', char);
+          const targetAngle = MIN_ANGLE + intensity * (MAX_ANGLE - MIN_ANGLE);
+          
+          sendServoAngle(targetAngle);
+          
+          // Update digital character's mouth
+          updateDigitalCharacterMouth(intensity);
+          
+          charIndex++;
+        }
+      }, 45);  // Faster updates for smoother movement
+      
+      speechSynth.speak(utterance);
+    }
+    
+    function updateDigitalCharacterMouth(intensity) {
+      // Update 3D character's mouth if available
+      if (window.updateMorphTarget) {
+        window.updateMorphTarget('mouthOpen', intensity);
+      }
+    }
+    
+    // ============================================
+    // Test Functions
+    // ============================================
+    function testServoSweep() {
+      if (testInterval) {
+        clearInterval(testInterval);
+        testInterval = null;
+        sendServoAngle(MIN_ANGLE);
+        return;
+      }
+      
+      console.log('&#128295; Testing servo sweep (wide range)...');
+      let angle = MIN_ANGLE;
+      let direction = 1;
+      
+      testInterval = setInterval(() => {
+        angle += direction * 8;
+        
+        if (angle >= MAX_ANGLE) {
+          angle = MAX_ANGLE;
+          direction = -1;
+        } else if (angle <= MIN_ANGLE) {
+          angle = MIN_ANGLE;
+          direction = 1;
+          if (angle === MIN_ANGLE && direction === 1) {
+            clearInterval(testInterval);
+            testInterval = null;
+            console.log('&#9989; Test complete');
+          }
+        }
+        
+        sendServoAngle(angle);
+        
+        // Also animate digital mouth
+        const intensity = (angle - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE);
+        updateDigitalCharacterMouth(intensity);
+      }, 40);
+    }
+    
+    function testSpeech() {
+      if (isSpeaking) {
+        if (speechSynth.speaking) speechSynth.cancel();
+        return;
+      }
+      speakWithLipSync("Hello! I am your Christmas elf. Watch my mouth move as I speak. The servo should open wide when I say words like O and A!");
+    }
+    
+    // ============================================
+    // Microphone Mode (Optional)
+    // ============================================
+    async function startMicMode() {
+      if (isMicActive) {
+        stopMicMode();
+        return;
+      }
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyserNode = audioContext.createAnalyser();
+        analyserNode.fftSize = 256;
+        
+        const source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyserNode);
+        await audioContext.resume();
+        
+        isMicActive = true;
+        mediaStream = stream;
+        document.getElementById('micBtn').textContent = '&#9209; Stop Mic';
+        
+        const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+        
+        function updateMicVolume() {
+          if (!isMicActive) return;
+          
+          analyserNode.getByteTimeDomainData(dataArray);
+          let sum = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            const v = (dataArray[i] - 128) / 128;
+            sum += v * v;
+          }
+          let rms = Math.sqrt(sum / dataArray.length);
+          let volume = Math.min(1.0, rms * SENSITIVITY * 1.5);
+          
+          const targetAngle = MIN_ANGLE + volume * (MAX_ANGLE - MIN_ANGLE);
+          sendServoAngle(targetAngle);
+          updateDigitalCharacterMouth(volume);
+          
+          animationFrameId = requestAnimationFrame(updateMicVolume);
+        }
+        
+        updateMicVolume();
+        
+      } catch (error) {
+        console.error('Mic error:', error);
+      }
+    }
+    
+    function stopMicMode() {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+      if (audioContext) audioContext.close();
+      isMicActive = false;
+      mediaStream = null;
+      audioContext = null;
+      analyserNode = null;
+      document.getElementById('micBtn').textContent = '&#127908; Mic Mode';
+      sendServoAngle(MIN_ANGLE);
+      updateDigitalCharacterMouth(0);
+    }
+    
+    // ============================================
+    // Three.js Scene Setup
+    // ============================================
+    let scene, camera, renderer;
+    const clock = new THREE.Clock();
+    const WALL_HEIGHT = 16;
+    const PLACE_WIDTH = 40;
+    const PLACE_DEPTH = 50;
+    const FIXED_CAMERA_POSITION = new THREE.Vector3(0, 4, 8);
+    const HOME_URL = 'index.php';
+    
+    function getRoomNumber() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomNum = urlParams.get('id');
+      return roomNum && !isNaN(roomNum) && roomNum > 0 ? roomNum : '50';
+    }
+    
+    const ROOM_NUMBER = getRoomNumber();
+    document.getElementById('room-status').innerHTML = `Room ${ROOM_NUMBER} | &#129501; Christmas Elf`;
+    
+    window.textureLoader = new THREE.TextureLoader();
+    
+    function init3D() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.copy(FIXED_CAMERA_POSITION);
+      camera.rotation.set(0, 0, 0);
+      
+      renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x0a0a2a);
+      document.body.appendChild(renderer.domElement);
+      
+      // Lighting
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+      hemiLight.position.set(0, 20, 0);
+      scene.add(hemiLight);
+      
+      const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(ambient);
+      
+      const frontLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      frontLight.position.set(0, 5, 10);
+      scene.add(frontLight);
+      
+      const backLight = new THREE.DirectionalLight(0xffaa88, 0.5);
+      backLight.position.set(0, 5, -5);
+      scene.add(backLight);
+      
+      // Add a warm fill light
+      const fillLight = new THREE.PointLight(0xffaa66, 0.5);
+      fillLight.position.set(2, 3, 4);
+      scene.add(fillLight);
+      
+      createRoomStructure();
+      loadRoomObjects(ROOM_NUMBER);
+      
+      window.addEventListener('resize', onWindowResize);
+      
+      // Hide loading after a delay
+      setTimeout(() => {
+        const loading = document.getElementById('loading');
+        if (loading) loading.style.display = 'none';
+      }, 1500);
+    }
+    
+    function createRoomStructure() {
+      const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x2a2a3a, side: THREE.DoubleSide });
+      const floorMaterial = new THREE.MeshLambertMaterial({ color: 0x3a3a4a });
+      
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_WIDTH, PLACE_DEPTH), floorMaterial);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -0.1;
+      floor.name = 'room-floor';
+      scene.add(floor);
+      
+      // Add a festive rug/circle
+      const rugMat = new THREE.MeshLambertMaterial({ color: 0xaa4444 });
+      const rug = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 0.05, 32), rugMat);
+      rug.position.set(0, -0.05, 0);
+      scene.add(rug);
+      
+      // Simple walls
+      const backWall = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_WIDTH, WALL_HEIGHT), wallMaterial);
+      backWall.position.set(0, WALL_HEIGHT / 2, -PLACE_DEPTH / 2);
+      backWall.name = 'room-back-wall';
+      scene.add(backWall);
+      
+      const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_DEPTH, WALL_HEIGHT), wallMaterial);
+      leftWall.rotation.y = Math.PI / 2;
+      leftWall.position.set(-PLACE_WIDTH / 2, WALL_HEIGHT / 2, 0);
+      leftWall.name = 'room-left-wall';
+      scene.add(leftWall);
+      
+      const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_DEPTH, WALL_HEIGHT), wallMaterial);
+      rightWall.rotation.y = -Math.PI / 2;
+      rightWall.position.set(PLACE_WIDTH / 2, WALL_HEIGHT / 2, 0);
+      rightWall.name = 'room-right-wall';
+      scene.add(rightWall);
+      
+      // Add some Christmas lights (simple spheres)
+      const lightColors = [0xff0000, 0x00ff00, 0xffaa00, 0xff00ff];
+      for (let i = -18; i <= 18; i += 3) {
+        const color = lightColors[Math.floor(Math.random() * lightColors.length)];
+        const lightSphere = new THREE.Mesh(
+          new THREE.SphereGeometry(0.15, 8, 8),
+          new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.5 })
+        );
+        lightSphere.position.set(i, 2.5, -PLACE_DEPTH / 2 + 0.1);
+        scene.add(lightSphere);
+      }
+    }
+    
+    function loadRoomObjects(roomNumber) {
+      const script = document.createElement('script');
+      script.src = `universe/rooms/room${roomNumber}.js?v=${Date.now()}`;
+      script.onload = () => console.log(`&#9989; Room ${roomNumber} loaded`);
+      script.onerror = () => console.error(`Failed to load room ${roomNumber}`);
+      document.head.appendChild(script);
+    }
+    
+    window.applyRoomTexture = function(meshName, texturePath, repeatX = 1, repeatY = 1) {
+      const mesh = scene.getObjectByName(meshName);
+      if (mesh && window.textureLoader) {
+        try {
+          const texture = window.textureLoader.load(texturePath);
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(repeatX, repeatY);
+          mesh.material = new THREE.MeshLambertMaterial({ map: texture });
+        } catch (error) {}
+      }
+    };
+    
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    
+    function animate3D() {
+      requestAnimationFrame(animate3D);
+      if (window.updateAllAnimations) {
+        window.updateAllAnimations(clock.getDelta());
+      }
+      renderer.render(scene, camera);
+    }
+    
+    // ============================================
+    // Initialize Everything
+    // ============================================
+    function init() {
+      connectESP32();
+      init3D();
+      animate3D();
+      
+      // Click anywhere to speak (for voice recognition)
+      document.body.addEventListener('click', () => {
+        if (!isSpeaking && !isMicActive) {
+          // Simple voice recognition can be added here
+          console.log('Click to speak - implement voice recognition if needed');
+        }
+      });
+      
+      document.getElementById('testServoBtn').onclick = testServoSweep;
+      document.getElementById('testSpeechBtn').onclick = testSpeech;
+      document.getElementById('micBtn').onclick = startMicMode;
+      
+      // Keyboard navigation
+      window.addEventListener('keydown', (event) => {
+        if (event.key.toLowerCase() === 'h') {
+          window.location.href = HOME_URL;
+        }
+      });
+    }
+    
+    init();
+  </script>
+</body>
+</html>

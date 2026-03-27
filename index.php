@@ -412,7 +412,7 @@ echo "</style>";
 echo "<section class='about py-5' id='about' style='background-color: #f2f2f2;'>"; 
 echo "    <div class='container text-center'>";
 echo "        <h2>What is ARville?</h2>";
-echo "        <p class='lead'>ARville is an online ecosystem of netizens, businesses, and communities connected together by immersive XR experiences and innovative marketing and customer relationship tools.</p>";
+echo "        <p class='lead'>ARville is an online ecosystem of netizens, businesses, and communities connected together by immersive XR experiences and innovative educational, marketing, and customer relationship tools.</p>";
 echo "        <a href='learn-more.php' class='btn btn-primary btn-lg'>Learn More About ARville</a>";
 echo "    </div>";
 echo "</section>";
