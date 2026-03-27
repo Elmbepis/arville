@@ -204,7 +204,7 @@ $smallCategories = [
     ["title" => "Cobra Cavern", "tagline" => "A cave where niche-dwelling animals compete for survival", "icon" => "cavea.jpg", "hoverIcon" => "caveb.jpg", "link" => "nature.htm?id=4"],
     ["title" => "ARville Playground", "tagline" => "A kaleidoscope of playful fun and memories where your curiosity runs free", "icon" => "playgrounda.jpg", "hoverIcon" => "playgroundb.jpg", "link" => "village2.htm?id=6"],
     ["title" => "African Savanna", "tagline" => "A sun-kissed grassland where the great circle of life unfolds", "icon" => "savannaa.jpg", "hoverIcon" => "savannab.jpg", "link" => "nature.htm?id=5"],
-    ["title" => "Alien Planet", "tagline" => "A gleaming metropolis where neon lights dazzle and vehicles defy gravity", "icon" => "aliena.jpg", "hoverIcon" => "alienb.jpg", "link" => "village2.htm?id=16"],
+    ["title" => "Alien Planet", "tagline" => "A purple landscape where humanoid aliens roam in peaceful mystery", "icon" => "aliena.jpg", "hoverIcon" => "alienb.jpg", "link" => "village2.htm?id=16"],
     ["title" => "ARville Scouting Camp", "tagline" => "A piece of virtual wilderness where your magical outdoor adventures never end", "icon" => "campa.jpg", "hoverIcon" => "campb.jpg", "link" => "village2.htm?id=4"],
     ["title" => "Desert Village", "tagline" => "Where humble stone dwellings bear witness to life lived on sun-scorched sand", "icon" => "deserta.jpg", "hoverIcon" => "desertb.jpg", "link" => "village2.htm?id=9"],
     ["title" => "70s Suburban Strip Mall", "tagline" => "Your portal to vintage vibes and classic convenience, preserved in time", "icon" => "malla.jpg", "hoverIcon" => "mallb.jpg", "link" => "village2.htm?id=3"],
