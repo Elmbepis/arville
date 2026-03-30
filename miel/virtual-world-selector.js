@@ -95,6 +95,46 @@ class VirtualWorldSelector {
                 image: 'vw-castle.jpg',
                 link: '../village2.htm?id=5'
             },
+            'alien planet': {
+                name: 'Alien Planet',
+                image: 'vw-alien-planet.jpg',
+                link: '../village2.htm?id=16'
+            },
+            'meadow': {
+                name: 'Butterfly Meadow',
+                image: 'vw-meadow.jpg',
+                link: '../nature.htm?id=9'
+            },
+            'desert': {
+                name: 'Desert Village',
+                image: 'vw-desert.jpg',
+                link: '../village2.htm?id=9'
+            },
+            'campsite': {
+                name: 'ARville Scouting Camp',
+                image: 'vw-campsite.jpg',
+                link: '../village2.htm?id=4'
+            },
+            'fairyland': {
+                name: 'Fuchsia Fairyland',
+                image: 'vw-fairyland.jpg',
+                link: '../village2.htm?id=12'
+            },
+            'taj mahal': {
+                name: 'Virtual Taj Mahal',
+                image: 'vw-taj-mahal.jpg',
+                link: '../village2.htm?id=11'
+            },
+            'futuristic': {
+                name: 'Futuristic City',
+                image: 'vw-futuristic.jpg',
+                link: '../village2.htm?id=14'
+            },
+            'freshwater': {
+                name: 'Freshwater Fiefdom',
+                image: 'vw-freshwater.jpg',
+                link: '../nature.htm?id=8'
+            },
         };
         
         this.selectedWorld = this.options.selectedWorld;
