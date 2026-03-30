@@ -135,6 +135,26 @@ class VirtualWorldSelector {
                 image: 'vw-freshwater.jpg',
                 link: '../nature.htm?id=8'
             },
+            'gnome': {
+                name: 'Red Gnome Treasure Patrol',
+                image: 'vw-gnome.jpg',
+                link: '../village2.htm?id=13'
+            },
+            'food court': {
+                name: 'Food Court Face-Off',
+                image: 'vw-food-court.jpg',
+                link: '../village2.htm?id=15'
+            },
+            'beatbox': {
+                name: 'Beatbox Toon Town',
+                image: 'vw-beatbox.jpg',
+                link: '../village2.htm?id=10'
+            },
+            'motor stop': {
+                name: 'ARville Motor Stop',
+                image: 'vw-motor-stop.jpg',
+                link: '../village2.htm?id=7'
+            },
         };
         
         this.selectedWorld = this.options.selectedWorld;
