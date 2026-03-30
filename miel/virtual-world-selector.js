@@ -46,9 +46,9 @@ class VirtualWorldSelector {
                 link: '../village2.htm?id=1'
             },
             'raptor island': {
-                name: 'Raptor Island',
+                name: 'Raptor Island 1',
                 image: 'vw-raptor.jpg',
-                link: '../nature.htm?id=2'
+                link: '../nature.htm?id=11'
             },
             'toy world': {
                 name: 'Toy World',

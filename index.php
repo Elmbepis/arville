@@ -194,7 +194,7 @@ $smallCategories = [
     ["title" => "ARville Zoo", "tagline" => "A wildlife wonderland where every creature captivates imagination", "icon" => "zoo1a.jpg", "hoverIcon" => "zoo1b.jpg", "link" => "zoo1.htm"],
     ["title" => "ARville Forest Park", "tagline" => "A serene sanctuary where wilderness meets curated beauty", "icon" => "park1a.jpg", "hoverIcon" => "park1b.jpg", "link" => "park1.htm"],
     ["title" => "ARville Museum of Fine Arts", "tagline" => "A gathering of the greatest masterpieces in human history", "icon" => "museum1a.jpg", "hoverIcon" => "museum1b.jpg", "link" => "museum.htm?id=1"],
-    ["title" => "Raptor Island (Cretaceous)", "tagline" => "Where dinosaurs from the Cretaceous Period roam once again", "icon" => "raptor1a.jpg", "hoverIcon" => "raptor1b.jpg", "link" => "nature.htm?id=2"],
+    ["title" => "Raptor Island (Cretaceous)", "tagline" => "Where dinosaurs from the Cretaceous Period roam once again", "icon" => "raptor1a.jpg", "hoverIcon" => "raptor1b.jpg", "link" => "nature.htm?id=11"],
     ["title" => "Shark Lair", "tagline" => "Where ocean's chondrichthyan predators live", "icon" => "sharka.jpg", "hoverIcon" => "sharkb.jpg", "link" => "nature.htm?id=1"],
     ["title" => "Rainbow Reef", "tagline" => "A vibrant undersea paradise of colorful creatures", "icon" => "reef1a.jpg", "hoverIcon" => "reef1b.jpg", "link" => "nature.htm?id=3"],
     ["title" => "Arville Farm", "tagline" => "A harvest haven where students explore the world of farming", "icon" => "farma.jpg", "hoverIcon" => "farmb.jpg", "link" => "village2.htm?id=1"],
