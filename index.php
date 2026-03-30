@@ -215,13 +215,14 @@ $smallCategories = [
     ["title" => "Freshwater Fiefdom", "tagline" => "Where monster fish reign among lush emerald gardens", "icon" => "fw-ponda.jpg", "hoverIcon" => "fw-pondb.jpg", "link" => "nature.htm?id=8"],
     ["title" => "Virtual Taj Mahal", "tagline" => "A monument of love, reimagined in pixels for all the world to see", "icon" => "tajmahala.jpg", "hoverIcon" => "tajmahalb.jpg", "link" => "village2.htm?id=11"],
     ["title" => "Fuchsia Fairyland", "tagline" => "A dazzling realm where pink fairies flit in a wonderland of colors", "icon" => "fairylanda.jpg", "hoverIcon" => "fairylandb.jpg", "link" => "village2.htm?id=12"],
-    ["title" => "Red Gnome Treasure Patrol", "tagline" => "Where chests of gold rest under the watch of red warrior gnomes", "icon" => "gnomea.jpg", "hoverIcon" => "gnomeb.jpg", "link" => "village2.htm?id=13"],
+    ["title" => "Raptor Island (Jurassic)", "tagline" => "Where dinosaurs from the Jurassic Period roam once again", "icon" => "raptor2a.jpg", "hoverIcon" => "raptor2b.jpg", "link" => "nature.htm?id=10"],
     ["title" => "Beatbox Toon Town", "tagline" => "A whimsical world where magical objects unlock rhythmic loops for musical vibes", "icon" => "beatboxa.jpg", "hoverIcon" => "beatboxb.jpg", "link" => "village2.htm?id=10"],
     ["title" => "Cetacean Cove", "tagline" => "A deep blue sanctuary where ocean giants find shelter", "icon" => "cetaceana.jpg", "hoverIcon" => "cetaceanb.jpg", "link" => "nature.htm?id=6"],
+    ["title" => "Red Gnome Treasure Patrol", "tagline" => "Where chests of gold rest under the watch of red warrior gnomes", "icon" => "gnomea.jpg", "hoverIcon" => "gnomeb.jpg", "link" => "village2.htm?id=13"],
     ["title" => "Futuristic City", "tagline" => "A gleaming metropolis where neon lights dazzle and vehicles defy gravity", "icon" => "futuristica.jpg", "hoverIcon" => "futuristicb.jpg", "link" => "village2.htm?id=14"],
     ];
 
-for ($i = 0; $i < 28; $i++) {
+for ($i = 0; $i < 29; $i++) {
     $category = $smallCategories[$i];
     echo "<div class='col-lg-3 col-md-6 col-6'>"; // 4 columns on large, 2 columns on mobile (col-6)
     echo "    <div class='small-category text-center'>";
