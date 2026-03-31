@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Elf Character - 3D Room with Physical Mouth</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Elf Character + Mechanical Lip-Sync | ESP32 Servo</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
       background: #000;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', system-ui, sans-serif;
     }
     
     #loading {
@@ -17,112 +17,281 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.85);
       color: white;
-      padding: 20px;
-      border-radius: 10px;
-      z-index: 100;
+      padding: 20px 30px;
+      border-radius: 20px;
+      z-index: 200;
       font-family: monospace;
       text-align: center;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
+      border: 1px solid #ffaa44;
+      pointer-events: none;
     }
     
     #status-panel {
       position: absolute;
       bottom: 20px;
       left: 20px;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.85);
       color: #0f0;
-      padding: 10px 20px;
-      border-radius: 10px;
+      padding: 12px 20px;
+      border-radius: 20px;
       font-family: monospace;
       font-size: 12px;
       z-index: 1000;
+      backdrop-filter: blur(8px);
       pointer-events: none;
-      backdrop-filter: blur(5px);
+      border-left: 3px solid #4caf50;
+      min-width: 240px;
+    }
+    
+    .status-line {
+      margin: 4px 0;
+    }
+    
+    .status-led {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f55;
+      margin-right: 8px;
+      animation: pulseGlow 1s infinite;
+    }
+    
+    @keyframes pulseGlow {
+      0% { opacity: 0.3; transform: scale(0.8);}
+      100% { opacity: 1; transform: scale(1.2);}
     }
     
     #home-hint {
       position: absolute;
       bottom: 20px;
       right: 20px;
-      background: rgba(0,0,0,0.5);
-      color: rgba(255,255,255,0.7);
-      padding: 8px 15px;
-      border-radius: 8px;
-      font-size: 12px;
+      background: rgba(0,0,0,0.6);
+      color: #ffdd99;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
       font-family: monospace;
       z-index: 1000;
       pointer-events: none;
-    }
-    
-    .status-led {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #f00;
-      margin-right: 8px;
-      animation: pulse 1s infinite;
-    }
-    
-    @keyframes pulse {
-      0% { opacity: 0.3; transform: scale(0.8); }
-      100% { opacity: 1; transform: scale(1.2); }
     }
     
     #controls {
       position: absolute;
       bottom: 20px;
       right: 20px;
-      background: rgba(0,0,0,0.6);
-      padding: 10px;
-      border-radius: 10px;
+      background: rgba(0,0,0,0.7);
+      padding: 12px 16px;
+      border-radius: 40px;
       display: flex;
-      gap: 10px;
+      gap: 12px;
       z-index: 1000;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,215,0,0.3);
+      flex-wrap: wrap;
     }
     
     button {
-      background: #4CAF50;
+      background: #2c3e66;
       color: white;
       border: none;
-      padding: 8px 16px;
-      border-radius: 20px;
+      padding: 8px 18px;
+      border-radius: 40px;
       cursor: pointer;
       font-size: 12px;
       font-weight: bold;
+      transition: all 0.2s;
     }
     
-    button:hover { background: #45a049; }
-    button.speak-btn { background: #2196F3; }
-    button.mic-btn { background: #FF9800; }
-    button.stop-btn { background: #f44336; }
+    button:active { transform: scale(0.96); }
+    button.speak-btn { background: linear-gradient(105deg, #1f8a6b, #146b52); }
+    button.stop-btn { background: linear-gradient(105deg, #b13e3e, #8b2c2c); }
+    button.ollama-btn { background: linear-gradient(105deg, #5a3e8a, #3a2a60); }
+    button.connect-btn { background: linear-gradient(105deg, #2c6e8a, #1a4f66); }
+    
+    #chat-area {
+      position: absolute;
+      bottom: 100px;
+      left: 20px;
+      width: 280px;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 12px;
+      z-index: 1000;
+      font-size: 12px;
+      font-family: monospace;
+      border: 1px solid #ffaa66;
+      pointer-events: auto;
+      transition: 0.2s;
+    }
+    
+    #chat-input {
+      width: 100%;
+      background: #1e2a36;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 30px;
+      color: white;
+      font-family: monospace;
+      font-size: 12px;
+      margin-top: 6px;
+      outline: none;
+    }
+    
+    #chat-messages {
+      max-height: 140px;
+      overflow-y: auto;
+      color: #d4ffcc;
+      font-size: 11px;
+      margin-bottom: 6px;
+      padding-right: 4px;
+    }
+    
+    .chat-bubble {
+      padding: 5px 8px;
+      border-left: 2px solid #ffaa55;
+      margin: 4px 0;
+      word-break: break-word;
+    }
+    
+    .user-msg { border-left-color: #4caf50; color: #bbffbb; }
+    .elf-msg { border-left-color: #ffaa55; color: #ffdd99; }
+    .thinking-msg { border-left-color: #ffaa33; color: #ffcc88; font-style: italic; }
+    
+    .badge {
+      background: #ffaa33;
+      color: #1a1f2e;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 9px;
+      font-weight: bold;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+    
+    .ip-input-group {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      padding: 8px 12px;
+      border-radius: 40px;
+      display: flex;
+      gap: 8px;
+      z-index: 1000;
+      font-size: 11px;
+    }
+    
+    .ip-input-group input {
+      background: #1e2a36;
+      border: 1px solid #ffaa66;
+      padding: 6px 12px;
+      border-radius: 30px;
+      color: white;
+      font-family: monospace;
+      font-size: 11px;
+      width: 130px;
+      outline: none;
+    }
+    
+    .ip-input-group button {
+      padding: 6px 12px;
+      font-size: 11px;
+    }
+    
+    .servo-debug {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-family: monospace;
+      font-size: 11px;
+      color: #ffaa66;
+      z-index: 1000;
+      pointer-events: none;
+    }
+    
+    .mouth-status {
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    
+    .mouth-status.speaking {
+      color: #4cff4c;
+      text-shadow: 0 0 5px #4cff4c;
+      animation: pulse 0.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+    
+    .mouth-status.listening {
+      color: #ffaa66;
+    }
   </style>
 </head>
 <body>
   <div id="loading">
-    Loading Christmas Room...<br>
+    &#127876; CHRISTMAS ELF WORKSHOP &#127876;<br>
     <span id="room-status"></span><br>
-    <span style="font-size:12px;">Click anywhere to speak to the elf!</span>
+    <span style="font-size:11px;">&#129302; Mechanical Mouth - Perfect Lip-Sync from Ollama &#129302;</span>
+  </div>
+  
+  <div class="ip-input-group">
+    <input type="text" id="espIpInput" placeholder="ESP32 IP Address" value="192.168.4.1">
+    <button id="connectBtn" class="connect-btn">&#128268; Connect</button>
+  </div>
+  
+  <div class="servo-debug" id="servoDebug">
+    &#127919; Servo: <span id="debugAngle">---</span>°
   </div>
   
   <div id="status-panel">
-    <span class="status-led" id="esp-led"></span>
-    <span id="esp-status">ESP32: Connecting...</span>
+    <div class="status-line">
+      <span class="status-led" id="espLed"></span>
+      <span id="esp-status">ESP32: Disconnected</span>
+    </div>
+    <div class="status-line">
+      &#129504; <span id="ai-status">AI: Idle</span>
+    </div>
+    <div class="status-line">
+      &#127908; <span id="speech-status" class="mouth-status listening">&#128263; SPEECH: IDLE (Mouth Closed)</span>
+    </div>
+    <div class="status-line">
+      &#128068; <span id="mouth-action">Mouth: CLOSED</span>
+    </div>
   </div>
   
   <div id="home-hint">
-    &#127876; Press H to return home | &#128483;&#65039; Click to speak
+    &#127968; H = home | &#128172; Ask Elf | &#127919; Perfect lip-sync when speaking
   </div>
   
   <div id="controls">
-    <button id="testServoBtn" class="stop-btn">&#128295; Test Servo</button>
+    <button id="testServoBtn" class="stop-btn">&#9881;&#65039; Test Sweep</button>
     <button id="testSpeechBtn" class="speak-btn">&#128483;&#65039; Test Speech</button>
-    <button id="micBtn" class="mic-btn">&#127908; Mic Mode</button>
+    <button id="ollamaChatBtn" class="ollama-btn">&#128172; Ask Elf</button>
+  </div>
+  
+  <div id="chat-area" style="display: none;">
+    <div class="badge">&#129501; ELF AI (Ollama)</div>
+    <div id="chat-messages">
+      <div class="chat-bubble elf-msg">&#10024; Hello! I'm the Christmas Elf. Ask me anything - my mouth will move perfectly when I speak!</div>
+    </div>
+    <input type="text" id="chat-input" placeholder="Type message for elf...">
   </div>
 
+  <!-- Three.js & custom assets -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="universe/js/GLTFLoader.js"></script>
   <script src="universe/js/animation-controller.js"></script>
@@ -134,322 +303,459 @@
 
   <script>
     // ============================================
-    // ESP32 WebSocket - Access Point Mode
+    // ESP32 SERVO CONTROL - WORKING TEST SWEEP
     // ============================================
-    let espSocket = null;
-    let espConnected = false;
-    let currentAngle = 0;
-    let isSpeaking = false;
-    let isMicActive = false;
-    let testInterval = null;
+    const SERVO_CLOSED = 180;
+    const SERVO_OPEN = 95;
     
-    // ENHANCED SERVO SETTINGS - BIGGER MOVEMENT!
-    const MIN_ANGLE = 5;      // Slightly open (not completely closed)
-    const MAX_ANGLE = 140;    // Much wider opening (was 120)
-    const SENSITIVITY = 2.2;  // Higher sensitivity multiplier (was 1.5)
+    let ws = null;
+    let espOnline = false;
+    let isConnecting = false;
+    let currentServoAngle = SERVO_CLOSED;
+    let lastSentAngle = SERVO_CLOSED;
     
-    // Audio for mic mode
-    let audioContext = null;
-    let mediaStream = null;
-    let analyserNode = null;
-    let animationFrameId = null;
+    // Speech state
+    let isSpeakingActive = false;
+    let lipSyncInterval = null;
+    let currentUtterance = null;
     
-    const ESP32_IP = '192.168.4.1';
-    const ESP32_PORT = 81;
+    // Ollama config
+    let ollamaAvailable = false;
+    let ollamaEndpoint = 'http://localhost:11434/api/generate';
     
-    // ============================================
-    // ESP32 Connection
-    // ============================================
-    function connectESP32() {
-      try {
-        espSocket = new WebSocket(`ws://${ESP32_IP}:${ESP32_PORT}`);
-        
-        espSocket.onopen = () => {
-          console.log('&#9989; Connected to ESP32');
-          espConnected = true;
-          updateESPStatus(true, 'Connected');
-          sendServoAngle(MIN_ANGLE);
-        };
-        
-        espSocket.onclose = () => {
-          console.log('&#10060; ESP32 disconnected');
-          espConnected = false;
-          updateESPStatus(false, 'Disconnected');
-          setTimeout(connectESP32, 3000);
-        };
-        
-        espSocket.onerror = () => {
-          espConnected = false;
-          updateESPStatus(false, 'Check WiFi');
-        };
-        
-        espSocket.onmessage = (event) => {
-          console.log('ESP32:', event.data);
-        };
-        
-      } catch (error) {
-        console.error('Connection error:', error);
-        setTimeout(connectESP32, 3000);
-      }
-    }
+    // UI Elements
+    const espLed = document.getElementById('espLed');
+    const espStatusMsg = document.getElementById('esp-status');
+    const espIpInput = document.getElementById('espIpInput');
+    const debugAngleSpan = document.getElementById('debugAngle');
+    const testBtn = document.getElementById('testServoBtn');
+    const connectBtn = document.getElementById('connectBtn');
+    const speechStatusSpan = document.getElementById('speech-status');
+    const aiStatusSpan = document.getElementById('ai-status');
+    const mouthActionSpan = document.getElementById('mouth-action');
     
-    function updateESPStatus(connected, message) {
-      const led = document.getElementById('esp-led');
-      const status = document.getElementById('esp-status');
-      
+    // ========== ESP32 Connection Functions ==========
+    function updateEspUI(connected, message) {
       if (connected) {
-        led.style.background = '#0f0';
-        led.style.animation = 'none';
+        espLed.style.background = "#1eff8c";
+        espLed.classList.remove('pulse');
+        espStatusMsg.innerHTML = `ESP32: &#9989; ${message}`;
       } else {
-        led.style.background = '#f00';
-        led.style.animation = 'pulse 1s infinite';
+        espLed.style.background = "#ff4d4d";
+        espLed.classList.add('pulse');
+        espStatusMsg.innerHTML = `ESP32: ${message}`;
       }
-      status.textContent = `ESP32: ${message}`;
     }
     
-    function sendServoAngle(angle) {
-      if (!espConnected || !espSocket || espSocket.readyState !== WebSocket.OPEN) {
+    function disconnectESP32() {
+      if (ws) {
+        ws.onopen = null;
+        ws.onclose = null;
+        ws.onerror = null;
+        ws.onmessage = null;
+        ws.close();
+        ws = null;
+      }
+      espOnline = false;
+      isConnecting = false;
+      updateEspUI(false, 'Disconnected');
+    }
+    
+    function sendServoCommand(angle) {
+      const clamped = Math.min(SERVO_CLOSED, Math.max(SERVO_OPEN, Math.round(angle)));
+      debugAngleSpan.innerText = clamped;
+      
+      if (!espOnline || !ws || ws.readyState !== WebSocket.OPEN) {
         return false;
       }
-      
-      const clampedAngle = Math.min(MAX_ANGLE, Math.max(MIN_ANGLE, Math.round(angle)));
-      const message = JSON.stringify({ type: 'mouth', angle: clampedAngle });
-      
+      const payload = JSON.stringify({ type: 'servo', pin: 0, angle: clamped });
       try {
-        espSocket.send(message);
-        currentAngle = clampedAngle;
+        ws.send(payload);
+        currentServoAngle = clamped;
         return true;
-      } catch (error) {
+      } catch (err) {
         return false;
       }
     }
     
-    // ============================================
-    // ENHANCED LIP-SYNC - Bigger Movement!
-    // ============================================
-    let speechSynth = window.speechSynthesis;
-    let lipSyncTimer = null;
+    function connectToESP32(ip) {
+      if (!ip) return;
+      if (isConnecting) return;
+      if (ws) {
+        disconnectESP32();
+        setTimeout(() => doConnect(ip), 200);
+      } else {
+        doConnect(ip);
+      }
+    }
     
-    function calculateMouthIntensity(word, char) {
-      // Enhanced intensity calculation for bigger movements
-      let intensity = 0.2;
-      
-      // Vowel intensity (much higher for dramatic effect)
-      if ('aeiou'.includes(char)) {
-        intensity = 0.85;
-        if ('ao'.includes(char)) intensity = 1.0;  // Fully open for A and O
-      } 
-      // Consonants that open mouth
-      else if ('bcdfgpstw'.includes(char)) {
-        intensity = 0.65;
+    function doConnect(ip) {
+      isConnecting = true;
+      try {
+        ws = new WebSocket(`ws://${ip}:81`);
+        const timeout = setTimeout(() => {
+          if (ws && ws.readyState !== WebSocket.OPEN) disconnectESP32();
+        }, 5000);
+        
+        ws.onopen = () => {
+          clearTimeout(timeout);
+          espOnline = true;
+          isConnecting = false;
+          updateEspUI(true, `Connected`);
+          sendServoCommand(SERVO_CLOSED);
+          localStorage.setItem('esp32_ip', ip);
+        };
+        
+        ws.onclose = () => {
+          clearTimeout(timeout);
+          espOnline = false;
+          isConnecting = false;
+          updateEspUI(false, 'Disconnected');
+        };
+        
+        ws.onerror = () => {
+          clearTimeout(timeout);
+          isConnecting = false;
+        };
+      } catch (err) {
+        isConnecting = false;
       }
-      else if ('mn'.includes(char)) {
-        intensity = 0.5;
+    }
+    
+    // ========== TEST SWEEP ==========
+    let sweepInterval = null;
+    let sweepAngle = SERVO_CLOSED;
+    let sweepDir = -1;
+    
+    function toggleSweep() {
+      if (sweepInterval) {
+        clearInterval(sweepInterval);
+        sweepInterval = null;
+        testBtn.innerHTML = '&#9881;&#65039; Test Sweep';
+        if (!isSpeakingActive) sendServoCommand(SERVO_CLOSED);
+      } else {
+        if (!espOnline) {
+          alert('&#9888;&#65039; ESP32 not connected! Please connect first.');
+          return;
+        }
+        sweepAngle = SERVO_CLOSED;
+        sweepDir = -1;
+        testBtn.innerHTML = '&#9209;&#65039; STOP SWEEP';
+        
+        sweepInterval = setInterval(() => {
+          sweepAngle += sweepDir * 5;
+          if (sweepAngle <= SERVO_OPEN) {
+            sweepAngle = SERVO_OPEN;
+            sweepDir = 1;
+          } else if (sweepAngle >= SERVO_CLOSED) {
+            sweepAngle = SERVO_CLOSED;
+            sweepDir = -1;
+          }
+          sendServoCommand(sweepAngle);
+        }, 40);
       }
+    }
+    
+    // ========== ADVANCED LIP-SYNC ALGORITHM ==========
+    // This calculates mouth opening based on phonemes for realistic movement
+    function calculateMouthIntensityFromText(textSegment) {
+      if (!textSegment) return 0;
       
-      // Boost based on word length/vowels
-      if (word) {
-        const vowelCount = (word.match(/[aeiou]/gi) || []).length;
-        const wordBoost = Math.min(0.3, (vowelCount / Math.max(1, word.length)) * 0.5);
-        intensity = Math.min(1.0, intensity + wordBoost);
-      }
+      // Enhanced phoneme detection for realistic mouth shapes
+      const wideOpen = /[aAáàâäãå&#257;]/g;      // Wide open mouth (like "ah")
+      const mediumOpen = /[oOóòôöõø&#333;]/g;     // Medium open (like "oh")
+      const semiOpen = /[eEéèêë&#275;]/g;         // Semi-open (like "eh")
+      const smallOpen = /[iIíìîï&#299;]/g;        // Small open (like "ee")
+      const plosives = /[bBpPmM]/g;          // Lip closure sounds
       
-      // Apply sensitivity multiplier
-      intensity = Math.min(1.0, intensity * SENSITIVITY);
+      let intensity = 0;
+      const wideCount = (textSegment.match(wideOpen) || []).length;
+      const mediumCount = (textSegment.match(mediumOpen) || []).length;
+      const semiCount = (textSegment.match(semiOpen) || []).length;
+      const smallCount = (textSegment.match(smallOpen) || []).length;
+      const plosiveCount = (textSegment.match(plosives) || []).length;
+      
+      // Weighted calculation for realistic mouth movement
+      intensity = (wideCount * 0.5) + (mediumCount * 0.4) + (semiCount * 0.3) + (smallCount * 0.2) + (plosiveCount * 0.15);
+      intensity = Math.min(0.95, Math.max(0.1, intensity));
       
       return intensity;
     }
     
-    function speakWithLipSync(text) {
-      // Cancel any ongoing speech
-      if (speechSynth.speaking || speechSynth.pending) {
-        speechSynth.cancel();
-      }
-      if (lipSyncTimer) {
-        clearInterval(lipSyncTimer);
-        lipSyncTimer = null;
-      }
+    // Start lip-sync animation for given text
+    function startLipSync(text) {
+      if (lipSyncInterval) clearInterval(lipSyncInterval);
       
-      console.log(`&#128483;&#65039; Speaking: "${text.substring(0, 80)}..."`);
-      isSpeaking = true;
-      
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.9;
-      utterance.pitch = 1.0;
-      
-      let wordIndex = 0;
-      const words = text.split(' ');
-      
-      // Word-level lip-sync
-      utterance.onboundary = (event) => {
-        if (event.name === 'word' && wordIndex < words.length) {
-          const word = words[wordIndex];
-          const vowelCount = (word.match(/[aeiou]/gi) || []).length;
-          let intensity = 0.3 + (vowelCount / Math.max(1, word.length)) * 0.7;
-          intensity = Math.min(1.0, intensity * SENSITIVITY);
-          
-          const targetAngle = MIN_ANGLE + intensity * (MAX_ANGLE - MIN_ANGLE);
-          sendServoAngle(targetAngle);
-          wordIndex++;
-        }
-      };
-      
-      utterance.onend = () => {
-        isSpeaking = false;
-        sendServoAngle(MIN_ANGLE);
-        if (lipSyncTimer) clearInterval(lipSyncTimer);
-        updateDigitalCharacterMouth(0);
-      };
-      
-      utterance.onerror = () => {
-        isSpeaking = false;
-        sendServoAngle(MIN_ANGLE);
-        if (lipSyncTimer) clearInterval(lipSyncTimer);
-      };
-      
-      // Character-level lip-sync for smoother animation
+      const fullText = text;
       let charIndex = 0;
-      lipSyncTimer = setInterval(() => {
-        if (!isSpeaking || !speechSynth.speaking) return;
-        
-        if (charIndex < text.length) {
-          const char = text[charIndex].toLowerCase();
-          const intensity = calculateMouthIntensity(words[Math.floor(charIndex / 5)] || '', char);
-          const targetAngle = MIN_ANGLE + intensity * (MAX_ANGLE - MIN_ANGLE);
-          
-          sendServoAngle(targetAngle);
-          
-          // Update digital character's mouth
-          updateDigitalCharacterMouth(intensity);
-          
-          charIndex++;
-        }
-      }, 45);  // Faster updates for smoother movement
+      let lastIntensity = 0;
+      let lastAngle = SERVO_CLOSED;
       
-      speechSynth.speak(utterance);
+      lipSyncInterval = setInterval(() => {
+        // Check if speech is actually happening
+        const isActuallySpeaking = window.speechSynthesis && window.speechSynthesis.speaking;
+        
+        if (!isActuallySpeaking) {
+          // Speech stopped - close mouth
+          if (lastIntensity > 0) {
+            sendServoCommand(SERVO_CLOSED);
+            updateDigitalCharacterMouth(0);
+            mouthActionSpan.innerHTML = "Mouth: CLOSED";
+            mouthActionSpan.style.color = "#ffaa66";
+            lastIntensity = 0;
+          }
+          return;
+        }
+        
+        if (charIndex < fullText.length) {
+          // Get current character and surrounding context for better phoneme detection
+          const char = fullText[charIndex];
+          const context = fullText.substring(Math.max(0, charIndex - 2), Math.min(fullText.length, charIndex + 3));
+          
+          // Calculate intensity based on phonemes
+          let intensity = calculateMouthIntensityFromText(char + context);
+          
+          // Add small random variation for natural movement
+          intensity = intensity + (Math.random() * 0.06);
+          intensity = Math.min(0.95, Math.max(0.1, intensity));
+          
+          // Map intensity to servo angle (0.1-0.95 maps to CLOSED-OPEN)
+          const targetAngle = SERVO_CLOSED - (intensity * (SERVO_CLOSED - SERVO_OPEN));
+          const clampedAngle = Math.min(SERVO_CLOSED, Math.max(SERVO_OPEN, Math.round(targetAngle)));
+          
+          // Send command if angle changed significantly
+          if (Math.abs(clampedAngle - lastAngle) > 2) {
+            sendServoCommand(clampedAngle);
+            updateDigitalCharacterMouth(intensity);
+            lastAngle = clampedAngle;
+            
+            // Update UI
+            const openPercent = Math.round(((SERVO_CLOSED - clampedAngle) / (SERVO_CLOSED - SERVO_OPEN)) * 100);
+            mouthActionSpan.innerHTML = `Mouth: ${openPercent}% OPEN`;
+            mouthActionSpan.style.color = "#4cff4c";
+          }
+          
+          lastIntensity = intensity;
+          charIndex++;
+        } else {
+          charIndex = 0; // Loop for continuous speech
+        }
+      }, 45); // ~22 fps for smooth animation
+    }
+    
+    function stopLipSync() {
+      if (lipSyncInterval) {
+        clearInterval(lipSyncInterval);
+        lipSyncInterval = null;
+      }
+      // Close mouth when not speaking
+      if (!sweepInterval) {
+        sendServoCommand(SERVO_CLOSED);
+        updateDigitalCharacterMouth(0);
+        mouthActionSpan.innerHTML = "Mouth: CLOSED";
+        mouthActionSpan.style.color = "#ffaa66";
+        lastSentAngle = SERVO_CLOSED;
+      }
     }
     
     function updateDigitalCharacterMouth(intensity) {
-      // Update 3D character's mouth if available
       if (window.updateMorphTarget) {
         window.updateMorphTarget('mouthOpen', intensity);
       }
     }
     
-    // ============================================
-    // Test Functions
-    // ============================================
-    function testServoSweep() {
-      if (testInterval) {
-        clearInterval(testInterval);
-        testInterval = null;
-        sendServoAngle(MIN_ANGLE);
-        return;
+    // ========== MAIN SPEECH FUNCTION (WORKS FOR TEST SPEECH) ==========
+    function speakWithLipSync(text) {
+      if (!text || text.trim() === "") return;
+      
+      // Cancel any ongoing speech
+      if (currentUtterance) {
+        window.speechSynthesis.cancel();
+      }
+      if (lipSyncInterval) {
+        clearInterval(lipSyncInterval);
+        lipSyncInterval = null;
       }
       
-      console.log('&#128295; Testing servo sweep (wide range)...');
-      let angle = MIN_ANGLE;
-      let direction = 1;
+      // Reset state
+      isSpeakingActive = true;
+      lastSentAngle = SERVO_CLOSED;
       
-      testInterval = setInterval(() => {
-        angle += direction * 8;
-        
-        if (angle >= MAX_ANGLE) {
-          angle = MAX_ANGLE;
-          direction = -1;
-        } else if (angle <= MIN_ANGLE) {
-          angle = MIN_ANGLE;
-          direction = 1;
-          if (angle === MIN_ANGLE && direction === 1) {
-            clearInterval(testInterval);
-            testInterval = null;
-            console.log('&#9989; Test complete');
-          }
+      // Update UI
+      speechStatusSpan.innerHTML = "&#128308; SPEECH: ACTIVE (Mouth Moving)";
+      speechStatusSpan.className = "mouth-status speaking";
+      aiStatusSpan.innerHTML = "AI: Speaking &#128483;&#65039;";
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.92;
+      utterance.pitch = 1.08;
+      utterance.volume = 1;
+      
+      // Start lip-sync immediately when speech begins
+      utterance.onstart = () => {
+        console.log("&#127908; Speech started - lip-sync active");
+        startLipSync(text);
+      };
+      
+      // Word boundary for extra emphasis
+      utterance.onboundary = (event) => {
+        if (event.name === 'word' && isSpeakingActive) {
+          const word = text.substring(event.charIndex, event.charIndex + event.charLength);
+          const intensity = calculateMouthIntensityFromText(word);
+          const targetAngle = SERVO_CLOSED - (intensity * (SERVO_CLOSED - SERVO_OPEN));
+          sendServoCommand(targetAngle);
         }
+      };
+      
+      utterance.onend = () => {
+        console.log("&#127908; Speech ended - mouth closing");
+        isSpeakingActive = false;
+        stopLipSync();
         
-        sendServoAngle(angle);
+        // Update UI to show idle state
+        speechStatusSpan.innerHTML = "&#9899; SPEECH: IDLE (Mouth Closed)";
+        speechStatusSpan.className = "mouth-status listening";
+        aiStatusSpan.innerHTML = "AI: Idle";
+        mouthActionSpan.innerHTML = "Mouth: CLOSED";
+        mouthActionSpan.style.color = "#ffaa66";
         
-        // Also animate digital mouth
-        const intensity = (angle - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE);
-        updateDigitalCharacterMouth(intensity);
-      }, 40);
+        sendServoCommand(SERVO_CLOSED);
+        updateDigitalCharacterMouth(0);
+        currentUtterance = null;
+      };
+      
+      utterance.onerror = (err) => {
+        console.log("Speech error:", err);
+        isSpeakingActive = false;
+        stopLipSync();
+        sendServoCommand(SERVO_CLOSED);
+        speechStatusSpan.innerHTML = "&#9888;&#65039; SPEECH: Error";
+        currentUtterance = null;
+      };
+      
+      currentUtterance = utterance;
+      window.speechSynthesis.speak(utterance);
     }
     
-    function testSpeech() {
-      if (isSpeaking) {
-        if (speechSynth.speaking) speechSynth.cancel();
-        return;
+    // ========== OLLAMA AI INTEGRATION (USES SAME LIP-SYNC AS TEST SPEECH) ==========
+    async function checkOllamaConnection() {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const response = await fetch('http://localhost:11434/api/tags', { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (response.ok) {
+          ollamaAvailable = true;
+          aiStatusSpan.innerHTML = "AI: Ready &#129504;";
+          return true;
+        }
+      } catch(e) {
+        console.log('Ollama not reachable');
       }
-      speakWithLipSync("Hello! I am your Christmas elf. Watch my mouth move as I speak. The servo should open wide when I say words like O and A!");
+      ollamaAvailable = false;
+      aiStatusSpan.innerHTML = "AI: Ollama offline &#9888;&#65039;";
+      return false;
     }
     
-    // ============================================
-    // Microphone Mode (Optional)
-    // ============================================
-    async function startMicMode() {
-      if (isMicActive) {
-        stopMicMode();
+    async function askOllama(promptText) {
+      if (!ollamaAvailable) {
+        const fallbackMsg = "I need Ollama running locally! Please start 'ollama serve' and pull a model like llama3.2. Then ask me again!";
+        addChatMessage(`&#129501; Elf: ${fallbackMsg}`, false);
+        speakWithLipSync(fallbackMsg);  // Uses same lip-sync as test speech
         return;
       }
+      
+      // Set thinking state - mouth stays CLOSED
+      aiStatusSpan.innerHTML = "AI: Thinking &#129300;";
+      speechStatusSpan.innerHTML = "&#9899; SPEECH: IDLE (Waiting)";
+      addChatMessage(`&#129501; Elf: thinking... &#129300;`, true, 'thinking-msg');
+      
+      // Ensure mouth is closed while thinking
+      sendServoCommand(SERVO_CLOSED);
       
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        analyserNode = audioContext.createAnalyser();
-        analyserNode.fftSize = 256;
+        const response = await fetch(ollamaEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'llama3.2',
+            prompt: `You are a cheerful Christmas Elf living in a magical workshop. Answer briefly, friendly, with warmth and holiday spirit. Keep responses under 2 sentences. User: ${promptText}`,
+            stream: false,
+            options: { temperature: 0.8, max_tokens: 100 }
+          })
+        });
         
-        const source = audioContext.createMediaStreamSource(stream);
-        source.connect(analyserNode);
-        await audioContext.resume();
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        let reply = data.response || "Ho ho! I'm a bit busy decorating the tree!";
+        reply = reply.trim();
         
-        isMicActive = true;
-        mediaStream = stream;
-        document.getElementById('micBtn').textContent = '&#9209; Stop Mic';
+        // Remove thinking message
+        const thinkingMsg = document.querySelector('.thinking-msg');
+        if (thinkingMsg) thinkingMsg.remove();
         
-        const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+        addChatMessage(`&#129501; Elf: ${reply}`, false);
         
-        function updateMicVolume() {
-          if (!isMicActive) return;
-          
-          analyserNode.getByteTimeDomainData(dataArray);
-          let sum = 0;
-          for (let i = 0; i < dataArray.length; i++) {
-            const v = (dataArray[i] - 128) / 128;
-            sum += v * v;
-          }
-          let rms = Math.sqrt(sum / dataArray.length);
-          let volume = Math.min(1.0, rms * SENSITIVITY * 1.5);
-          
-          const targetAngle = MIN_ANGLE + volume * (MAX_ANGLE - MIN_ANGLE);
-          sendServoAngle(targetAngle);
-          updateDigitalCharacterMouth(volume);
-          
-          animationFrameId = requestAnimationFrame(updateMicVolume);
-        }
-        
-        updateMicVolume();
+        // CRITICAL: Use the SAME lip-sync function that works for test speech!
+        speakWithLipSync(reply);
         
       } catch (error) {
-        console.error('Mic error:', error);
+        console.error('Ollama error:', error);
+        const thinkingMsg = document.querySelector('.thinking-msg');
+        if (thinkingMsg) thinkingMsg.remove();
+        
+        const errorMsg = "Oops! The workshop magic glitched. Please check if Ollama is running.";
+        addChatMessage(`&#129501; Elf: ${errorMsg}`, false);
+        speakWithLipSync(errorMsg);  // Uses same lip-sync
       }
     }
     
-    function stopMicMode() {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-      if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-      if (audioContext) audioContext.close();
-      isMicActive = false;
-      mediaStream = null;
-      audioContext = null;
-      analyserNode = null;
-      document.getElementById('micBtn').textContent = '&#127908; Mic Mode';
-      sendServoAngle(MIN_ANGLE);
-      updateDigitalCharacterMouth(0);
+    // ========== UI CHAT ==========
+    const chatArea = document.getElementById('chat-area');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    
+    function addChatMessage(msg, isError = false, customClass = '') {
+      const bubble = document.createElement('div');
+      if (customClass === 'thinking-msg') {
+        bubble.className = 'chat-bubble thinking-msg';
+      } else {
+        bubble.className = `chat-bubble ${isError ? 'elf-msg' : 'elf-msg'}`;
+      }
+      bubble.style.borderLeftColor = isError ? '#ff7b72' : '#ffaa55';
+      bubble.innerText = msg;
+      chatMessages.appendChild(bubble);
+      bubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      while(chatMessages.children.length > 25) chatMessages.removeChild(chatMessages.firstChild);
     }
     
-    // ============================================
-    // Three.js Scene Setup
-    // ============================================
+    function sendUserMessage() {
+      const userText = chatInput.value.trim();
+      if (!userText) return;
+      const userBubble = document.createElement('div');
+      userBubble.className = 'chat-bubble user-msg';
+      userBubble.innerText = `&#129489; You: ${userText}`;
+      chatMessages.appendChild(userBubble);
+      userBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      chatInput.value = '';
+      askOllama(userText);
+    }
+    
+    function toggleChat() {
+      if (chatArea.style.display === 'none') {
+        chatArea.style.display = 'block';
+        chatInput.focus();
+      } else {
+        chatArea.style.display = 'none';
+      }
+    }
+    
+    function testSpeechDemo() {
+      const demoText = "Watch the status panel carefully! Right now my mouth is closed because I'm not speaking. Now I'm going to speak - watch my mouth move with every syllable! When I say words like AHH and OHH, my mouth opens wide. When I finish, it closes again automatically!";
+      speakWithLipSync(demoText);
+    }
+    
+    // ========== 3D SCENE SETUP ==========
     let scene, camera, renderer;
     const clock = new THREE.Clock();
     const WALL_HEIGHT = 16;
@@ -463,9 +769,8 @@
       const roomNum = urlParams.get('id');
       return roomNum && !isNaN(roomNum) && roomNum > 0 ? roomNum : '50';
     }
-    
     const ROOM_NUMBER = getRoomNumber();
-    document.getElementById('room-status').innerHTML = `Room ${ROOM_NUMBER} | &#129501; Christmas Elf`;
+    document.getElementById('room-status').innerHTML = `&#127876; Room ${ROOM_NUMBER} | Perfect Lip-Sync`;
     
     window.textureLoader = new THREE.TextureLoader();
     
@@ -473,111 +778,94 @@
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
       camera.position.copy(FIXED_CAMERA_POSITION);
-      camera.rotation.set(0, 0, 0);
+      camera.lookAt(0, 1.8, 0);
       
-      renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+      renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setClearColor(0x0a0a2a);
+      renderer.setClearColor(0x0a1030);
       document.body.appendChild(renderer.domElement);
       
-      // Lighting
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
-      hemiLight.position.set(0, 20, 0);
-      scene.add(hemiLight);
-      
-      const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+      const ambient = new THREE.AmbientLight(0xffffff, 0.7);
       scene.add(ambient);
-      
-      const frontLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      frontLight.position.set(0, 5, 10);
-      scene.add(frontLight);
-      
-      const backLight = new THREE.DirectionalLight(0xffaa88, 0.5);
-      backLight.position.set(0, 5, -5);
-      scene.add(backLight);
-      
-      // Add a warm fill light
+      const hemi = new THREE.HemisphereLight(0xffeebb, 0x664422, 0.9);
+      scene.add(hemi);
+      const mainLight = new THREE.DirectionalLight(0xffeedd, 1);
+      mainLight.position.set(2, 6, 4);
+      scene.add(mainLight);
       const fillLight = new THREE.PointLight(0xffaa66, 0.5);
-      fillLight.position.set(2, 3, 4);
+      fillLight.position.set(1, 2, 3);
       scene.add(fillLight);
       
       createRoomStructure();
       loadRoomObjects(ROOM_NUMBER);
-      
       window.addEventListener('resize', onWindowResize);
-      
-      // Hide loading after a delay
       setTimeout(() => {
-        const loading = document.getElementById('loading');
-        if (loading) loading.style.display = 'none';
+        const loadingDiv = document.getElementById('loading');
+        if (loadingDiv) loadingDiv.style.display = 'none';
       }, 1500);
     }
     
     function createRoomStructure() {
-      const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x2a2a3a, side: THREE.DoubleSide });
-      const floorMaterial = new THREE.MeshLambertMaterial({ color: 0x3a3a4a });
-      
-      const floor = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_WIDTH, PLACE_DEPTH), floorMaterial);
-      floor.rotation.x = -Math.PI / 2;
+      const wallMat = new THREE.MeshLambertMaterial({ color: 0x2a2a3e, side: THREE.DoubleSide });
+      const floorMat = new THREE.MeshLambertMaterial({ color: 0x3a4455 });
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_WIDTH, PLACE_DEPTH), floorMat);
+      floor.rotation.x = -Math.PI/2;
       floor.position.y = -0.1;
-      floor.name = 'room-floor';
       scene.add(floor);
       
-      // Add a festive rug/circle
-      const rugMat = new THREE.MeshLambertMaterial({ color: 0xaa4444 });
-      const rug = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 0.05, 32), rugMat);
+      const rugMat = new THREE.MeshLambertMaterial({ color: 0xaa5533 });
+      const rug = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 3.2, 0.08, 32), rugMat);
       rug.position.set(0, -0.05, 0);
       scene.add(rug);
       
-      // Simple walls
-      const backWall = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_WIDTH, WALL_HEIGHT), wallMaterial);
-      backWall.position.set(0, WALL_HEIGHT / 2, -PLACE_DEPTH / 2);
-      backWall.name = 'room-back-wall';
+      const backWall = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_WIDTH, WALL_HEIGHT), wallMat);
+      backWall.position.set(0, WALL_HEIGHT/2, -PLACE_DEPTH/2);
       scene.add(backWall);
-      
-      const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_DEPTH, WALL_HEIGHT), wallMaterial);
-      leftWall.rotation.y = Math.PI / 2;
-      leftWall.position.set(-PLACE_WIDTH / 2, WALL_HEIGHT / 2, 0);
-      leftWall.name = 'room-left-wall';
+      const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_DEPTH, WALL_HEIGHT), wallMat);
+      leftWall.rotation.y = Math.PI/2;
+      leftWall.position.set(-PLACE_WIDTH/2, WALL_HEIGHT/2, 0);
       scene.add(leftWall);
-      
-      const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_DEPTH, WALL_HEIGHT), wallMaterial);
-      rightWall.rotation.y = -Math.PI / 2;
-      rightWall.position.set(PLACE_WIDTH / 2, WALL_HEIGHT / 2, 0);
-      rightWall.name = 'room-right-wall';
+      const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_DEPTH, WALL_HEIGHT), wallMat);
+      rightWall.rotation.y = -Math.PI/2;
+      rightWall.position.set(PLACE_WIDTH/2, WALL_HEIGHT/2, 0);
       scene.add(rightWall);
       
-      // Add some Christmas lights (simple spheres)
-      const lightColors = [0xff0000, 0x00ff00, 0xffaa00, 0xff00ff];
-      for (let i = -18; i <= 18; i += 3) {
-        const color = lightColors[Math.floor(Math.random() * lightColors.length)];
-        const lightSphere = new THREE.Mesh(
-          new THREE.SphereGeometry(0.15, 8, 8),
-          new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.5 })
-        );
-        lightSphere.position.set(i, 2.5, -PLACE_DEPTH / 2 + 0.1);
-        scene.add(lightSphere);
+      // CEILING
+      const ceilingMat = new THREE.MeshLambertMaterial({ color: 0xc9b896 });
+      const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_WIDTH, PLACE_DEPTH), ceilingMat);
+      ceiling.rotation.x = Math.PI/2;
+      ceiling.position.set(0, WALL_HEIGHT - 0.1, 0);
+      scene.add(ceiling);
+      
+      const beamMat = new THREE.MeshLambertMaterial({ color: 0x9c7e4a });
+      for (let x = -15; x <= 15; x += 5) {
+        const beam = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.2, PLACE_DEPTH - 2), beamMat);
+        beam.position.set(x, WALL_HEIGHT - 0.25, 0);
+        scene.add(beam);
+      }
+      
+      for (let i = -16; i <= 16; i+=3.5) {
+        const ball = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 8), new THREE.MeshStandardMaterial({ color: 0xff4444, emissive: 0x441100 }));
+        ball.position.set(i, 2.2, -PLACE_DEPTH/2 + 0.2);
+        scene.add(ball);
       }
     }
     
     function loadRoomObjects(roomNumber) {
       const script = document.createElement('script');
       script.src = `universe/rooms/room${roomNumber}.js?v=${Date.now()}`;
-      script.onload = () => console.log(`&#9989; Room ${roomNumber} loaded`);
-      script.onerror = () => console.error(`Failed to load room ${roomNumber}`);
+      script.onerror = () => console.warn(`Room ${roomNumber} not found`);
       document.head.appendChild(script);
     }
     
-    window.applyRoomTexture = function(meshName, texturePath, repeatX = 1, repeatY = 1) {
+    window.applyRoomTexture = function(meshName, texPath, rx=1, ry=1) {
       const mesh = scene.getObjectByName(meshName);
       if (mesh && window.textureLoader) {
-        try {
-          const texture = window.textureLoader.load(texturePath);
-          texture.wrapS = THREE.RepeatWrapping;
-          texture.wrapT = THREE.RepeatWrapping;
-          texture.repeat.set(repeatX, repeatY);
-          mesh.material = new THREE.MeshLambertMaterial({ map: texture });
-        } catch (error) {}
+        const tex = window.textureLoader.load(texPath);
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(rx, ry);
+        mesh.material = new THREE.MeshLambertMaterial({ map: tex });
       }
     };
     
@@ -589,38 +877,46 @@
     
     function animate3D() {
       requestAnimationFrame(animate3D);
-      if (window.updateAllAnimations) {
-        window.updateAllAnimations(clock.getDelta());
-      }
+      if (window.updateAllAnimations) window.updateAllAnimations(clock.getDelta());
       renderer.render(scene, camera);
     }
     
-    // ============================================
-    // Initialize Everything
-    // ============================================
-    function init() {
-      connectESP32();
+    // ========== INITIALIZATION ==========
+    async function init() {
       init3D();
       animate3D();
       
-      // Click anywhere to speak (for voice recognition)
-      document.body.addEventListener('click', () => {
-        if (!isSpeaking && !isMicActive) {
-          // Simple voice recognition can be added here
-          console.log('Click to speak - implement voice recognition if needed');
-        }
+      const savedIp = localStorage.getItem('esp32_ip');
+      if (savedIp) {
+        espIpInput.value = savedIp;
+        setTimeout(() => connectToESP32(savedIp), 500);
+      }
+      
+      await checkOllamaConnection();
+      
+      testBtn.onclick = toggleSweep;
+      document.getElementById('testSpeechBtn').onclick = testSpeechDemo;
+      document.getElementById('ollamaChatBtn').onclick = toggleChat;
+      connectBtn.onclick = () => {
+        const ip = espIpInput.value.trim();
+        if (ip) connectToESP32(ip);
+      };
+      document.getElementById('chat-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendUserMessage();
       });
       
-      document.getElementById('testServoBtn').onclick = testServoSweep;
-      document.getElementById('testSpeechBtn').onclick = testSpeech;
-      document.getElementById('micBtn').onclick = startMicMode;
-      
-      // Keyboard navigation
-      window.addEventListener('keydown', (event) => {
-        if (event.key.toLowerCase() === 'h') {
-          window.location.href = HOME_URL;
-        }
+      window.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'h') window.location.href = HOME_URL;
+        if (e.key === 'Escape' && chatArea.style.display === 'block') chatArea.style.display = 'none';
       });
+      
+      debugAngleSpan.innerText = SERVO_CLOSED;
+      addChatMessage(`&#129501; Elf ready! Test Speech works perfectly - Ollama uses the SAME lip-sync! Ask me anything!`, false);
+      
+      // Initial mouth closed
+      setTimeout(() => {
+        if (espOnline) sendServoCommand(SERVO_CLOSED);
+      }, 1000);
     }
     
     init();
