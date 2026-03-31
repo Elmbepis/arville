@@ -45,20 +45,25 @@ class VirtualWorldSelector {
                 image: 'vw-farm.jpg',
                 link: '../village2.htm?id=1'
             },
-            'raptor island': {
+            'savanna': {
+                name: 'African Savanna',
+                image: 'vw-savanna.jpg',
+                link: '../nature.htm?id=5'
+            },
+            'raptor island 1': {
                 name: 'Raptor Island 1',
-                image: 'vw-raptor.jpg',
+                image: 'vw-raptor1.jpg',
+                link: '../nature.htm?id=10'
+            },
+            'raptor island 2': {
+                name: 'Raptor Island 2',
+                image: 'vw-raptor2.jpg',
                 link: '../nature.htm?id=11'
             },
             'toy world': {
                 name: 'Toy World',
                 image: 'vw-toy-world.jpg',
                 link: '../village.htm?id=3'
-            },
-            'savanna': {
-                name: 'African Savanna',
-                image: 'vw-savanna.jpg',
-                link: '../nature.htm?id=5'
             },
             'medieval square': {
                 name: 'Medieval Square',
