@@ -58,6 +58,15 @@
              style="display: none;">
     
       <!-- First Marker - Frankie -->
+      <a-marker type="pattern" url="AR/patts/animals/lion.patt" id="marker-lion">
+        <a-plane
+          material="shader: chromakey; src: #video-frankie; color: 0.9 0 0.1"
+          position="0 0 0"
+          rotation="-90 0 0"
+          class="orientation-dependent"
+        ></a-plane>
+      </a-marker>
+
       <a-marker type="pattern" url="AR/patts/frankie.patt" id="marker-frankie">
         <a-plane
           material="shader: chromakey; src: #video-frankie; color: 0.9 0 0.1"
@@ -77,7 +86,7 @@
       </a-marker>
 
       <!-- Second Marker - Vamp -->
-      <a-marker type="pattern" url="AR/patts/vamp.patt" id="marker-vamp">
+      <a-marker type="pattern" url="AR/patts/horror/vamp.patt" id="marker-vamp">
         <a-plane
           material="shader: chromakey; src: #video-vamp; color: 0.1 0.9 0.2"
           position="0 0 0"
@@ -121,6 +130,16 @@
 
     <!-- Hidden Video Elements - COMPLETELY HIDDEN -->
     <video
+      id="video-lion"
+      src="AR/videos/nooklet-safari/lion-gs.mp4"
+      loop
+      muted
+      preload="none"
+      playsinline
+      style="display: none; position: absolute; top: -9999px; left: -9999px; width: 1px; height: 1px;"
+    ></video>
+
+    <video
       id="video-frankie"
       src="AR/videos/frankie2-rs.mp4"
       loop
@@ -132,7 +151,7 @@
 
     <video
       id="video-vamp"
-      src="AR/videos/vamp5-gs.mp4"
+      src="AR/videos/horror/vamp5-gs.mp4"
       loop
       muted
       preload="none"
@@ -198,6 +217,7 @@
         
         // Select marker elements
         const markerFrankie = document.querySelector("#marker-frankie");
+        const markerLion = document.querySelector("#marker-lion");
         const markerVamp = document.querySelector("#marker-vamp");
         const markerZombie = document.querySelector("#marker-zombie");
         const markerDevil = document.querySelector("#marker-devil");
@@ -255,6 +275,9 @@
             if (currentOrientation === 'portrait') {
               // PORTRAIT: Wider width, shorter height
               if (plane.parentElement.id === 'marker-frankie') {
+                plane.setAttribute('width', '4');  // Wider
+                plane.setAttribute('height', '1.97'); // Shorter
+              if (plane.parentElement.id === 'marker-lion') {
                 plane.setAttribute('width', '4');  // Wider
                 plane.setAttribute('height', '1.97'); // Shorter
               } else if (plane.parentElement.id === 'marker-zombie') {
