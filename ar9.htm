@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>ARVille - Simple AR Scene</title>
+  
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #start-button {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      font-size: 18px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 1000;
+      font-family: Arial;
+    }
+    #status {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.7);
+      color: #ffd966;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: monospace;
+      z-index: 1000;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <button id="start-button">&#127919; Start AR Experience</button>
+  <div id="status">&#10024; Ready - Click Start</div>
+
+  <a-scene id="ar-scene" 
+    embedded 
+    arjs="debugUIEnabled: false; sourceType: webcam; patternRatio: 0.9;" 
+    style="display: none;">
+    <a-entity light="type: ambient; intensity: 0.7"></a-entity>
+    <a-entity light="type: directional; intensity: 1.2; position: 2 5 3"></a-entity>
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    // Simple AR Manager
+    const startBtn = document.getElementById('start-button');
+    const arScene = document.getElementById('ar-scene');
+    const statusDiv = document.getElementById('status');
+    
+    function updateStatus(msg) {
+      statusDiv.innerHTML = msg;
+      console.log(msg);
+    }
+    
+    // Create marker
+    function createMarker() {
+      const marker = document.createElement('a-marker');
+      marker.setAttribute('type', 'pattern');
+      marker.setAttribute('url', 'AR/patts/horror/vamp.patt');
+      marker.setAttribute('id', 'marker-vamp');
+      
+      // Create container for 3D objects
+      const container = document.createElement('a-entity');
+      container.setAttribute('id', 'scene-container');
+      container.setAttribute('position', '0 0 0');
+      container.setAttribute('rotation', '-90 0 0');
+      marker.appendChild(container);
+      
+      // Marker found
+      marker.addEventListener('markerFound', () => {
+        updateStatus('&#9989; Marker found - Loading scene...');
+        loadScene(container);
+      });
+      
+      // Marker lost
+      marker.addEventListener('markerLost', () => {
+        updateStatus('&#128075; Marker lost');
+        // Clear container
+        while (container.children.length > 0) {
+          container.removeChild(container.children[0]);
+        }
+        // Stop any audio through the scene's function
+        if (window.stopSceneAudio) {
+          window.stopSceneAudio();
+        }
+      });
+      
+      arScene.appendChild(marker);
+      updateStatus('&#127919; Ready - Scan marker');
+    }
+    
+    // Load scene script
+    function loadScene(container) {
+      // Store container for the scene script
+      window.__sceneContainer = container;
+      
+      // Remove old script if exists
+      const oldScript = document.querySelector('script[src*="ar1.js"]');
+      if (oldScript) {
+        oldScript.remove();
+      }
+      
+      // Load ar1.js
+      const script = document.createElement('script');
+      script.src = 'AR/ar1.js?t=' + Date.now();
+      script.onload = () => {
+        updateStatus('&#127916; Scene loaded!');
+      };
+      script.onerror = () => {
+        updateStatus('&#10060; Failed to load scene');
+      };
+      document.head.appendChild(script);
+    }
+    
+    // Start AR
+    startBtn.onclick = () => {
+      arScene.style.display = 'block';
+      startBtn.style.display = 'none';
+      createMarker();
+      updateStatus('&#128247; Camera starting...');
+      
+      // Request camera
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(() => updateStatus('&#127909; AR Ready - Scan marker'))
+        .catch(err => updateStatus('&#10060; Camera error: ' + err.message));
+    };
+  </script>
+</body>
+</html>

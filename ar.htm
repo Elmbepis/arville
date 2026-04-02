@@ -1,139 +1,499 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8" />
-  <title>ARVille - Simple AR Scene</title>
-  
-  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-  
-  <style>
-    body { margin: 0; overflow: hidden; }
-    #start-button {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 12px 24px;
-      font-size: 18px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      z-index: 1000;
-      font-family: Arial;
-    }
-    #status {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      background: rgba(0,0,0,0.7);
-      color: #ffd966;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-family: monospace;
-      z-index: 1000;
-      font-size: 12px;
-    }
-  </style>
-</head>
-<body>
-  <button id="start-button">&#127919; Start AR Experience</button>
-  <div id="status">&#10024; Ready - Click Start</div>
+  <head>
+    <meta charset="utf-8" />
+    <title>ARVille Web AR for Everyone!!!</title>
 
-  <a-scene id="ar-scene" 
-    embedded 
-    arjs="debugUIEnabled: false; sourceType: webcam; patternRatio: 0.9;" 
-    style="display: none;">
-    <a-entity light="type: ambient; intensity: 0.7"></a-entity>
-    <a-entity light="type: directional; intensity: 1.2; position: 2 5 3"></a-entity>
-    <a-entity camera></a-entity>
-  </a-scene>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
-  <script>
-    // Simple AR Manager
-    const startBtn = document.getElementById('start-button');
-    const arScene = document.getElementById('ar-scene');
-    const statusDiv = document.getElementById('status');
-    
-    function updateStatus(msg) {
-      statusDiv.innerHTML = msg;
-      console.log(msg);
-    }
-    
-    // Create marker
-    function createMarker() {
-      const marker = document.createElement('a-marker');
-      marker.setAttribute('type', 'pattern');
-      marker.setAttribute('url', 'AR/patts/horror/vamp.patt');
-      marker.setAttribute('id', 'marker-vamp');
-      
-      // Create container for 3D objects
-      const container = document.createElement('a-entity');
-      container.setAttribute('id', 'scene-container');
-      container.setAttribute('position', '0 0 0');
-      container.setAttribute('rotation', '-90 0 0');
-      marker.appendChild(container);
-      
-      // Marker found
-      marker.addEventListener('markerFound', () => {
-        updateStatus('&#9989; Marker found - Loading scene...');
-        loadScene(container);
-      });
-      
-      // Marker lost
-      marker.addEventListener('markerLost', () => {
-        updateStatus('&#128075; Marker lost');
-        // Clear container
-        while (container.children.length > 0) {
-          container.removeChild(container.children[0]);
-        }
-        // Stop any audio through the scene's function
-        if (window.stopSceneAudio) {
-          window.stopSceneAudio();
-        }
-      });
-      
-      arScene.appendChild(marker);
-      updateStatus('&#127919; Ready - Scan marker');
-    }
-    
-    // Load scene script
-    function loadScene(container) {
-      // Store container for the scene script
-      window.__sceneContainer = container;
-      
-      // Remove old script if exists
-      const oldScript = document.querySelector('script[src*="ar1.js"]');
-      if (oldScript) {
-        oldScript.remove();
+    <style>
+      body { margin: 0; overflow: hidden; }
+      #ar-scene { position: fixed; top:0; left:0; width:100%; height:100%; }
+      #start-button {
+        position: fixed; top:50%; left:50%;
+        transform: translate(-50%,-50%);
+        padding: 12px 22px; font-size:18px; z-index:1000;
+        background:#007bff; color:white; border:none; border-radius:8px; cursor:pointer;
       }
-      
-      // Load ar1.js
-      const script = document.createElement('script');
-      script.src = 'AR/ar1.js?t=' + Date.now();
-      script.onload = () => {
-        updateStatus('&#127916; Scene loaded!');
-      };
-      script.onerror = () => {
-        updateStatus('&#10060; Failed to load scene');
-      };
-      document.head.appendChild(script);
-    }
-    
-    // Start AR
-    startBtn.onclick = () => {
-      arScene.style.display = 'block';
-      startBtn.style.display = 'none';
-      createMarker();
-      updateStatus('&#128247; Camera starting...');
-      
-      // Request camera
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(() => updateStatus('&#127909; AR Ready - Scan marker'))
-        .catch(err => updateStatus('&#10060; Camera error: ' + err.message));
-    };
-  </script>
-</body>
+    </style>
+  </head>
+
+  <body>
+    <button id="start-button">Start AR Experience</button>
+
+    <a-scene
+      id="ar-scene"
+      embedded
+      arjs="debugUIEnabled: false; sourceType: webcam; patternRatio: 0.9;"
+      style="display: none;"
+    >
+      <!-- Ambient Light for overall scene brightness -->
+      <a-entity light="type: ambient; color: #888; intensity: 1"></a-entity>
+
+      <!-- Directional Light for front illumination -->
+      <a-entity light="type: directional; color: #FFFFFF; intensity: 1.5; position: 0 3 3" shadow></a-entity>
+
+      <!-- Point Light for additional front fill -->
+      <a-entity light="type: point; color: #FFFFFF; intensity: 1.5; position: 0 2 2"></a-entity>
+
+      <!-- Markers will be generated automatically by JavaScript -->
+      <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+      (function () {
+        // ==================== SINGLE CONFIGURATION OBJECT ====================
+        const AR_CONFIG = {
+          basePaths: {
+            patterns: 'AR/patts/ar1',
+            models: 'AR/models/ar1',
+            sounds: 'AR/sounds/ar1'
+          },
+          markers: [
+            { id: 'vamp', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'frankie', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'zombie', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'devil', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'bones', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'scarecrow', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'clown', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'teddy', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'pumpkin', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'witch', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'zombina', scale: '4 4 4', position: '0 -0.6 0' },
+            { id: 'wolfie', scale: '4 4 4', position: '0 -0.6 0' }
+          ],
+          orientationScales: {
+            portrait: '2 0.8 2',
+            landscape: '1 1.8 1'
+          },
+          soundSettings: {
+            loop: true,
+            volume: 4,
+            preload: 'auto'
+          },
+          animationSettings: {
+            transitionDuration: 0.5
+          }
+        };
+
+        // ==================== SIMPLE CACHE MANAGER ====================
+        class ARModelCache {
+          constructor() {
+            this.cache = new Map();
+            this.loading = new Map();
+          }
+          
+          async loadModel(url) {
+            if (this.cache.has(url)) {
+              console.log('&#9989; Using cached model:', url);
+              return this.cache.get(url);
+            }
+            
+            if (this.loading.has(url)) {
+              return this.loading.get(url);
+            }
+            
+            console.log('&#128229; Downloading model:', url);
+            const promise = fetch(url)
+              .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.arrayBuffer();
+              })
+              .then(data => {
+                this.cache.set(url, data);
+                this.loading.delete(url);
+                return data;
+              })
+              .catch(error => {
+                this.loading.delete(url);
+                console.error('&#10060; Failed to load model:', url, error);
+                throw error;
+              });
+              
+            this.loading.set(url, promise);
+            return promise;
+          }
+        }
+
+        // ==================== AR MANAGER CLASS ====================
+        class ARManager {
+          constructor(config) {
+            this.config = config;
+            this.modelCache = new ARModelCache();
+            this.markers = [];
+            this.mixers = {};
+            this.clocks = {};
+            this.rafIds = {};
+            this.mixerActiveStates = {};
+            this.animationStates = {};
+            this.soundTimeouts = {};
+            this.soundWasBrieflyLost = {};
+            this.modelLoadedStates = {};
+            this.currentOrientation = 'unknown';
+            this.arInitialized = false;
+            
+            this.startButton = document.getElementById("start-button");
+            this.arScene = document.getElementById("ar-scene");
+            
+            this.init();
+          }
+          
+          init() {
+            this.generateMarkers();
+            this.setupMarkers();
+            this.bindEvents();
+          }
+          
+          // ==================== MARKER GENERATION ====================
+          generateMarkers() {
+            const scene = document.querySelector('a-scene');
+            
+            this.config.markers.forEach(marker => {
+              const markerHTML = `
+                <a-marker type="pattern" url="${this.config.basePaths.patterns}/${marker.id}.patt" id="marker-${marker.id}">
+                  <a-entity
+                    id="${marker.id}-wrapper"
+                    position="0 0 0"
+                    rotation="-90 0 0"
+                    class="orientation-dependent"
+                  >
+                    <a-entity
+                      id="${marker.id}-model"
+                      scale="${marker.scale}"
+                      position="${marker.position}"
+                    ></a-entity>
+                  </a-entity>
+                  <a-entity
+                    id="${marker.id}-sound"
+                    sound="src: ${this.config.basePaths.sounds}/${marker.id}.mp3; autoplay: false; loop: ${this.config.soundSettings.loop}; volume: ${this.config.soundSettings.volume}; preload: ${this.config.soundSettings.preload}"
+                  ></a-entity>
+                </a-marker>
+              `;
+              scene.insertAdjacentHTML('beforeend', markerHTML);
+              
+              this.modelLoadedStates[marker.id] = false;
+            });
+          }
+          
+          // ==================== MARKER SETUP ====================
+          setupMarkers() {
+            this.markers = this.config.markers.map(marker => ({
+              id: marker.id,
+              modelId: `${marker.id}-model`,
+              wrapperId: `${marker.id}-wrapper`,
+              soundId: `${marker.id}-sound`,
+              containerId: `${marker.id}-container`
+            }));
+            
+            this.markers.forEach(markerConfig => {
+              this.setupMarkerEvents(markerConfig);
+            });
+          }
+          
+          // ==================== MARKER EVENT SETUP ====================
+          setupMarkerEvents(markerConfig) {
+            const marker = document.querySelector(`#marker-${markerConfig.id}`);
+            const model = document.querySelector(`#${markerConfig.modelId}`);
+            const wrapper = document.querySelector(`#${markerConfig.wrapperId}`);
+            
+            // Initialize animation state
+            this.animationStates[markerConfig.modelId] = {
+              clips: [],
+              currentClipIndex: 0,
+              currentAction: null,
+              nextAction: null,
+              isTransitioning: false,
+              transitionDuration: this.config.animationSettings.transitionDuration
+            };
+            
+            // Initialize sound tracking
+            this.soundWasBrieflyLost[markerConfig.soundId] = false;
+            
+            // Set up lazy loading
+            this.setupLazyLoading(markerConfig);
+            
+            // Marker event handlers
+            marker.addEventListener("markerFound", () => this.onMarkerFound(markerConfig));
+            marker.addEventListener("markerLost", () => this.onMarkerLost(markerConfig));
+            
+            // Model loaded event
+            model.addEventListener("model-loaded", (e) => this.onModelLoaded(markerConfig.modelId, e.detail.model));
+            
+            // Store wrapper reference
+            marker.wrapper = wrapper;
+          }
+          
+          // ==================== SIMPLE LAZY LOADING ====================
+          setupLazyLoading(markerConfig) {
+            const marker = document.querySelector(`#marker-${markerConfig.id}`);
+            const modelContainer = document.querySelector(`#${markerConfig.modelId}`);
+            
+            const onMarkerFound = () => {
+              // Load model only when its marker is scanned
+              if (!this.modelLoadedStates[markerConfig.id]) {
+                console.log(`&#128260; Loading model for ${markerConfig.id}...`);
+                
+                const modelUrl = `${this.config.basePaths.models}/${markerConfig.id}.glb`;
+                this.modelCache.loadModel(modelUrl)
+                  .then(data => {
+                    const blob = new Blob([data]);
+                    const objectUrl = URL.createObjectURL(blob);
+                    
+                    modelContainer.setAttribute('gltf-model', objectUrl);
+                    
+                    const onModelLoaded = () => {
+                      console.log(`&#9989; Model loaded for ${markerConfig.id}`);
+                      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+                      modelContainer.removeEventListener('model-loaded', onModelLoaded);
+                    };
+                    
+                    modelContainer.addEventListener('model-loaded', onModelLoaded);
+                    this.modelLoadedStates[markerConfig.id] = true;
+                  })
+                  .catch(error => {
+                    console.error(`&#10060; Failed to load model for ${markerConfig.id}:`, error);
+                    modelContainer.setAttribute('gltf-model', modelUrl);
+                    this.modelLoadedStates[markerConfig.id] = true;
+                  });
+              }
+            };
+            
+            marker.addEventListener("markerFound", onMarkerFound);
+          }
+          
+          // ==================== EVENT HANDLERS ====================
+          onMarkerFound(markerConfig) {
+            if (this.soundTimeouts[markerConfig.id]) {
+              clearTimeout(this.soundTimeouts[markerConfig.id]);
+              this.soundTimeouts[markerConfig.id] = null;
+              this.soundWasBrieflyLost[markerConfig.soundId] = true;
+            }
+            
+            if (this.mixers[markerConfig.modelId]) {
+              this.mixerActiveStates[markerConfig.modelId] = true;
+            }
+            
+            this.playMarkerSound(markerConfig.soundId);
+          }
+          
+          onMarkerLost(markerConfig) {
+            if (this.mixers[markerConfig.modelId]) {
+              this.mixerActiveStates[markerConfig.modelId] = false;
+            }
+            
+            this.soundWasBrieflyLost[markerConfig.soundId] = false;
+            
+            this.soundTimeouts[markerConfig.id] = setTimeout(() => {
+              this.stopMarkerSound(markerConfig.soundId);
+              this.soundTimeouts[markerConfig.id] = null;
+            }, 1000);
+          }
+          
+          // ==================== IMMEDIATE ANIMATION START ====================
+          onModelLoaded(modelId, gltfObj) {
+            this.setupModelAnimations(modelId, gltfObj);
+            
+            // IMMEDIATELY start animations if marker is currently visible
+            const markerId = modelId.replace('-model', '');
+            const marker = document.querySelector(`#marker-${markerId}`);
+            if (marker && this.isMarkerVisible(marker)) {
+              console.log(`&#127916; Starting animations immediately for ${markerId}`);
+              this.mixerActiveStates[modelId] = true;
+            }
+          }
+          
+          // Helper to check marker visibility
+          isMarkerVisible(marker) {
+            return marker.object3D.visible;
+          }
+          
+          // ==================== ANIMATION SYSTEM ====================
+          setupModelAnimations(modelId, gltfObj) {
+            const clips = gltfObj.animations || [];
+            
+            if (!AFRAME?.THREE || !clips.length) {
+              console.log(`&#9888;&#65039; No animations found for ${modelId}`);
+              return;
+            }
+            
+            console.log(`&#127917; Setting up ${clips.length} animations for ${modelId}`);
+            
+            this.clocks[modelId] = new AFRAME.THREE.Clock();
+            this.mixers[modelId] = new AFRAME.THREE.AnimationMixer(gltfObj);
+            
+            // Start with mixer inactive, will be activated if marker is visible
+            this.mixerActiveStates[modelId] = false;
+            this.animationStates[modelId].clips = clips;
+            
+            this.startAnimationSequence(modelId);
+            this.startAnimationLoop(modelId);
+          }
+          
+          startAnimationLoop(modelId) {
+            const animateMixer = () => {
+              this.rafIds[modelId] = requestAnimationFrame(animateMixer);
+              if (!this.mixers[modelId] || !this.clocks[modelId]) return;
+              
+              const delta = this.clocks[modelId].getDelta();
+              if (this.mixerActiveStates[modelId]) {
+                this.mixers[modelId].update(delta);
+                
+                const state = this.animationStates[modelId];
+                if (state.currentAction && !state.isTransitioning) {
+                  const currentTime = state.currentAction.time;
+                  const clipDuration = state.currentAction.getClip().duration;
+                  
+                  // Start next animation before current one ends
+                  if (currentTime >= clipDuration - state.transitionDuration - 0.1) {
+                    this.startNextAnimation(modelId);
+                  }
+                }
+              }
+            };
+            
+            if (!this.rafIds[modelId]) {
+              animateMixer();
+            }
+          }
+          
+          startAnimationSequence(modelId) {
+            const state = this.animationStates[modelId];
+            if (!this.mixers[modelId] || !state.clips.length) return;
+            
+            state.currentClipIndex = 0;
+            this.playClip(modelId, state.currentClipIndex);
+          }
+          
+          playClip(modelId, clipIndex) {
+            const state = this.animationStates[modelId];
+            if (!this.mixers[modelId] || !state.clips[clipIndex]) return;
+            
+            if (state.currentAction) {
+              state.currentAction.stop();
+            }
+            
+            state.currentClipIndex = clipIndex;
+            state.currentAction = this.mixers[modelId].clipAction(state.clips[clipIndex]);
+            state.currentAction.reset();
+            state.currentAction.setLoop(AFRAME.THREE.LoopOnce, 1);
+            state.currentAction.clampWhenFinished = true;
+            state.currentAction.play();
+            state.isTransitioning = false;
+          }
+          
+          startNextAnimation(modelId) {
+            const state = this.animationStates[modelId];
+            if (state.isTransitioning || !this.mixers[modelId]) return;
+            
+            state.isTransitioning = true;
+            const nextClipIndex = (state.currentClipIndex + 1) % state.clips.length;
+            
+            state.nextAction = this.mixers[modelId].clipAction(state.clips[nextClipIndex]);
+            state.nextAction.reset();
+            state.nextAction.setLoop(AFRAME.THREE.LoopOnce, 1);
+            state.nextAction.clampWhenFinished = true;
+            
+            state.currentAction.crossFadeTo(state.nextAction, state.transitionDuration, false);
+            state.nextAction.play();
+            
+            state.currentAction = state.nextAction;
+            state.currentClipIndex = nextClipIndex;
+            state.nextAction = null;
+            
+            setTimeout(() => {
+              state.isTransitioning = false;
+            }, state.transitionDuration * 1000);
+          }
+          
+          // ==================== SOUND SYSTEM ====================
+          playMarkerSound(soundId) {
+            const soundEl = document.querySelector(`#${soundId}`);
+            if (soundEl?.components?.sound) {
+              const soundComponent = soundEl.components.sound;
+              if (this.soundWasBrieflyLost[soundId]) {
+                soundComponent.playSound();
+                this.soundWasBrieflyLost[soundId] = false;
+              } else {
+                soundComponent.stopSound();
+                soundComponent.playSound();
+              }
+            }
+          }
+          
+          stopMarkerSound(soundId) {
+            const soundEl = document.querySelector(`#${soundId}`);
+            if (soundEl?.components?.sound) {
+              soundEl.components.sound.stopSound();
+            }
+          }
+          
+          // ==================== ORIENTATION SYSTEM ====================
+          detectOrientation() {
+            if (typeof window.orientation !== 'undefined') {
+              this.currentOrientation = Math.abs(window.orientation) === 90 ? 'landscape' : 'portrait';
+            } else if (window.screen?.orientation?.type) {
+              this.currentOrientation = window.screen.orientation.type.includes('landscape') ? 'landscape' : 'portrait';
+            } else {
+              this.currentOrientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+            }
+            
+            if (this.arInitialized) this.updateAllModelDimensions();
+            return this.currentOrientation;
+          }
+          
+          updateAllModelDimensions() {
+            this.markers.forEach(markerConfig => {
+              const wrapper = document.querySelector(`#${markerConfig.wrapperId}`);
+              if (wrapper) this.updateModelDimensions(wrapper);
+            });
+          }
+          
+          updateModelDimensions(wrapper) {
+            if (!wrapper) return;
+            const scaleValue = this.currentOrientation === 'portrait' 
+              ? this.config.orientationScales.portrait 
+              : this.config.orientationScales.landscape;
+            wrapper.setAttribute('scale', scaleValue);
+          }
+          
+          // ==================== EVENT BINDING ====================
+          bindEvents() {
+            this.startButton.addEventListener("click", () => this.startAR());
+            
+            window.addEventListener('resize', () => this.detectOrientation());
+            window.addEventListener('orientationchange', () => this.detectOrientation());
+            setInterval(() => this.detectOrientation(), 1000);
+            
+            window.addEventListener("beforeunload", () => this.cleanup());
+          }
+          
+          startAR() {
+            this.startButton.style.display = "none";
+            this.arScene.style.display = "block";
+            this.arInitialized = true;
+            this.updateAllModelDimensions();
+          }
+          
+          cleanup() {
+            Object.values(this.rafIds).forEach(rafId => rafId && cancelAnimationFrame(rafId));
+            Object.values(this.soundTimeouts).forEach(timeout => timeout && clearTimeout(timeout));
+          }
+        }
+
+        // ==================== INITIALIZE AR MANAGER ====================
+        let arManager;
+        
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            arManager = new ARManager(AR_CONFIG);
+          });
+        } else {
+          arManager = new ARManager(AR_CONFIG);
+        }
+
+      })();
+    </script>
+  </body>
 </html>
