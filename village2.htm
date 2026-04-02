@@ -178,7 +178,7 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
-    if (id === '15' || id === '16') {
+    if (id === '15' || id === '17' || id === '18') {
       document.write('<script src="universe/obj_create_model.js"><\/script>');
     }
  </script>
@@ -223,6 +223,7 @@
       '14': { x: 0, y: 15, z: 60, rotation: 0 },
       '15': { x: 0, y: 10, z: 50, rotation: 0 }, 
       '16': { x: 0, y: 3, z: 60, rotation: 0 }, 
+      '17': { x: 0, y: 10, z: 50, rotation: 0 }, 
     };
 
     // Set dynamic title based on villageId
@@ -244,6 +245,8 @@
       '14': 'ARville Future City',
       '15': 'Junk Food Junction',
       '16': 'Alien Planet',
+      '17': 'Objects Village',
+      '18': 'Celeb City',
     };
     
     // Set the page title
@@ -319,6 +322,14 @@
       '16': {
         ground: 'universe/textures/purple-ground.jpg',
         roads: 'universe/textures/purple-groundb.jpg'
+      },
+      '17': {
+        ground: 'universe/textures/grass2.jpg',
+        roads: 'universe/textures/grass2b.jpg'
+      },
+      '18': {
+        ground: 'universe/textures/grass2.jpg',
+        roads: 'universe/textures/grass2b.jpg'
       },
     };
 
