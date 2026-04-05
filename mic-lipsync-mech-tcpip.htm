@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Voice Servo | Aggressive Response</title>
+  <title>Voice Servo | 2-ESP32 Remote Control</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -149,25 +149,26 @@
 <body>
 <div class="container">
   <h1>&#127908; VOICE &#8594; SERVO</h1>
-  <div class="subtitle">&#128266; AGGRESSIVE RESPONSE | Open: 100° | Closed: 180°</div>
+  <div class="subtitle">&#128266; 2-ESP32 REMOTE SYSTEM | Open: 100° | Closed: 180°</div>
   
   <div class="debug-panel" id="debugPanel">
-    <div class="debug-line">&#128994; Aggressive Voice Response Mode Active</div>
-    <div class="debug-line">&#128204; Click "Connect USB" to begin</div>
+    <div class="debug-line">&#128994; 2-ESP32 Remote System Ready</div>
+    <div class="debug-line">&#128204; Connect USB to Base Station (ESP32 #1)</div>
+    <div class="debug-line">&#127760; Base Station will control Remote Robot (ESP32 #2) via WiFi</div>
   </div>
   
   <div class="status-panel">
     <div class="status-led" id="usbLed"></div>
-    <div class="status-text" id="usbStatusMsg">USB: Disconnected</div>
-    <div class="status-text" id="robotStatusMsg" style="display:none">&#129302; Robot: Unknown</div>
+    <div class="status-text" id="usbStatusMsg">Base Station: Disconnected</div>
+    <div class="status-text" id="robotStatusMsg" style="display:none">&#129302; Remote Robot: Unknown</div>
   </div>
 
   <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
   <div class="volume-value">&#128266; VOLUME: <span id="volumePercent">0</span>%</div>
-  <div class="angle-display">&#129463; SERVO: <span id="angleValue">180</span>°</div>
+  <div class="angle-display">&#129463; SERVO: <span id="angleValue">180</span>°<br><span style="font-size:0.7rem;">(Remote Robot)</span></div>
 
   <div class="button-group">
-    <button id="connectUsbBtn" class="btn-primary">&#128268; Connect USB</button>
+    <button id="connectUsbBtn" class="btn-primary">&#128268; Connect to Base Station</button>
     <button id="startMicBtn" class="btn-primary">&#127908; START MIC</button>
     <button id="stopMicBtn" class="btn-danger" disabled>&#9209;&#65039; STOP MIC</button>
     <button id="testServoBtn" class="btn-warning">&#9881;&#65039; TEST SWEEP</button>
@@ -175,7 +176,7 @@
   </div>
 
   <div class="log" id="logPanel">
-    <div class="log-entry">&#128994; Ready - Click "Connect USB"</div>
+    <div class="log-entry">&#128994; Ready - Connect to Base Station via USB</div>
   </div>
 </div>
 
@@ -183,7 +184,7 @@
   const SERVO_CLOSED = 180;
   const SERVO_OPEN = 100;
   
-  // USB Serial connection
+  // USB Serial connection to Base Station (ESP32 #1)
   let usbPort = null;
   let usbWriter = null;
   let usbReader = null;
@@ -200,14 +201,12 @@
   let animFrame = null;
   let micActive = false;
   
-  // Performance
-  let lastSendTime = 0;
   let lastSentAngle = SERVO_CLOSED;
   
   // Closure verification
   let closureCheckTimer = null;
   let lastActiveTime = 0;
-  const CLOSURE_DELAY = 300; // Wait 300ms of silence before sending extra close commands
+  const CLOSURE_DELAY = 300;
   
   // UI Elements
   const usbLed = document.getElementById('usbLed');
@@ -257,7 +256,7 @@
     while(logDiv.children.length > 50) logDiv.removeChild(logDiv.firstChild);
   }
   
-  // ========== VOLUME TO ANGLE MAPPING WITH NOISE GATE ==========
+  // ========== VOLUME TO ANGLE MAPPING ==========
   function volumeToAngle(volumePercent) {
     let mappedVolume;
     
@@ -283,18 +282,20 @@
     return Math.min(SERVO_CLOSED, Math.max(SERVO_OPEN, Math.round(angle)));
   }
   
+  // Send command to Base Station (which forwards to Remote Robot)
   async function sendServoCommand(angle, isClosureCommand = false) {
     if (!usbConnected || !usbWriter) return false;
     
     const clamped = Math.min(SERVO_CLOSED, Math.max(SERVO_OPEN, Math.round(angle)));
-    const command = `ANGLE:0:${clamped}\n`;
+    // Format for Base Station: ANGLE:<angle>
+    const command = `ANGLE:${clamped}\n`;
     
     try {
       await usbWriter.write(new TextEncoder().encode(command));
       currentServoAngle = clamped;
       angleDisplaySpan.innerText = clamped;
       if (isClosureCommand) {
-        addLog(`&#128274; Closure verification: Sent ${clamped}° (ensuring mouth closed)`);
+        addLog(`&#128274; Closure verification: Sent ${clamped}° to Base Station`);
       }
       return true;
     } catch (err) {
@@ -306,10 +307,9 @@
   function ensureMouthClosed() {
     if (!micActive) return;
     
-    // Check if current angle is not fully closed and volume is below threshold
     if (currentServoAngle !== SERVO_CLOSED) {
       addLog(`&#128269; Mouth not fully closed (${currentServoAngle}°), sending closure commands...`);
-      // Send two closure commands to ensure it closes
+      // Send three closure commands to ensure it closes via Base Station
       setTimeout(() => sendServoCommand(175, true), 0);
       setTimeout(() => sendServoCommand(178, true), 200);
       setTimeout(() => sendServoCommand(180, true), 500);
@@ -320,12 +320,12 @@
     if (connected) {
       usbLed.classList.add('connected');
       usbLed.classList.remove('pulse');
-      usbStatusMsg.innerHTML = `USB: &#9989; ${message}`;
+      usbStatusMsg.innerHTML = `Base Station: &#9989; ${message}`;
       robotStatusMsg.style.display = 'inline';
     } else {
       usbLed.classList.remove('connected');
       usbLed.classList.add('pulse');
-      usbStatusMsg.innerHTML = `USB: ${message}`;
+      usbStatusMsg.innerHTML = `Base Station: ${message}`;
       robotStatusMsg.style.display = 'none';
       robotConnected = false;
     }
@@ -345,10 +345,11 @@
       usbPort = null;
     }
     usbConnected = false;
+    robotConnected = false;
     if (closureCheckTimer) clearTimeout(closureCheckTimer);
     updateUsbUI(false, 'Disconnected');
-    connectUsbBtn.innerHTML = '&#128268; Connect USB';
-    addLog('&#128268; USB disconnected');
+    connectUsbBtn.innerHTML = '&#128268; Connect to Base Station';
+    addLog('&#128268; Base Station disconnected');
   }
   
   async function connectToUSB() {
@@ -363,7 +364,7 @@
     }
     
     try {
-      addLog('&#128268; Requesting USB port...');
+      addLog('&#128268; Requesting USB port for Base Station...');
       const port = await navigator.serial.requestPort();
       await port.open({ baudRate: 115200 });
       
@@ -372,8 +373,8 @@
       usbConnected = true;
       
       updateUsbUI(true, 'Connected');
-      addLog('&#9989; Connected to ESP32');
-      connectUsbBtn.innerHTML = '&#128268; Disconnect USB';
+      addLog('&#9989; Connected to Base Station (ESP32 #1)');
+      connectUsbBtn.innerHTML = '&#128268; Disconnect Base Station';
       
       await sendServoCommand(SERVO_CLOSED);
       
@@ -404,8 +405,30 @@
           const line = buffer.substring(0, newlineIndex).trim();
           buffer = buffer.substring(newlineIndex + 1);
           
-          if (line.startsWith('&#9989;') || line.startsWith('Servo')) {
-            addLog(line, false);
+          // Parse Base Station responses
+          if (line.includes('ROBOT_CONNECTED')) {
+            robotConnected = true;
+            robotStatusMsg.innerHTML = '&#129302; Remote Robot: &#9989; Connected';
+            robotStatusMsg.style.color = '#4cff4c';
+            addLog('&#9989; Remote Robot connected to Base Station!');
+          }
+          else if (line.includes('ROBOT_DISCONNECTED') || line.includes('ROBOT_TIMEOUT')) {
+            robotConnected = false;
+            robotStatusMsg.innerHTML = '&#129302; Remote Robot: &#10060; Disconnected';
+            robotStatusMsg.style.color = '#ff7b72';
+            addLog('&#9888;&#65039; Remote Robot disconnected', true);
+          }
+          else if (line.includes('ECHO_RECEIVED')) {
+            addLog(`&#128225; Robot confirmed angle: ${line}`);
+          }
+          else if (line.includes('VERIFY:MATCH')) {
+            addLog(`&#9989; Remote robot verified position`);
+          }
+          else if (line.includes('VERIFY:MISMATCH')) {
+            addLog(`&#9888;&#65039; ${line}`, true);
+          }
+          else if (line.length > 0 && !line.startsWith('SERVO') && !line.startsWith('&#9989;')) {
+            addLog(`&#128232; Base Station: ${line}`);
           }
         }
       }
@@ -416,7 +439,7 @@
     }
   }
   
-  // ========== AUDIO PROCESSING WITH CLOSURE VERIFICATION ==========
+  // ========== AUDIO PROCESSING ==========
   let lastVolume = 0;
   let silenceFrames = 0;
   let wasRecentlyActive = false;
@@ -444,7 +467,6 @@
     let rawVolume = 0;
     let isActive = false;
     
-    // NOISE GATE: Only respond to sounds above the noise floor
     if (combined > NOISE_FLOOR) {
       let scaledVolume = Math.min(100, Math.floor((combined - NOISE_FLOOR) * 1200));
       rawVolume = Math.min(100, Math.max(0, scaledVolume));
@@ -453,14 +475,12 @@
       lastActiveTime = Date.now();
       wasRecentlyActive = true;
       
-      // Clear any pending closure check
       if (closureCheckTimer) {
         clearTimeout(closureCheckTimer);
         closureCheckTimer = null;
       }
     } else {
       silenceFrames++;
-      // If we've had silence for several frames, consider inactive
       if (silenceFrames > 3) {
         rawVolume = 0;
         isActive = false;
@@ -469,14 +489,12 @@
       }
     }
     
-    // Apply volume boost curve for clearer speech
     if (rawVolume > 0 && rawVolume < 20) {
       rawVolume = Math.min(100, rawVolume * 2.5);
     } else if (rawVolume >= 20 && rawVolume < 50) {
       rawVolume = Math.min(100, rawVolume * 1.5);
     }
     
-    // Fast attack, slower release to avoid chatter
     let finalVolume;
     if (rawVolume > lastVolume) {
       finalVolume = rawVolume;
@@ -484,14 +502,12 @@
       finalVolume = Math.max(rawVolume, lastVolume * 0.7);
     }
     
-    // Snap closed when volume drops below minimum movement threshold
     if (rawVolume < MIN_VOLUME_TO_MOVE && lastVolume < 15) {
       finalVolume = 0;
     }
     
     lastVolume = finalVolume;
     
-    // Update UI
     meterFill.style.width = finalVolume + '%';
     volumeSpan.innerText = Math.floor(finalVolume);
     
@@ -502,9 +518,7 @@
       lastSentAngle = targetAngle;
     }
     
-    // CHECK FOR CLOSURE: If mouth should be closed but isn't, schedule verification
     if (!isActive && wasRecentlyActive && targetAngle === SERVO_CLOSED && currentServoAngle !== SERVO_CLOSED) {
-      // Schedule a closure check after a short delay
       if (!closureCheckTimer) {
         closureCheckTimer = setTimeout(() => {
           ensureMouthClosed();
@@ -521,7 +535,7 @@
     if (micActive) return;
     
     if (!usbConnected) {
-      addLog('&#10060; Connect USB first!', true);
+      addLog('&#10060; Connect to Base Station first!', true);
       return;
     }
     
@@ -561,9 +575,9 @@
       wasRecentlyActive = false;
       lastSentAngle = SERVO_CLOSED;
       
-      addLog(`&#9989; Microphone active - CLOSURE VERIFICATION ENABLED`);
+      addLog(`&#9989; Microphone active - Controlling Remote Robot via Base Station`);
       addDebug(`Noise threshold: ${NOISE_FLOOR} - Background noise will NOT move servo`, 'success');
-      addDebug('Mouth will automatically verify closure when you stop speaking', 'success');
+      addDebug('Commands sent to Base Station &#8594; Remote Robot via WiFi', 'success');
       startMicBtn.disabled = true;
       stopMicBtn.disabled = false;
       
@@ -588,14 +602,13 @@
     meterFill.style.width = '0%';
     volumeSpan.innerText = '0';
     
-    // Send multiple close commands to ensure proper closure
     sendServoCommand(SERVO_CLOSED);
     setTimeout(() => sendServoCommand(SERVO_CLOSED, true), 100);
     setTimeout(() => sendServoCommand(SERVO_CLOSED, true), 200);
     
     lastSentAngle = SERVO_CLOSED;
     
-    addLog(`&#127908; Microphone stopped - mouth closed`);
+    addLog(`&#128263; Microphone stopped - Remote Robot closing`);
     startMicBtn.disabled = false;
     stopMicBtn.disabled = true;
   }
@@ -609,17 +622,17 @@
     if (sweepInterval) {
       clearInterval(sweepInterval);
       sweepInterval = null;
-      addLog(`&#9881;&#65039; Sweep stopped`);
-      testBtn.innerHTML = '&#9881;&#65039; TEST SWEEP';
+      addLog(`&#129514; Sweep stopped`);
+      testBtn.innerHTML = '&#128260; TEST SWEEP';
       if (!micActive) sendServoCommand(SERVO_CLOSED);
     } else {
       if (!usbConnected) {
-        addLog(`&#10060; USB not connected`, true);
+        addLog(`&#10060; Connect to Base Station first`, true);
         return;
       }
       sweepAngle = SERVO_CLOSED;
       sweepDir = -1;
-      addLog(`&#128260; Sweep: ${SERVO_CLOSED}° &#8596; ${SERVO_OPEN}°`);
+      addLog(`&#129514; Sweep: ${SERVO_CLOSED}° &#8596; ${SERVO_OPEN}° (Remote Robot)`);
       testBtn.innerHTML = '&#9209;&#65039; STOP SWEEP';
       
       sweepInterval = setInterval(() => {
@@ -640,7 +653,7 @@
     }
   }
   
-  // ========== RANDOM 10 VALUES TEST ==========
+  // Random Test
   let randomTestInterval = null;
   let randomValues = [];
   let randomIndex = 0;
@@ -650,12 +663,12 @@
       clearInterval(randomTestInterval);
       randomTestInterval = null;
       randomTestBtn.innerHTML = '&#127922; RANDOM 10 VALUES';
-      addLog(`&#9881;&#65039; Random test stopped`);
+      addLog(`&#129514; Random test stopped`);
       return;
     }
     
     if (!usbConnected) {
-      addLog(`&#10060; USB not connected`, true);
+      addLog(`&#10060; Connect to Base Station first`, true);
       return;
     }
     
@@ -678,7 +691,7 @@
         clearInterval(randomTestInterval);
         randomTestInterval = null;
         randomTestBtn.innerHTML = '&#127922; RANDOM 10 VALUES';
-        addLog(`&#9989; Random test complete! Servo returned to closed (${SERVO_CLOSED}°)`);
+        addLog(`&#9989; Random test complete! Remote Robot at closed (${SERVO_CLOSED}°)`);
         sendServoCommand(SERVO_CLOSED);
       } else {
         sendRandomValue();
@@ -708,9 +721,9 @@
     angleDisplaySpan.innerText = SERVO_CLOSED;
     currentServoAngle = SERVO_CLOSED;
     
-    addDebug('AGGRESSIVE VOICE RESPONSE MODE ACTIVE', 'success');
-    addDebug('CLOSURE VERIFICATION - Mouth will double-check closure when silent', 'success');
-    addDebug('Click "Connect USB" then "START MIC"', 'info');
+    addDebug('2-ESP32 REMOTE SYSTEM ACTIVE', 'success');
+    addDebug('Connect USB to Base Station &#8594; Controls Remote Robot via WiFi', 'success');
+    addDebug('Click "Connect to Base Station" then "START MIC"', 'info');
   }
   
   window.addEventListener('beforeunload', () => {
