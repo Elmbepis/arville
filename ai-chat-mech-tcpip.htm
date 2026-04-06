@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Elf Character + Mechanical Lip-Sync | Audio Mirror Mode</title>
+  <title>Elf Character + Mechanical Lip-Sync | LOW LATENCY</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -44,7 +44,7 @@
       backdrop-filter: blur(8px);
       pointer-events: none;
       border-left: 3px solid #4caf50;
-      min-width: 320px;
+      min-width: 340px;
     }
     
     .status-line {
@@ -253,7 +253,7 @@
       width: 0%;
       height: 100%;
       background: linear-gradient(95deg, #2bd96f, #ffc107, #ff6a3d);
-      transition: width 0.02s linear;
+      transition: width 0.005s linear;
     }
     
     .volume-value {
@@ -262,18 +262,42 @@
       margin: 0.3rem 0;
       color: #fff;
     }
+    
+    .audio-source-selector {
+      position: absolute;
+      bottom: 100px;
+      right: 20px;
+      background: rgba(0,0,0,0.85);
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-family: monospace;
+      font-size: 10px;
+      z-index: 1000;
+      pointer-events: auto;
+      border: 1px solid #ffaa66;
+    }
+    
+    .audio-source-selector select {
+      background: #1e2a36;
+      color: #0f0;
+      border: 1px solid #ffaa66;
+      border-radius: 5px;
+      padding: 2px 5px;
+      font-family: monospace;
+      margin-left: 5px;
+    }
   </style>
 </head>
 <body>
   <div id="loading">
-    &#127876; CHRISTMAS ELF WORKSHOP &#127876;<br>
+    &#127876; CHRISTMAS ELF WORKSHOP - LOW LATENCY &#127876;<br>
     <span id="room-status"></span><br>
-    <span style="font-size:11px;">&#129302; Mechanical Mouth - Audio Mirror Mode</span>
+    <span style="font-size:11px;">&#129302; Real-time TTS Lipsync</span>
   </div>
   
   <div class="debug-console" id="debugConsole">
-    <div style="color:#ffaa66; margin-bottom:5px;">&#128269; LIVE DEBUG CONSOLE</div>
-    <div style="color:#88ff88; font-size:9px;">Servo commands will appear here &#8594;</div>
+    <div style="color:#ffaa66; margin-bottom:5px;">&#128269; LOW LATENCY MODE</div>
+    <div style="color:#88ff88; font-size:9px;">VB-Cable Direct Capture</div>
   </div>
   
   <div class="servo-debug" id="servoDebug">
@@ -292,10 +316,13 @@
       &#129504; <span id="ai-status">AI: Idle</span>
     </div>
     <div class="status-line">
-      &#127908; <span id="speech-status" class="mouth-status listening">&#128263; AUDIO MONITOR: INACTIVE</span>
+      &#127908; <span id="speech-status" class="mouth-status listening">&#9209;&#65039; LIPSYNC: INACTIVE</span>
     </div>
     <div class="status-line">
       &#128068; <span id="mouth-action">Mouth: CLOSED</span>
+    </div>
+    <div class="status-line">
+      &#127911; <span id="audio-source-status">Audio Source: </span>
     </div>
   </div>
   
@@ -303,11 +330,11 @@
     <div class="meter-fill" id="meterFill"></div>
   </div>
   <div class="volume-value">
-    &#128266; VOLUME: <span id="volumePercent">0</span>%
+    &#128266; TTS VOLUME: <span id="volumePercent">0</span>%
   </div>
   
   <div id="home-hint">
-    &#127968; H = home | &#128172; Ask Elf | &#127919; Servo mirrors character's voice
+    &#127968; H = home | &#128172; Ask Elf | &#127919; Real-time lipsync
   </div>
   
   <div id="controls">
@@ -316,10 +343,18 @@
     <button id="ollamaChatBtn" class="ollama-btn">&#128172; Ask Elf</button>
   </div>
   
+  <div class="audio-source-selector">
+    &#127911; Lipsync Source: 
+    <select id="audioSourceSelect">
+      <option value="vbcable">VB-Cable (TTS Direct) - LOWEST LATENCY</option>
+      <option value="mic">Microphone (Speaker Audio)</option>
+    </select>
+  </div>
+  
   <div id="chat-area" style="display: none;">
     <div class="badge">&#129501; ELF AI (Ollama)</div>
     <div id="chat-messages">
-      <div class="chat-bubble elf-msg">&#10024; Hello! I'm the Christmas Elf. Ask me anything - the servo will mirror my voice!</div>
+      <div class="chat-bubble elf-msg">&#10024; Hello! I'm the Christmas Elf. My mouth moves in real-time!</div>
     </div>
     <input type="text" id="chat-input" placeholder="Type message for elf...">
   </div>
@@ -336,61 +371,53 @@
 
   <script>
     // ============================================
-    // DEBUG LOGGING FUNCTION
+    // OPTIMIZED CONFIGURATION
     // ============================================
-    const debugConsole = document.getElementById('debugConsole');
+    const SERVO_CLOSED = 70;
+    const SERVO_OPEN = 160;
     
-    function debugLog(msg, type = 'info') {
-      const entry = document.createElement('div');
-      entry.className = 'debug-entry';
-      const time = new Date().toLocaleTimeString();
-      
-      if (type === 'error') {
-        entry.style.borderLeftColor = '#ff4444';
-        entry.style.color = '#ffaaaa';
-        entry.innerHTML = `[${time}] &#10060; ${msg}`;
-      } else if (type === 'success') {
-        entry.style.borderLeftColor = '#4cff4c';
-        entry.style.color = '#aaffaa';
-        entry.innerHTML = `[${time}] &#9989; ${msg}`;
-      } else if (type === 'warning') {
-        entry.style.borderLeftColor = '#ffaa33';
-        entry.style.color = '#ffcc88';
-        entry.innerHTML = `[${time}] &#9888;&#65039; ${msg}`;
-      } else if (type === 'servo') {
-        entry.style.borderLeftColor = '#ff66ff';
-        entry.style.color = '#ffccff';
-        entry.innerHTML = `[${time}] &#129463; SERVO: ${msg}`;
+    // Balanced volume mapping - less background noise, good range
+function balancedVolumeMapping(rawVolume) {
+    if (rawVolume <= 6) return 0;
+    
+    let mapped;
+    if (rawVolume < 15) {
+        mapped = Math.min(100, (rawVolume - 2) * 5);  // Changed from 4 to 5
+    } else if (rawVolume < 30) {
+        mapped = 60 + (rawVolume - 10) * 2.5;  // Changed from 35 and 2.2
+    } else if (rawVolume < 55) {
+        mapped = 85 + (rawVolume - 28) * 1.0;  // Changed from 75 and 0.9
+    } else {
+        mapped = 100;
+    }
+    return Math.min(100, Math.max(0, mapped));
+}
+    
+    // Smooth but responsive release
+    function responsiveSmoothing(currentVolume, lastVolume) {
+      if (currentVolume > lastVolume) {
+        // Attack: instant
+        return currentVolume;
       } else {
-        entry.style.borderLeftColor = '#88aaff';
-        entry.style.color = '#bbddff';
-        entry.innerHTML = `[${time}] &#128269; ${msg}`;
+        // Release: 50% drop per frame (smooth but not sluggish)
+        return Math.max(currentVolume, lastVolume * 0.5);
       }
-      
-      debugConsole.appendChild(entry);
-      entry.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      while(debugConsole.children.length > 50) debugConsole.removeChild(debugConsole.children[1]);
-      console.log(`[DEBUG] ${msg}`);
     }
     
     // ============================================
     // ESP32 SERVO CONTROL
     // ============================================
-    const SERVO_CLOSED = 180;
-    const SERVO_OPEN = 95;
-    
     let usbPort = null;
     let usbWriter = null;
     let usbReader = null;
     let usbConnected = false;
     let robotConnected = false;
-    let audioMonitoringStarted = false;
     
     let currentServoAngle = SERVO_CLOSED;
     let lastSentAngle = SERVO_CLOSED;
     let servoCommandCount = 0;
     
-    // Audio output monitoring
+    // Audio analysis
     let audioContext = null;
     let mediaStream = null;
     let sourceNode = null;
@@ -398,6 +425,7 @@
     let audioMonitoringActive = false;
     let audioMonitorInterval = null;
     let lastVolumeLevel = 0;
+    let frameCount = 0;
     
     // UI Elements
     const usbLed = document.getElementById('usbLed');
@@ -411,27 +439,34 @@
     const mouthActionSpan = document.getElementById('mouth-action');
     const meterFill = document.getElementById('meterFill');
     const volumeSpan = document.getElementById('volumePercent');
+    const audioSourceSelect = document.getElementById('audioSourceSelect');
+    
+    // Audio device IDs
+    let vbcableDeviceId = null;
+    let micDeviceId = null;
+    let currentAudioStream = null;
+    let currentAudioSource = 'vbcable';
     
     function sendServoCommand(angle, source = "unknown") {
       servoCommandCount++;
-      debugLog(`#${servoCommandCount} sendServoCommand() - angle: ${angle}, source: ${source}, usbConnected: ${usbConnected}`, 'servo');
       
-      if (!usbConnected || !usbWriter) {
-        debugLog(`sendServoCommand() FAILED - USB not connected!`, 'error');
-        return false;
-      }
+      if (!usbConnected || !usbWriter) return false;
       
-      const clamped = Math.min(SERVO_CLOSED, Math.max(SERVO_OPEN, Math.round(angle)));
+      const clamped = Math.min(SERVO_OPEN, Math.max(SERVO_CLOSED, Math.round(angle)));
       debugAngleSpan.innerText = clamped;
       const command = `ANGLE:${clamped}\n`;
       
       try {
         usbWriter.write(new TextEncoder().encode(command));
         currentServoAngle = clamped;
-        debugLog(`&#9989; Servo command SENT successfully: angle ${clamped}°`, 'success');
+        
+        if (source === "audio_monitor") {
+          const openPercent = Math.round(((clamped - SERVO_CLOSED) / (SERVO_OPEN - SERVO_CLOSED)) * 100);
+          mouthActionSpan.innerHTML = `Mouth: ${openPercent}% OPEN`;
+          mouthActionSpan.style.color = openPercent > 20 ? "#4cff4c" : "#ffaa66";
+        }
         return true;
       } catch (err) {
-        debugLog(`&#10060; sendServoCommand() ERROR: ${err.message}`, 'error');
         return false;
       }
     }
@@ -452,18 +487,13 @@
     }
     
     async function connectToUSB() {
-      debugLog("connectToUSB() called - user clicked Connect button", 'info');
-      
       if (usbConnected) {
-        debugLog("Disconnecting USB...", 'warning');
         if (usbWriter) await usbWriter.close();
         if (usbReader) await usbReader.cancel();
         if (usbPort) await usbPort.close();
         usbConnected = false;
-        audioMonitoringStarted = false;
         updateUsbUI(false, 'Disconnected');
         connectUsbBtn.innerHTML = '&#128268; Connect Base Station';
-        debugLog("USB disconnected", 'info');
         return;
       }
       
@@ -473,12 +503,8 @@
       }
       
       try {
-        debugLog("Requesting USB port from user...", 'info');
         const port = await navigator.serial.requestPort();
-        debugLog(`User selected port`, 'success');
-        
         await port.open({ baudRate: 115200 });
-        debugLog("Port opened successfully at 115200 baud", 'success');
         
         usbPort = port;
         usbWriter = port.writable.getWriter();
@@ -486,7 +512,6 @@
         
         updateUsbUI(true, 'Connected');
         connectUsbBtn.innerHTML = '&#128268; Disconnect Base Station';
-        debugLog("USB connection established to Base Station (ESP32 #1)", 'success');
         
         sendServoCommand(SERVO_CLOSED, "initial");
         
@@ -494,12 +519,9 @@
         usbReader = reader;
         readUSBData();
         
-        // START AUDIO MONITORING NOW THAT USB IS CONNECTED
-        debugLog("USB connected - starting audio monitoring...", 'success');
         await startAudioMonitoring();
         
       } catch (err) {
-        debugLog(`USB Error: ${err.message}`, 'error');
         usbConnected = false;
       }
     }
@@ -523,129 +545,132 @@
             if (line.includes('ROBOT_CONNECTED')) {
               robotConnected = true;
               robotStatusMsgSpan.innerHTML = `Remote Robot: &#9989; Connected`;
-              debugLog("Remote Robot (ESP32 #2) connected to Base Station", 'success');
             }
             else if (line.includes('ROBOT_DISCONNECTED') || line.includes('ROBOT_TIMEOUT')) {
               robotConnected = false;
               robotStatusMsgSpan.innerHTML = `Remote Robot: &#10060; Disconnected`;
-              debugLog("Remote Robot disconnected", 'warning');
             }
           }
         }
       } catch(err) {
         if (err.name !== 'AbortError') {
-          debugLog(`Read error: ${err.message}`, 'error');
+          console.error(`Read error: ${err.message}`);
         }
       }
     }
     
-    // ========== TEST SWEEP ==========
-    let sweepInterval = null;
-    let sweepAngle = SERVO_CLOSED;
-    let sweepDir = -1;
-    
-    function toggleSweep() {
-      debugLog(`toggleSweep() called - sweepInterval: ${!!sweepInterval}`, 'info');
-      
-      if (sweepInterval) {
-        clearInterval(sweepInterval);
-        sweepInterval = null;
-        testBtn.innerHTML = '&#128295; Test Sweep';
-        debugLog("Test sweep stopped", 'info');
-        if (!audioMonitoringActive) sendServoCommand(SERVO_CLOSED, "sweep_stop");
-      } else {
-        if (!usbConnected) {
-          debugLog("Test sweep failed - USB not connected", 'error');
-          alert('&#9888;&#65039; Connect Base Station first!');
-          return;
-        }
-        sweepAngle = SERVO_CLOSED;
-        sweepDir = -1;
-        testBtn.innerHTML = '&#9209;&#65039; STOP SWEEP';
-        debugLog("Test sweep started - moving servo between 95° and 180°", 'success');
+    // ========== ENUMERATE AUDIO DEVICES ==========
+    async function enumerateAudioDevices() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioInputs = devices.filter(device => device.kind === 'audioinput');
         
-        sweepInterval = setInterval(() => {
-          sweepAngle += sweepDir * 5;
-          if (sweepAngle <= SERVO_OPEN) {
-            sweepAngle = SERVO_OPEN;
-            sweepDir = 1;
-          } else if (sweepAngle >= SERVO_CLOSED) {
-            sweepAngle = SERVO_CLOSED;
-            sweepDir = -1;
+        for (const device of audioInputs) {
+          if (device.label.toLowerCase().includes('cable') || 
+              device.label.toLowerCase().includes('vb-audio') ||
+              device.label.toLowerCase().includes('virtual')) {
+            vbcableDeviceId = device.deviceId;
+            console.log(`&#9989; Found VB-Cable: ${device.label}`);
           }
-          sendServoCommand(sweepAngle, "sweep");
-        }, 40);
+          
+          if (!device.label.toLowerCase().includes('cable') && 
+              !device.label.toLowerCase().includes('vb-audio') &&
+              !device.label.toLowerCase().includes('virtual') &&
+              device.label.length > 0) {
+            micDeviceId = device.deviceId;
+          }
+        }
+      } catch (err) {
+        console.error(`Enumeration failed: ${err.message}`);
       }
     }
     
-    // ========== AUDIO OUTPUT MONITORING ==========
+    // ========== START AUDIO STREAM ==========
+    async function startAudioStream(source) {
+      if (currentAudioStream) {
+        currentAudioStream.getTracks().forEach(track => track.stop());
+        currentAudioStream = null;
+      }
+      
+      let deviceId = null;
+      let sourceName = '';
+      
+      if (source === 'vbcable' && vbcableDeviceId) {
+        deviceId = vbcableDeviceId;
+        sourceName = 'VB-Cable (Direct TTS)';
+      } else if (source === 'mic') {
+        deviceId = micDeviceId;
+        sourceName = 'Microphone';
+      } else if (source === 'vbcable' && !vbcableDeviceId) {
+        deviceId = micDeviceId;
+        sourceName = 'Microphone (fallback)';
+      }
+      
+      if (!deviceId) return false;
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            deviceId: { exact: deviceId },
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            latency: 0
+          }
+        });
+        
+        currentAudioStream = stream;
+        document.getElementById('audio-source-status').innerHTML = `Audio Source: &#127911; ${sourceName}`;
+        return true;
+        
+      } catch (err) {
+        console.error(`Failed to start audio stream: ${err.message}`);
+        return false;
+      }
+    }
+    
+    // ========== LOW LATENCY AUDIO MONITORING ==========
     function mapVolumeToAngle(volumePercent) {
-      let angle = SERVO_CLOSED - (volumePercent * (SERVO_CLOSED - SERVO_OPEN) / 100);
-      return Math.min(SERVO_CLOSED, Math.max(SERVO_OPEN, Math.round(angle)));
+      let angle = SERVO_CLOSED + (volumePercent * (SERVO_OPEN - SERVO_CLOSED) / 100) + (1*volumePercent);
+      return Math.min(SERVO_OPEN, Math.max(SERVO_CLOSED, Math.round(angle)));
     }
     
     async function startAudioMonitoring() {
       if (audioMonitoringActive) {
-        debugLog("Audio monitoring already active", 'warning');
-        return;
+        stopAudioMonitorLoop();
       }
       
-      if (!usbConnected) {
-        debugLog("Cannot start audio monitoring - USB not connected yet. Will start when USB connects.", 'warning');
-        return;
-      }
+      if (!usbConnected) return;
       
-      debugLog("========================================", 'info');
-      debugLog("STARTING AUDIO MONITORING", 'success');
-      debugLog("========================================", 'info');
+      const selectedSource = audioSourceSelect.value;
+      currentAudioSource = selectedSource;
       
-      try {
-        debugLog("Requesting microphone access for audio monitoring...", 'info');
-        
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          audio: {
-            echoCancellation: false,
-            noiseSuppression: false,
-            autoGainControl: true,
-            latency: 0
-          } 
+      const success = await startAudioStream(selectedSource);
+      if (!success || !currentAudioStream) return;
+      
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)({
+          latencyHint: 'interactive',
+          sampleRate: 48000
         });
-        
-        mediaStream = stream;
-        debugLog("Microphone access granted", 'success');
-        
-        if (!audioContext) {
-          audioContext = new (window.AudioContext || window.webkitAudioContext)({
-            latencyHint: 'interactive',
-            sampleRate: 48000
-          });
-        }
-        
-        if (audioContext.state === 'suspended') {
-          await audioContext.resume();
-          debugLog("AudioContext resumed", 'success');
-        }
-        
-        sourceNode = audioContext.createMediaStreamSource(stream);
-        analyserNode = audioContext.createAnalyser();
-        analyserNode.fftSize = 128;
-        analyserNode.smoothingTimeConstant = 0.2;
-        
-        sourceNode.connect(analyserNode);
-        audioMonitoringActive = true;
-        audioMonitoringStarted = true;
-        
-        speechStatusSpan.innerHTML = "&#128308; AUDIO MONITOR: ACTIVE (Listening to speakers)";
-        speechStatusSpan.className = "mouth-status speaking";
-        debugLog("Audio monitoring ACTIVE - servo will mirror character's voice volume", 'success');
-        debugLog("Make sure your microphone can hear your speakers!", 'info');
-        
-        startAudioMonitorLoop();
-        
-      } catch (err) {
-        debugLog(`Audio monitoring error: ${err.message}`, 'error');
-        alert('Could not access microphone. Make sure your microphone is enabled and not in use.');
       }
+      
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+      
+      sourceNode = audioContext.createMediaStreamSource(currentAudioStream);
+      analyserNode = audioContext.createAnalyser();
+      analyserNode.fftSize = 32;  // Smallest = fastest
+      analyserNode.smoothingTimeConstant = 0;
+      
+      sourceNode.connect(analyserNode);
+      audioMonitoringActive = true;
+      
+      speechStatusSpan.innerHTML = "&#128308; LIPSYNC: ACTIVE";
+      speechStatusSpan.className = "mouth-status speaking";
+      
+      startAudioMonitorLoop();
     }
     
     function startAudioMonitorLoop() {
@@ -654,11 +679,9 @@
       }
       
       const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
-      let silenceFrames = 0;
-      let frameCount = 0;
+      frameCount = 0;
       
-      debugLog("Audio monitor loop started - analyzing audio in real-time", 'success');
-      
+      // 15ms interval = ~66fps for maximum responsiveness
       audioMonitorInterval = setInterval(() => {
         if (!audioMonitoringActive || !analyserNode) return;
         
@@ -674,57 +697,40 @@
         }
         
         let rms = Math.sqrt(sumSquares / dataArray.length);
-        let combined = Math.max(rms, peak * 0.6);
+        let combined = Math.max(rms, peak * 0.5);
         
-        let volumePercent = 0;
-        
-        if (combined > 0.008) {
-          volumePercent = Math.min(100, Math.floor(combined * 400));
-          
-          if (volumePercent > 0 && volumePercent < 15) {
-            volumePercent = Math.min(100, volumePercent * 2.5);
-          } else if (volumePercent >= 15 && volumePercent < 40) {
-            volumePercent = Math.min(100, volumePercent * 1.5);
-          }
-          silenceFrames = 0;
-        } else {
-          silenceFrames++;
-          if (silenceFrames > 5) {
-            volumePercent = 0;
-          }
+        // Higher threshold to filter background noise
+        let rawVolume = 0;
+        if (combined > 0.005) {  // Increased from 0.002 to 0.015
+          rawVolume = Math.min(100, Math.floor(combined * 500));
         }
         
-        let smoothedVolume = lastVolumeLevel * 0.4 + volumePercent * 0.6;
-        lastVolumeLevel = smoothedVolume;
+        // Apply balanced volume mapping
+        let mappedVolume = balancedVolumeMapping(rawVolume);
         
-        if (meterFill) meterFill.style.width = smoothedVolume + '%';
-        if (volumeSpan) volumeSpan.innerText = Math.floor(smoothedVolume);
+        // Apply responsive smoothing
+        let finalVolume = responsiveSmoothing(mappedVolume, lastVolumeLevel);
+        lastVolumeLevel = finalVolume;
         
-        const targetAngle = mapVolumeToAngle(smoothedVolume);
-        
-        // Log volume changes every 20 frames
+        // Update UI (throttled to reduce overhead)
         frameCount++;
-        if (frameCount % 20 === 0 && smoothedVolume > 5) {
-          debugLog(`Audio volume: ${Math.floor(smoothedVolume)}% &#8594; servo angle: ${targetAngle}°`, 'info');
+        if (frameCount % 2 === 0) {
+          if (meterFill) meterFill.style.width = finalVolume + '%';
+          if (volumeSpan) volumeSpan.innerText = Math.floor(finalVolume);
         }
         
-        if (Math.abs(targetAngle - lastSentAngle) >= 2) {
-          debugLog(`&#127908; Volume ${Math.floor(smoothedVolume)}% &#8594; Moving servo to ${targetAngle}°`, 'servo');
+        const targetAngle = mapVolumeToAngle(finalVolume);
+        
+        // Send command immediately on any change
+        if (targetAngle !== lastSentAngle) {
           sendServoCommand(targetAngle, "audio_monitor");
           lastSentAngle = targetAngle;
-          const openPercent = Math.round(((SERVO_CLOSED - targetAngle) / (SERVO_CLOSED - SERVO_OPEN)) * 100);
-          mouthActionSpan.innerHTML = `Mouth: ${openPercent}% OPEN`;
-          mouthActionSpan.style.color = openPercent > 20 ? "#4cff4c" : "#ffaa66";
         }
         
-      }, 50);
+      }, 10);  // 15ms for low latency
     }
     
-    function stopAudioMonitoring() {
-      debugLog("Stopping audio monitoring...", 'warning');
-      
-      audioMonitoringActive = false;
-      
+    function stopAudioMonitorLoop() {
       if (audioMonitorInterval) {
         clearInterval(audioMonitorInterval);
         audioMonitorInterval = null;
@@ -735,27 +741,65 @@
         sourceNode = null;
       }
       
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
-        mediaStream = null;
+      if (currentAudioStream) {
+        currentAudioStream.getTracks().forEach(track => track.stop());
+        currentAudioStream = null;
       }
       
       if (analyserNode) {
         analyserNode = null;
       }
       
+      audioMonitoringActive = false;
       lastVolumeLevel = 0;
+      
       if (meterFill) meterFill.style.width = '0%';
       if (volumeSpan) volumeSpan.innerText = '0';
       
       sendServoCommand(SERVO_CLOSED, "monitor_stop");
       lastSentAngle = SERVO_CLOSED;
       
-      speechStatusSpan.innerHTML = "&#9898; AUDIO MONITOR: INACTIVE";
+      speechStatusSpan.innerHTML = "&#9209;&#65039; LIPSYNC: INACTIVE";
       speechStatusSpan.className = "mouth-status listening";
       mouthActionSpan.innerHTML = "Mouth: CLOSED";
-      
-      debugLog("Audio monitoring stopped", 'info');
+    }
+    
+    // ========== TEST SWEEP ==========
+    let sweepInterval = null;
+    let sweepAngle = SERVO_CLOSED;
+    let sweepDir = 1;
+    
+    function toggleSweep() {
+      if (sweepInterval) {
+        clearInterval(sweepInterval);
+        sweepInterval = null;
+        testBtn.innerHTML = '&#128295; Test Sweep';
+        if (!audioMonitoringActive) sendServoCommand(SERVO_CLOSED, "sweep_stop");
+      } else {
+        if (!usbConnected) {
+          alert('&#9888;&#65039; Connect Base Station first!');
+          return;
+        }
+        sweepAngle = SERVO_CLOSED;
+        sweepDir = 1;
+        testBtn.innerHTML = '&#9209;&#65039; STOP SWEEP';
+        
+        sweepInterval = setInterval(() => {
+          sweepAngle += sweepDir * 10;
+          if (sweepAngle >= SERVO_OPEN) {
+            sweepAngle = SERVO_OPEN;
+            sweepDir = -1;
+          } else if (sweepAngle <= SERVO_CLOSED) {
+            sweepAngle = SERVO_CLOSED;
+            sweepDir = 1;
+          }
+          sendServoCommand(sweepAngle, "sweep");
+          
+          let vol = ((sweepAngle - SERVO_CLOSED) / (SERVO_OPEN - SERVO_CLOSED)) * 100;
+          meterFill.style.width = Math.floor(vol) + '%';
+          volumeSpan.innerText = Math.floor(vol);
+        }, 30);
+      }
     }
     
     // ========== OLLAMA AI INTEGRATION ==========
@@ -771,22 +815,17 @@
         if (response.ok) {
           ollamaAvailable = true;
           aiStatusSpan.innerHTML = "AI: Ready &#129504;";
-          debugLog("Ollama is available and running", 'success');
           return true;
         }
-      } catch(e) {
-        debugLog(`Ollama connection failed: ${e.message}`, 'error');
-      }
+      } catch(e) {}
       ollamaAvailable = false;
       aiStatusSpan.innerHTML = "AI: Ollama offline &#9888;&#65039;";
       return false;
     }
     
     async function askOllama(promptText) {
-      debugLog(`askOllama() called with prompt: "${promptText}"`, 'info');
-      
       if (!ollamaAvailable) {
-        const fallbackMsg = "I need Ollama running locally! Please start 'ollama serve' and pull a model like llama3.2.";
+        const fallbackMsg = "I need Ollama running locally! Please start 'ollama serve'.";
         addChatMessage(`&#129501; Elf: ${fallbackMsg}`, false);
         return;
       }
@@ -795,7 +834,6 @@
       addChatMessage(`&#129501; Elf: thinking... &#129300;`, true, 'thinking-msg');
       
       try {
-        debugLog("Sending request to Ollama...", 'info');
         const response = await fetch(ollamaEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -812,24 +850,42 @@
         let reply = data.response || "Ho ho! I'm a bit busy decorating the tree!";
         reply = reply.trim();
         
-        debugLog(`Ollama reply: "${reply}"`, 'success');
-        
         const thinkingMsg = document.querySelector('.thinking-msg');
         if (thinkingMsg) thinkingMsg.remove();
         
         addChatMessage(`&#129501; Elf: ${reply}`, false);
         
-        // The room's character will speak this reply naturally
-        // Our audio monitoring will detect the speech and move the servo automatically
-        debugLog("Waiting for character to speak - audio monitor will detect and move servo", 'info');
+        // Start lipsync BEFORE speaking
+        await startAudioMonitoring();
+        
+        // Speak the reply
+        const utterance = new SpeechSynthesisUtterance(reply);
+        utterance.rate = 0.9;
+        utterance.pitch = 1.1;
+        
+        const voices = window.speechSynthesis.getVoices();
+        const elfVoice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Google') || v.name.includes('Zira')));
+        if (elfVoice) utterance.voice = elfVoice;
+        
+        utterance.onend = () => {
+          setTimeout(() => {
+            stopAudioMonitorLoop();
+          }, 300);
+        };
+        
+        utterance.onerror = () => {
+          stopAudioMonitorLoop();
+        };
+        
+        window.speechSynthesis.speak(utterance);
         
       } catch (error) {
-        debugLog(`Ollama error: ${error.message}`, 'error');
         const thinkingMsg = document.querySelector('.thinking-msg');
         if (thinkingMsg) thinkingMsg.remove();
         
         const errorMsg = "Oops! The workshop magic glitched. Please check if Ollama is running.";
         addChatMessage(`&#129501; Elf: ${errorMsg}`, false);
+        stopAudioMonitorLoop();
       }
     }
     
@@ -885,15 +941,14 @@
       return roomNum && !isNaN(roomNum) && roomNum > 0 ? roomNum : '50';
     }
     const ROOM_NUMBER = getRoomNumber();
-    document.getElementById('room-status').innerHTML = `&#127876; Room ${ROOM_NUMBER} | Audio Mirror Mode`;
+    document.getElementById('room-status').innerHTML = `&#127876; Room ${ROOM_NUMBER} | LOW LATENCY`;
     
     window.textureLoader = new THREE.TextureLoader();
     
     function init3D() {
-      debugLog("Initializing 3D scene...", 'info');
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.copy(FIXED_CAMERA_POSITION);
+      camera.position.copy(new THREE.Vector3(0, 4, 8));
       camera.lookAt(0, 1.8, 0);
       
       renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -918,7 +973,6 @@
       setTimeout(() => {
         const loadingDiv = document.getElementById('loading');
         if (loadingDiv) loadingDiv.style.display = 'none';
-        debugLog("3D scene loaded", 'success');
       }, 1500);
     }
     
@@ -971,8 +1025,7 @@
       const script = document.createElement('script');
       script.src = `universe/rooms/room${roomNumber}.js?v=${Date.now()}`;
       script.onload = () => {
-        debugLog(`Room ${roomNumber} script loaded`, 'success');
-        // Note: Audio monitoring will start when USB is connected, not here
+        console.log(`Room ${roomNumber} loaded`);
       };
       script.onerror = () => console.warn(`Room ${roomNumber} not found`);
       document.head.appendChild(script);
@@ -1003,9 +1056,11 @@
     
     // ========== INITIALIZATION ==========
     async function init() {
-      debugLog("========================================", 'info');
-      debugLog("PAGE INITIALIZATION - Audio Mirror Mode", 'success');
-      debugLog("========================================", 'info');
+      // Request microphone permission first to enumerate devices
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        await enumerateAudioDevices();
+      } catch(e) {}
       
       init3D();
       animate3D();
@@ -1019,18 +1074,19 @@
         if (e.key === 'Enter') sendUserMessage();
       });
       
+      audioSourceSelect.onchange = async () => {
+        if (audioMonitoringActive) {
+          await startAudioMonitoring();
+        }
+      };
+      
       window.addEventListener('keydown', (e) => {
         if (e.key.toLowerCase() === 'h') window.location.href = HOME_URL;
         if (e.key === 'Escape' && chatArea.style.display === 'block') chatArea.style.display = 'none';
       });
       
       debugAngleSpan.innerText = SERVO_CLOSED;
-      addChatMessage(`&#129501; Elf ready! Click "Connect Base Station" first. Then ask me anything - the servo will mirror my voice!`, false);
-      
-      debugLog("========================================", 'success');
-      debugLog("READY - Click 'Connect Base Station' to start", 'success');
-      debugLog("Audio monitoring will start automatically after USB connects", 'success');
-      debugLog("========================================", 'info');
+      addChatMessage(`&#129501; Elf ready! Connect Base Station first.`, false);
     }
     
     init();

@@ -70,6 +70,7 @@
       justify-content: center;
       gap: 12px;
       border-left: 3px solid #4caf50;
+      flex-wrap: wrap;
     }
     .status-led {
       width: 12px;
@@ -149,7 +150,7 @@
 <body>
 <div class="container">
   <h1>&#127908; VOICE &#8594; SERVO</h1>
-  <div class="subtitle">&#128266; 2-ESP32 REMOTE SYSTEM | Open: 100° | Closed: 180°</div>
+  <div class="subtitle">&#128266; 2-ESP32 REMOTE SYSTEM | Closed: 90° | Open: 180°</div>
   
   <div class="debug-panel" id="debugPanel">
     <div class="debug-line">&#128994; 2-ESP32 Remote System Ready</div>
@@ -165,7 +166,7 @@
 
   <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
   <div class="volume-value">&#128266; VOLUME: <span id="volumePercent">0</span>%</div>
-  <div class="angle-display">&#129463; SERVO: <span id="angleValue">180</span>°<br><span style="font-size:0.7rem;">(Remote Robot)</span></div>
+  <div class="angle-display">&#129463; SERVO: <span id="angleValue">90</span>°<br><span style="font-size:0.7rem;">(Remote Robot)</span></div>
 
   <div class="button-group">
     <button id="connectUsbBtn" class="btn-primary">&#128268; Connect to Base Station</button>
@@ -181,8 +182,11 @@
 </div>
 
 <script>
-  const SERVO_CLOSED = 180;
-  const SERVO_OPEN = 100;
+  // CORRECTED ANGLE VALUES
+  // Closed mouth = smaller angle (90°)
+  // Open mouth = larger angle (180°)
+  const SERVO_CLOSED = 70;   // Mouth closed
+  const SERVO_OPEN = 160;    // Mouth wide open
   
   // USB Serial connection to Base Station (ESP32 #1)
   let usbPort = null;
@@ -257,12 +261,15 @@
   }
   
   // ========== VOLUME TO ANGLE MAPPING ==========
+  // Higher volume = larger angle (more open)
   function volumeToAngle(volumePercent) {
+    // Boost quiet sounds for better response
     let mappedVolume;
     
     if (volumePercent === 0) {
       mappedVolume = 0;
     } else if (volumePercent < 15) {
+      // Boost quiet sounds significantly
       mappedVolume = Math.min(100, volumePercent * 3.5);
     } else if (volumePercent < 35) {
       mappedVolume = Math.min(100, volumePercent * 1.8);
@@ -272,21 +279,23 @@
       mappedVolume = 100;
     }
     
+    // Ensure minimum movement for any sound
     if (volumePercent > 3 && mappedVolume < 15) {
       mappedVolume = 15;
     }
     
     mappedVolume = Math.min(100, Math.max(0, mappedVolume));
     
-    let angle = SERVO_CLOSED - (mappedVolume * (SERVO_CLOSED - SERVO_OPEN) / 100);
-    return Math.min(SERVO_CLOSED, Math.max(SERVO_OPEN, Math.round(angle)));
+    // CORRECTED: Higher volume = larger angle (more open)
+    let angle = SERVO_CLOSED + (mappedVolume * (SERVO_OPEN - SERVO_CLOSED) / 100);
+    return Math.min(SERVO_OPEN, Math.max(SERVO_CLOSED, Math.round(angle)));
   }
   
   // Send command to Base Station (which forwards to Remote Robot)
   async function sendServoCommand(angle, isClosureCommand = false) {
     if (!usbConnected || !usbWriter) return false;
     
-    const clamped = Math.min(SERVO_CLOSED, Math.max(SERVO_OPEN, Math.round(angle)));
+    const clamped = Math.min(SERVO_OPEN, Math.max(SERVO_CLOSED, Math.round(angle)));
     // Format for Base Station: ANGLE:<angle>
     const command = `ANGLE:${clamped}\n`;
     
@@ -295,24 +304,11 @@
       currentServoAngle = clamped;
       angleDisplaySpan.innerText = clamped;
       if (isClosureCommand) {
-        addLog(`&#128274; Closure verification: Sent ${clamped}° to Base Station`);
+        addLog(`&#128274; Closure: Sent ${clamped}°`);
       }
       return true;
     } catch (err) {
       return false;
-    }
-  }
-  
-  // Function to ensure mouth is fully closed when silence detected
-  function ensureMouthClosed() {
-    if (!micActive) return;
-    
-    if (currentServoAngle !== SERVO_CLOSED) {
-      addLog(`&#128269; Mouth not fully closed (${currentServoAngle}°), sending closure commands...`);
-      // Send three closure commands to ensure it closes via Base Station
-      setTimeout(() => sendServoCommand(175, true), 0);
-      setTimeout(() => sendServoCommand(178, true), 200);
-      setTimeout(() => sendServoCommand(180, true), 500);
     }
   }
   
@@ -405,7 +401,6 @@
           const line = buffer.substring(0, newlineIndex).trim();
           buffer = buffer.substring(newlineIndex + 1);
           
-          // Parse Base Station responses
           if (line.includes('ROBOT_CONNECTED')) {
             robotConnected = true;
             robotStatusMsg.innerHTML = '&#129302; Remote Robot: &#9989; Connected';
@@ -419,16 +414,18 @@
             addLog('&#9888;&#65039; Remote Robot disconnected', true);
           }
           else if (line.includes('ECHO_RECEIVED')) {
-            addLog(`&#128225; Robot confirmed angle: ${line}`);
+            addLog(`&#128225; Robot confirmed: ${line}`);
           }
           else if (line.includes('VERIFY:MATCH')) {
             addLog(`&#9989; Remote robot verified position`);
           }
-          else if (line.includes('VERIFY:MISMATCH')) {
-            addLog(`&#9888;&#65039; ${line}`, true);
-          }
-          else if (line.length > 0 && !line.startsWith('SERVO') && !line.startsWith('&#9989;')) {
-            addLog(`&#128232; Base Station: ${line}`);
+          else if (line.length > 0 && !line.startsWith('SERVO')) {
+            // Only show important messages
+            if (line.includes('SENT_TO_ROBOT') || line.includes('MOVED')) {
+              // Silent - too verbose
+            } else {
+              addLog(`&#128225; Base Station: ${line}`);
+            }
           }
         }
       }
@@ -489,6 +486,7 @@
       }
     }
     
+    // Boost low volumes for better lip sync
     if (rawVolume > 0 && rawVolume < 20) {
       rawVolume = Math.min(100, rawVolume * 2.5);
     } else if (rawVolume >= 20 && rawVolume < 50) {
@@ -516,16 +514,6 @@
     if (targetAngle !== lastSentAngle) {
       sendServoCommand(targetAngle);
       lastSentAngle = targetAngle;
-    }
-    
-    if (!isActive && wasRecentlyActive && targetAngle === SERVO_CLOSED && currentServoAngle !== SERVO_CLOSED) {
-      if (!closureCheckTimer) {
-        closureCheckTimer = setTimeout(() => {
-          ensureMouthClosed();
-          closureCheckTimer = null;
-          wasRecentlyActive = false;
-        }, CLOSURE_DELAY);
-      }
     }
     
     animFrame = requestAnimationFrame(processAudio);
@@ -575,9 +563,8 @@
       wasRecentlyActive = false;
       lastSentAngle = SERVO_CLOSED;
       
-      addLog(`&#9989; Microphone active - Controlling Remote Robot via Base Station`);
-      addDebug(`Noise threshold: ${NOISE_FLOOR} - Background noise will NOT move servo`, 'success');
-      addDebug('Commands sent to Base Station &#8594; Remote Robot via WiFi', 'success');
+      addLog(`&#9989; Microphone active - Controlling Remote Robot`);
+      addDebug(`Voice range: ${SERVO_CLOSED}° (closed) to ${SERVO_OPEN}° (open)`, 'success');
       startMicBtn.disabled = true;
       stopMicBtn.disabled = false;
       
@@ -603,12 +590,10 @@
     volumeSpan.innerText = '0';
     
     sendServoCommand(SERVO_CLOSED);
-    setTimeout(() => sendServoCommand(SERVO_CLOSED, true), 100);
-    setTimeout(() => sendServoCommand(SERVO_CLOSED, true), 200);
     
     lastSentAngle = SERVO_CLOSED;
     
-    addLog(`&#128263; Microphone stopped - Remote Robot closing`);
+    addLog(`&#127908; Microphone stopped - Mouth closing`);
     startMicBtn.disabled = false;
     stopMicBtn.disabled = true;
   }
@@ -616,14 +601,14 @@
   // Test Sweep
   let sweepInterval = null;
   let sweepAngle = SERVO_CLOSED;
-  let sweepDir = -1;
+  let sweepDir = 1;
   
   function toggleSweep() {
     if (sweepInterval) {
       clearInterval(sweepInterval);
       sweepInterval = null;
-      addLog(`&#129514; Sweep stopped`);
-      testBtn.innerHTML = '&#128260; TEST SWEEP';
+      addLog(`&#9881;&#65039; Sweep stopped`);
+      testBtn.innerHTML = '&#9881;&#65039; TEST SWEEP';
       if (!micActive) sendServoCommand(SERVO_CLOSED);
     } else {
       if (!usbConnected) {
@@ -631,25 +616,25 @@
         return;
       }
       sweepAngle = SERVO_CLOSED;
-      sweepDir = -1;
-      addLog(`&#129514; Sweep: ${SERVO_CLOSED}° &#8596; ${SERVO_OPEN}° (Remote Robot)`);
+      sweepDir = 1;
+      addLog(`&#128260; Sweep: ${SERVO_CLOSED}° &#8596; ${SERVO_OPEN}° (Remote Robot)`);
       testBtn.innerHTML = '&#9209;&#65039; STOP SWEEP';
       
       sweepInterval = setInterval(() => {
-        sweepAngle += sweepDir * 5;
-        if (sweepAngle <= SERVO_OPEN) {
+        sweepAngle += sweepDir * 10;
+        if (sweepAngle >= SERVO_OPEN) {
           sweepAngle = SERVO_OPEN;
-          sweepDir = 1;
-        } else if (sweepAngle >= SERVO_CLOSED) {
-          sweepAngle = SERVO_CLOSED;
           sweepDir = -1;
+        } else if (sweepAngle <= SERVO_CLOSED) {
+          sweepAngle = SERVO_CLOSED;
+          sweepDir = 1;
         }
         sendServoCommand(sweepAngle);
         
-        let vol = ((SERVO_CLOSED - sweepAngle) / (SERVO_CLOSED - SERVO_OPEN)) * 100;
+        let vol = ((sweepAngle - SERVO_CLOSED) / (SERVO_OPEN - SERVO_CLOSED)) * 100;
         meterFill.style.width = Math.floor(vol) + '%';
         volumeSpan.innerText = Math.floor(vol);
-      }, 30);
+      }, 50);
     }
   }
   
@@ -663,7 +648,7 @@
       clearInterval(randomTestInterval);
       randomTestInterval = null;
       randomTestBtn.innerHTML = '&#127922; RANDOM 10 VALUES';
-      addLog(`&#129514; Random test stopped`);
+      addLog(`&#9881;&#65039; Random test stopped`);
       return;
     }
     
@@ -674,13 +659,12 @@
     
     randomValues = [];
     for (let i = 0; i < 10; i++) {
-      const randomAngle = Math.floor(Math.random() * (SERVO_CLOSED - SERVO_OPEN + 1) + SERVO_OPEN);
+      const randomAngle = Math.floor(Math.random() * (SERVO_OPEN - SERVO_CLOSED + 1) + SERVO_CLOSED);
       randomValues.push(randomAngle);
     }
     
     randomIndex = 0;
-    addLog(`&#127922; Starting random test: 10 values with large swings`);
-    addLog(`&#128202; Values: ${randomValues.join(', ')}`);
+    addLog(`&#127922; Random test: 10 values (${SERVO_CLOSED}° to ${SERVO_OPEN}°)`);
     randomTestBtn.innerHTML = '&#9209;&#65039; STOP RANDOM';
     
     sendRandomValue();
@@ -691,22 +675,22 @@
         clearInterval(randomTestInterval);
         randomTestInterval = null;
         randomTestBtn.innerHTML = '&#127922; RANDOM 10 VALUES';
-        addLog(`&#9989; Random test complete! Remote Robot at closed (${SERVO_CLOSED}°)`);
+        addLog(`&#9989; Random test complete!`);
         sendServoCommand(SERVO_CLOSED);
       } else {
         sendRandomValue();
       }
-    }, 400);
+    }, 500);
   }
   
   function sendRandomValue() {
     if (randomIndex < randomValues.length) {
       const angle = randomValues[randomIndex];
       sendServoCommand(angle);
-      const volPercent = ((SERVO_CLOSED - angle) / (SERVO_CLOSED - SERVO_OPEN)) * 100;
+      const volPercent = ((angle - SERVO_CLOSED) / (SERVO_OPEN - SERVO_CLOSED)) * 100;
       meterFill.style.width = Math.floor(volPercent) + '%';
       volumeSpan.innerText = Math.floor(volPercent);
-      addLog(`&#127922; Test ${randomIndex + 1}/10: Angle ${angle}°`);
+      addLog(`&#127922; Test ${randomIndex + 1}/10: ${angle}°`);
     }
   }
   
@@ -722,8 +706,8 @@
     currentServoAngle = SERVO_CLOSED;
     
     addDebug('2-ESP32 REMOTE SYSTEM ACTIVE', 'success');
+    addDebug(`Angle range: ${SERVO_CLOSED}° (closed) to ${SERVO_OPEN}° (open)`, 'success');
     addDebug('Connect USB to Base Station &#8594; Controls Remote Robot via WiFi', 'success');
-    addDebug('Click "Connect to Base Station" then "START MIC"', 'info');
   }
   
   window.addEventListener('beforeunload', () => {

@@ -149,7 +149,7 @@
 <body>
 <div class="container">
   <h1>&#127908; VOICE &#8594; SERVO</h1>
-  <div class="subtitle">&#128266; AGGRESSIVE RESPONSE | Open: 100° | Closed: 180°</div>
+  <div class="subtitle">&#128266; AGGRESSIVE RESPONSE | Closed: 70° | Open: 160°</div>
   
   <div class="debug-panel" id="debugPanel">
     <div class="debug-line">&#128994; Aggressive Voice Response Mode Active</div>
@@ -164,7 +164,7 @@
 
   <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
   <div class="volume-value">&#128266; VOLUME: <span id="volumePercent">0</span>%</div>
-  <div class="angle-display">&#129463; SERVO: <span id="angleValue">180</span>°</div>
+  <div class="angle-display">&#129463; SERVO: <span id="angleValue">70</span>°</div>
 
   <div class="button-group">
     <button id="connectUsbBtn" class="btn-primary">&#128268; Connect USB</button>
@@ -180,8 +180,11 @@
 </div>
 
 <script>
-  const SERVO_CLOSED = 180;
-  const SERVO_OPEN = 100;
+  // ============================================
+  // UPDATED ANGLES: Closed=70°, Open=160°
+  // ============================================
+  const SERVO_CLOSED = 70;    // Mouth fully closed
+  const SERVO_OPEN = 160;     // Mouth wide open
   
   // USB Serial connection
   let usbPort = null;
@@ -257,7 +260,8 @@
     while(logDiv.children.length > 50) logDiv.removeChild(logDiv.firstChild);
   }
   
-  // ========== VOLUME TO ANGLE MAPPING WITH NOISE GATE ==========
+  // ========== VOLUME TO ANGLE MAPPING - UPDATED FOR NEW RANGE ==========
+  // Higher volume = larger angle (more open)
   function volumeToAngle(volumePercent) {
     let mappedVolume;
     
@@ -279,15 +283,17 @@
     
     mappedVolume = Math.min(100, Math.max(0, mappedVolume));
     
-    let angle = SERVO_CLOSED - (mappedVolume * (SERVO_CLOSED - SERVO_OPEN) / 100);
-    return Math.min(SERVO_CLOSED, Math.max(SERVO_OPEN, Math.round(angle)));
+    // UPDATED: Higher volume = larger angle (SERVO_CLOSED + volume * range)
+    let angle = SERVO_CLOSED + (mappedVolume * (SERVO_OPEN - SERVO_CLOSED) / 100);
+    return Math.min(SERVO_OPEN, Math.max(SERVO_CLOSED, Math.round(angle)));
   }
   
   async function sendServoCommand(angle, isClosureCommand = false) {
     if (!usbConnected || !usbWriter) return false;
     
-    const clamped = Math.min(SERVO_CLOSED, Math.max(SERVO_OPEN, Math.round(angle)));
-    const command = `ANGLE:0:${clamped}\n`;
+    // UPDATED: Clamp between CLOSED and OPEN (CLOSED is smaller, OPEN is larger)
+    const clamped = Math.min(SERVO_OPEN, Math.max(SERVO_CLOSED, Math.round(angle)));
+    const command = `ANGLE:${clamped}\n`;
     
     try {
       await usbWriter.write(new TextEncoder().encode(command));
@@ -309,10 +315,10 @@
     // Check if current angle is not fully closed and volume is below threshold
     if (currentServoAngle !== SERVO_CLOSED) {
       addLog(`&#128269; Mouth not fully closed (${currentServoAngle}°), sending closure commands...`);
-      // Send two closure commands to ensure it closes
-      setTimeout(() => sendServoCommand(175, true), 0);
-      setTimeout(() => sendServoCommand(178, true), 200);
-      setTimeout(() => sendServoCommand(180, true), 500);
+      // Send closure commands to ensure it closes
+      setTimeout(() => sendServoCommand(SERVO_CLOSED, true), 0);
+      setTimeout(() => sendServoCommand(SERVO_CLOSED, true), 200);
+      setTimeout(() => sendServoCommand(SERVO_CLOSED, true), 500);
     }
   }
   
@@ -563,7 +569,7 @@
       
       addLog(`&#9989; Microphone active - CLOSURE VERIFICATION ENABLED`);
       addDebug(`Noise threshold: ${NOISE_FLOOR} - Background noise will NOT move servo`, 'success');
-      addDebug('Mouth will automatically verify closure when you stop speaking', 'success');
+      addDebug(`Servo range: ${SERVO_CLOSED}° (closed) to ${SERVO_OPEN}° (open)`, 'success');
       startMicBtn.disabled = true;
       stopMicBtn.disabled = false;
       
@@ -600,10 +606,10 @@
     stopMicBtn.disabled = true;
   }
   
-  // Test Sweep
+  // ========== TEST SWEEP - UPDATED FOR NEW ANGLE RANGE ==========
   let sweepInterval = null;
   let sweepAngle = SERVO_CLOSED;
-  let sweepDir = -1;
+  let sweepDir = 1;  // Start increasing from CLOSED to OPEN
   
   function toggleSweep() {
     if (sweepInterval) {
@@ -618,29 +624,30 @@
         return;
       }
       sweepAngle = SERVO_CLOSED;
-      sweepDir = -1;
+      sweepDir = 1;
       addLog(`&#128260; Sweep: ${SERVO_CLOSED}° &#8596; ${SERVO_OPEN}°`);
       testBtn.innerHTML = '&#9209;&#65039; STOP SWEEP';
       
       sweepInterval = setInterval(() => {
         sweepAngle += sweepDir * 5;
-        if (sweepAngle <= SERVO_OPEN) {
+        if (sweepAngle >= SERVO_OPEN) {
           sweepAngle = SERVO_OPEN;
-          sweepDir = 1;
-        } else if (sweepAngle >= SERVO_CLOSED) {
-          sweepAngle = SERVO_CLOSED;
           sweepDir = -1;
+        } else if (sweepAngle <= SERVO_CLOSED) {
+          sweepAngle = SERVO_CLOSED;
+          sweepDir = 1;
         }
         sendServoCommand(sweepAngle);
         
-        let vol = ((SERVO_CLOSED - sweepAngle) / (SERVO_CLOSED - SERVO_OPEN)) * 100;
+        // UPDATED: Calculate volume percentage from angle (higher angle = more open)
+        let vol = ((sweepAngle - SERVO_CLOSED) / (SERVO_OPEN - SERVO_CLOSED)) * 100;
         meterFill.style.width = Math.floor(vol) + '%';
         volumeSpan.innerText = Math.floor(vol);
       }, 30);
     }
   }
   
-  // ========== RANDOM 10 VALUES TEST ==========
+  // ========== RANDOM 10 VALUES TEST - UPDATED FOR NEW ANGLE RANGE ==========
   let randomTestInterval = null;
   let randomValues = [];
   let randomIndex = 0;
@@ -661,7 +668,8 @@
     
     randomValues = [];
     for (let i = 0; i < 10; i++) {
-      const randomAngle = Math.floor(Math.random() * (SERVO_CLOSED - SERVO_OPEN + 1) + SERVO_OPEN);
+      // UPDATED: Random angle between SERVO_CLOSED and SERVO_OPEN
+      const randomAngle = Math.floor(Math.random() * (SERVO_OPEN - SERVO_CLOSED + 1) + SERVO_CLOSED);
       randomValues.push(randomAngle);
     }
     
@@ -690,7 +698,8 @@
     if (randomIndex < randomValues.length) {
       const angle = randomValues[randomIndex];
       sendServoCommand(angle);
-      const volPercent = ((SERVO_CLOSED - angle) / (SERVO_CLOSED - SERVO_OPEN)) * 100;
+      // UPDATED: Calculate volume percentage from angle
+      const volPercent = ((angle - SERVO_CLOSED) / (SERVO_OPEN - SERVO_CLOSED)) * 100;
       meterFill.style.width = Math.floor(volPercent) + '%';
       volumeSpan.innerText = Math.floor(volPercent);
       addLog(`&#127922; Test ${randomIndex + 1}/10: Angle ${angle}°`);
@@ -709,6 +718,7 @@
     currentServoAngle = SERVO_CLOSED;
     
     addDebug('AGGRESSIVE VOICE RESPONSE MODE ACTIVE', 'success');
+    addDebug(`Servo range: ${SERVO_CLOSED}° (closed) to ${SERVO_OPEN}° (open)`, 'success');
     addDebug('CLOSURE VERIFICATION - Mouth will double-check closure when silent', 'success');
     addDebug('Click "Connect USB" then "START MIC"', 'info');
   }
