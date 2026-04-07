@@ -562,7 +562,7 @@ function formatDateTime($date) {
         }
         
         .quiz-icon {
-            aspect-ratio: 0.75 / 1;
+            aspect-ratio: 0.85 / 1;
             background: #F8F9FF;
             border-radius: 15px;
             display: flex;
@@ -678,7 +678,7 @@ function formatDateTime($date) {
         }
         
         .activity-icon {
-            aspect-ratio: 0.75 / 1;
+            aspect-ratio: 0.85 / 1;
             background: #F8F9FF;
             border-radius: 15px;
             display: flex;
@@ -708,7 +708,7 @@ function formatDateTime($date) {
         }
         
         .grading-icon {
-            aspect-ratio: 0.75 / 1;
+            aspect-ratio: 0.85 / 1;
             background: #F8F9FF;
             border-radius: 15px;
             display: flex;
@@ -943,7 +943,7 @@ function formatDateTime($date) {
         }
         
         .empty-icon {
-            aspect-ratio: 0.75 / 1;
+            aspect-ratio: 0.85 / 1;
             background: #F0F0F0;
             border-radius: 15px;
             display: flex;
