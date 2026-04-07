@@ -136,6 +136,79 @@ function getIntelligenceIcon($type) {
     return $icons[$type] ?? 'question-circle';
 }
 
+// Get virtual world icon (for combined display)
+function getVirtualWorldIcon($world) {
+    $icons = [
+        'zoo' => 'paw',
+        'museum' => 'landmark',
+        'forest' => 'tree',
+        'ocean' => 'water',
+        'farm' => 'tractor',
+        'space' => 'rocket',
+        'city' => 'city',
+        'arctic' => 'icicles'
+    ];
+    return $icons[$world] ?? 'globe';
+}
+
+// Get virtual world display name
+function getVirtualWorldName($world) {
+    $names = [
+        'zoo' => 'Zoo',
+        'museum' => 'Museum',
+        'forest' => 'Forest',
+        'ocean' => 'Ocean',
+        'farm' => 'Farm',
+        'space' => 'Space',
+        'city' => 'City',
+        'arctic' => 'Arctic'
+    ];
+    return $names[$world] ?? ucfirst($world);
+}
+
+// Get intelligence icon image for quizzes
+function getQuizIntelligenceImage($type) {
+    $imagePath = "images/mi-{$type}.png";
+    if (!file_exists($imagePath)) {
+        $imagePath = "images/default.jpg";
+    }
+    return $imagePath;
+}
+
+// Get intelligence icon image for activities
+function getActivityIntelligenceImage($type) {
+    $imagePath = "images/mi-{$type}.png";
+    if (!file_exists($imagePath)) {
+        $imagePath = "images/default.jpg";
+    }
+    return $imagePath;
+}
+
+// Get virtual world image path by reading virtual-world-selector.js
+function getVirtualWorldImage($worldName) {
+    $jsFile = 'virtual-world-selector.js';
+    if (!file_exists($jsFile)) {
+        return "images/default-world.jpg";
+    }
+    
+    $jsContent = file_get_contents($jsFile);
+    preg_match_all("/'([^']+)'\s*:\s*\{\s*name:\s*'([^']+)',\s*image:\s*'([^']+)',/", $jsContent, $matches, PREG_SET_ORDER);
+    
+    foreach ($matches as $match) {
+        $name = $match[2];
+        $image = $match[3];
+        
+        if ($name === $worldName) {
+            $imagePath = "images/" . $image;
+            if (file_exists($imagePath)) {
+                return $imagePath;
+            }
+        }
+    }
+    
+    return "images/default-world.jpg";
+}
+
 // Get activity type name
 function getActivityTypeName($type) {
     $names = [
@@ -177,21 +250,6 @@ function getWorldName($world) {
         'arctic' => 'Arctic'
     ];
     return $names[$world] ?? $world;
-}
-
-// Get world icon
-function getWorldIcon($world) {
-    $icons = [
-        'zoo' => 'paw',
-        'museum' => 'landmark',
-        'forest' => 'tree',
-        'ocean' => 'water',
-        'farm' => 'tractor',
-        'space' => 'rocket',
-        'city' => 'city',
-        'arctic' => 'icicles'
-    ];
-    return $icons[$world] ?? 'globe';
 }
 
 // Format date
@@ -238,11 +296,9 @@ function formatDateTime($date) {
             padding: 0px;
             min-height: 100vh;
             position: relative;
-            /* Fallback gradient background */
             background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
         }
         
-        /* Tiled semi-opaque image background */
         body::before {
             content: '';
             position: fixed;
@@ -253,8 +309,8 @@ function formatDateTime($date) {
             background-image: url('background-tile.jpg');
             background-repeat: repeat;
             background-size: 1980px 1080px;
-            opacity: 0.9; /* Full opacity for the image */
-            z-index: -1; /* Lower z-index than the overlay */
+            opacity: 0.9;
+            z-index: -1;
         }
 
         body::after {
@@ -264,12 +320,12 @@ function formatDateTime($date) {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(248, 249, 255, 0.3); /* Reduced from 0.85 to 0.3 */
-            z-index: -3; /* Higher z-index than the image */
+            background: rgba(248, 249, 255, 0.3);
+            z-index: -3;
         }
         
         .container {
-            max-width: 800px; /* SAME WIDTH AS create-quiz.php */
+            max-width: 800px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -305,14 +361,13 @@ function formatDateTime($date) {
 		}
 
 		.navbar .navbar-collapse {
-		    flex-grow: 0; /* Prevents it from taking up extra space */
+		    flex-grow: 0;
 		}        
 		
 	.bottom-buttons-container {
-	    margin-bottom: 30px !important; /* Adjust this value as needed */
+	    margin-bottom: 30px !important;
 	}
 
-        /* ===== MIEL BANNER ===== */
         .miel-banner-container {
             text-align: center;
             margin-bottom: 30px;
@@ -328,7 +383,6 @@ function formatDateTime($date) {
             display: block;
         }
         
-        /* ===== DASHBOARD HEADER ===== */
         .dashboard-header {
             text-align: center;
             margin-bottom: 25px;
@@ -369,7 +423,6 @@ function formatDateTime($date) {
             margin-top: -5px;
         }
         
-        /* ===== HORIZONTAL SECTIONS ===== */
         .horizontal-sections {
             display: flex;
             flex-direction: column;
@@ -377,7 +430,6 @@ function formatDateTime($date) {
             margin-bottom: 30px;
         }
         
-        /* ===== CARD STYLES (SAME AS create-quiz.php) ===== */
         .card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: var(--border-radius);
@@ -399,7 +451,6 @@ function formatDateTime($date) {
             gap: 10px;
         }
         
-        /* ===== PROFILE SECTION ===== */
         .profile-section {
             display: grid;
             grid-template-columns: auto 1fr;
@@ -471,13 +522,12 @@ function formatDateTime($date) {
             font-size: 1rem;
         }
         
-        /* ===== STATS SUMMARY ===== */
         .stats-summary {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 15px;
             margin-bottom: 20px;
-            margin-top: 30px; /* ADDED: Vertical space */
+            margin-top: 30px;
         }
         
         .stat-item {
@@ -500,7 +550,6 @@ function formatDateTime($date) {
             color: #666;
         }
         
-        /* ===== QUIZZES CREATED GRID ===== */
         .quiz-grid-section {
             width: 100%;
         }
@@ -508,26 +557,26 @@ function formatDateTime($date) {
         .quiz-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 1fr);
             gap: 15px;
             margin-bottom: 20px;
         }
         
         .quiz-icon {
-            aspect-ratio: 1/1;
+            aspect-ratio: 0.75 / 1;
             background: #F8F9FF;
             border-radius: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 15px;
+            justify-content: flex-start;
+            padding: 15px 12px;
             text-align: center;
             transition: all 0.3s;
             cursor: pointer;
             border: 3px solid #E0E0E0;
             position: relative;
             overflow: hidden;
+            min-height: 0;
         }
         
         .quiz-icon:hover {
@@ -552,33 +601,60 @@ function formatDateTime($date) {
             font-weight: bold;
         }
         
-        /* UPDATED: Thumbnail container for FULL RECTANGULAR images */
-        .thumbnail-container {
-            width: 60px;
-            height: 60px;
+        /* Combined icon container - Virtual World with MI badge overlay */
+        .combined-icon-container {
+            position: relative;
+            display: inline-block;
+            width: 80px;
+            height: 80px;
             margin-bottom: 8px;
+        }
+        
+        .virtual-world-icon {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            object-fit: cover;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border: 2px solid white;
+        }
+        
+        .mi-badge-overlay {
+            position: absolute;
+            bottom: -6px;
+            right: -6px;
+            width: 34px;
+            height: 34px;
+            background: white;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            border: 2px solid white;
+            overflow: hidden;
         }
         
-        .thumbnail-container img {
+        .mi-badge-overlay img {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover;
+            border-radius: 50%;
         }
         
         .icon-title {
             font-weight: bold;
             font-size: 0.9rem;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             color: var(--text-dark);
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            height: 2.4em;
+            min-height: 3.6em;
             line-height: 1.2em;
+            width: 100%;
+            margin-top: 5px;
         }
         
         .icon-stats {
@@ -594,24 +670,22 @@ function formatDateTime($date) {
             margin-top: 5px;
         }
         
-        /* ===== ACTIVITIES SECTION ===== */
         .activity-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 1fr);
             gap: 15px;
             margin-bottom: 20px;
         }
         
         .activity-icon {
-            aspect-ratio: 1/1;
+            aspect-ratio: 0.75 / 1;
             background: #F8F9FF;
             border-radius: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 15px;
+            justify-content: flex-start;
+            padding: 15px 12px;
             text-align: center;
             transition: all 0.3s;
             cursor: pointer;
@@ -626,24 +700,22 @@ function formatDateTime($date) {
             box-shadow: var(--shadow);
         }
         
-        /* ===== ACTIVITY GRADES SECTION ===== */
         .grading-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 1fr);
             gap: 15px;
             margin-bottom: 20px;
         }
         
         .grading-icon {
-            aspect-ratio: 1/1;
+            aspect-ratio: 0.75 / 1;
             background: #F8F9FF;
             border-radius: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 15px;
+            justify-content: flex-start;
+            padding: 15px 12px;
             text-align: center;
             transition: all 0.3s;
             cursor: pointer;
@@ -689,7 +761,6 @@ function formatDateTime($date) {
             color: #4CAF50;
         }
         
-        /* ===== SCORES SECTION ===== */
         .scores-section {
             width: 100%;
         }
@@ -749,7 +820,6 @@ function formatDateTime($date) {
             color: #666;
         }
         
-        /* ===== ACTION BUTTONS CONTAINER ===== */
         .action-buttons {
             display: flex;
             gap: 15px;
@@ -758,8 +828,6 @@ function formatDateTime($date) {
             flex-wrap: wrap;
         }
         
-        /* ===== STANDARDIZED BUTTON STYLES ===== */
-        /* Blue functional buttons -> Yellow on hover */
         .action-btn {
             flex: 0 0 auto;
             padding: 12px 25px;
@@ -775,16 +843,15 @@ function formatDateTime($date) {
             font-size: 1.2rem;
             text-decoration: none;
             color: white;
-            background-color: #4A90E2 !important; /* BLUE for functional buttons */
+            background-color: #4A90E2 !important;
         }
         
         .action-btn:hover {
-            background-color: #FFD166 !important; /* YELLOW on hover */
+            background-color: #FFD166 !important;
             transform: translateY(-3px);
             color: #2C3E50 !important;
         }
         
-        /* Orange button for grading */
         .orange-btn {
             background-color: #FF9800 !important;
             color: white !important;
@@ -795,21 +862,19 @@ function formatDateTime($date) {
             transform: translateY(-3px);
         }
         
-        /* Override specific button colors to be blue */
         .action-btn-primary,
         .action-btn-success,
         .action-btn-warning {
-            background-color: #4A90E2 !important; /* All functional buttons BLUE */
+            background-color: #4A90E2 !important;
         }
         
         .action-btn-primary:hover,
         .action-btn-success:hover,
         .action-btn-warning:hover {
-            background-color: #FFD166 !important; /* All functional buttons YELLOW on hover */
+            background-color: #FFD166 !important;
             color: #2C3E50 !important;
         }
         
-        /* ===== BOTTOM BUTTONS CONTAINER ===== */
         .bottom-buttons-container {
             display: flex;
             justify-content: center;
@@ -823,7 +888,6 @@ function formatDateTime($date) {
             border: 2px solid rgba(255, 255, 255, 0.8);
         }
         
-        /* Green button for "Back to Dashboard" */
         .green-btn {
             background-color: #50C878 !important;
             color: white !important;
@@ -846,7 +910,6 @@ function formatDateTime($date) {
             transform: translateY(-3px) !important;
         }
         
-        /* Red button for logout */
         .red-btn {
             background-color: #FF6B6B !important;
             color: white !important;
@@ -869,21 +932,18 @@ function formatDateTime($date) {
             transform: translateY(-3px) !important;
         }
         
-        /* Hide original logout section */
         .logout-section {
             display: none !important;
         }
         
-        /* ===== EMPTY STATES ===== */
         .empty-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 1fr);
             gap: 15px;
         }
         
         .empty-icon {
-            aspect-ratio: 1/1;
+            aspect-ratio: 0.75 / 1;
             background: #F0F0F0;
             border-radius: 15px;
             display: flex;
@@ -923,7 +983,6 @@ function formatDateTime($date) {
             color: #DDD;
         }
         
-        /* ===== BADGES ===== */
         .badge {
             display: inline-block;
             padding: 4px 12px;
@@ -958,7 +1017,25 @@ function formatDateTime($date) {
             color: white;
         }
         
-        /* ===== MOBILE RESPONSIVE (SAME AS create-quiz.php) ===== */
+        .no-scores, .no-grades {
+            font-size: 0.8rem;
+            text-align: center;
+            width: 100%;
+            height: 1.2em;
+            color: #999;
+            font-style: italic;
+        }
+        
+        .activity-grade {
+            margin-top: 5px;
+            font-size: 0.9rem;
+            text-align: center;
+            width: 100%;
+            height: 1.2em;
+            color: var(--secondary-green);
+            font-weight: bold;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -982,7 +1059,6 @@ function formatDateTime($date) {
             .grading-grid,
             .empty-grid {
                 grid-template-columns: repeat(2, 1fr);
-                grid-template-rows: repeat(4, 1fr);
             }
             
             .profile-section {
@@ -1014,7 +1090,6 @@ function formatDateTime($date) {
                 width: 100%;
             }
             
-            /* Bottom buttons on mobile */
             .bottom-buttons-container {
                 flex-direction: column;
                 gap: 10px;
@@ -1026,6 +1101,18 @@ function formatDateTime($date) {
                 width: 100%;
                 justify-content: center;
             }
+            
+            .combined-icon-container {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .mi-badge-overlay {
+                width: 30px;
+                height: 30px;
+                bottom: -5px;
+                right: -5px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -1034,7 +1121,6 @@ function formatDateTime($date) {
             .grading-grid,
             .empty-grid {
                 grid-template-columns: repeat(2, 1fr);
-                grid-template-rows: repeat(4, 1fr);
             }
             
             .stats-summary {
@@ -1042,7 +1128,6 @@ function formatDateTime($date) {
             }
         }
         
-        /* ===== ANIMATIONS (SAME AS create-quiz.php) ===== */
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
@@ -1082,7 +1167,6 @@ function formatDateTime($date) {
             animation: rainbow 3s ease infinite;
         }
         
-        /* ===== SCROLLBAR ===== */
         .score-list::-webkit-scrollbar {
             width: 8px;
         }
@@ -1097,14 +1181,12 @@ function formatDateTime($date) {
             border-radius: 10px;
         }
         
-        /* ===== SECTION MARGINS ===== */
         .section-divider {
             height: 20px;
         }
     </style>
 </head>
 <body>
-    <!-- ARVILLE NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
             <a class="navbar-brand" href="../index.php">
@@ -1124,28 +1206,23 @@ function formatDateTime($date) {
         </div>
     </nav>
 
-    <!-- MIEL BANNER IMAGE -->
     <div class="miel-banner-container fade-in">
         <img src="miel-banner.png" alt="MIEL - Multiple Intelligence Experiential Learning System" class="miel-banner">
     </div>
 
     <div class="container">
-        <!-- DASHBOARD HEADER -->
-<header class="dashboard-header fade-in">
-    <div class="logo">
- 
-        <div>
-            <!-- Replace text title with image -->
-            <img src="images/teacher-dashboard.jpg" alt="Teacher Dashboard" style="max-width: 550px; height: auto;">
-            <p class="subtitle">Manage Your Quizzes, Activities & Track Student Progress</p>
-        </div>
-    </div>
-    <div class="welcome-message">
-        Welcome back, Teacher <strong><?php echo htmlspecialchars($teacher['full_name']); ?></strong>!
-    </div>
-</header>
+        <header class="dashboard-header fade-in">
+            <div class="logo">
+                <div>
+                    <img src="images/teacher-dashboard.jpg" alt="Teacher Dashboard" style="max-width: 550px; height: auto;">
+                    <p class="subtitle">Manage Your Quizzes, Activities & Track Student Progress</p>
+                </div>
+            </div>
+            <div class="welcome-message">
+                Welcome back, Teacher <strong><?php echo htmlspecialchars($teacher['full_name']); ?></strong>!
+            </div>
+        </header>
 
-        <!-- HORIZONTAL SECTIONS -->
         <div class="horizontal-sections">
             <!-- PROFILE SECTION -->
             <div class="card fade-in">
@@ -1201,7 +1278,6 @@ function formatDateTime($date) {
                     </div>
                 </div>
                 
-                <!-- STATS SUMMARY -->
                 <div class="stats-summary">
                     <div class="stat-item">
                         <div class="stat-value"><?php echo $stats['total_quizzes'] ?? 0; ?></div>
@@ -1220,375 +1296,321 @@ function formatDateTime($date) {
                         <div class="stat-label">Avg. Score</div>
                     </div>
                 </div>
-                
             </div>
 
-
-<!-- QUIZZES CREATED SECTION -->
-<div class="card fade-in">
-    <h2 class="card-title">
-        <i class="fas fa-clipboard-list"></i> My Quizzes
-        <span class="badge badge-primary"><?php echo count($teacherQuizzes); ?></span>
-    </h2>
-    
-    <div class="quiz-grid-section">
-        <div class="quiz-grid">
-            <?php if (empty($teacherQuizzes)): ?>
-                <!-- Show 8 empty placeholders -->
-                <?php for ($i = 1; $i <= 8; $i++): ?>
-                <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
-                    <i class="fas fa-plus-circle"></i>
-                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
-                        Create Quiz <?php echo $i; ?>
-                    </div>
-                </div>
-                <?php endfor; ?>
-            <?php else: ?>
-                <?php 
-                // Show up to 8 quizzes
-                $displayQuizzes = array_slice($teacherQuizzes, 0, 8);
-                $quizCount = 0;
-                ?>
-                <?php foreach ($displayQuizzes as $quiz): $quizCount++; 
-                    // Determine which intelligence icon to show
-                    $intelligenceType = $quiz['intelligence_type'];
-                    $iconImage = "images/quiz-{$intelligenceType}.png";
-                    $defaultIcon = "images/default.jpg";
-                    
-                    // Check if image exists, otherwise use default
-                    $quizIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
-                ?>
-                <div class="quiz-icon" onclick="viewQuiz(<?php echo $quiz['id']; ?>)">
-                    <div class="icon-badge"><?php echo $quizCount; ?></div>
-                    <!-- Show intelligence type image - FULL RECTANGULAR -->
-                    <div class="thumbnail-container">
-                        <img src="<?php echo $quizIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
-                    </div>
-                    <div class="icon-title" style="text-align: center; width: 100%; padding: 0 5px; height: 2.8em; display: flex; align-items: center; justify-content: center; line-height: 1.2;">
-                        <?php echo htmlspecialchars(substr($quiz['title'], 0, 30)); ?>
-                        <?php if (strlen($quiz['title']) > 30): ?>...<?php endif; ?>
-                    </div>
-                </div>
-                <?php endforeach; ?>
+            <!-- MY QUIZZES SECTION -->
+            <div class="card fade-in">
+                <h2 class="card-title">
+                    <i class="fas fa-clipboard-list"></i> My Quizzes
+                    <span class="badge badge-primary"><?php echo count($teacherQuizzes); ?></span>
+                </h2>
                 
-                <?php // Fill remaining slots with placeholders ?>
-                <?php for ($i = $quizCount + 1; $i <= 8; $i++): ?>
-                <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
-                    <i class="fas fa-plus-circle"></i>
-                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
-                        Create New Quiz
+                <div class="quiz-grid-section">
+                    <div class="quiz-grid">
+                        <?php if (empty($teacherQuizzes)): ?>
+                            <?php for ($i = 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
+                                <i class="fas fa-plus-circle"></i>
+                                <div class="empty-text">Create Quiz</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php else: ?>
+                            <?php 
+                            $displayQuizzes = array_slice($teacherQuizzes, 0, 8);
+                            $quizCount = 0;
+                            ?>
+                            <?php foreach ($displayQuizzes as $quiz): $quizCount++; 
+                                $intelligenceType = $quiz['intelligence_type'];
+                                $virtualWorld = $quiz['virtual_world'] ?? 'zoo';
+                                $worldImage = getVirtualWorldImage($virtualWorld);
+                                $intelligenceImage = getQuizIntelligenceImage($intelligenceType);
+                            ?>
+                            <div class="quiz-icon" onclick="viewQuiz(<?php echo $quiz['id']; ?>)">
+                                <div class="icon-badge"><?php echo $quizCount; ?></div>
+                                <div class="combined-icon-container">
+                                    <img src="<?php echo $worldImage; ?>" alt="<?php echo getVirtualWorldName($virtualWorld); ?>" class="virtual-world-icon">
+                                    <div class="mi-badge-overlay">
+                                        <img src="<?php echo $intelligenceImage; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
+                                    </div>
+                                </div>
+                                <div class="icon-title">
+                                    <?php echo htmlspecialchars($quiz['title']); ?>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                            
+                            <?php for ($i = $quizCount + 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
+                                <i class="fas fa-plus-circle"></i>
+                                <div class="empty-text">Create Quiz</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php endif; ?>
                     </div>
-                </div>
-                <?php endfor; ?>
-            <?php endif; ?>
-        </div>
-        
-        <div class="action-buttons">
-            <?php if (!empty($teacherQuizzes)): ?>
-            <a href="add-questions.php" class="action-btn">
-                <i class="fas fa-question-circle"></i> Add Questions
-            </a>
-            <?php else: ?>
-            <a href="create-quiz.php" class="action-btn">
-                <i class="fas fa-question-circle"></i> Add Questions
-            </a>
-            <?php endif; ?>
-            
-            <a href="create-quiz.php" class="action-btn">
-                <i class="fas fa-plus-circle"></i> Create New Quiz
-            </a>
-        </div>
-    </div>
-</div>
-
-<!-- MY ACTIVITIES SECTION -->
-<div class="card fade-in">
-    <h2 class="card-title">
-        <i class="fas fa-tasks"></i> My Activities
-        <span class="badge badge-purple"><?php echo count($teacherActivities); ?></span>
-    </h2>
-    
-    <div class="quiz-grid-section">
-        <div class="activity-grid">
-            <?php if (empty($teacherActivities)): ?>
-                <!-- Show 8 empty placeholders for activities -->
-                <?php for ($i = 1; $i <= 8; $i++): ?>
-                <div class="empty-icon" onclick="window.location.href='create-activity.php'">
-                    <i class="fas fa-plus-circle"></i>
-                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
-                        Create Activity <?php echo $i; ?>
-                    </div>
-                </div>
-                <?php endfor; ?>
-            <?php else: ?>
-                <?php 
-                // Show up to 8 activities
-                $displayActivities = array_slice($teacherActivities, 0, 8);
-                $activityCount = 0;
-                
-                // Get average grades for activities
-                $activityGrades = [];
-                foreach ($displayActivities as $activity) {
-                    $gradeStmt = $pdo->prepare("
-                        SELECT AVG(ag.points_earned) as avg_grade, 
-                               COUNT(DISTINCT ag.student_id) as graded_count
-                        FROM activity_grades ag 
-                        WHERE ag.activity_id = ? AND ag.points_earned IS NOT NULL
-                    ");
-                    $gradeStmt->execute([$activity['id']]);
-                    $gradeData = $gradeStmt->fetch(PDO::FETCH_ASSOC);
-                    $activityGrades[$activity['id']] = $gradeData;
-                }
-                ?>
-                <?php foreach ($displayActivities as $activity): $activityCount++; 
-                    // Determine which intelligence icon to show
-                    $intelligenceType = $activity['intelligence_type'];
-                    $iconImage = "images/activity-{$intelligenceType}.png";
-                    $defaultIcon = "images/default.jpg";
                     
-                    // Check if image exists, otherwise use default
-                    $activityIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
-                    
-                    // Get grade data for this activity
-                    $gradeData = $activityGrades[$activity['id']] ?? null;
-                    $avgGrade = $gradeData['avg_grade'] ?? null;
-                    $gradedCount = $gradeData['graded_count'] ?? 0;
-                ?>
-                <div class="activity-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)">
-                    <div class="icon-badge"><?php echo $activityCount; ?></div>
-                    <!-- Show intelligence type image - FULL RECTANGULAR -->
-                    <div class="thumbnail-container">
-                        <img src="<?php echo $activityIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
-                    </div>
-                    <div class="icon-title" style="text-align: center; width: 100%; padding: 0 5px; height: 2.8em; display: flex; align-items: center; justify-content: center; line-height: 1.2;">
-                        <?php echo htmlspecialchars(substr($activity['title'], 0, 30)); ?>
-                        <?php if (strlen($activity['title']) > 30): ?>...<?php endif; ?>
+                    <div class="action-buttons">
+                        <?php if (!empty($teacherQuizzes)): ?>
+                        <a href="add-questions.php" class="action-btn">
+                            <i class="fas fa-question-circle"></i> Add Questions
+                        </a>
+                        <?php else: ?>
+                        <a href="create-quiz.php" class="action-btn">
+                            <i class="fas fa-question-circle"></i> Add Questions
+                        </a>
+                        <?php endif; ?>
+                        
+                        <a href="create-quiz.php" class="action-btn">
+                            <i class="fas fa-plus-circle"></i> Create New Quiz
+                        </a>
                     </div>
                 </div>
-                <?php endforeach; ?>
-                
-                <?php // Fill remaining slots with placeholders ?>
-                <?php for ($i = $activityCount + 1; $i <= 8; $i++): ?>
-                <div class="empty-icon" onclick="window.location.href='create-activity.php'">
-                    <i class="fas fa-plus-circle"></i>
-                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
-                        Create New Activity
-                    </div>
-                </div>
-                <?php endfor; ?>
-            <?php endif; ?>
-        </div>
-        
-        <div class="action-buttons">
-            <a href="create-activity.php" class="action-btn">
-                <i class="fas fa-plus-circle"></i> Create New Activity
-            </a>
-        </div>
-    </div>
-</div>
+            </div>
 
-<!-- STUDENT QUIZ SCORES SECTION -->
-<div class="card fade-in">
-    <h2 class="card-title">
-        <i class="fas fa-chart-line"></i> Student Quiz Scores
-        <span class="badge badge-primary"><?php echo count($teacherQuizzes); ?> quizzes</span>
-    </h2>
-    
-    <div class="quiz-grid-section">
-        <div class="quiz-grid">
-            <?php if (empty($teacherQuizzes)): ?>
-                <!-- Show 8 empty placeholders -->
-                <?php for ($i = 1; $i <= 8; $i++): ?>
-                <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
-                    <i class="fas fa-plus-circle"></i>
-                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
-                        Create Quiz <?php echo $i; ?>
-                    </div>
-                </div>
-                <?php endfor; ?>
-            <?php else: ?>
-                <?php 
-                // Show up to 8 quizzes for viewing scores
-                $displayQuizScores = array_slice($teacherQuizzes, 0, 8);
-                $scoreQuizCount = 0;
-                ?>
-                <?php foreach ($displayQuizScores as $quiz): $scoreQuizCount++; 
-                    // Determine which intelligence icon to show
-                    $intelligenceType = $quiz['intelligence_type'];
-                    $iconImage = "images/quiz-{$intelligenceType}.png";
-                    $defaultIcon = "images/default.jpg";
-                    
-                    // Check if image exists, otherwise use default
-                    $quizIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
-                ?>
-                <div class="quiz-icon" onclick="window.location.href='quiz-scores.php?quiz_id=<?php echo $quiz['id']; ?>'">
-                    <div class="icon-badge"><?php echo $scoreQuizCount; ?></div>
-                    <!-- Show intelligence type image - FULL RECTANGULAR -->
-                    <div class="thumbnail-container">
-                        <img src="<?php echo $quizIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
-                    </div>
-                    <div class="icon-title" style="text-align: center; width: 100%; padding: 0 5px; height: 2.8em; display: flex; align-items: center; justify-content: center; line-height: 1.2;">
-                        <?php echo htmlspecialchars(substr($quiz['title'], 0, 30)); ?>
-                        <?php if (strlen($quiz['title']) > 30): ?>...<?php endif; ?>
-                    </div>
-                    <?php if ($quiz['attempt_count'] > 0): ?>
-                    <div class="icon-score" style="margin-top: 5px; font-size: 0.9rem; text-align: center; width: 100%; height: 1.2em; color: var(--secondary-green);">
-                        <?php echo number_format($quiz['avg_score'], 1); ?>% Average
-                    </div>
-                    <?php else: ?>
-                    <!-- Show "No Scores Yet" instead of blank space -->
-                    <div class="no-scores" style="margin-top: 5px; font-size: 0.8rem; text-align: center; width: 100%; height: 1.2em; color: #999; font-style: italic;">
-                        No Scores Yet
-                    </div>
-                    <?php endif; ?>
-                </div>
-                <?php endforeach; ?>
+            <!-- MY ACTIVITIES SECTION -->
+            <div class="card fade-in">
+                <h2 class="card-title">
+                    <i class="fas fa-tasks"></i> My Activities
+                    <span class="badge badge-purple"><?php echo count($teacherActivities); ?></span>
+                </h2>
                 
-                <?php // Fill remaining slots with placeholders ?>
-                <?php for ($i = $scoreQuizCount + 1; $i <= 8; $i++): ?>
-                <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
-                    <i class="fas fa-plus-circle"></i>
-                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
-                        Create New Quiz
+                <div class="quiz-grid-section">
+                    <div class="activity-grid">
+                        <?php if (empty($teacherActivities)): ?>
+                            <?php for ($i = 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                                <i class="fas fa-plus-circle"></i>
+                                <div class="empty-text">Create Activity</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php else: ?>
+                            <?php 
+                            $displayActivities = array_slice($teacherActivities, 0, 8);
+                            $activityCount = 0;
+                            
+                            $activityGrades = [];
+                            foreach ($displayActivities as $activity) {
+                                $gradeStmt = $pdo->prepare("
+                                    SELECT AVG(ag.points_earned) as avg_grade, 
+                                           COUNT(DISTINCT ag.student_id) as graded_count
+                                    FROM activity_grades ag 
+                                    WHERE ag.activity_id = ? AND ag.points_earned IS NOT NULL
+                                ");
+                                $gradeStmt->execute([$activity['id']]);
+                                $gradeData = $gradeStmt->fetch(PDO::FETCH_ASSOC);
+                                $activityGrades[$activity['id']] = $gradeData;
+                            }
+                            ?>
+                            <?php foreach ($displayActivities as $activity): $activityCount++; 
+                                $intelligenceType = $activity['intelligence_type'];
+                                $virtualWorld = $activity['virtual_world'] ?? 'zoo';
+                                $worldImage = getVirtualWorldImage($virtualWorld);
+                                $intelligenceImage = getActivityIntelligenceImage($intelligenceType);
+                                
+                                $gradeData = $activityGrades[$activity['id']] ?? null;
+                                $avgGrade = $gradeData['avg_grade'] ?? null;
+                            ?>
+                            <div class="activity-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)">
+                                <div class="icon-badge"><?php echo $activityCount; ?></div>
+                                <div class="combined-icon-container">
+                                    <img src="<?php echo $worldImage; ?>" alt="<?php echo getVirtualWorldName($virtualWorld); ?>" class="virtual-world-icon">
+                                    <div class="mi-badge-overlay">
+                                        <img src="<?php echo $intelligenceImage; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
+                                    </div>
+                                </div>
+                                <div class="icon-title">
+                                    <?php echo htmlspecialchars($activity['title']); ?>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                            
+                            <?php for ($i = $activityCount + 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                                <i class="fas fa-plus-circle"></i>
+                                <div class="empty-text">Create Activity</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php endif; ?>
                     </div>
-                </div>
-                <?php endfor; ?>
-            <?php endif; ?>
-        </div>
-        
-        <div class="action-buttons">
-            <button class="action-btn" onclick="exportQuizScores()">
-                <i class="fas fa-download"></i> Export All Quiz Scores
-            </button>
-        </div>
-    </div>
-</div>
-
-
-<!-- ACTIVITY GRADES SECTION (Renamed from Activities to Grade) -->
-<div class="card fade-in">
-    <h2 class="card-title">
-        <i class="fas fa-check-double"></i> Activity Grades
-    </h2>
-    
-    <div class="quiz-grid-section">
-        <div class="grading-grid">
-            <?php if (empty($activitiesToGrade)): ?>
-                <!-- Show 8 empty placeholders -->
-                <?php for ($i = 1; $i <= 8; $i++): ?>
-                <div class="empty-icon" onclick="window.location.href='create-activity.php'">
-                    <i class="fas fa-check-circle"></i>
-                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
-                        No activities yet
-                    </div>
-                </div>
-                <?php endfor; ?>
-            <?php else: ?>
-                <?php 
-                // Show up to 8 activities for grading
-                $displayGradingIcons = array_slice($activitiesToGrade, 0, 8);
-                $gradingCount = 0;
-                
-                // Get average grades for these activities too
-                $gradingGrades = [];
-                foreach ($displayGradingIcons as $activity) {
-                    $gradeStmt = $pdo->prepare("
-                        SELECT AVG(ag.points_earned) as avg_grade, 
-                               COUNT(DISTINCT ag.student_id) as graded_count
-                        FROM activity_grades ag 
-                        WHERE ag.activity_id = ? AND ag.points_earned IS NOT NULL
-                    ");
-                    $gradeStmt->execute([$activity['id']]);
-                    $gradeData = $gradeStmt->fetch(PDO::FETCH_ASSOC);
-                    $gradingGrades[$activity['id']] = $gradeData;
-                }
-                ?>
-                <?php foreach ($displayGradingIcons as $activity): $gradingCount++; 
-                    // Determine which intelligence icon to show
-                    $intelligenceType = $activity['intelligence_type'];
-                    $iconImage = "images/activity-{$intelligenceType}.png";
-                    $defaultIcon = "images/default.jpg";
                     
-                    // Check if image exists, otherwise use default
-                    $activityIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
-                    
-                    // Get grade data for this activity
-                    $gradeData = $gradingGrades[$activity['id']] ?? null;
-                    $avgGrade = $gradeData['avg_grade'] ?? null;
-                    $gradedCount = $gradeData['graded_count'] ?? 0;
-                ?>
-                <div class="grading-icon" onclick="window.location.href='grade-activity.php?activity_id=<?php echo $activity['id']; ?>'">
-                    <?php if ($activity['students_to_grade'] > 0): ?>
-                    <div class="grading-badge pulse"><?php echo $activity['students_to_grade']; ?></div>
-                    <?php endif; ?>
-                    <!-- Show intelligence type image - FULL RECTANGULAR -->
-                    <div class="thumbnail-container">
-                        <img src="<?php echo $activityIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
-                    </div>
-                    <div class="icon-title" style="text-align: center; width: 100%; padding: 0 5px; height: 2.8em; display: flex; align-items: center; justify-content: center; line-height: 1.2;">
-                        <?php echo htmlspecialchars(substr($activity['title'], 0, 30)); ?>
-                        <?php if (strlen($activity['title']) > 30): ?>...<?php endif; ?>
-                    </div>
-                    <?php if ($gradedCount > 0 && $avgGrade !== null): ?>
-                    <div class="activity-grade" style="margin-top: 5px; font-size: 0.9rem; text-align: center; width: 100%; height: 1.2em; color: var(--secondary-green); font-weight: bold;">
-                        <?php echo number_format($avgGrade, 1); ?>% Average
-                    </div>
-                    <?php else: ?>
-                    <!-- Show "No Grades Yet" -->
-                    <div class="no-grades" style="margin-top: 5px; font-size: 0.8rem; text-align: center; width: 100%; height: 1.2em; color: #999; font-style: italic;">
-                        No Grades Yet
-                    </div>
-                    <?php endif; ?>
-                </div>
-                <?php endforeach; ?>
-                
-                <?php // Fill remaining slots ?>
-                <?php for ($i = $gradingCount + 1; $i <= 8; $i++): ?>
-                <div class="empty-icon" onclick="window.location.href='create-activity.php'">
-                    <i class="fas fa-check-circle"></i>
-                    <div class="empty-text" style="text-align: center; height: 2.8em; display: flex; align-items: center; justify-content: center;">
-                        Create Activity
+                    <div class="action-buttons">
+                        <a href="create-activity.php" class="action-btn">
+                            <i class="fas fa-plus-circle"></i> Create New Activity
+                        </a>
                     </div>
                 </div>
-                <?php endfor; ?>
-            <?php endif; ?>
-        </div>
-        
-        <div class="action-buttons">
-            <button class="action-btn" onclick="viewAllActivities()">
-                <i class="fas fa-list"></i> Export All Activity Grades
-            </button>
-        </div>
-    </div>
-</div>
+            </div>
 
-        <!-- BOTTOM BUTTONS -->
-        <div class="bottom-buttons-container fade-in">
-            <form method="POST" action="teacher-dashboard.php" style="display: inline;">
-                <button type="submit" name="logout" class="red-btn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </form>
+            <!-- STUDENT QUIZ SCORES SECTION -->
+            <div class="card fade-in">
+                <h2 class="card-title">
+                    <i class="fas fa-chart-line"></i> Student Quiz Scores
+                    <span class="badge badge-primary"><?php echo count($teacherQuizzes); ?> quizzes</span>
+                </h2>
+                
+                <div class="quiz-grid-section">
+                    <div class="quiz-grid">
+                        <?php if (empty($teacherQuizzes)): ?>
+                            <?php for ($i = 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
+                                <i class="fas fa-plus-circle"></i>
+                                <div class="empty-text">Create Quiz</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php else: ?>
+                            <?php 
+                            $displayQuizScores = array_slice($teacherQuizzes, 0, 8);
+                            $scoreQuizCount = 0;
+                            ?>
+                            <?php foreach ($displayQuizScores as $quiz): $scoreQuizCount++; 
+                                $intelligenceType = $quiz['intelligence_type'];
+                                $virtualWorld = $quiz['virtual_world'] ?? 'zoo';
+                                $worldImage = getVirtualWorldImage($virtualWorld);
+                                $intelligenceImage = getQuizIntelligenceImage($intelligenceType);
+                            ?>
+                            <div class="quiz-icon" onclick="window.location.href='quiz-scores.php?quiz_id=<?php echo $quiz['id']; ?>'">
+                                <div class="icon-badge"><?php echo $scoreQuizCount; ?></div>
+                                <div class="combined-icon-container">
+                                    <img src="<?php echo $worldImage; ?>" alt="<?php echo getVirtualWorldName($virtualWorld); ?>" class="virtual-world-icon">
+                                    <div class="mi-badge-overlay">
+                                        <img src="<?php echo $intelligenceImage; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
+                                    </div>
+                                </div>
+                                <div class="icon-title">
+                                    <?php echo htmlspecialchars($quiz['title']); ?>
+                                </div>
+                                <?php if ($quiz['attempt_count'] > 0): ?>
+                                <div class="icon-score">
+                                    <?php echo number_format($quiz['avg_score'], 1); ?>% Average
+                                </div>
+                                <?php else: ?>
+                                <div class="no-scores">No Scores Yet</div>
+                                <?php endif; ?>
+                            </div>
+                            <?php endforeach; ?>
+                            
+                            <?php for ($i = $scoreQuizCount + 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon" onclick="window.location.href='create-quiz.php'">
+                                <i class="fas fa-plus-circle"></i>
+                                <div class="empty-text">Create Quiz</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="exportQuizScores()">
+                            <i class="fas fa-download"></i> Export All Quiz Scores
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTIVITY GRADES SECTION -->
+            <div class="card fade-in">
+                <h2 class="card-title">
+                    <i class="fas fa-check-double"></i> Activity Grades
+                </h2>
+                
+                <div class="quiz-grid-section">
+                    <div class="grading-grid">
+                        <?php if (empty($activitiesToGrade)): ?>
+                            <?php for ($i = 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                                <i class="fas fa-check-circle"></i>
+                                <div class="empty-text">No activities</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php else: ?>
+                            <?php 
+                            $displayGradingIcons = array_slice($activitiesToGrade, 0, 8);
+                            $gradingCount = 0;
+                            
+                            $gradingGrades = [];
+                            foreach ($displayGradingIcons as $activity) {
+                                $gradeStmt = $pdo->prepare("
+                                    SELECT AVG(ag.points_earned) as avg_grade, 
+                                           COUNT(DISTINCT ag.student_id) as graded_count
+                                    FROM activity_grades ag 
+                                    WHERE ag.activity_id = ? AND ag.points_earned IS NOT NULL
+                                ");
+                                $gradeStmt->execute([$activity['id']]);
+                                $gradeData = $gradeStmt->fetch(PDO::FETCH_ASSOC);
+                                $gradingGrades[$activity['id']] = $gradeData;
+                            }
+                            ?>
+                            <?php foreach ($displayGradingIcons as $activity): $gradingCount++; 
+                                $intelligenceType = $activity['intelligence_type'];
+                                $virtualWorld = $activity['virtual_world'] ?? 'zoo';
+                                $worldImage = getVirtualWorldImage($virtualWorld);
+                                $intelligenceImage = getActivityIntelligenceImage($intelligenceType);
+                                
+                                $gradeData = $gradingGrades[$activity['id']] ?? null;
+                                $avgGrade = $gradeData['avg_grade'] ?? null;
+                                $gradedCount = $gradeData['graded_count'] ?? 0;
+                            ?>
+                            <div class="grading-icon" onclick="window.location.href='grade-activity.php?activity_id=<?php echo $activity['id']; ?>'">
+                                <?php if ($activity['students_to_grade'] > 0): ?>
+                                <div class="grading-badge pulse"><?php echo $activity['students_to_grade']; ?></div>
+                                <?php endif; ?>
+                                <div class="combined-icon-container">
+                                    <img src="<?php echo $worldImage; ?>" alt="<?php echo getVirtualWorldName($virtualWorld); ?>" class="virtual-world-icon">
+                                    <div class="mi-badge-overlay">
+                                        <img src="<?php echo $intelligenceImage; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
+                                    </div>
+                                </div>
+                                <div class="icon-title">
+                                    <?php echo htmlspecialchars($activity['title']); ?>
+                                </div>
+                                <?php if ($gradedCount > 0 && $avgGrade !== null): ?>
+                                <div class="activity-grade">
+                                    <?php echo number_format($avgGrade, 1); ?>% Average
+                                </div>
+                                <?php else: ?>
+                                <div class="no-grades">No Grades Yet</div>
+                                <?php endif; ?>
+                            </div>
+                            <?php endforeach; ?>
+                            
+                            <?php for ($i = $gradingCount + 1; $i <= 8; $i++): ?>
+                            <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                                <i class="fas fa-check-circle"></i>
+                                <div class="empty-text">Create Activity</div>
+                            </div>
+                            <?php endfor; ?>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="viewAllActivities()">
+                            <i class="fas fa-list"></i> Export All Activity Grades
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-buttons-container fade-in">
+                <form method="POST" action="teacher-dashboard.php" style="display: inline;">
+                    <button type="submit" name="logout" class="red-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT -->
     <script>
-        // Quiz functions
         function viewQuiz(quizId) {
             window.location.href = `add-questions.php?quiz_id=${quizId}`;
         }
         
-        // Activity functions
         function viewActivity(activityId) {
             window.location.href = `create-activity.php?edit=${activityId}`;
         }
-                
-        // Grading functions
+        
         function gradeActivity(activityId) {
             window.location.href = `grade-activity.php?activity_id=${activityId}`;
         }
-                
+        
         function viewAllActivities() {
             alert('Feature coming soon! This would show a full list of all activities with detailed grading status.');
         }
@@ -1597,12 +1619,10 @@ function formatDateTime($date) {
             alert('Exporting quiz scores - This would download a CSV file of all student quiz scores in the full version.');
         }
         
-        // Auto-refresh every 30 seconds
         setInterval(() => {
             console.log('Auto-refreshing teacher dashboard...');
         }, 30000);
         
-        // Add keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key === 'n') {
                 e.preventDefault();
@@ -1621,7 +1641,6 @@ function formatDateTime($date) {
             
             if (e.ctrlKey && e.key === 'g') {
                 e.preventDefault();
-                // Go to first activity that needs grading
                 const gradeBtn = document.querySelector('.orange-btn');
                 if (gradeBtn) gradeBtn.click();
             }
@@ -1633,69 +1652,57 @@ function formatDateTime($date) {
             }
         });
         
-        // Add hover effects
         document.querySelectorAll('.quiz-icon, .activity-icon, .grading-icon').forEach(icon => {
             icon.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-5px)';
             });
-            
             icon.addEventListener('mouseleave', function() {
                 this.style.transform = 'translateY(0)';
             });
         });
         
-        // Profile item hover effect
         document.querySelectorAll('.profile-info-item').forEach(item => {
             item.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-3px)';
             });
-            
             item.addEventListener('mouseleave', function() {
                 this.style.transform = 'translateY(0)';
             });
         });
         
-        // Score item hover effect
         document.querySelectorAll('.score-item').forEach(item => {
             item.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-3px)';
             });
-            
             item.addEventListener('mouseleave', function() {
                 this.style.transform = 'translateY(0)';
             });
         });
         
-        // Empty icon hover effect
         document.querySelectorAll('.empty-icon').forEach(icon => {
             icon.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-5px)';
             });
-            
             icon.addEventListener('mouseleave', function() {
                 this.style.transform = 'translateY(0)';
             });
         });
         
-        // Function to go directly to add questions
         function addQuestionsToQuiz() {
             window.location.href = 'add-questions.php';
         }
         
-        // Make MIEL banner image interactive
         const mielBanner = document.querySelector('.miel-banner');
         if (mielBanner) {
             mielBanner.addEventListener('click', function() {
                 this.classList.toggle('bounce');
                 alert('MIEL - Multiple Intelligence Experiential Learning\nPersonalized learning for every student!');
-                
                 setTimeout(() => {
                     this.classList.remove('bounce');
                 }, 500);
             });
         }
         
-        // Add context menu to activity icons for quick actions
         document.querySelectorAll('.activity-icon, .grading-icon').forEach(icon => {
             icon.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
@@ -1703,7 +1710,6 @@ function formatDateTime($date) {
                 const activityId = onclick?.match(/\((.*?)\)/)?.[1];
                 if (activityId) {
                     const action = prompt(`Quick Actions for Activity #${activityId}\n\nEnter:\n1 - View/Grade\n2 - View Details\n3 - Edit Activity`);
-                    
                     switch(action) {
                         case '1':
                             gradeActivity(activityId);
@@ -1714,13 +1720,10 @@ function formatDateTime($date) {
                         case '3':
                             alert(`Edit activity #${activityId} - Feature coming soon!`);
                             break;
-                        default:
-                            // Do nothing
                     }
                 }
             });
         });
-        
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

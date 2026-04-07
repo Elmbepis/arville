@@ -1,5 +1,5 @@
 <?php
-// student-dashboard.php
+// student-dashboard.php - WITH EXTENSIVE DEBUGGING
 session_start();
 
 // Redirect to login if not logged in
@@ -14,6 +14,13 @@ $dbname = 'miel';
 $username = 'root';
 $password = 'AcadeV25!';
 
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Create debug log array
+$debugLog = [];
+
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -25,7 +32,7 @@ try {
     
     $studentGrade = $student['grade_level'];
     
-    // Get available quizzes for student's grade level (where student's grade is within quiz grade range)
+    // Get available quizzes
     $quizStmt = $pdo->prepare("
         SELECT q.*, u.full_name as teacher_name 
         FROM quizzes q 
@@ -51,7 +58,7 @@ try {
     $scoreStmt->execute([$_SESSION['user_id']]);
     $studentQuizScores = $scoreStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get Available Activities for student's grade level (where student's grade is within activity grade range)
+    // Get Available Activities
     $activitiesStmt = $pdo->prepare("
         SELECT a.*, u.full_name as teacher_name 
         FROM activities a 
@@ -98,7 +105,7 @@ function formatDate($date) {
     return date('M j, Y', strtotime($date));
 }
 
-// Get intelligence type name
+// ==================== COMMON FUNCTIONS ====================
 function getIntelligenceName($type) {
     $names = [
         'linguistic' => 'Linguistic',
@@ -113,17 +120,140 @@ function getIntelligenceName($type) {
     return $names[$type] ?? $type;
 }
 
-// Get activity type name
-function getActivityTypeName($type) {
+// Get intelligence icon image (for activities)
+function getIntelligenceImage($type) {
+    $imagePath = "images/mi-{$type}.png";
+    if (!file_exists($imagePath)) {
+        $imagePath = "images/mi-{$type}.png";
+    }
+    if (!file_exists($imagePath)) {
+        $imagePath = "images/default.jpg";
+    }
+    return $imagePath;
+}
+
+// Get virtual world image path by reading virtual-world-selector.js
+function getVirtualWorldImage($worldName, &$debug = null) {
+    $debugInfo = [];
+    $debugInfo['input_world_name'] = $worldName;
+    
+    // Read the virtual-world-selector.js file
+    $jsFile = 'virtual-world-selector.js';
+    $debugInfo['js_file_path'] = $jsFile;
+    $debugInfo['js_file_exists'] = file_exists($jsFile);
+    
+    if (!file_exists($jsFile)) {
+        if ($debug !== null) $debug['error'] = "JS file not found";
+        return "images/default-world.jpg";
+    }
+    
+    $jsContent = file_get_contents($jsFile);
+    $debugInfo['js_file_size'] = strlen($jsContent) . " bytes";
+    
+    // Extract world data: 'key': { name: 'World Name', image: 'filename.jpg',
+    preg_match_all("/'([^']+)'\s*:\s*\{\s*name:\s*'([^']+)',\s*image:\s*'([^']+)',/", $jsContent, $matches, PREG_SET_ORDER);
+    
+    $debugInfo['worlds_found'] = count($matches);
+    $debugInfo['matches_checked'] = [];
+    
+    // Loop through to find matching world name
+    $foundKey = null;
+    $foundImage = null;
+    
+    foreach ($matches as $index => $match) {
+        $key = $match[1];
+        $name = $match[2];
+        $image = $match[3];
+        
+        $debugInfo['matches_checked'][] = [
+            'key' => $key,
+            'name_in_js' => $name,
+            'image' => $image,
+            'matches' => ($name === $worldName) ? 'YES' : 'NO'
+        ];
+        
+        if ($name === $worldName) {
+            $foundKey = $key;
+            $foundImage = $image;
+            break;
+        }
+    }
+    
+    $debugInfo['found_key'] = $foundKey;
+    $debugInfo['found_image'] = $foundImage;
+    
+    if ($foundImage) {
+        $imagePath = "images/" . $foundImage;
+        $debugInfo['final_path'] = $imagePath;
+        $debugInfo['file_exists'] = file_exists($imagePath);
+        
+        if ($debug !== null) {
+            $debug = $debugInfo;
+        }
+        
+        if (file_exists($imagePath)) {
+            return $imagePath;
+        }
+    }
+    
+    // Fallback
+    $fallbackPath = "images/default-world.jpg";
+    $debugInfo['fallback_used'] = true;
+    $debugInfo['fallback_path'] = $fallbackPath;
+    
+    if ($debug !== null) {
+        $debug = $debugInfo;
+    }
+    
+    return $fallbackPath;
+}
+
+// Get virtual world display name
+function getVirtualWorldName($world) {
     $names = [
-        'essay' => 'Essay',
-        'project' => 'Project',
-        'presentation' => 'Presentation',
-        'experiment' => 'Experiment',
-        'performance' => 'Performance',
-        'portfolio' => 'Portfolio'
+        'zoo' => 'Zoo',
+        'museum' => 'Museum',
+        'forest' => 'Forest',
+        'ocean' => 'Ocean',
+        'farm' => 'Farm',
+        'space' => 'Space',
+        'city' => 'City',
+        'arctic' => 'Arctic'
     ];
-    return $names[$type] ?? ucfirst($type);
+    return $names[strtolower($world)] ?? ucfirst($world);
+}
+
+// ==================== QUIZ-SPECIFIC FUNCTIONS ====================
+function getQuizIntelligenceImage($type) {
+    $imagePath = "images/mi-{$type}.png";
+    if (!file_exists($imagePath)) {
+        $imagePath = "images/default.jpg";
+    }
+    return $imagePath;
+}
+
+function getQuizWorldImage($worldName, &$debug = null) {
+    $jsFile = 'virtual-world-selector.js';
+    if (!file_exists($jsFile)) {
+        return "images/default-world.jpg";
+    }
+    
+    $jsContent = file_get_contents($jsFile);
+    preg_match_all("/'([^']+)'\s*:\s*\{\s*name:\s*'([^']+)',\s*image:\s*'([^']+)',/", $jsContent, $matches, PREG_SET_ORDER);
+    
+    foreach ($matches as $match) {
+        $name = $match[2];
+        $image = $match[3];
+        
+        if ($name === $worldName) {
+            $imagePath = "images/" . $image;
+            if (file_exists($imagePath)) {
+                return $imagePath;
+            }
+        }
+    }
+    
+    return "images/default-world.jpg";
 }
 ?>
 <!DOCTYPE html>
@@ -136,7 +266,6 @@ function getActivityTypeName($type) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="mobile.css" media="screen">
     <style>
-        /* ===== KID-FRIENDLY THEME ===== */
         :root {
             --primary-blue: #4A90E2;
             --secondary-green: #50C878;
@@ -162,7 +291,6 @@ function getActivityTypeName($type) {
             background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
         }
         
-        /* Tiled semi-opaque image background */
         body::before {
             content: '';
             position: fixed;
@@ -225,7 +353,6 @@ function getActivityTypeName($type) {
             flex-grow: 0;
         }        
         
-        /* ===== MIEL BANNER ===== */
         .miel-banner-container {
             text-align: center;
             margin-bottom: 30px;
@@ -241,7 +368,6 @@ function getActivityTypeName($type) {
             display: block;
         }
         
-        /* ===== DASHBOARD HEADER ===== */
         .dashboard-header {
             text-align: center;
             margin-bottom: 25px;
@@ -257,11 +383,6 @@ function getActivityTypeName($type) {
             justify-content: center;
             gap: 15px;
             margin-bottom: 15px;
-        }
-        
-        .logo-icon {
-            font-size: 2.5rem;
-            color: var(--primary-blue);
         }
         
         h1 {
@@ -282,7 +403,6 @@ function getActivityTypeName($type) {
             margin-top: -5px;
         }
         
-        /* Grade level badge */
         .grade-badge {
             display: inline-block;
             background: var(--accent-yellow);
@@ -299,7 +419,6 @@ function getActivityTypeName($type) {
             color: var(--primary-blue);
         }
         
-        /* ===== HORIZONTAL SECTIONS ===== */
         .horizontal-sections {
             display: flex;
             flex-direction: column;
@@ -307,7 +426,6 @@ function getActivityTypeName($type) {
             margin-bottom: 30px;
         }
         
-        /* ===== CARD STYLES ===== */
         .card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: var(--border-radius);
@@ -329,7 +447,6 @@ function getActivityTypeName($type) {
             gap: 10px;
         }
         
-        /* ===== PROFILE SECTION ===== */
         .profile-section {
             display: grid;
             grid-template-columns: auto 1fr;
@@ -401,7 +518,6 @@ function getActivityTypeName($type) {
             font-size: 1rem;
         }
         
-        /* ===== QUIZ ICONS GRID ===== */
         .quiz-grid-section {
             width: 100%;
         }
@@ -409,20 +525,19 @@ function getActivityTypeName($type) {
         .quiz-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 1fr);
             gap: 15px;
             margin-bottom: 20px;
         }
         
         .quiz-icon {
-            aspect-ratio: 1/1;
+            aspect-ratio: 0.75 / 1;
             background: #F8F9FF;
             border-radius: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 15px;
+            justify-content: flex-start;
+            padding: 15px 12px;
             text-align: center;
             transition: all 0.3s;
             cursor: pointer;
@@ -441,6 +556,7 @@ function getActivityTypeName($type) {
         .quiz-icon.not-taken {
             opacity: 0.6;
             background: #F0F0F0;
+            aspect-ratio: 0.75 / 1;
         }
         
         .quiz-icon.not-taken:hover {
@@ -468,39 +584,108 @@ function getActivityTypeName($type) {
             color: var(--text-dark);
         }
         
-        .thumbnail-container {
-            width: 60px;
-            height: 60px;
+        /* Combined icon container - Virtual World with MI badge overlay (for activities) */
+        .combined-icon-container {
+            position: relative;
+            display: inline-block;
+            width: 80px;
+            height: 80px;
             margin-bottom: 8px;
+        }
+        
+        .virtual-world-icon {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            object-fit: cover;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border: 2px solid white;
+        }
+        
+        .mi-badge-overlay {
+            position: absolute;
+            bottom: -6px;
+            right: -6px;
+            width: 34px;
+            height: 34px;
+            background: white;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            border: 2px solid white;
+            overflow: hidden;
         }
         
-        .thumbnail-container img {
+        .mi-badge-overlay img {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        /* Quiz combined icon container */
+        .quiz-combined-icon-container {
+            position: relative;
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 8px;
+        }
+        
+        .quiz-virtual-world-icon {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            object-fit: cover;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border: 2px solid white;
+        }
+        
+        .quiz-mi-badge-overlay {
+            position: absolute;
+            bottom: -6px;
+            right: -6px;
+            width: 34px;
+            height: 34px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            border: 2px solid white;
+            overflow: hidden;
+        }
+        
+        .quiz-mi-badge-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
         }
         
         .icon-title {
             font-weight: bold;
             font-size: 0.9rem;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             color: var(--text-dark);
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            height: 2.4em;
+            min-height: 3.6em;
             line-height: 1.2em;
+            width: 100%;
+            margin-top: 5px;
         }
         
         .icon-third-line {
             font-size: 0.8rem;
             color: #666;
-            height: 1.2em;
-            margin-top: 3px;
+            min-height: 1.2em;
+            margin-top: 5px;
             font-style: italic;
         }
         
@@ -509,11 +694,11 @@ function getActivityTypeName($type) {
             font-weight: bold;
             color: var(--secondary-green);
             margin-top: 5px;
+            min-height: 1.2em;
         }
         
-        /* ===== EMPTY STATES ===== */
         .empty-icon {
-            aspect-ratio: 1/1;
+            aspect-ratio: 0.75 / 1;
             background: #F0F0F0;
             border-radius: 15px;
             display: flex;
@@ -535,7 +720,6 @@ function getActivityTypeName($type) {
             font-size: 0.9rem;
         }
         
-        /* ===== BADGES ===== */
         .badge {
             display: inline-block;
             padding: 4px 12px;
@@ -555,11 +739,9 @@ function getActivityTypeName($type) {
             color: white;
         }
         
-        /* ===== VIRTUAL WORLD SELECTOR STYLES ===== */
         .world-selector {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 1fr);
             gap: 15px;
             margin-top: 10px;
         }
@@ -663,7 +845,6 @@ function getActivityTypeName($type) {
             font-size: 0.6rem;
         }
         
-        /* ===== BOTTOM BUTTONS CONTAINER ===== */
         .bottom-buttons-container {
             display: flex;
             justify-content: center;
@@ -698,8 +879,7 @@ function getActivityTypeName($type) {
             background-color: #FF4757 !important;
             transform: translateY(-3px) !important;
         }
-        
-        /* ===== MOBILE RESPONSIVE ===== */
+                
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -721,7 +901,6 @@ function getActivityTypeName($type) {
             .quiz-grid,
             .world-selector {
                 grid-template-columns: repeat(2, 1fr);
-                grid-template-rows: repeat(4, 1fr);
             }
             
             .profile-section {
@@ -761,6 +940,20 @@ function getActivityTypeName($type) {
                 font-size: 0.75rem;
                 max-width: 110px;
             }
+            
+            .combined-icon-container,
+            .quiz-combined-icon-container {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .mi-badge-overlay,
+            .quiz-mi-badge-overlay {
+                width: 30px;
+                height: 30px;
+                bottom: -5px;
+                right: -5px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -778,7 +971,6 @@ function getActivityTypeName($type) {
             }
         }
         
-        /* ===== ANIMATIONS ===== */
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
@@ -799,7 +991,6 @@ function getActivityTypeName($type) {
     </style>
 </head>
 <body>
-    <!-- ARVILLE NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
             <a class="navbar-brand" href="../index.php">
@@ -819,13 +1010,11 @@ function getActivityTypeName($type) {
         </div>
     </nav>
 
-    <!-- MIEL BANNER IMAGE -->
     <div class="miel-banner-container fade-in">
         <img src="miel-banner.png" alt="MIEL - Multiple Intelligence Experiential Learning System" class="miel-banner">
     </div>
 
     <div class="container">
-        <!-- DASHBOARD HEADER -->
         <header class="dashboard-header fade-in">
             <div class="logo">
                 <div>
@@ -844,7 +1033,6 @@ function getActivityTypeName($type) {
             </div>
         </header>
 
-        <!-- HORIZONTAL SECTIONS -->
         <div class="horizontal-sections">
             <!-- PROFILE SECTION -->
             <div class="card fade-in">
@@ -901,7 +1089,7 @@ function getActivityTypeName($type) {
                 </div>
             </div>
 
-            <!-- MY QUIZZES SECTION -->
+            <!-- ==================== MY QUIZZES SECTION ==================== -->
             <div class="card fade-in">
                 <h2 class="card-title">
                     <i class="fas fa-gamepad"></i> My Quizzes (Grade <?php echo $student['grade_level']; ?>)
@@ -934,22 +1122,26 @@ function getActivityTypeName($type) {
                                 }
                                 
                                 $intelligenceType = $quiz['intelligence_type'];
-                                $iconImage = "images/quiz-{$intelligenceType}.png";
-                                $defaultIcon = "images/default.jpg";
-                                $quizIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
+                                $virtualWorldName = $quiz['virtual_world'];
                                 
-                                // Determine which quiz file to use based on type
+                                $worldImage = getQuizWorldImage($virtualWorldName);
+                                $intelligenceImage = getQuizIntelligenceImage($intelligenceType);
+                                
                                 $quizFile = ($quiz['type'] == 'inworld') ? 'take-quiz2.php' : 'take-quiz.php';
                             ?>
                             <div class="quiz-icon <?php echo !$quizTaken ? 'not-taken' : ''; ?>" 
                                  onclick="<?php echo $quizTaken ? 'reviewQuiz(\'' . $quizFile . '\', ' . $quiz['id'] . ')' : 'takeQuiz(\'' . $quizFile . '\', ' . $quiz['id'] . ')'; ?>">
                                 <div class="icon-badge <?php echo !$quizTaken ? 'not-taken' : ''; ?>"><?php echo $quizCount; ?></div>
-                                <div class="thumbnail-container">
-                                    <img src="<?php echo $quizIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
+                                
+                                <div class="quiz-combined-icon-container">
+                                    <img src="<?php echo $worldImage; ?>" alt="<?php echo htmlspecialchars($virtualWorldName); ?>" class="quiz-virtual-world-icon" onerror="this.onerror=null; this.src='images/default-world.jpg'; console.error('Quiz image failed: <?php echo $worldImage; ?>');">
+                                    <div class="quiz-mi-badge-overlay">
+                                        <img src="<?php echo $intelligenceImage; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>" onerror="this.onerror=null; this.src='images/default.jpg';">
+                                    </div>
                                 </div>
+                                
                                 <div class="icon-title">
-                                    <?php echo htmlspecialchars(substr($quiz['title'], 0, 20)); ?>
-                                    <?php if (strlen($quiz['title']) > 20): ?>...<?php endif; ?>
+                                    <?php echo htmlspecialchars($quiz['title']); ?>
                                 </div>
                                 <?php if ($quizTaken && $quizScore !== null): ?>
                                 <div class="icon-score" style="color: <?php echo $quizScore >= 80 ? '#50C878' : ($quizScore >= 60 ? '#FF9800' : '#FF6B6B'); ?>;">
@@ -972,7 +1164,7 @@ function getActivityTypeName($type) {
                 </div>
             </div>
 
-            <!-- MY ACTIVITIES SECTION -->
+            <!-- ==================== MY ACTIVITIES SECTION ==================== -->
             <div class="card fade-in">
                 <h2 class="card-title">
                     <i class="fas fa-tasks"></i> My Activities (Grade <?php echo $student['grade_level']; ?>)
@@ -1007,18 +1199,31 @@ function getActivityTypeName($type) {
                                 }
                                 
                                 $intelligenceType = $activity['intelligence_type'];
-                                $iconImage = "images/activity-{$intelligenceType}.png";
-                                $defaultIcon = "images/default.jpg";
-                                $activityIcon = file_exists($iconImage) ? $iconImage : $defaultIcon;
+                                $virtualWorld = $activity['virtual_world'];
+                                
+                                // DEBUG: Log each activity's virtual world value
+                                $debugInfo = [];
+                                $worldImage = getVirtualWorldImage($virtualWorld, $debugInfo);
+                                $intelligenceImage = getIntelligenceImage($intelligenceType);
+                                
+                                // Store debug info for this activity
+                                $activityDebug[$activity['id']] = $debugInfo;
                             ?>
-                            <div class="quiz-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)">
+                            <div class="quiz-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)"
+                                 data-activity-id="<?php echo $activity['id']; ?>"
+                                 data-virtual-world="<?php echo htmlspecialchars($virtualWorld); ?>"
+                                 data-world-image="<?php echo $worldImage; ?>">
                                 <div class="icon-badge"><?php echo $activityCount; ?></div>
-                                <div class="thumbnail-container">
-                                    <img src="<?php echo $activityIcon; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
+                                
+                                <div class="combined-icon-container">
+                                    <img src="<?php echo $worldImage; ?>" alt="<?php echo htmlspecialchars($virtualWorld); ?>" class="virtual-world-icon" onerror="this.onerror=null; this.src='images/default-world.jpg'; console.error('Activity image failed for world: <?php echo htmlspecialchars($virtualWorld); ?> -> <?php echo $worldImage; ?>');">
+                                    <div class="mi-badge-overlay">
+                                        <img src="<?php echo $intelligenceImage; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>" onerror="this.onerror=null; this.src='images/default.jpg';">
+                                    </div>
                                 </div>
+                                
                                 <div class="icon-title">
-                                    <?php echo htmlspecialchars(substr($activity['title'], 0, 20)); ?>
-                                    <?php if (strlen($activity['title']) > 20): ?>...<?php endif; ?>
+                                    <?php echo htmlspecialchars($activity['title']); ?>
                                 </div>
                                 <?php if ($activityGraded && $activityPoints !== null): ?>
                                 <?php 
@@ -1045,7 +1250,7 @@ function getActivityTypeName($type) {
                 </div>
             </div>
 
-            <!-- EXPLORE ARVILLE WORLDS SECTION - USING REUSABLE COMPONENT -->
+            <!-- EXPLORE ARVILLE WORLDS SECTION -->
             <div class="card fade-in">
                 <h2 class="card-title">
                     <i class="fas fa-globe-americas"></i> Explore ARville Worlds
@@ -1056,7 +1261,6 @@ function getActivityTypeName($type) {
             </div>
         </div>
 
-        <!-- BOTTOM BUTTONS CONTAINER -->
         <div class="bottom-buttons-container fade-in">
             <form method="POST" action="student-dashboard.php" style="display: inline;">
                 <button type="submit" name="logout" class="red-btn">
@@ -1066,62 +1270,59 @@ function getActivityTypeName($type) {
         </div>
     </div>
 
-    <!-- JAVASCRIPT -->
     <script src="virtual-world-selector.js"></script>
     <script>
-        // Global variable to store world data from the selector
         let worldSelectorInstance = null;
 
-        // Initialize Virtual World Selector with click handling
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('%c========================================', 'color: #4ec9b0; font-size: 16px;');
+            console.log('%c&#128269; STUDENT DASHBOARD DEBUG CONSOLE', 'color: #4ec9b0; font-size: 16px; font-weight: bold;');
+            console.log('%c========================================', 'color: #4ec9b0; font-size: 16px;');
+            
+            // Log all activity elements
+            const activityElements = document.querySelectorAll('.quiz-icon[data-activity-id]');
+            console.log(`%c&#128202; Found ${activityElements.length} activities on the page`, 'color: #9cdcfe;');
+            
+            activityElements.forEach((activity, index) => {
+                const activityId = activity.getAttribute('data-activity-id');
+                const virtualWorld = activity.getAttribute('data-virtual-world');
+                const worldImage = activity.getAttribute('data-world-image');
+                
+                console.log(`%cActivity ${index + 1}: ID=${activityId}`, 'color: #dcdcaa;');
+                console.log(`%c  &#8594; DB Virtual World: '${virtualWorld}'`, 'color: #9cdcfe;');
+                console.log(`%c  &#8594; Computed Image Path: ${worldImage}`, 'color: #6a9955;');
+            });
+            
             try {
                 worldSelectorInstance = new VirtualWorldSelector({
                     containerId: 'virtual-world-selector-container',
-                    displayOnly: false, // Allow clicking
+                    displayOnly: false,
                     onWorldChange: function(worldKey, worldData) {
-                        // This function is called when a world is selected/clicked
-                        console.log('World clicked - Key:', worldKey, 'Name:', worldData.name, 'Link:', worldData.link);
-                        
-                        // Open the world in a new tab using the link from worldData
                         if (worldData && worldData.link) {
-                            console.log('Opening URL:', worldData.link);
                             window.open(worldData.link, '_blank');
                         } else {
-                            console.error('No link found for world:', worldData);
                             alert('This world link is not available yet.');
                         }
                     }
                 });
-                console.log('Virtual World Selector initialized with click handling');
                 
-                // Function to open a world by its name (useful for quiz links)
                 window.openWorldByName = function(worldName) {
-                    if (!worldSelectorInstance || !worldSelectorInstance.worlds) {
-                        console.error('World selector not initialized');
-                        return false;
-                    }
-                    
-                    // Find the world by its name
+                    if (!worldSelectorInstance || !worldSelectorInstance.worlds) return false;
                     for (const [key, worldData] of Object.entries(worldSelectorInstance.worlds)) {
                         if (worldData.name === worldName) {
-                            console.log('Found world:', worldName, 'with URL:', worldData.link);
                             if (worldData.link) {
                                 window.open(worldData.link, '_blank');
                                 return true;
                             }
                         }
                     }
-                    
-                    console.error('World not found with name:', worldName);
                     return false;
                 };
-                
             } catch (error) {
                 console.error('Error initializing Virtual World Selector:', error);
             }
         });
 
-        // Quiz functions - updated to accept quiz file parameter
         function takeQuiz(quizFile, quizId) {
             window.location.href = `${quizFile}?quiz_id=${quizId}`;
         }
@@ -1130,62 +1331,25 @@ function getActivityTypeName($type) {
             window.location.href = `${quizFile}?quiz_id=${quizId}`;
         }
         
-        // Activity functions
         function viewActivity(activityId) {
             window.location.href = `do-activity.php?activity_id=${activityId}`;
         }
         
-        // Auto-refresh every 30 seconds
-        setInterval(() => {
-            console.log('Auto-refreshing student dashboard...');
-        }, 30000);
-        
-        // Add keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'r') {
-                e.preventDefault();
-                window.location.reload();
-            }
-            
-            if (e.key === 'Escape') {
-                if (confirm('Are you sure you want to logout?')) {
-                    document.querySelector('button[name="logout"]').click();
-                }
-            }
-        });
-        
-        // Add hover effects
         document.querySelectorAll('.quiz-icon').forEach(icon => {
             icon.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-5px)';
             });
-            
             icon.addEventListener('mouseleave', function() {
                 this.style.transform = 'translateY(0)';
             });
         });
         
-        // Profile item hover effect
-        document.querySelectorAll('.profile-info-item').forEach(item => {
-            item.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-3px)';
-            });
-            
-            item.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
-        });
-        
-        // Make MIEL banner image interactive
         const mielBanner = document.querySelector('.miel-banner');
         if (mielBanner) {
             mielBanner.addEventListener('click', function() {
                 this.classList.toggle('bounce');
                 alert('MIEL - Multiple Intelligence Experiential Learning\nPersonalized learning for every student!');
-                
-                setTimeout(() => {
-                    this.classList.remove('bounce');
-                }, 500);
+                setTimeout(() => this.classList.remove('bounce'), 500);
             });
         }
     </script>

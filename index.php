@@ -40,6 +40,8 @@ echo "<script>
                 'images/futuristicb.jpg',
                 'images/foodb.jpg',
                 'images/alienb.jpg',
+                'images/objectsb.jpg',
+                'images/dogsb.jpg',
                 'images/room11b.jpg',
                 'images/room12b.jpg',
                 'images/room13b.jpg',
@@ -219,11 +221,12 @@ $smallCategories = [
     ["title" => "Beatbox Toon Town", "tagline" => "A whimsical world where magical objects unlock rhythmic loops for musical vibes", "icon" => "beatboxa.jpg", "hoverIcon" => "beatboxb.jpg", "link" => "village2.htm?id=10"],
     ["title" => "Cetacean Cove", "tagline" => "A deep blue sanctuary where ocean giants find shelter", "icon" => "cetaceana.jpg", "hoverIcon" => "cetaceanb.jpg", "link" => "nature.htm?id=6"],
     ["title" => "Red Gnome Treasure Patrol", "tagline" => "Where chests of gold rest under the watch of red warrior gnomes", "icon" => "gnomea.jpg", "hoverIcon" => "gnomeb.jpg", "link" => "village2.htm?id=13"],
+    ["title" => "Dogville Delight", "tagline" => "A grassy village where twelve playful dogs rule the neighborhood", "icon" => "dogsa.jpg", "hoverIcon" => "dogsb.jpg", "link" => "nature.htm?id=12"],
     ["title" => "Home of Roaming Objects", "tagline" => "Where everyday objects come to life and wander around", "icon" => "objectsa.jpg", "hoverIcon" => "objectsb.jpg", "link" => "village2.htm?id=17"],
     ["title" => "Futuristic City", "tagline" => "A gleaming metropolis where neon lights dazzle and vehicles defy gravity", "icon" => "futuristica.jpg", "hoverIcon" => "futuristicb.jpg", "link" => "village2.htm?id=14"],
     ];
 
-for ($i = 0; $i < 30; $i++) {
+for ($i = 0; $i < 31; $i++) {
     $category = $smallCategories[$i];
     echo "<div class='col-lg-3 col-md-6 col-6'>"; // 4 columns on large, 2 columns on mobile (col-6)
     echo "    <div class='small-category text-center'>";
