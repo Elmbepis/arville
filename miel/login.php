@@ -1,5 +1,6 @@
 <?php
 // login.php
+session_name('MIEL_SESSION');
 session_start();
 
 // Database configuration
