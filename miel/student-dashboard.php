@@ -553,16 +553,6 @@ function getQuizWorldImage($worldName, &$debug = null) {
             box-shadow: var(--shadow);
         }
         
-        .quiz-icon.not-taken {
-            opacity: 0.6;
-            background: #F0F0F0;
-            aspect-ratio: 0.75 / 1;
-        }
-        
-        .quiz-icon.not-taken:hover {
-            opacity: 0.8;
-        }
-        
         .icon-badge {
             position: absolute;
             top: 10px;
@@ -588,8 +578,8 @@ function getQuizWorldImage($worldName, &$debug = null) {
         .combined-icon-container {
             position: relative;
             display: inline-block;
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             margin-bottom: 8px;
         }
         
@@ -606,8 +596,8 @@ function getQuizWorldImage($worldName, &$debug = null) {
             position: absolute;
             bottom: -6px;
             right: -6px;
-            width: 34px;
-            height: 34px;
+            width: 45px;
+            height: 45px;
             background: white;
             border-radius: 50%;
             display: flex;
@@ -629,8 +619,8 @@ function getQuizWorldImage($worldName, &$debug = null) {
         .quiz-combined-icon-container {
             position: relative;
             display: inline-block;
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             margin-bottom: 8px;
         }
         
@@ -647,8 +637,8 @@ function getQuizWorldImage($worldName, &$debug = null) {
             position: absolute;
             bottom: -6px;
             right: -6px;
-            width: 34px;
-            height: 34px;
+            width: 45px;
+            height: 45px;
             background: white;
             border-radius: 50%;
             display: flex;
@@ -1148,7 +1138,7 @@ function getQuizWorldImage($worldName, &$debug = null) {
                                     <?php echo number_format($quizScore, 1); ?>%
                                 </div>
                                 <?php else: ?>
-                                <div class="icon-third-line">Not Started</div>
+                                <div class="icon-third-line">Not Yet Taken</div>
                                 <?php endif; ?>
                             </div>
                             <?php endforeach; ?>
@@ -1234,7 +1224,7 @@ function getQuizWorldImage($worldName, &$debug = null) {
                                     <?php echo $activityPoints; ?>/<?php echo $maxPoints; ?> pts
                                 </div>
                                 <?php else: ?>
-                                <div class="icon-third-line">Not Started</div>
+                                <div class="icon-third-line">Not Yet Submitted</div>
                                 <?php endif; ?>
                             </div>
                             <?php endforeach; ?>

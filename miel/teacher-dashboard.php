@@ -605,8 +605,8 @@ function formatDateTime($date) {
         .combined-icon-container {
             position: relative;
             display: inline-block;
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             margin-bottom: 8px;
         }
         
@@ -623,8 +623,8 @@ function formatDateTime($date) {
             position: absolute;
             bottom: -6px;
             right: -6px;
-            width: 34px;
-            height: 34px;
+            width: 45px;
+            height: 45px;
             background: white;
             border-radius: 50%;
             display: flex;
