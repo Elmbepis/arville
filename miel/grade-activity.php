@@ -1,5 +1,6 @@
 <?php
 // grade-activity.php
+session_name('MIEL_SESSION');
 session_start();
 
 // Redirect to login if not logged in as teacher

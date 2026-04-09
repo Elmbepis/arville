@@ -1,5 +1,6 @@
 <?php
 // view-activity.php
+session_name('MIEL_SESSION');
 session_start();
 
 // Error reporting for debugging (remove in production)

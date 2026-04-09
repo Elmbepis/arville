@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['register'])) {
     $email = trim($_POST['reg_email']);
     $password = $_POST['reg_password'];
     $confirm_password = $_POST['reg_confirm_password'];
-    $role = 'trainee'; // Default role for all new registrations
+    $role = 'student'; // Default role for all new registrations (changed from 'trainee')
     
     // Validation
     if (empty($name) || empty($email) || empty($password)) {
@@ -72,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['register'])) {
         if ($result->num_rows > 0) {
             $error = "Email already registered.";
         } else {
-            // Insert new user with default 'trainee' role
+            // Insert new user with default 'student' role
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
             $stmt->bind_param("ssss", $name, $email, $hashed_password, $role);
@@ -93,7 +93,7 @@ $conn->close();
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>PAF Training Platform - Login</title>
+  <title>KPluz SHS - Login</title>
   <style>
     * {
         box-sizing: border-box;
@@ -301,7 +301,7 @@ $conn->close();
   <div class="login-container">
     <!-- Header with tiled background and logo -->
     <div class="header">
-        <img src="paf-logo.png" alt="PAF Logo" class="header-logo">
+        <img src="paf-logo.png" alt="KPluz Logo" class="header-logo">
     </div>
 
     <div class="form-tabs">
@@ -345,8 +345,8 @@ $conn->close();
         <h2>Create Account</h2>
         
         <div class="role-notice">
-            <strong>Note:</strong> All new accounts are created as <strong>Trainee</strong> by default.<br>
-            Contact an administrator for instructor or admin access.
+            <strong>Note:</strong> All new accounts are created as <strong>Student</strong> by default.<br>
+            Contact an administrator for teacher or admin access.
         </div>
         
         <?php if ($error && isset($_POST['register'])): ?>

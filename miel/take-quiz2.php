@@ -1,5 +1,6 @@
 <?php
 // take-quiz2.php - With iframe communication and click tracking
+session_name('MIEL_SESSION');
 session_start();
 
 // Check if user is logged in

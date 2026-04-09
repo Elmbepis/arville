@@ -1,5 +1,6 @@
 <?php
 // student-dashboard.php - WITH EXTENSIVE DEBUGGING
+session_name('MIEL_SESSION');
 session_start();
 
 // Redirect to login if not logged in

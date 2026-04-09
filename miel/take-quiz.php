@@ -1,5 +1,6 @@
 <?php
 // take-quiz.php
+session_name('MIEL_SESSION');
 session_start();
 
 // Check if user is logged in (student or teacher can take quizzes)

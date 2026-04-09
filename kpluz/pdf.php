@@ -14,12 +14,12 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 // Get parameters from URL
 $shs_pathway = isset($_GET['shs_pathway']) ? urldecode($_GET['shs_pathway']) : '';
 $subject = isset($_GET['subject']) ? urldecode($_GET['subject']) : '';
-$lesson_id = isset($_GET['manual_id']) ? (int)$_GET['manual_id'] : 0;
+$pdf_id = isset($_GET['pdf_id']) ? (int)$_GET['pdf_id'] : 0;
 
-// Load manuals from JSON file
+// Load PDFs from JSON file
 $json_file = 'pdfs.json';
-$all_manuals = [];
-$lesson_name = '';
+$all_pdfs = [];
+$pdf_name = '';
 $description = '';
 $file_path = '';
 $pdf_exists = false;
@@ -28,16 +28,16 @@ if (file_exists($json_file)) {
     $json_content = file_get_contents($json_file);
     $data = json_decode($json_content, true);
     
-    if ($data && isset($data['manuals'])) {
-        $all_manuals = $data['manuals'];
+    if ($data && isset($data['pdfs'])) {
+        $all_pdfs = $data['pdfs'];
         
-        // Find the specific lesson by ID
-        if ($lesson_id > 0) {
-            foreach ($all_manuals as $manual) {
-                if ($manual['id'] == $lesson_id) {
-                    $lesson_name = $manual['lesson'];
-                    $description = $manual['description'];
-                    $file_path = $manual['file_path'];
+        // Find the specific PDF by ID
+        if ($pdf_id > 0) {
+            foreach ($all_pdfs as $pdf) {
+                if ($pdf['id'] == $pdf_id) {
+                    $pdf_name = $pdf['lesson'];
+                    $description = $pdf['description'];
+                    $file_path = $pdf['file_path'];
                     
                     // Check if PDF file exists
                     $full_pdf_path = __DIR__ . '/' . $file_path;
@@ -52,11 +52,10 @@ if (file_exists($json_file)) {
 // Get unique pathways and subjects from JSON for navigation
 $pathway_options = [];
 $unique_pathways = [];
-$unique_subjects = [];
 
-foreach ($all_manuals as $manual) {
-    $pathway = $manual['shs_pathway'];
-    $subject_name = $manual['subject'];
+foreach ($all_pdfs as $pdf) {
+    $pathway = $pdf['shs_pathway'];
+    $subject_name = $pdf['subject'];
     
     // Store unique combinations
     $combo_key = $pathway . '|' . $subject_name;
@@ -73,25 +72,25 @@ foreach ($all_manuals as $manual) {
     }
 }
 
-// Get lessons for current pathway/subject
-$lessons = [];
+// Get PDFs for current pathway/subject
+$pdfs = [];
 if (!empty($shs_pathway) && !empty($subject)) {
-    foreach ($all_manuals as $manual) {
-        if ($manual['shs_pathway'] == $shs_pathway && $manual['subject'] == $subject) {
-            $lessons[$manual['id']] = $manual['lesson'];
+    foreach ($all_pdfs as $pdf) {
+        if ($pdf['shs_pathway'] == $shs_pathway && $pdf['subject'] == $subject) {
+            $pdfs[$pdf['id']] = $pdf['lesson'];
         }
     }
 }
 
 // Display name for current selection
-$display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - ' . $subject : 'Training Manual';
+$display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - ' . $subject : 'DepEd PDF';
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>PAF Training Platform - Training Manual</title>
+  <title>KPluz SHS - DepEd PDF Viewer</title>
   <style>
     * {
         box-sizing: border-box;
@@ -231,20 +230,83 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
         background: #ffe6e6;
         border-radius: 4px;
     }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+    
+    .back-pdfs-btn {
+        padding: 12px 24px;
+        border: none;
+        background: #4A90E2;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .back-pdfs-btn:hover { 
+        background: #357ABD; 
+        color: white;
+    }
+    
+    .dashboard-btn {
+        padding: 12px 24px;
+        border: none;
+        background: #28a745;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .dashboard-btn:hover { 
+        background: #218838; 
+        color: white;
+    }
+    
+    .logout-btn {
+        padding: 12px 24px;
+        border: none;
+        background: #dc3545;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .logout-btn:hover { 
+        background: #c82333; 
+        color: white;
+    }
   </style>
 </head>
 <body>
   <!-- Header with tiled background and logo -->
   <div class="header">
-    <img src="paf-logo.png" alt="PAF Logo" class="header-logo">
+    <img src="paf-logo.png" alt="KPluz Logo" class="header-logo">
   </div>
 
-  <h2><?php echo htmlspecialchars($display_name); ?> - Training Manual</h2>
+  <h2><?php echo htmlspecialchars($display_name); ?> - DepEd PDF</h2>
   <div class="course-info">
     SHS Pathway: <?php echo htmlspecialchars($shs_pathway); ?><br>
     Subject: <?php echo htmlspecialchars($subject); ?><br>
-    <?php if (!empty($lesson_name)): ?>
-        Lesson: <?php echo htmlspecialchars($lesson_name); ?>
+    <?php if (!empty($pdf_name)): ?>
+        PDF: <?php echo htmlspecialchars($pdf_name); ?>
     <?php endif; ?>
     <?php if (!empty($description)): ?>
         <br><small><?php echo htmlspecialchars($description); ?></small>
@@ -281,13 +343,13 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
     </div>
     
     <div>
-      <label for="lesson-select">Select Lesson: </label>
-      <select id="lesson-select" onchange="changeLesson(this.value)" <?php echo empty($lessons) ? 'disabled' : ''; ?>>
-          <option value="">Select Lesson</option>
-          <?php foreach ($lessons as $id => $lesson): ?>
+      <label for="pdf-select">Select PDF: </label>
+      <select id="pdf-select" onchange="changePDF(this.value)" <?php echo empty($pdfs) ? 'disabled' : ''; ?>>
+          <option value="">Select PDF</option>
+          <?php foreach ($pdfs as $id => $name): ?>
               <option value="<?php echo $id; ?>" 
-                      <?php echo $id === $lesson_id ? 'selected' : ''; ?>>
-                  <?php echo htmlspecialchars($lesson); ?>
+                      <?php echo $id === $pdf_id ? 'selected' : ''; ?>>
+                  <?php echo htmlspecialchars($name); ?>
               </option>
           <?php endforeach; ?>
       </select>
@@ -313,10 +375,17 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
   <div id="loading">Loading PDF document...</div>
   <div id="error" class="error" style="display: <?php echo $pdf_exists ? 'none' : 'block'; ?>;">
       <?php if (empty($file_path)): ?>
-          No PDF file associated with this lesson.
+          No PDF file associated with this document.
       <?php elseif (!$pdf_exists): ?>
           PDF file not found: <strong><?php echo htmlspecialchars($file_path); ?></strong>
       <?php endif; ?>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+      <a href="pdfs.php" class="back-pdfs-btn">&#128196; Back to PDFs</a>
+      <a href="dashboard.php" class="dashboard-btn">&#127968; Back to Dashboard</a>
+      <a href="logout.php" class="logout-btn">&#128682; Logout</a>
   </div>
 
   <script src="pdf.js"></script>
@@ -324,7 +393,7 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
     // PHP variables passed to JavaScript
     const currentPathway = "<?php echo addslashes($shs_pathway); ?>";
     const currentSubject = "<?php echo addslashes($subject); ?>";
-    const currentLessonId = <?php echo $lesson_id; ?>;
+    const currentPdfId = <?php echo $pdf_id; ?>;
     const pdfUrl = "<?php echo addslashes($file_path); ?>";
     const pdfExists = <?php echo $pdf_exists ? 'true' : 'false'; ?>;
 
@@ -344,14 +413,14 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
         const url = new URL(window.location);
         url.searchParams.set('shs_pathway', pathway);
         url.searchParams.set('subject', subject);
-        url.searchParams.delete('manual_id');
+        url.searchParams.delete('pdf_id');
         window.location.href = url.toString();
     }
 
-    function changeLesson(lessonId) {
-        if (!lessonId) return;
+    function changePDF(pdfId) {
+        if (!pdfId) return;
         const url = new URL(window.location);
-        url.searchParams.set('manual_id', lessonId);
+        url.searchParams.set('pdf_id', pdfId);
         window.location.href = url.toString();
     }
 
@@ -454,7 +523,7 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
     window.prevPage = prevPage;
     window.changeFontSize = changeFontSize;
     window.changePathway = changePathway;
-    window.changeLesson = changeLesson;
+    window.changePDF = changePDF;
 
     // Initialize PDF.js worker
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.js';
@@ -463,10 +532,10 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
     document.addEventListener('DOMContentLoaded', function() {
         if (pdfExists && pdfUrl) {
             loadPdf(pdfUrl);
-        } else if (!pdfExists && currentLessonId > 0) {
+        } else if (!pdfExists && currentPdfId > 0) {
             showError('PDF file not found: <strong>' + pdfUrl + '</strong>');
-        } else if (currentLessonId === 0) {
-            showError('Please select a lesson to view the manual.');
+        } else if (currentPdfId === 0) {
+            showError('Please select a PDF to view.');
         }
     });
 

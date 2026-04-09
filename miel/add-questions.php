@@ -1,5 +1,6 @@
 <?php
 // add-questions.php
+session_name('MIEL_SESSION');
 session_start();
 
 // Redirect to login if not logged in or not a teacher

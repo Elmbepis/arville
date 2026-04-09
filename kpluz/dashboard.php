@@ -35,6 +35,17 @@ if (!$user) {
 $user_name = $user['name'];
 $user_role = $user['role'];
 
+// Load PDF count from JSON file for admin/teacher
+$total_pdfs = 0;
+$pdf_file = 'pdfs.json';
+if (file_exists($pdf_file)) {
+    $json_content = file_get_contents($pdf_file);
+    $data = json_decode($json_content, true);
+    if ($data && isset($data['pdfs'])) {
+        $total_pdfs = count($data['pdfs']);
+    }
+}
+
 $conn->close();
 ?>
 
@@ -42,7 +53,7 @@ $conn->close();
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>PAF Training Platform - Dashboard</title>
+  <title>KPluz SHS - Dashboard</title>
   <style>
     * {
         box-sizing: border-box;
@@ -253,31 +264,44 @@ $conn->close();
   <div class="dashboard-container">
     <!-- Header with tiled background and logo -->
     <div class="header">
-        <img src="paf-logo.png" alt="PAF Logo" class="header-logo">
+        <img src="paf-logo.png" alt="KPluz Logo" class="header-logo">
     </div>
 
     <div class="user-welcome">
         <div class="welcome-text">Welcome, <?= htmlspecialchars($user_name) ?>!</div>
         <div class="user-info">
-            PAF Training Platform
+            KPluz SHS Program
             <span class="role-badge"><?= ucfirst($user_role) ?></span>
         </div>
     </div>
 
     <div class="dashboard-content">
-        <?php if ($user_role === 'trainee'): ?>
-            <!-- TRAINEE DASHBOARD - SIMPLIFIED NAVIGATION -->
+        <?php if ($user_role === 'student'): ?>
+            <!-- STUDENT DASHBOARD - SIMPLIFIED NAVIGATION -->
             <h2 class="section-title">Training Portal</h2>
             
             <div class="nav-grid">
-                <!-- Training Manuals -->
+                <!-- DepEd PDFs - NOW FIRST ENTRY FOR STUDENTS -->
                 <div class="nav-card">
                     <div class="nav-icon">&#128214;</div>
-                    <div class="nav-title">Training Manuals</div>
+                    <div class="nav-title">DepEd PDFs</div>
                     <div class="nav-description">
-                        Access all available training materials and course manuals to study and prepare for your tests.
+                        Access DepEd learning materials, lesson exemplars, and activity sheets to enhance your studies.
+                        <?php if ($total_pdfs > 0): ?>
+                        <br><small style="color: #28a745;"><?= $total_pdfs ?> PDF(s) available</small>
+                        <?php endif; ?>
                     </div>
-                    <a href="manuals.php" class="nav-btn">View Manuals</a>
+                    <a href="pdfs.php" class="nav-btn">View DepEd PDFs</a>
+                </div>
+                
+                <!-- Reading Materials (renamed from Schoolbooks) -->
+                <div class="nav-card">
+                    <div class="nav-icon">&#128214;</div>
+                    <div class="nav-title">Reading Materials</div>
+                    <div class="nav-description">
+                        Access all available reading materials and resources to study and prepare for your tests.
+                    </div>
+                    <a href="reading-materials.php" class="nav-btn">View Reading Materials</a>
                 </div>
                 
                 <!-- Training Videos -->
@@ -311,11 +335,24 @@ $conn->close();
                 </div>
             </div>
 
-        <?php elseif ($user_role === 'admin' || $user_role === 'instructor'): ?>
-            <!-- ADMIN/INSTRUCTOR DASHBOARD -->
+        <?php elseif ($user_role === 'admin' || $user_role === 'teacher'): ?>
+            <!-- ADMIN/TEACHER DASHBOARD -->
             <h2 class="section-title">Administration Portal</h2>
             
             <div class="nav-grid">
+                <!-- DepEd PDFs -->
+                <div class="nav-card">
+                    <div class="nav-icon">&#128214;</div>
+                    <div class="nav-title">DepEd PDFs</div>
+                    <div class="nav-description">
+                        Read and understand DepEd lesson exemplars and activity sheets.
+                        <?php if ($total_pdfs > 0): ?>
+                        <br><small style="color: #28a745;"><?= $total_pdfs ?> PDF(s) available</small>
+                        <?php endif; ?>
+                    </div>
+                    <a href="pdfs.php" class="nav-btn">See DepEd PDFs</a>
+                </div>
+                
                 <div class="nav-card">
                     <div class="nav-icon">&#128221;</div>
                     <div class="nav-title">Manage Questions</div>
@@ -338,7 +375,7 @@ $conn->close();
                     <div class="nav-icon">&#128202;</div>
                     <div class="nav-title">View Results</div>
                     <div class="nav-description">
-                        Check test results and track trainee progress across all assessments.
+                        Check test results and track student progress across all assessments.
                     </div>
                     <a href="results.php" class="nav-btn">View Results</a>
                 </div>
