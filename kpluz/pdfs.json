@@ -609,7 +609,138 @@
       "lesson": "Q2 Activity Sheet 8",
       "file_path": "pdfs/Life Career/SHS_LCS_Q2_LAS_LE8.pdf",
       "description": "Recreational and Rhythmic Activities for Developing Social Skills"
+    },
+        
+    
+    {
+      "id": 201,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson Exemplar 1",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LE1.pdf",
+      "description": "Batayang Kaalaman sa Wika; Mga Antas at Uri ng Komunikasyon"
+    },
+    {
+      "id": 202,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson Exemplar 2",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LE2.pdf",
+      "description": "Komunikasyong Intrapersonal at Interpersonal"
+    },
+    {
+      "id": 203,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson Exemplar 3",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LE3.pdf",
+      "description": "Tekstong Pasalita, Pasulat, Multimodal; Mga Aspekto ng Komunikasyon"
+    },
+    {
+      "id": 204,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson Exemplar 4",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LE4.pdf",
+      "description": "Magagalang na Pananalita at Pamamahala ng Usapan; Layunin ng Komunikasyon"
+    },
+    {
+      "id": 205,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson Exemplar 5",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LE5.pdf",
+      "description": "Paggamit ng Wika Ayon sa Layunin; Konsiderasyon sa Pag-unawa ng Awdiyens"
+    },
+    {
+      "id": 209,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Activity Sheet 1",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LAS_LE1.pdf",
+      "description": "Batayang Kaalaman sa Wika; Mga Antas at Uri ng Komunikasyon"
+    },
+    {
+      "id": 210,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Activity Sheet 2",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LAS_LE2.pdf",
+      "description": "Komunikasyong Intrapersonal at Interpersonal"
+    },
+    {
+      "id": 211,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Activity Sheet 3",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LAS_LE3.pdf",
+      "description": "Tekstong Pasalita, Pasulat, Multimodal; Mga Aspekto ng Komunikasyon"
+    },
+    {
+      "id": 212,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Activity Sheet 4",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LAS_LE4.pdf",
+      "description": "Magagalang na Pananalita at Pamamahala ng Usapan; Layunin ng Komunikasyon"
+    },
+    {
+      "id": 213,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Activity Sheet 5",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LAS_LE5.pdf",
+      "description": "Paggamit ng Wika Ayon sa Layunin; Konsiderasyon sa Pag-unawa ng Awdiyens"
+    },
+{
+      "id": 221,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q2 Lesson Exemplar 1",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q2_LE1.pdf",
+      "description": "Komunikasyon at Kulturang Pilipino, Kamalayang Kultural sa Komunikasyon"
+    },
+    {
+      "id": 222,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q2 Lesson Exemplar 2",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q2_LE2.pdf",
+      "description": "Mga Komunikasyong Publiko, Sibiko, o Kultural"
+    },
+    {
+      "id": 223,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q2 Lesson Exemplar 3",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q2_LE3.pdf",
+      "description": "Tekstong Public-Facing, Persuweysib, Prosidyural, Naratibo, Deskriptibo"
+    },
+    {
+      "id": 224,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q2 Activity Sheet 1",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q2_LAS1.pdf",
+      "description": "Komunikasyon at Kulturang Pilipino, Kamalayang Kultural sa Komunikasyon"
+    },
+    {
+      "id": 225,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q2 Activity Sheet 2",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q2_LAS2.pdf",
+      "description": "Mga Komunikasyong Publiko, Sibiko, o Kultural"
+    },
+    {
+      "id": 226,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q2 Activity Sheet 3",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q2_LAS3.pdf",
+      "description": "Tekstong Public-Facing, Persuweysib, Prosidyural, Naratibo, Deskriptibo"
     }
+
 
   ]
 }
