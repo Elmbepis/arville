@@ -1,0 +1,412 @@
+{
+  "pdfs": [
+    {
+      "id": 1,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q1 Lesson Exemplar 1",
+      "file_path": "rmats/Eff Comm/Q1_LE1.pdf",
+      "description": "Effective Communication in Various Forms"
+    },
+    {
+      "id": 2,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q1 Lesson Exemplar 2",
+      "file_path": "rmats/Eff Comm/Q1_LE2.pdf",
+      "description": "Intrapersonal Communication"
+    },
+    {
+      "id": 3,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q1 Lesson Exemplar 3",
+      "file_path": "rmats/Eff Comm/Q1_LE3.pdf",
+      "description": "Conversation Strategies and Politeness Markers"
+    },
+    {
+      "id": 4,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q1 Lesson Exemplar 4",
+      "file_path": "rmats/Eff Comm/Q1_LE4.pdf",
+      "description": "Resolving Personal Conflict"
+    },
+    {
+      "id": 5,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q1 Lesson Exemplar 5",
+      "file_path": "rmats/Eff Comm/Q1_LE5.pdf",
+      "description": "Cohesive Devices/Personal and Interpersonal Correspondence"
+    },
+    {
+      "id": 11,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q2 Lesson Exemplar 1",
+      "file_path": "rmats/Eff Comm/Q2_LE1.pdf",
+      "description": "Effective Communication in Social and Cultural Contexts"
+    },
+    {
+      "id": 12,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q2 Lesson Exemplar 2",
+      "file_path": "rmats/Eff Comm/Q2_LE2.pdf",
+      "description": "Social Responsibility, Cultural Diversity, and Shared Values"
+    },
+    {
+      "id": 13,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q2 Exemplar 3",
+      "file_path": "rmats/Eff Comm/Q2_LE3.pdf",
+      "description": "Cultural Awareness and Sensitivity"
+    },
+    {
+      "id": 14,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q2 Lesson Exemplar 4",
+      "file_path": "rmats/Eff Comm/Q2_LE4.pdf",
+      "description": "Meaningful Public and Cultural Messages/Texts"
+    },
+    {
+      "id": 51,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q1 Lesson Exemplar 1",
+      "file_path": "rmats/Gen Math/Q1_LE1.pdf",
+      "description": "Computing Salary, Wage, and Commission"
+    },
+    {
+      "id": 52,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q1 Lesson Exemplar 2",
+      "file_path": "rmats/Gen Math/Q1_LE2.pdf",
+      "description": "Sequences"
+    },
+    {
+      "id": 53,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q1 Lesson Exemplar 3",
+      "file_path": "rmats/Gen Math/Q1_LE3.pdf",
+      "description": "Application of Sequences: Interest, Appreciation, Depreciation, etc."
+    },
+    {
+      "id": 57,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q2 Lesson Exemplar 4",
+      "file_path": "rmats/Gen Math/Q2_LE4.pdf",
+      "description": "Measurement and Conversion"
+    },
+    {
+      "id": 58,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q2 Lesson Exemplar 5",
+      "file_path": "rmats/Gen Math/Q2_LE5.pdf",
+      "description": "Functions and its Graphs"
+    },
+    {
+      "id": 59,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q2 Lesson Exemplar 6",
+      "file_path": "rmats/Gen Math/Q2_LE6.pdf",
+      "description": "Statistical Variables"
+    },
+    {
+      "id": 101,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson Exemplar 1",
+      "file_path": "rmats/Gen Sci/Q1_LE1.pdf",
+      "description": "Physics in Daily Life"
+    },
+    {
+      "id": 102,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson Exemplar 2",
+      "file_path": "rmats/Gen Sci/Q1_LE2.pdf",
+      "description": "Translational and Rotational Motion"
+    },
+    {
+      "id": 103,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson Exemplar 3",
+      "file_path": "rmats/Gen Sci/Q1_LE3.pdf",
+      "description": "Simple and Compound Machines"
+    },
+    {
+      "id": 104,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson Exemplar 4",
+      "file_path": "rmats/Gen Sci/Q1_LE4.pdf",
+      "description": "Characteristics of Efficient Machines"
+    },
+    {
+      "id": 105,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson Exemplar 5",
+      "file_path": "rmats/Gen Sci/Q1_LE5.pdf",
+      "description": "The Physics of Fluids 1"
+    },
+    {
+      "id": 106,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson Exemplar 6",
+      "file_path": "rmats/Gen Sci/Q1_LE6.pdf",
+      "description": "The Physics of Fluids 2"
+    },
+    {
+      "id": 107,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson Exemplar 7",
+      "file_path": "rmats/Gen Sci/Q1_LE7.pdf",
+      "description": "Utilization of Electricity"
+    },
+    {
+      "id": 108,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson Exemplar 8",
+      "file_path": "rmats/Gen Sci/Q1_LE8.pdf",
+      "description": "Utilization of Electricity 2"
+    },
+    {
+      "id": 117,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q2 Lesson Exemplar 1",
+      "file_path": "rmats/Gen Sci/Q2_LE1.pdf",
+      "description": "Chemists and their Impact on our Lives"
+    },
+    {
+      "id": 118,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q2 Lesson Exemplar 2",
+      "file_path": "rmats/Gen Sci/Q2_LE2.pdf",
+      "description": "Applications of Chemical Substances"
+    },
+    {
+      "id": 119,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q2 Lesson Exemplar 4",
+      "file_path": "rmats/Gen Sci/Q2_LE4.pdf",
+      "description": "Chemical Reactions in Everyday Life"
+    },
+    {
+      "id": 120,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q2 Lesson Exemplar 6",
+      "file_path": "rmats/Gen Sci/Q2_LE6.pdf",
+      "description": "Metabolism as Chemical Reaction in the Body"
+    },
+    {
+      "id": 151,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson Exemplar 1",
+      "file_path": "rmats/Life Career/Q1_LE1.pdf",
+      "description": "Understanding and Strengthening the Self"
+    },
+    {
+      "id": 152,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson Exemplar 2",
+      "file_path": "rmats/Life Career/Q1_LE2.pdf",
+      "description": "Protective and Risk Factors of Late Adolescence"
+    },
+    {
+      "id": 153,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson Exemplar 3",
+      "file_path": "rmats/Life Career/Q1_LE3.pdf",
+      "description": "Strengthening Protective Factors and Minimizing Risk Factors"
+    },
+    {
+      "id": 154,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson Exemplar 4",
+      "file_path": "rmats/Life Career/Q1_LE4.pdf",
+      "description": "Promoting Development/Well-Being Through Fitness and Mindfulness Activities"
+    },
+    {
+      "id": 155,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson Exemplar 5",
+      "file_path": "rmats/Life Career/Q1_LE5.pdf",
+      "description": "Personal Mindfulness Activities and Routine Plan"
+    },
+    {
+      "id": 156,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson Exemplar 6",
+      "file_path": "rmats/Life Career/Q1_LE6.pdf",
+      "description": "Applying Life Skills to Different Domains"
+    },
+    {
+      "id": 157,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson Exemplar 7",
+      "file_path": "rmats/Life Career/Q1_LE7.pdf",
+      "description": "Applying Life Skills to Different Domains 2"
+    },
+    {
+      "id": 158,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson Exemplar 8",
+      "file_path": "rmats/Life Career/Q1_LE8.pdf",
+      "description": "Achieving Life Balance and Managing Emotions Through Self-Regulation"
+    },
+    {
+      "id": 167,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson Exemplar 1",
+      "file_path": "rmats/Life Career/Q2_LE1.pdf",
+      "description": "The Nature and Dynamics of Social Relationships"
+    },
+    {
+      "id": 168,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson Exemplar 2",
+      "file_path": "rmats/Life Career/Q2_LE2.pdf",
+      "description": "Building Happy Relationships"
+    },
+    {
+      "id": 169,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson Exemplar 3",
+      "file_path": "rmats/Life Career/Q2_LE3.pdf",
+      "description": "Applying Interpersonal Effectiveness, Principles, and Practices"
+    },
+    {
+      "id": 170,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson Exemplar 4",
+      "file_path": "rmats/Life Career/Q2_LE4.pdf",
+      "description": "Effective Communication as a Core Interpersonal Skill"
+    },
+    {
+      "id": 171,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson Exemplar 5",
+      "file_path": "rmats/Life Career/Q2_LE5.pdf",
+      "description": "Relational Harmony"
+    },
+    {
+      "id": 172,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson Exemplar 6",
+      "file_path": "rmats/Life Career/Q2_LE6.pdf",
+      "description": "Building Personal Effectiveness Through Social Interaction"
+    },
+    {
+      "id": 173,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson Exemplar 7",
+      "file_path": "rmats/Life Career/Q2_LE7.pdf",
+      "description": "Team Sports Including Traditional Filipino Games"
+    },
+    {
+      "id": 174,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson Exemplar 8",
+      "file_path": "rmats/Life Career/Q2_LE8.pdf",
+      "description": "Recreational and Rhythmic Activities for Developing Social Skills"
+    },
+    {
+      "id": 201,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson Exemplar 1",
+      "file_path": "rmats/Mabisang Kom/Q1_LE1.pdf",
+      "description": "Batayang Kaalaman sa Wika; Mga Antas at Uri ng Komunikasyon"
+    },
+    {
+      "id": 202,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson Exemplar 2",
+      "file_path": "rmats/Mabisang Kom/Q1_LE2.pdf",
+      "description": "Komunikasyong Intrapersonal at Interpersonal"
+    },
+    {
+      "id": 203,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson Exemplar 3",
+      "file_path": "rmats/Mabisang Kom/Q1_LE3.pdf",
+      "description": "Tekstong Pasalita, Pasulat, Multimodal; Mga Aspekto ng Komunikasyon"
+    },
+    {
+      "id": 204,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson Exemplar 4",
+      "file_path": "rmats/Mabisang Kom/Q1_LE4.pdf",
+      "description": "Magagalang na Pananalita at Pamamahala ng Usapan; Layunin ng Komunikasyon"
+    },
+    {
+      "id": 205,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson Exemplar 5",
+      "file_path": "rmats/Mabisang Kom/Q1_LE5.pdf",
+      "description": "Paggamit ng Wika Ayon sa Layunin; Konsiderasyon sa Pag-unawa ng Awdiyens"
+    },
+    {
+      "id": 221,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q2 Lesson Exemplar 1",
+      "file_path": "rmats/Mabisang Kom/Q2_LE1.pdf",
+      "description": "Komunikasyon at Kulturang Pilipino, Kamalayang Kultural sa Komunikasyon"
+    },
+    {
+      "id": 222,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q2 Lesson Exemplar 2",
+      "file_path": "rmats/Mabisang Kom/Q2_LE2.pdf",
+      "description": "Mga Komunikasyong Publiko, Sibiko, o Kultural"
+    },
+    {
+      "id": 223,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q2 Lesson Exemplar 3",
+      "file_path": "rmats/Mabisang Kom/Q2_LE3.pdf",
+      "description": "Tekstong Public-Facing, Persuweysib, Prosidyural, Naratibo, Deskriptibo"
+    }
+  ]
+}

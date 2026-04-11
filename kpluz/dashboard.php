@@ -35,7 +35,7 @@ if (!$user) {
 $user_name = $user['name'];
 $user_role = $user['role'];
 
-// Load PDF count from JSON file for admin/teacher
+// Load PDF count from JSON file
 $total_pdfs = 0;
 $pdf_file = 'pdfs.json';
 if (file_exists($pdf_file)) {
@@ -43,6 +43,17 @@ if (file_exists($pdf_file)) {
     $data = json_decode($json_content, true);
     if ($data && isset($data['pdfs'])) {
         $total_pdfs = count($data['pdfs']);
+    }
+}
+
+// Load RMATS count from JSON file
+$total_rmats = 0;
+$rmats_file = 'rmats.json';
+if (file_exists($rmats_file)) {
+    $json_content = file_get_contents($rmats_file);
+    $data = json_decode($json_content, true);
+    if ($data && isset($data['pdfs'])) {
+        $total_rmats = count($data['pdfs']);
     }
 }
 
@@ -277,11 +288,11 @@ $conn->close();
 
     <div class="dashboard-content">
         <?php if ($user_role === 'student'): ?>
-            <!-- STUDENT DASHBOARD - SIMPLIFIED NAVIGATION -->
+            <!-- STUDENT DASHBOARD -->
             <h2 class="section-title">Training Portal</h2>
             
             <div class="nav-grid">
-                <!-- DepEd PDFs - NOW FIRST ENTRY FOR STUDENTS -->
+                <!-- DepEd PDFs -->
                 <div class="nav-card">
                     <div class="nav-icon">&#128214;</div>
                     <div class="nav-title">DepEd PDFs</div>
@@ -294,14 +305,17 @@ $conn->close();
                     <a href="pdfs.php" class="nav-btn">View DepEd PDFs</a>
                 </div>
                 
-                <!-- Reading Materials (renamed from Schoolbooks) -->
+                <!-- Reading Materials -->
                 <div class="nav-card">
                     <div class="nav-icon">&#128214;</div>
                     <div class="nav-title">Reading Materials</div>
                     <div class="nav-description">
                         Access all available reading materials and resources to study and prepare for your tests.
+                        <?php if ($total_rmats > 0): ?>
+                        <br><small style="color: #28a745;"><?= $total_rmats ?> material(s) available</small>
+                        <?php endif; ?>
                     </div>
-                    <a href="reading-materials.php" class="nav-btn">View Reading Materials</a>
+                    <a href="rmats.php" class="nav-btn">View Reading Materials</a>
                 </div>
                 
                 <!-- Training Videos -->
@@ -350,7 +364,20 @@ $conn->close();
                         <br><small style="color: #28a745;"><?= $total_pdfs ?> PDF(s) available</small>
                         <?php endif; ?>
                     </div>
-                    <a href="pdfs.php" class="nav-btn">See DepEd PDFs</a>
+                    <a href="pdfs.php" class="nav-btn">View DepEd PDFs</a>
+                </div>
+                
+                <!-- Reading Materials -->
+                <div class="nav-card">
+                    <div class="nav-icon">&#128214;</div>
+                    <div class="nav-title">Reading Materials</div>
+                    <div class="nav-description">
+                        Access reading materials and resources for lesson preparation and student reference.
+                        <?php if ($total_rmats > 0): ?>
+                        <br><small style="color: #28a745;"><?= $total_rmats ?> material(s) available</small>
+                        <?php endif; ?>
+                    </div>
+                    <a href="rmats.php" class="nav-btn">View Reading Materials</a>
                 </div>
                 
                 <div class="nav-card">
@@ -395,6 +422,7 @@ $conn->close();
 
         <!-- Action Buttons -->
         <div class="action-buttons">
+            <a href="dashboard.php" class="dashboard-btn">Refresh Dashboard</a>
             <a href="logout.php" class="logout-btn">Logout</a>
         </div>
     </div>

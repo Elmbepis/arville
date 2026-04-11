@@ -16,8 +16,8 @@ $shs_pathway = isset($_GET['shs_pathway']) ? urldecode($_GET['shs_pathway']) : '
 $subject = isset($_GET['subject']) ? urldecode($_GET['subject']) : '';
 $pdf_id = isset($_GET['pdf_id']) ? (int)$_GET['pdf_id'] : 0;
 
-// Load PDFs from JSON file
-$json_file = 'pdfs.json';
+// Load PDFs from RMATS JSON file
+$json_file = 'rmats.json';
 $all_pdfs = [];
 $pdf_name = '';
 $description = '';
@@ -83,14 +83,14 @@ if (!empty($shs_pathway) && !empty($subject)) {
 }
 
 // Display name for current selection
-$display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - ' . $subject : 'DepEd PDF';
+$display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - ' . $subject : 'DepEd Reading Material';
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>KPluz SHS - DepEd PDF Viewer</title>
+  <title>KPluz SHS - DepEd Reading Material Viewer</title>
   <style>
     * {
         box-sizing: border-box;
@@ -240,7 +240,7 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
         flex-wrap: wrap;
     }
     
-    .back-pdfs-btn {
+    .back-rmats-btn {
         padding: 12px 24px;
         border: none;
         background: #4A90E2;
@@ -253,7 +253,7 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
         display: inline-block;
     }
     
-    .back-pdfs-btn:hover { 
+    .back-rmats-btn:hover { 
         background: #357ABD; 
         color: white;
     }
@@ -301,11 +301,11 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
     <img src="paf-logo.png" alt="KPluz Logo" class="header-logo">
   </div>
 
-  <h2><?php echo htmlspecialchars($display_name); ?> - DepEd PDF</h2>
+  <h2><?php echo htmlspecialchars($display_name); ?></h2>
   <div class="course-info">
     Subject: <?php echo htmlspecialchars($subject); ?><br>
     <?php if (!empty($pdf_name)): ?>
-        PDF: <?php echo htmlspecialchars($pdf_name); ?>
+        Material: <?php echo htmlspecialchars($pdf_name); ?>
     <?php endif; ?>
     <?php if (!empty($description)): ?>
         <br><small><?php echo htmlspecialchars($description); ?></small>
@@ -342,9 +342,9 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
     </div>
     
     <div>
-      <label for="pdf-select">Select PDF: </label>
+      <label for="pdf-select">Select Material: </label>
       <select id="pdf-select" onchange="changePDF(this.value)" <?php echo empty($pdfs) ? 'disabled' : ''; ?>>
-          <option value="">Select PDF</option>
+          <option value="">Select Material</option>
           <?php foreach ($pdfs as $id => $name): ?>
               <option value="<?php echo $id; ?>" 
                       <?php echo $id === $pdf_id ? 'selected' : ''; ?>>
@@ -371,18 +371,18 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
   </div>
 
   <canvas id="pdf-viewer"></canvas>
-  <div id="loading">Loading PDF document...</div>
+  <div id="loading">Loading reading material...</div>
   <div id="error" class="error" style="display: <?php echo $pdf_exists ? 'none' : 'block'; ?>;">
       <?php if (empty($file_path)): ?>
-          No PDF file associated with this document.
+          No reading material associated with this document.
       <?php elseif (!$pdf_exists): ?>
-          PDF file not found: <strong><?php echo htmlspecialchars($file_path); ?></strong>
+          Reading material not found: <strong><?php echo htmlspecialchars($file_path); ?></strong>
       <?php endif; ?>
   </div>
 
   <!-- Action Buttons -->
   <div class="action-buttons">
-      <a href="pdfs.php" class="back-pdfs-btn">&#128196; Back to PDFs</a>
+      <a href="rmats.php" class="back-rmats-btn">&#128196; Back to Reading Materials</a>
       <a href="dashboard.php" class="dashboard-btn">&#127968; Back to Dashboard</a>
       <a href="logout.php" class="logout-btn">&#128682; Logout</a>
   </div>
@@ -481,7 +481,7 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
         document.getElementById('current-font-size').textContent = '100%';
         hideError();
         loading.style.display = "block";
-        loading.textContent = "Loading PDF...";
+        loading.textContent = "Loading reading material...";
 
         pdfjsLib.getDocument(url).promise.then(pdf => {
             pdfDoc = pdf;
@@ -490,7 +490,7 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
             renderPage(currentPage);
         }).catch(err => {
             console.error('Error loading PDF:', err);
-            showError('Error loading PDF: ' + err.message + '<br>File: <strong>' + url + '</strong>');
+            showError('Error loading reading material: ' + err.message + '<br>File: <strong>' + url + '</strong>');
         });
     }
 
@@ -532,9 +532,9 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
         if (pdfExists && pdfUrl) {
             loadPdf(pdfUrl);
         } else if (!pdfExists && currentPdfId > 0) {
-            showError('PDF file not found: <strong>' + pdfUrl + '</strong>');
+            showError('Reading material not found: <strong>' + pdfUrl + '</strong>');
         } else if (currentPdfId === 0) {
-            showError('Please select a PDF to view.');
+            showError('Please select a reading material to view.');
         }
     });
 
