@@ -60,7 +60,7 @@
       "id": 13,
       "shs_pathway": "SHS Core Subject",
       "subject": "Effective Communication",
-      "lesson": "Q2 Exemplar 3",
+      "lesson": "Q2 Lesson 3",
       "file_path": "rmats/Eff Comm/Q2_LE3.pdf",
       "description": "Cultural Awareness and Sensitivity"
     },
@@ -262,7 +262,7 @@
       "subject": "Life and Career Skills",
       "lesson": "Q1 Lesson 6",
       "file_path": "rmats/Life Career/Q1_LE6.pdf",
-      "description": "Applying Life Skills to Different Domains"
+      "description": "Applying Life Skills to Different Domains (Part 1)"
     },
     {
       "id": 157,
@@ -270,7 +270,7 @@
       "subject": "Life and Career Skills",
       "lesson": "Q1 Lesson 7",
       "file_path": "rmats/Life Career/Q1_LE7.pdf",
-      "description": "Applying Life Skills to Different Domains 2"
+      "description": "Applying Life Skills to Different Domains (Part 2)"
     },
     {
       "id": 158,

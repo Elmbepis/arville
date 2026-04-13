@@ -288,24 +288,11 @@ $conn->close();
 
     <div class="dashboard-content">
         <?php if ($user_role === 'student'): ?>
-            <!-- STUDENT DASHBOARD -->
+            <!-- STUDENT DASHBOARD - DepEd PDFs REMOVED -->
             <h2 class="section-title">Training Portal</h2>
             
             <div class="nav-grid">
-                <!-- DepEd PDFs -->
-                <div class="nav-card">
-                    <div class="nav-icon">&#128214;</div>
-                    <div class="nav-title">DepEd PDFs</div>
-                    <div class="nav-description">
-                        Access DepEd learning materials, lesson exemplars, and activity sheets to enhance your studies.
-                        <?php if ($total_pdfs > 0): ?>
-                        <br><small style="color: #28a745;"><?= $total_pdfs ?> PDF(s) available</small>
-                        <?php endif; ?>
-                    </div>
-                    <a href="pdfs.php" class="nav-btn">View DepEd PDFs</a>
-                </div>
-                
-                <!-- Reading Materials -->
+                <!-- Reading Materials (First for students now) -->
                 <div class="nav-card">
                     <div class="nav-icon">&#128214;</div>
                     <div class="nav-title">Reading Materials</div>
@@ -350,7 +337,7 @@ $conn->close();
             </div>
 
         <?php elseif ($user_role === 'admin' || $user_role === 'teacher'): ?>
-            <!-- ADMIN/TEACHER DASHBOARD -->
+            <!-- ADMIN/TEACHER DASHBOARD - DepEd PDFs KEPT -->
             <h2 class="section-title">Administration Portal</h2>
             
             <div class="nav-grid">
