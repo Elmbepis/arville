@@ -634,7 +634,7 @@
       "subject": "Mabisang Komunikasyon",
       "lesson": "Q1 Lesson Exemplar 3",
       "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LE3.pdf",
-      "description": "Tekstong Pasalita, Pasulat, Multimodal; Mga Aspekto ng Komunikasyon"
+      "description": "Tekstong Pasalita, Pasulat, at Multimodal"
     },
     {
       "id": 204,
@@ -642,7 +642,7 @@
       "subject": "Mabisang Komunikasyon",
       "lesson": "Q1 Lesson Exemplar 4",
       "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LE4.pdf",
-      "description": "Magagalang na Pananalita at Pamamahala ng Usapan; Layunin ng Komunikasyon"
+      "description": "Magagalang na Pananalita at Pamamahala ng Usapan"
     },
     {
       "id": 205,
@@ -674,7 +674,7 @@
       "subject": "Mabisang Komunikasyon",
       "lesson": "Q1 Activity Sheet 3",
       "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LAS_LE3.pdf",
-      "description": "Tekstong Pasalita, Pasulat, Multimodal; Mga Aspekto ng Komunikasyon"
+      "description": "Tekstong Pasalita, Pasulat, at Multimodal"
     },
     {
       "id": 212,
@@ -682,7 +682,7 @@
       "subject": "Mabisang Komunikasyon",
       "lesson": "Q1 Activity Sheet 4",
       "file_path": "pdfs/Mabisang Kom/SHS_MK_Q1_LAS_LE4.pdf",
-      "description": "Magagalang na Pananalita at Pamamahala ng Usapan; Layunin ng Komunikasyon"
+      "description": "Magagalang na Pananalita at Pamamahala ng Usapan"
     },
     {
       "id": 213,
@@ -739,7 +739,122 @@
       "lesson": "Q2 Activity Sheet 3",
       "file_path": "pdfs/Mabisang Kom/SHS_MK_Q2_LAS3.pdf",
       "description": "Tekstong Public-Facing, Persuweysib, Prosidyural, Naratibo, Deskriptibo"
+    },
+
+
+    {
+      "id": 251,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson Exemplar 1",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LE1.pdf",
+      "description": "Kamalayang Pangkasaysayan"
+    },
+    {
+      "id": 252,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson Exemplar 2",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LE2.pdf",
+      "description": "Ugnayan ng Heograpiya at Kultura 1"
+    },
+    {
+      "id": 253,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson Exemplar 3",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LE3.pdf",
+      "description": "Ugnayan ng Heograpiya at Kultura 2"
+    },
+    {
+      "id": 254,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson Exemplar 4",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LE4.pdf",
+      "description": "Kaugnayan ng Kultura sa Kamalayang Pangkaaysayan"
+    },
+    {
+      "id": 255,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson Exemplar 5",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LE5.pdf",
+      "description": "Mga Paniniwala ng mga Pilipino Tungkol sa Buhay at Kabilang-buhay"
+    },
+    {
+      "id": 256,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson Exemplar 6",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LE6.pdf",
+      "description": "Mga Katutubo at Tradisyunal na Paraan ng Pagpapagaling"
+    },
+    {
+      "id": 257,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson Exemplar 7",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LE7.pdf",
+      "description": "Pagpapahalaga sa mga Personal at Panlipunang Paniniwala/Pananampalataya"
+    },
+    {
+      "id": 261,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Activity Sheet 1",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LAS_LE1.pdf",
+      "description": "Kamalayang Pangkasaysayan"
+    },
+    {
+      "id": 262,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Activity Sheet 2",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LAS_LE2.pdf",
+      "description": "Ugnayan ng Heograpiya at Kultura"
+    },
+    {
+      "id": 263,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Activity Sheet 3",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LAS_LE3.pdf",
+      "description": "Natatanging Kultura at Kabuhayan sa Ilaya at Ilawod"
+    },
+    {
+      "id": 264,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Activity Sheet 4",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LAS_LE4.pdf",
+      "description": "Kaugnayan ng Kultura sa Kamalayang Pangkaaysayan"
+    },
+    {
+      "id": 265,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Activity Sheet 5",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LAS_LE5.pdf",
+      "description": "Mga Paniniwala ng mga Pilipino Tungkol sa Buhay at Kabilang-buhay"
+    },
+    {
+      "id": 266,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Activity Sheet 6",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LAS_LE6.pdf",
+      "description": "Mga Katutubo at Tradisyunal na Paraan ng Pagpapagaling"
+    },
+    {
+      "id": 267,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Activity Sheet 7",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q1_LAS_LE7.pdf",
+      "description": "Pagpapahalaga sa mga Personal at Panlipunang Paniniwala/Pananampalataya"
     }
+
 
 
   ]

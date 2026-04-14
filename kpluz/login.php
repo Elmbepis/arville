@@ -111,25 +111,6 @@ $conn->close();
         justify-content: center;
     }
 
-    /* Header background strip */
-    .header {
-        width: 100%;
-        max-width: 800px;
-        height: 200px;
-        background: url('header-bg.jpg') repeat-x top center;
-        background-size: auto 200px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 30px;
-        border-radius: 10px 10px 0 0;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-    .header-logo {
-        max-height: 120px;
-    }
-    
     .login-container {
         background: white;
         border-radius: 10px;
@@ -301,7 +282,7 @@ $conn->close();
   <div class="login-container">
     <!-- Header with tiled background and logo -->
     <div class="header">
-        <img src="paf-logo.png" alt="KPluz Logo" class="header-logo">
+        <img src="images/kpluz_logo.png" alt="KPluz Logo" class="header-logo">
     </div>
 
     <div class="form-tabs">

@@ -98,23 +98,6 @@ foreach ($all_pdfs as $pdf) {
         padding: 20px;
     }
 
-    /* Header background strip */
-    .header {
-        width: 100%;
-        height: 200px;
-        background: url('header-bg.jpg') repeat-x top center;
-        background-size: auto 200px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-    .header-logo {
-        max-height: 120px;
-    }
     
     .dashboard-container {
         background: white;
@@ -341,7 +324,7 @@ foreach ($all_pdfs as $pdf) {
   <div class="dashboard-container">
     <!-- Header with tiled background and logo -->
     <div class="header">
-        <img src="paf-logo.png" alt="KPluz Logo" class="header-logo">
+        <img src="images/kpluz_logo.png" alt="KPluz Logo" class="header-logo">
     </div>
 
     <div class="user-welcome">

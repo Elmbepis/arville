@@ -102,22 +102,6 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
         margin: 0;
         padding: 20px;
     }
-
-    /* Header background strip */
-    .header {
-        width: 100%;
-        height: 264px;
-        background: url('header-bg.jpg') repeat-x top center;
-        background-size: auto 264px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .header-logo {
-        max-height: 200px;
-    }
     
     h2 {
         color: #003366;
@@ -298,7 +282,7 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
 <body>
   <!-- Header with tiled background and logo -->
   <div class="header">
-    <img src="paf-logo.png" alt="KPluz Logo" class="header-logo">
+    <img src="images/kpluz_logo.png" alt="KPluz Logo" class="header-logo">
   </div>
 
   <h2><?php echo htmlspecialchars($display_name); ?></h2>
