@@ -349,7 +349,7 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
     <div class="font-controls">
       <span style="color: #666;">Text Size:</span>
       <button class="font-btn" onclick="changeFontSize(-2)" title="Decrease text size">A-</button>
-      <span id="current-font-size">100%</span>
+      <span id="current-font-size">140%</span>
       <button class="font-btn" onclick="changeFontSize(2)" title="Increase text size">A+</button>
     </div>
   </div>
@@ -382,7 +382,7 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
 
     let pdfDoc = null;
     let currentPage = 1;
-    let currentScale = 1.0;
+    let currentScale = 1.4;
     let renderTask = null;
     let isRendering = false;
 
@@ -459,10 +459,10 @@ $display_name = (!empty($shs_pathway) && !empty($subject)) ? $shs_pathway . ' - 
         cancelRendering();
         pdfDoc = null;
         currentPage = 1;
-        currentScale = 1.0;
+        currentScale = 1.4;
         document.getElementById('page-num').textContent = '1';
         document.getElementById('page-count').textContent = '0';
-        document.getElementById('current-font-size').textContent = '100%';
+        document.getElementById('current-font-size').textContent = '140%';
         hideError();
         loading.style.display = "block";
         loading.textContent = "Loading PDF...";
