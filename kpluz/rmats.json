@@ -174,7 +174,7 @@
       "subject": "General Science",
       "lesson": "Q1 Lesson 7",
       "file_path": "rmats/Gen Sci/Q1_LE7.pdf",
-      "description": "Utilization of Electricity"
+      "description": "Electrical Hazards and Safety Practices"
     },
     {
       "id": 108,
@@ -182,7 +182,7 @@
       "subject": "General Science",
       "lesson": "Q1 Lesson 8",
       "file_path": "rmats/Gen Sci/Q1_LE8.pdf",
-      "description": "Utilization of Electricity 2"
+      "description": "Energy Efficiency Practices"
     },
     {
       "id": 117,
@@ -463,7 +463,64 @@
       "lesson": "Q1 Lesson 7",
       "file_path": "rmats/Kasaysayan/Q1_LE7.pdf",
       "description": "Pagpapahalaga sa mga Personal at Panlipunang Paniniwala/Pananampalataya"
-    }
+    },
   
+    {
+      "id": 271,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Kasaysayan/Q2_LE1.pdf",
+      "description": "Mga Anyo ng Pakikibaka at Pakikiangkop sa Pag-usbong ng Kamalayang Pilipino"
+    },
+    {
+      "id": 272,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 2.1",
+      "file_path": "rmats/Kasaysayan/Q2_LE2.1.pdf",
+      "description": "Pakikibaka Laban sa mga Dayuhang Espanyol, Amerikano, at Hapon 1"
+    },
+    {
+      "id": 273,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 2.2",
+      "file_path": "rmats/Kasaysayan/Q2_LE2.2.pdf",
+      "description": "Pakikibaka Laban sa mga Dayuhang Espanyol, Amerikano, at Hapon 2"
+    },
+    {
+      "id": 274,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Kasaysayan/Q2_LE3.pdf",
+      "description": "Mga Naging Tugon ng Pilipino sa Kasaysayan"
+    },
+    {
+      "id": 275,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 4",
+      "file_path": "rmats/Kasaysayan/Q2_LE4.pdf",
+      "description": "Mga Karanasan ng Pakikiangkop sa Panahon ng Pagsasarili"
+    },
+    {
+      "id": 276,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 5",
+      "file_path": "rmats/Kasaysayan/Q2_LE5.pdf",
+      "description": "Bunga ng Lokal na Elistismo at Diktadura sa Kamalayang Pilipino"
+    },
+    {
+      "id": 277,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 6",
+      "file_path": "rmats/Kasaysayan/Q2_LE6.pdf",
+      "description": "Pagsasakonteksto ng Kasalukuyang Anyo ng Pakikibaka at Pakikiangkop"
+    }
+
   ]
 }
