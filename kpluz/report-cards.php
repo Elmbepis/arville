@@ -11,7 +11,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 }
 
 // Database connection
-$conn = new mysqli("localhost", "root", "AcadeV25!", "courses");
+$conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
@@ -33,25 +33,35 @@ if (!$user) {
 $user_name = $user['name'];
 $user_role = $user['role'];
 
-// Get available tests with topics for trainees
-$tests = [];
-if ($user_role === 'trainee') {
-    $test_result = $conn->query("SELECT test, topic FROM tests");
+// Get ALL tests grouped by subject
+$tests_by_subject = [];
+$total_tests = 0;
+
+if ($user_role === 'student') {
+    $test_result = $conn->query("SELECT id, subject, lesson, topic FROM tests ORDER BY subject, lesson");
     while ($row = $test_result->fetch_assoc()) {
-        $tests[] = $row;
+        $subject = $row['subject'];
+        if (!isset($tests_by_subject[$subject])) {
+            $tests_by_subject[$subject] = [];
+        }
+        $tests_by_subject[$subject][] = $row;
+        $total_tests++;
     }
 }
 
-// Get completed tests to check which tests have been taken
-$completed_tests = [];
-if ($user_role === 'trainee') {
-    $stmt = $conn->prepare("SELECT DISTINCT test_name FROM test_results WHERE user_id = ?");
+// Get completed tests with scores
+$completed_scores = [];
+if ($user_role === 'student') {
+    $stmt = $conn->prepare("SELECT lesson, score, percentage FROM test_results WHERE user_id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
     
     while ($row = $result->fetch_assoc()) {
-        $completed_tests[] = $row['test_name'];
+        $completed_scores[$row['lesson']] = [
+            'score' => $row['score'],
+            'percentage' => $row['percentage']
+        ];
     }
 }
 
@@ -62,7 +72,7 @@ $conn->close();
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>PAF Training Platform - Report Cards</title>
+  <title>KPluz SHS - Report Cards</title>
   <style>
     * {
         box-sizing: border-box;
@@ -73,24 +83,6 @@ $conn->close();
         background: #f0f0f0; 
         margin: 0;
         padding: 20px;
-    }
-
-    /* Header background strip */
-    .header {
-        width: 100%;
-        height: 200px;
-        background: url('header-bg.jpg') repeat-x top center;
-        background-size: auto 200px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-    .header-logo {
-        max-height: 120px;
     }
     
     .dashboard-container {
@@ -142,24 +134,57 @@ $conn->close();
         padding-bottom: 10px;
         margin-bottom: 30px;
         font-size: 1.5em;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
     }
     
-    /* Report Cards Section - 4 CARDS PER ROW */
-    .report-grid {
+    .report-count {
+        background: #28a745;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: normal;
+    }
+    
+    /* Report Cards Section */
+    .reports-section {
+        margin-bottom: 50px;
+    }
+    
+    .subject-reports {
+        margin-bottom: 40px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #003366;
+    }
+    
+    .subject-title {
+        font-size: 1.3em;
+        color: #003366;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+    
+    /* 4-Column Grid */
+    .reports-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 25px;
-        margin-top: 20px;
+        gap: 20px;
+        margin-top: 15px;
     }
     
     .report-card {
-        background: #f8f9fa;
+        background: white;
         border: 1px solid #e1e5e9;
         border-radius: 8px;
-        padding: 25px;
+        padding: 20px;
         text-align: center;
         transition: transform 0.3s, box-shadow 0.3s;
-        min-height: 180px;
+        min-height: 200px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -170,18 +195,52 @@ $conn->close();
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
     
-    .report-topic {
-        font-size: 1.1em;
-        color: #555;
-        line-height: 1.4;
-        margin-bottom: 15px;
-        flex-grow: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: normal;
+    .report-icon {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        color: #003366;
     }
     
+    .report-lesson {
+        font-size: 1em;
+        color: #0066cc;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+    
+    .report-topic {
+        font-size: 0.85em;
+        color: #555;
+        line-height: 1.4;
+        margin-bottom: 10px;
+        flex-grow: 1;
+    }
+    
+    .score-display {
+        font-size: 1.1em;
+        font-weight: bold;
+        margin-bottom: 10px;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    
+    .score-passed {
+        color: #28a745;
+    }
+    
+    .score-failed {
+        color: #dc3545;
+    }
+    
+    .not-taken {
+        color: #999;
+        font-style: italic;
+        font-size: 0.85em;
+        margin-bottom: 10px;
+        padding: 5px;
+    }
+    
+    /* Button styles */
     .view-report-btn {
         display: inline-block;
         padding: 8px 16px;
@@ -195,7 +254,7 @@ $conn->close();
         width: auto;
         max-width: 70%;
         margin: 0 auto;
-    }    
+    }
     
     .view-report-btn:hover {
         background: #218838;
@@ -226,26 +285,12 @@ $conn->close();
         border-radius: 8px;
     }
     
-    .completion-status {
-        font-size: 0.8em;
-        color: #dc3545;
-        margin-top: 8px;
-        font-style: italic;
-    }
-    
-    .completed-status {
-        font-size: 0.8em;
-        color: #28a745;
-        margin-top: 8px;
-        font-style: italic;
-    }
-    
-    /* Action Buttons - Exact same as manual.php */
+    /* Action Buttons */
     .action-buttons {
         display: flex;
         justify-content: center;
         gap: 15px;
-        margin-top: 50px;
+        margin-top: 30px;
         flex-wrap: wrap;
     }
     
@@ -287,24 +332,24 @@ $conn->close();
 
     /* Responsive design for smaller screens */
     @media (max-width: 1200px) {
-        .report-grid {
+        .reports-grid {
             grid-template-columns: repeat(3, 1fr);
         }
     }
     
     @media (max-width: 900px) {
-        .report-grid {
+        .reports-grid {
             grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    
-    @media (max-width: 600px) {
-        .report-grid {
-            grid-template-columns: 1fr;
         }
         
         .dashboard-content {
             padding: 20px;
+        }
+    }
+    
+    @media (max-width: 600px) {
+        .reports-grid {
+            grid-template-columns: 1fr;
         }
     }
   </style>
@@ -313,57 +358,76 @@ $conn->close();
   <div class="dashboard-container">
     <!-- Header with tiled background and logo -->
     <div class="header">
-        <img src="paf-logo.png" alt="PAF Logo" class="header-logo">
+        <img src="images/kpluz_logo.png" alt="KPluz Logo" class="header-logo">
     </div>
 
     <div class="user-welcome">
         <div class="welcome-text">Welcome, <?= htmlspecialchars($user_name) ?>!</div>
         <div class="user-info">
-            PAF Training Platform - Report Cards
+            KPluz SHS - Report Cards
             <span class="role-badge"><?= ucfirst($user_role) ?></span>
         </div>
     </div>
 
     <div class="dashboard-content">
-        <?php if ($user_role === 'trainee'): ?>
-            <!-- Report Cards Section - 4 PER ROW -->
-            <h2 class="section-title">Report Cards</h2>
-            <?php if (!empty($tests)): ?>
-                <div class="report-grid">
-                    <?php foreach ($tests as $test): 
-                        $is_completed = in_array($test['test'], $completed_tests);
-                    ?>
-                        <div class="report-card">
-                            <div class="report-topic"><?= htmlspecialchars($test['topic']) ?></div>
-                            <?php if ($is_completed): ?>
-                                <a href="report-card.php?test=<?= urlencode($test['test']) ?>" class="view-report-btn">View Report Card</a>
-                                <div class="completed-status">Test Completed</div>
-                            <?php else: ?>
-                                <div class="disabled-btn">View Report Card</div>
-                                <div class="completion-status">Test Not Yet Taken</div>
-                            <?php endif; ?>
+        <?php if ($user_role === 'student'): ?>
+            <!-- STUDENT REPORT CARDS VIEW - SHOW ALL TESTS -->
+            <div class="reports-section">
+                <h2 class="section-title">
+                    My Report Cards
+                    <span class="report-count">Total: <?= $total_tests ?> Test(s)</span>
+                </h2>
+                
+                <?php if (!empty($tests_by_subject)): ?>
+                    <?php foreach ($tests_by_subject as $subject => $tests): ?>
+                        <div class="subject-reports">
+                            <div class="subject-title">
+                                <?= htmlspecialchars($subject) ?>
+                            </div>
+                            <div class="reports-grid">
+                                <?php foreach ($tests as $test): 
+                                    $is_completed = isset($completed_scores[$test['lesson']]);
+                                    $score = $is_completed ? $completed_scores[$test['lesson']]['score'] : null;
+                                    $percentage = $is_completed ? $completed_scores[$test['lesson']]['percentage'] : null;
+                                    $passed = $is_completed && $percentage >= 75;
+                                ?>
+                                    <div class="report-card">
+                                        <div class="report-icon">&#128202;</div>
+                                        <div class="report-lesson"><?= htmlspecialchars($test['lesson']) ?></div>
+                                        <div class="report-topic"><?= htmlspecialchars($test['topic']) ?></div>
+                                        
+                                        <?php if ($is_completed): ?>
+                                            <div class="score-display <?= $passed ? 'score-passed' : 'score-failed' ?>">
+                                                Score: <?= $score ?>/25 (<?= $percentage ?>%)
+                                            </div>
+                                            <a href="report-card.php?lesson=<?= urlencode($test['lesson']) ?>" class="view-report-btn">View Full Report</a>
+                                        <?php else: ?>
+                                            <div class="not-taken">
+                                                &#9888;&#65039; Test Not Taken Yet
+                                            </div>
+                                            <div class="disabled-btn">No Report Available</div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
                     <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div class="no-results">
-                    <p>No report cards available at the moment.</p>
-                </div>
-            <?php endif; ?>
+                <?php else: ?>
+                    <div class="no-results">
+                        <p>No tests available at the moment. Please check back later.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
 
         <?php else: ?>
-            <!-- For non-trainee users -->
+            <!-- For non-student users (admin or teacher) -->
             <div style="text-align: center; padding: 50px;">
                 <h2>Access Restricted</h2>
-                <p>This page is only available for trainees.</p>
-                <div class="action-buttons">
-                    <a href="dashboard.php" class="dashboard-btn">Back to Dashboard</a>
-                    <a href="logout.php" class="logout-btn">Logout</a>
-                </div>
+                <p>This page is only available for students.</p>
             </div>
         <?php endif; ?>
 
-        <!-- Action Buttons - Exact same format and position as manual.php -->
+        <!-- Action Buttons -->
         <div class="action-buttons">
             <a href="dashboard.php" class="dashboard-btn">Back to Dashboard</a>
             <a href="logout.php" class="logout-btn">Logout</a>

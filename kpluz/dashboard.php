@@ -294,7 +294,7 @@ $conn->close();
                     <div class="nav-description">
                         Watch instructional videos and multimedia content to enhance your learning experience.
                     </div>
-                    <a href="amac-videos.php" class="nav-btn">Watch Videos</a>
+                    <a href="videos.php" class="nav-btn">Watch Videos</a>
                 </div>
                 
                 <!-- Available Tests -->

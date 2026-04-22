@@ -11,7 +11,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 }
 
 // Database connection
-$conn = new mysqli("localhost", "root", "AcadeV25!", "courses");
+$conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
@@ -33,25 +33,32 @@ if (!$user) {
 $user_name = $user['name'];
 $user_role = $user['role'];
 
-// Get available tests with topics for trainees
-$tests = [];
-if ($user_role === 'trainee') {
-    $test_result = $conn->query("SELECT test, topic FROM tests");
+// Get available tests grouped by subject
+$tests_by_subject = [];
+$total_tests = 0;
+
+if ($user_role === 'student') {
+    $test_result = $conn->query("SELECT id, subject, lesson, topic FROM tests ORDER BY subject, lesson");
     while ($row = $test_result->fetch_assoc()) {
-        $tests[] = $row;
+        $subject = $row['subject'];
+        if (!isset($tests_by_subject[$subject])) {
+            $tests_by_subject[$subject] = [];
+        }
+        $tests_by_subject[$subject][] = $row;
+        $total_tests++;
     }
 }
 
 // Get completed tests to check which tests have scores
 $completed_tests = [];
-if ($user_role === 'trainee') {
-    $stmt = $conn->prepare("SELECT DISTINCT test_name FROM test_results WHERE user_id = ?");
+if ($user_role === 'student') {
+    $stmt = $conn->prepare("SELECT DISTINCT lesson FROM test_results WHERE user_id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
     
     while ($row = $result->fetch_assoc()) {
-        $completed_tests[] = $row['test_name'];
+        $completed_tests[] = $row['lesson'];
     }
 }
 
@@ -62,7 +69,7 @@ $conn->close();
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>PAF Training Platform - Tests</title>
+  <title>KPluz SHS - Tests</title>
   <style>
     * {
         box-sizing: border-box;
@@ -73,24 +80,6 @@ $conn->close();
         background: #f0f0f0; 
         margin: 0;
         padding: 20px;
-    }
-
-    /* Header background strip */
-    .header {
-        width: 100%;
-        height: 200px;
-        background: url('header-bg.jpg') repeat-x top center;
-        background-size: auto 200px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-    .header-logo {
-        max-height: 120px;
     }
     
     .dashboard-container {
@@ -142,21 +131,54 @@ $conn->close();
         padding-bottom: 10px;
         margin-bottom: 30px;
         font-size: 1.5em;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
     }
     
-    /* Available Tests Section - 4 CARDS PER ROW */
-    .test-grid {
+    .test-count {
+        background: #28a745;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: normal;
+    }
+    
+    /* Tests Section */
+    .tests-section {
+        margin-bottom: 50px;
+    }
+    
+    .subject-tests {
+        margin-bottom: 40px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #003366;
+    }
+    
+    .subject-title {
+        font-size: 1.3em;
+        color: #003366;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+    
+    /* 4-Column Grid */
+    .tests-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 25px;
-        margin-top: 20px;
+        gap: 20px;
+        margin-top: 15px;
     }
     
     .test-card {
-        background: #f8f9fa;
+        background: white;
         border: 1px solid #e1e5e9;
         border-radius: 8px;
-        padding: 25px;
+        padding: 20px;
         text-align: center;
         transition: transform 0.3s, box-shadow 0.3s;
         min-height: 180px;
@@ -170,41 +192,42 @@ $conn->close();
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
     
-    .test-name {
-        font-size: 1.1em;
-        color: #003366;
+    .test-icon {
+        font-size: 2.5em;
         margin-bottom: 10px;
-        font-weight: bold;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        color: #003366;
     }
     
-	.test-topic {
-	    font-size: 1.1em;
-	    color: #555;
-	    line-height: 1.4;
-	    margin-bottom: 15px;
-	    flex-grow: 1;
-	    display: flex;
-	    align-items: center;
-	    justify-content: center;
-	    font-weight: normal;
-	}
+    .test-lesson {
+        font-size: 1em;
+        color: #0066cc;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
     
-	.take-test-btn {
-	    display: inline-block;
-	    padding: 8px 16px;
-	    background: #003366;
-	    color: white;
-	    text-decoration: none;
-	    border-radius: 5px;
-	    transition: background 0.3s;
-	    font-weight: bold;
-	    font-size: 0.9em;
-	    width: auto;
-	    max-width: 70%;
-	    margin: 0 auto;
-	}    
+    .test-topic {
+        font-size: 0.85em;
+        color: #555;
+        line-height: 1.4;
+        margin-bottom: 15px;
+        flex-grow: 1;
+    }
+    
+    /* Button styles - exactly matching original */
+    .take-test-btn {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #003366;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background 0.3s;
+        font-weight: bold;
+        font-size: 0.9em;
+        width: auto;
+        max-width: 70%;
+        margin: 0 auto;
+    }    
     
     .take-test-btn:hover {
         background: #0055aa;
@@ -240,12 +263,12 @@ $conn->close();
         border-radius: 8px;
     }
     
-    /* Action Buttons - Exact same as manual.php */
+    /* Action Buttons */
     .action-buttons {
         display: flex;
         justify-content: center;
         gap: 15px;
-        margin-top: 50px;
+        margin-top: 30px;
         flex-wrap: wrap;
     }
     
@@ -287,24 +310,24 @@ $conn->close();
 
     /* Responsive design for smaller screens */
     @media (max-width: 1200px) {
-        .test-grid {
+        .tests-grid {
             grid-template-columns: repeat(3, 1fr);
         }
     }
     
     @media (max-width: 900px) {
-        .test-grid {
+        .tests-grid {
             grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    
-    @media (max-width: 600px) {
-        .test-grid {
-            grid-template-columns: 1fr;
         }
         
         .dashboard-content {
             padding: 20px;
+        }
+    }
+    
+    @media (max-width: 600px) {
+        .tests-grid {
+            grid-template-columns: 1fr;
         }
     }
   </style>
@@ -313,55 +336,66 @@ $conn->close();
   <div class="dashboard-container">
     <!-- Header with tiled background and logo -->
     <div class="header">
-        <img src="paf-logo.png" alt="PAF Logo" class="header-logo">
+        <img src="images/kpluz_logo.png" alt="KPluz Logo" class="header-logo">
     </div>
 
     <div class="user-welcome">
         <div class="welcome-text">Welcome, <?= htmlspecialchars($user_name) ?>!</div>
         <div class="user-info">
-            PAF Training Platform - Tests
+            KPluz SHS - Tests
             <span class="role-badge"><?= ucfirst($user_role) ?></span>
         </div>
     </div>
 
     <div class="dashboard-content">
-        <?php if ($user_role === 'trainee'): ?>
-            <!-- Available Tests Section - 4 PER ROW -->
-            <h2 class="section-title">Available Tests</h2>
-            <?php if (!empty($tests)): ?>
-                <div class="test-grid">
-                    <?php foreach ($tests as $test): 
-                        $is_completed = in_array($test['test'], $completed_tests);
-                    ?>
-                        <div class="test-card">
-                            <div class="test-topic"><?= htmlspecialchars($test['topic']) ?></div>
-                            <?php if ($is_completed): ?>
-                                <a href="report-card.php?test=<?= urlencode($test['test']) ?>" class="report-card-btn">See Report Card</a>
-                            <?php else: ?>
-                                <a href="taketest.php?test=<?= urlencode($test['test']) ?>" class="take-test-btn">Take Test</a>
-                            <?php endif; ?>
+        <?php if ($user_role === 'student'): ?>
+            <!-- STUDENT TESTS VIEW -->
+            <div class="tests-section">
+                <h2 class="section-title">
+                    Available Tests (Based on DepEd Lesson Exemplars)
+                    <span class="test-count">Total: <?= $total_tests ?> Test(s)</span>
+                </h2>
+                
+                <?php if (!empty($tests_by_subject)): ?>
+                    <?php foreach ($tests_by_subject as $subject => $tests): ?>
+                        <div class="subject-tests">
+                            <div class="subject-title">
+                                <?= htmlspecialchars($subject) ?>
+                            </div>
+                            <div class="tests-grid">
+                                <?php foreach ($tests as $test): 
+                                    $is_completed = in_array($test['lesson'], $completed_tests);
+                                ?>
+                                    <div class="test-card">
+                                        <div class="test-icon">&#128203;</div>
+                                        <div class="test-lesson"><?= htmlspecialchars($test['lesson']) ?></div>
+                                        <div class="test-topic"><?= htmlspecialchars($test['topic']) ?></div>
+                                        <?php if ($is_completed): ?>
+                                            <a href="report-card.php?lesson=<?= urlencode($test['lesson']) ?>" class="report-card-btn">See Report Card</a>
+                                        <?php else: ?>
+                                            <a href="taketest.php?lesson=<?= urlencode($test['lesson']) ?>" class="take-test-btn">Take Test</a>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
                     <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div class="no-results">
-                    <p>No tests available at the moment. Please check back later.</p>
-                </div>
-            <?php endif; ?>
+                <?php else: ?>
+                    <div class="no-results">
+                        <p>No tests available at the moment. Please check back later.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
 
         <?php else: ?>
-            <!-- For non-trainee users -->
+            <!-- For non-student users (admin or teacher) -->
             <div style="text-align: center; padding: 50px;">
                 <h2>Access Restricted</h2>
-                <p>This page is only available for trainees.</p>
-                <div class="action-buttons">
-                    <a href="dashboard.php" class="dashboard-btn">Back to Dashboard</a>
-                    <a href="logout.php" class="logout-btn">Logout</a>
-                </div>
+                <p>This page is only available for students.</p>
             </div>
         <?php endif; ?>
 
-        <!-- Action Buttons - Exact same format and position as manual.php -->
+        <!-- Action Buttons -->
         <div class="action-buttons">
             <a href="dashboard.php" class="dashboard-btn">Back to Dashboard</a>
             <a href="logout.php" class="logout-btn">Logout</a>

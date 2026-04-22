@@ -10,8 +10,8 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     exit();
 }
 
-// Database connection
-$conn = new mysqli("localhost", "root", "AcadeV25!", "courses");
+// Database connection - Changed to kpluz database
+$conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
@@ -33,12 +33,12 @@ if (!$user) {
 $user_name = $user['name'];
 $user_role = $user['role'];
 
-// Get video details
+// Get video details - Changed to videos table
 $video_id = $_GET['video_id'] ?? null;
 $video = null;
 
-if ($video_id && $user_role === 'trainee') {
-    $video_stmt = $conn->prepare("SELECT id, video_title, video_url FROM training_videos WHERE id = ?");
+if ($video_id && $user_role === 'student') {
+    $video_stmt = $conn->prepare("SELECT id, video_title, video_url FROM videos WHERE id = ?");
     $video_stmt->bind_param("i", $video_id);
     $video_stmt->execute();
     $video_result = $video_stmt->get_result();
@@ -52,7 +52,7 @@ $conn->close();
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>PAF Training Platform - Training Video</title>
+  <title>KPluz SHS - Training Video</title>
   <style>
     * {
         box-sizing: border-box;
@@ -63,24 +63,6 @@ $conn->close();
         background: #f0f0f0; 
         margin: 0;
         padding: 20px;
-    }
-
-    /* Header background strip */
-    .header {
-        width: 100%;
-        height: 200px;
-        background: url('header-bg.jpg') repeat-x top center;
-        background-size: auto 200px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-    .header-logo {
-        max-height: 120px;
     }
     
     .dashboard-container {
@@ -133,6 +115,7 @@ $conn->close();
         margin-bottom: 30px;
         font-size: 1.5em;
     }
+    
     
     /* Video Player Section */
     .video-player-section {
@@ -230,7 +213,7 @@ $conn->close();
     .videos-btn {
         padding: 12px 24px;
         border: none;
-        background: #007bff;
+        background: #003366;
         color: white;
         border-radius: 4px;
         cursor: pointer;
@@ -241,7 +224,7 @@ $conn->close();
     }
     
     .videos-btn:hover { 
-        background: #0056b3; 
+        background: #0055aa; 
         color: white;
     }
     
@@ -291,19 +274,19 @@ $conn->close();
   <div class="dashboard-container">
     <!-- Header with tiled background and logo -->
     <div class="header">
-        <img src="paf-logo.png" alt="PAF Logo" class="header-logo">
+        <img src="images/kpluz_logo.png" alt="KPluz Logo" class="header-logo">
     </div>
-
+    
     <div class="user-welcome">
         <div class="welcome-text">Welcome, <?= htmlspecialchars($user_name) ?>!</div>
         <div class="user-info">
-            PAF Training Platform - Training Video
+            KPluz SHS - Training Video
             <span class="role-badge"><?= ucfirst($user_role) ?></span>
         </div>
     </div>
 
     <div class="dashboard-content">
-        <?php if ($user_role === 'trainee' && $video): ?>
+        <?php if ($user_role === 'student' && $video): ?>
             <!-- VIDEO PLAYER PAGE -->
             <div class="video-player-section">
                 <h2 class="section-title">Training Video</h2>
@@ -312,27 +295,27 @@ $conn->close();
                     <div class="video-title"><?= htmlspecialchars($video['video_title']) ?></div>
                     
                     <div class="video-player">
-                        <video controls controlsList="nodownload" preload="metadata">
+                        <video id="videoPlayer" controls controlsList="nodownload" preload="metadata">
                             <source src="video-stream.php?video_id=<?= $video['id'] ?>" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
                     </div>
                     
                     <div class="video-controls">
-                        <button class="control-btn" onclick="playVideo()">Play</button>
-                        <button class="control-btn" onclick="pauseVideo()">Pause</button>
-                        <button class="control-btn" onclick="restartVideo()">Restart</button>
-                        <button class="control-btn" onclick="toggleMute()">Mute/Unmute</button>
-                        <button class="control-btn" onclick="toggleFullscreen()">Fullscreen</button>
+                        <button class="control-btn" onclick="playVideo()">&#9654; Play</button>
+                        <button class="control-btn" onclick="pauseVideo()">&#9208; Pause</button>
+                        <button class="control-btn" onclick="restartVideo()">&#10227; Restart</button>
+                        <button class="control-btn" onclick="toggleMute()">&#128266; Mute/Unmute</button>
+                        <button class="control-btn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
                     </div>
                 </div>
             </div>
 
-        <?php elseif ($user_role !== 'trainee'): ?>
-            <!-- For non-trainee users -->
+        <?php elseif ($user_role !== 'student'): ?>
+            <!-- For non-student users -->
             <div style="text-align: center; padding: 50px;">
                 <h2>Access Restricted</h2>
-                <p>This page is only available for trainees.</p>
+                <p>This page is only available for students.</p>
             </div>
         <?php else: ?>
             <!-- Video not found -->
@@ -344,7 +327,7 @@ $conn->close();
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <a href="amac-videos.php" class="videos-btn">Back to Videos</a>
+            <a href="videos.php" class="videos-btn">Back to Videos</a>
             <a href="dashboard.php" class="dashboard-btn">Back to Dashboard</a>
             <a href="logout.php" class="logout-btn">Logout</a>
         </div>
@@ -353,28 +336,36 @@ $conn->close();
 
   <script>
   function playVideo() {
-      const video = document.querySelector('video');
-      video.play().catch(e => console.log('Play failed:', e));
+      const video = document.getElementById('videoPlayer');
+      if (video) {
+          video.play().catch(e => console.log('Play failed:', e));
+      }
   }
 
   function pauseVideo() {
-      document.querySelector('video').pause();
+      const video = document.getElementById('videoPlayer');
+      if (video) {
+          video.pause();
+      }
   }
 
   function restartVideo() {
-      const video = document.querySelector('video');
-      video.currentTime = 0;
-      video.play().catch(e => console.log('Play failed:', e));
+      const video = document.getElementById('videoPlayer');
+      if (video) {
+          video.currentTime = 0;
+          video.play().catch(e => console.log('Play failed:', e));
+      }
   }
 
   function toggleMute() {
-      const video = document.querySelector('video');
-      video.muted = !video.muted;
-      updateMuteButton();
+      const video = document.getElementById('videoPlayer');
+      if (video) {
+          video.muted = !video.muted;
+      }
   }
 
   function toggleFullscreen() {
-      const video = document.querySelector('video');
+      const video = document.getElementById('videoPlayer');
       if (!document.fullscreenElement) {
           video.requestFullscreen().catch(err => {
               console.log(`Error attempting to enable fullscreen: ${err.message}`);
@@ -384,15 +375,9 @@ $conn->close();
       }
   }
 
-  function updateMuteButton() {
-      const video = document.querySelector('video');
-      const muteButton = document.querySelector('[onclick="toggleMute()"]');
-      muteButton.textContent = video.muted ? 'Unmute' : 'Mute';
-  }
-
   // Add event listeners
   document.addEventListener('DOMContentLoaded', function() {
-      const video = document.querySelector('video');
+      const video = document.getElementById('videoPlayer');
       if (video) {
           video.addEventListener('waiting', function() {
               console.log('Video is buffering...');
@@ -401,11 +386,6 @@ $conn->close();
           video.addEventListener('canplay', function() {
               console.log('Video can start playing');
           });
-
-          video.addEventListener('volumechange', updateMuteButton);
-          
-          // Initialize mute button text
-          updateMuteButton();
       }
   });
   </script>

@@ -4,89 +4,229 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// Check if user is logged in
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: login.php");
+    exit();
+}
+
 // Database connection
-$conn = new mysqli("localhost", "root", "AcadeV25!", "courses");
+$conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch existing test names
-$tests = [];
-$sql = "SELECT DISTINCT test FROM questions";
+// Get user details
+$user_id = $_SESSION['user_id'];
+$stmt = $conn->prepare("SELECT name, role FROM users WHERE id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+
+if (!$user) {
+    session_destroy();
+    header("Location: login.php");
+    exit();
+}
+
+$user_name = $user['name'];
+$user_role = $user['role'];
+
+// Fetch existing lesson names from tests table
+$lessons = [];
+$sql = "SELECT DISTINCT lesson FROM tests ORDER BY lesson";
 $result = $conn->query($sql);
 if ($result) {
     while ($row = $result->fetch_assoc()) {
-        $tests[] = $row['test'];
+        $lessons[] = $row['lesson'];
     }
 }
 
-// Handle form submission
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $test = !empty($_POST["new_test"]) ? $_POST["new_test"] : $_POST["test"];
+// Handle AJAX request to get questions for a lesson
+if (isset($_GET['ajax_get_questions']) && isset($_GET['lesson'])) {
+    $lesson = $_GET['lesson'];
+    $questions = [];
+    $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3 FROM questions WHERE lesson = ? ORDER BY id");
+    $stmt->bind_param("s", $lesson);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $questions[] = $row;
+    }
+    header('Content-Type: application/json');
+    echo json_encode($questions);
+    $conn->close();
+    exit();
+}
+
+// Handle AJAX request to delete a question
+if (isset($_GET['ajax_delete_question']) && isset($_GET['question_id'])) {
+    $question_id = $_GET['question_id'];
+    $stmt = $conn->prepare("DELETE FROM questions WHERE id = ?");
+    $stmt->bind_param("i", $question_id);
+    $success = $stmt->execute();
+    header('Content-Type: application/json');
+    echo json_encode(['success' => $success]);
+    $conn->close();
+    exit();
+}
+
+// Handle AJAX request to get a single question for editing
+if (isset($_GET['ajax_get_question']) && isset($_GET['question_id'])) {
+    $question_id = $_GET['question_id'];
+    $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3 FROM questions WHERE id = ?");
+    $stmt->bind_param("i", $question_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $question = $result->fetch_assoc();
+    header('Content-Type: application/json');
+    echo json_encode($question);
+    $conn->close();
+    exit();
+}
+
+// Handle AJAX request to update a question
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET['ajax_update'])) {
+    $id = $_POST['question_id'];
+    $type = $_POST['type'];
+    $question = $_POST['question'];
+    $correct = $_POST['correct'];
+    $wrong1 = $_POST['wrong1'] ?? '';
+    $wrong2 = $_POST['wrong2'] ?? '';
+    $wrong3 = $_POST['wrong3'] ?? '';
+    
+    $stmt = $conn->prepare("UPDATE questions SET type=?, question=?, correct=?, wrong1=?, wrong2=?, wrong3=? WHERE id=?");
+    $stmt->bind_param("ssssssi", $type, $question, $correct, $wrong1, $wrong2, $wrong3, $id);
+    $success = $stmt->execute();
+    header('Content-Type: application/json');
+    echo json_encode(['success' => $success, 'error' => $conn->error]);
+    $conn->close();
+    exit();
+}
+
+// Handle form submission for new question
+$submitted = false;
+if ($_SERVER["REQUEST_METHOD"] === "POST" && !isset($_GET['ajax_update'])) {
+    $lesson = !empty($_POST["new_lesson"]) ? $_POST["new_lesson"] : $_POST["lesson"];
     $type = $_POST["type"];
     $question = $_POST["question"];
     $correct = $_POST["correct_answer"];
-
-	if ($type == "FB") {
-	    $wrong1 = "";
-	    $wrong2 = "";
-	    $wrong3 = "";
-	} elseif ($type == "TF") {
-	    $wrong1 = isset($_POST['wrong_answer1']) ? $_POST['wrong_answer1'] : '';
-	    $wrong2 = "";
-	    $wrong3 = "";
-	} else {
-	    // Multiple Choice
-	    $wrong1 = isset($_POST['wrong_answer1']) ? $_POST['wrong_answer1'] : '';
-	    $wrong2 = isset($_POST['wrong_answer2']) ? $_POST['wrong_answer2'] : '';
-	    $wrong3 = isset($_POST['wrong_answer3']) ? $_POST['wrong_answer3'] : '';
-	}
-
-    // Insert into database
-    $stmt = $conn->prepare("INSERT INTO questions (test, type, question, correct, wrong1, wrong2, wrong3) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssssss", $test, $type, $question, $correct, $wrong1, $wrong2, $wrong3);
-    $stmt->execute();
-
-    echo "<p>Question submitted successfully!</p>";
+    
+    if ($type == "FB") {
+        $wrong1 = "";
+        $wrong2 = "";
+        $wrong3 = "";
+    } elseif ($type == "TF") {
+        $wrong1 = isset($_POST['wrong_answer1']) ? $_POST['wrong_answer1'] : '';
+        $wrong2 = "";
+        $wrong3 = "";
+    } else {
+        $wrong1 = isset($_POST['wrong_answer1']) ? $_POST['wrong_answer1'] : '';
+        $wrong2 = isset($_POST['wrong_answer2']) ? $_POST['wrong_answer2'] : '';
+        $wrong3 = isset($_POST['wrong_answer3']) ? $_POST['wrong_answer3'] : '';
+    }
+    
+    $stmt = $conn->prepare("INSERT INTO questions (lesson, type, question, correct, wrong1, wrong2, wrong3) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssss", $lesson, $type, $question, $correct, $wrong1, $wrong2, $wrong3);
+    
+    if ($stmt->execute()) {
+        $submitted = true;
+    } else {
+        $error = "Error submitting question: " . $conn->error;
+    }
+    $stmt->close();
 }
+
+$conn->close();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Submit Question</title>
+  <title>KPluz SHS - Manage Questions</title>
   <style>
     * {
         box-sizing: border-box;
     }
     body { 
-        font-family: Arial, sans-serif; 
+        font-family: 'Arial', sans-serif; 
         text-align: center; 
         background: #f0f0f0; 
         margin: 0;
         padding: 20px;
     }
-
-    /* Header background strip */
+    
+    .dashboard-container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0;
+    }
+    
+    .user-welcome {
+        background: linear-gradient(135deg, #003366, #0055aa);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+    
+    .welcome-text {
+        font-size: 2em;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+    
+    .user-info {
+        font-size: 1.2em;
+        opacity: 0.9;
+    }
+    
+    .role-badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        margin-left: 10px;
+        text-transform: uppercase;
+    }
+    
+    .dashboard-content {
+        padding: 40px;
+        text-align: left;
+    }
+    
     .header {
         width: 100%;
-        height: 264px; /* full height of the image */
-        background: url('header-bg.jpg') repeat-x top center;
-        background-size: auto 264px; /* keep original height, tile horizontally */
+        height: 200px;
+        background: url('images/header-bg.jpg') repeat-x top center;
+        background-size: auto 200px;
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-bottom: 20px;
+        margin-bottom: 0;
+        border-radius: 10px 10px 0 0;
     }
-
+    
     .header-logo {
-        max-height: 200px; /* keep logo smaller than header */
+        max-height: 120px;
     }
     
     h2 {
         color: #003366;
         margin-bottom: 10px;
+    }
+    
+    h3 {
+        color: #003366;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #003366;
     }
     
     .page-info {
@@ -96,12 +236,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
     
     .form-container {
-        background: white;
+        background: #f8f9fa;
         padding: 30px;
-        margin: 0 auto;
+        margin: 0 auto 30px;
         border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        max-width: 800px;
         text-align: left;
     }
     
@@ -201,12 +339,220 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         border: 1px solid #c3e6cb;
     }
     
-    .test-selection {
-        background: #f8f9fa;
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .lesson-selection {
+        background: white;
         padding: 15px;
         border-radius: 4px;
         margin-bottom: 20px;
         border-left: 4px solid #003366;
+    }
+    
+    .required {
+        color: #dc3545;
+        font-size: 0.8em;
+    }
+    
+    /* Questions List Styles */
+    .questions-list-container {
+        background: #f8f9fa;
+        padding: 30px;
+        border-radius: 8px;
+        margin-top: 30px;
+    }
+    
+    .questions-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .questions-table th {
+        background: #003366;
+        color: white;
+        padding: 12px;
+        text-align: left;
+        font-weight: bold;
+    }
+    
+    .questions-table td {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+        vertical-align: top;
+    }
+    
+    .questions-table tr:hover {
+        background: #f5f5f5;
+    }
+    
+    .question-text-cell {
+        max-width: 400px;
+    }
+    
+    .choices-cell {
+        max-width: 350px;
+    }
+    
+    .choices-list {
+        margin: 0;
+        padding-left: 20px;
+        font-size: 0.85em;
+        color: #555;
+    }
+    
+    .choices-list li {
+        margin-bottom: 3px;
+    }
+    
+    .correct-choice {
+        color: #28a745;
+        font-weight: bold;
+    }
+    
+    .wrong-choice {
+        color: #dc3545;
+    }
+    
+    .action-icons {
+        display: flex;
+        gap: 10px;
+        white-space: nowrap;
+    }
+    
+    .edit-btn, .delete-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .edit-btn {
+        background: #ffc107;
+        color: #333;
+    }
+    
+    .edit-btn:hover {
+        background: #e0a800;
+    }
+    
+    .delete-btn {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .delete-btn:hover {
+        background: #c82333;
+    }
+    
+    .type-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        font-weight: bold;
+    }
+    
+    .type-MC {
+        background: #007bff;
+        color: white;
+    }
+    
+    .type-TF {
+        background: #17a2b8;
+        color: white;
+    }
+    
+    .type-FB {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+    }
+    
+    .no-questions {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+        font-style: italic;
+    }
+    
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+    
+    .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 30px;
+        width: 90%;
+        max-width: 700px;
+        border-radius: 10px;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #003366;
+    }
+    
+    .modal-header h3 {
+        margin: 0;
+        border: none;
+        padding: 0;
+    }
+    
+    .close-modal {
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #666;
+    }
+    
+    .close-modal:hover {
+        color: #000;
+    }
+    
+    .save-edit-btn {
+        padding: 12px 24px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    
+    .save-edit-btn:hover {
+        background: #218838;
     }
   </style>
   <script>
@@ -218,7 +564,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             if (type === "TF") {
                 wrong1.disabled = false;
-                wrong1.placeholder = "Enter 'False' for True/False questions";
+                wrong1.placeholder = "Wrong answer (usually 'False' for True/False)";
+                wrong1.value = "False";
                 wrong2.value = "";
                 wrong2.disabled = true;
                 wrong2.placeholder = "";
@@ -237,99 +584,337 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 wrong3.placeholder = "";
             } else {
                 wrong1.disabled = false;
-                wrong1.placeholder = "Wrong answer option";
+                wrong1.placeholder = "Wrong answer option 1";
                 wrong2.disabled = false;
-                wrong2.placeholder = "Wrong answer option";
+                wrong2.placeholder = "Wrong answer option 2";
                 wrong3.disabled = false;
-                wrong3.placeholder = "Wrong answer option";
+                wrong3.placeholder = "Wrong answer option 3";
             }
         }
-
+        
+        function loadQuestions(lesson) {
+            if (!lesson) {
+                document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Select a lesson to view existing questions.</div>';
+                return;
+            }
+            
+            document.getElementById('questionsContainer').innerHTML = '<div class="loading">Loading questions...</div>';
+            
+            fetch(`?ajax_get_questions=1&lesson=${encodeURIComponent(lesson)}`)
+                .then(response => response.json())
+                .then(questions => {
+                    if (questions.length === 0) {
+                        document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">No questions found for this lesson. Add some above!</div>';
+                        return;
+                    }
+                    
+                    let html = '<table class="questions-table">';
+                    html += '<tr><th>#</th><th>Type</th><th>Question</th><th>Choices</th><th>Actions</th></tr>';
+                    
+                    questions.forEach((q, index) => {
+                        // Build choices list
+                        let choicesHtml = '<ul class="choices-list">';
+                        
+                        if (q.type === 'TF') {
+                            choicesHtml += `<li class="correct-choice">&#10003; Correct: ${escapeHtml(q.correct)}</li>`;
+                            if (q.wrong1) choicesHtml += `<li class="wrong-choice">&#10007; Wrong: ${escapeHtml(q.wrong1)}</li>`;
+                        } else if (q.type === 'FB') {
+                            choicesHtml += `<li class="correct-choice">&#10003; Answer: ${escapeHtml(q.correct)}</li>`;
+                            choicesHtml += `<li class="wrong-choice"><em>Fill in the blank question</em></li>`;
+                        } else {
+                            // MC - Multiple Choice
+                            choicesHtml += `<li class="correct-choice">&#10003; Correct: ${escapeHtml(q.correct)}</li>`;
+                            if (q.wrong1) choicesHtml += `<li class="wrong-choice">&#10007; ${escapeHtml(q.wrong1)}</li>`;
+                            if (q.wrong2) choicesHtml += `<li class="wrong-choice">&#10007; ${escapeHtml(q.wrong2)}</li>`;
+                            if (q.wrong3) choicesHtml += `<li class="wrong-choice">&#10007; ${escapeHtml(q.wrong3)}</li>`;
+                        }
+                        
+                        choicesHtml += '</ul>';
+                        
+                        let typeClass = '';
+                        if (q.type === 'MC') typeClass = 'type-MC';
+                        else if (q.type === 'TF') typeClass = 'type-TF';
+                        else typeClass = 'type-FB';
+                        
+                        html += `<tr>
+                            <td>${index + 1}</td>
+                            <td><span class="type-badge ${typeClass}">${escapeHtml(q.type)}</span></td>
+                            <td class="question-text-cell">${escapeHtml(q.question)}</td>
+                            <td class="choices-cell">${choicesHtml}</td>
+                            <td class="action-icons">
+                                <button class="edit-btn" onclick="editQuestion(${q.id})">&#9999;&#65039; Edit</button>
+                                <button class="delete-btn" onclick="deleteQuestion(${q.id}, '${escapeHtml(q.question)}')">&#128465;&#65039; Delete</button>
+                            </td>
+                        </tr>`;
+                    });
+                    html += '</table>';
+                    document.getElementById('questionsContainer').innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Error loading questions.</div>';
+                });
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function deleteQuestion(questionId, questionText) {
+            if (confirm(`Are you sure you want to delete:\n\n"${questionText}"\n\nThis action cannot be undone!`)) {
+                fetch(`?ajax_delete_question=1&question_id=${questionId}`)
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            alert('Question deleted successfully!');
+                            const lessonSelect = document.querySelector('[name="lesson"]');
+                            loadQuestions(lessonSelect.value);
+                        } else {
+                            alert('Error deleting question.');
+                        }
+                    });
+            }
+        }
+        
+        function editQuestion(questionId) {
+            fetch(`?ajax_get_question=1&question_id=${questionId}`)
+                .then(response => response.json())
+                .then(question => {
+                    if (question) {
+                        showEditModal(question);
+                    }
+                });
+        }
+        
+        function showEditModal(question) {
+            const modal = document.getElementById('editModal');
+            document.getElementById('edit_question_id').value = question.id;
+            document.getElementById('edit_type').value = question.type;
+            document.getElementById('edit_question').value = question.question;
+            document.getElementById('edit_correct').value = question.correct;
+            document.getElementById('edit_wrong1').value = question.wrong1 || '';
+            document.getElementById('edit_wrong2').value = question.wrong2 || '';
+            document.getElementById('edit_wrong3').value = question.wrong3 || '';
+            
+            const type = question.type;
+            const wrong1Field = document.getElementById('edit_wrong1');
+            const wrong2Field = document.getElementById('edit_wrong2');
+            const wrong3Field = document.getElementById('edit_wrong3');
+            
+            if (type === 'TF') {
+                wrong1Field.disabled = false;
+                wrong2Field.disabled = true;
+                wrong3Field.disabled = true;
+            } else if (type === 'FB') {
+                wrong1Field.disabled = true;
+                wrong2Field.disabled = true;
+                wrong3Field.disabled = true;
+            } else {
+                wrong1Field.disabled = false;
+                wrong2Field.disabled = false;
+                wrong3Field.disabled = false;
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        function saveEdit() {
+            const formData = new FormData();
+            formData.append('question_id', document.getElementById('edit_question_id').value);
+            formData.append('type', document.getElementById('edit_type').value);
+            formData.append('question', document.getElementById('edit_question').value);
+            formData.append('correct', document.getElementById('edit_correct').value);
+            formData.append('wrong1', document.getElementById('edit_wrong1').value);
+            formData.append('wrong2', document.getElementById('edit_wrong2').value);
+            formData.append('wrong3', document.getElementById('edit_wrong3').value);
+            
+            fetch('?ajax_update=1', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('Question updated successfully!');
+                    document.getElementById('editModal').style.display = 'none';
+                    const lessonSelect = document.querySelector('[name="lesson"]');
+                    loadQuestions(lessonSelect.value);
+                } else {
+                    alert('Error updating question: ' + result.error);
+                }
+            });
+        }
+        
         window.addEventListener('DOMContentLoaded', () => {
             document.querySelector('[name="type"]').addEventListener('change', adjustWrongAnswers);
-            adjustWrongAnswers(); // run on page load
+            adjustWrongAnswers();
+            
+            const lessonSelect = document.querySelector('[name="lesson"]');
+            lessonSelect.addEventListener('change', () => {
+                loadQuestions(lessonSelect.value);
+            });
         });
+        
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
     </script>
 </head>
 <body>
-  <!-- Header with tiled background and logo -->
-  <div class="header">
-    <img src="paf-logo.png" alt="PAF Logo" class="header-logo">
-  </div>
-
-  <h2>Submit a Question</h2>
-  <div class="page-info">
-    Add new questions to the test database. Select an existing test or create a new one.
-  </div>
-
-  <div class="form-container">
-    <?php if ($_SERVER["REQUEST_METHOD"] === "POST"): ?>
-        <div class="success-message">
-            Question submitted successfully!
+  <div class="dashboard-container">
+    <div class="header">
+        <img src="images/kpluz_logo.png" alt="KPluz Logo" class="header-logo">
+    </div>
+    
+    <div class="user-welcome">
+        <div class="welcome-text">Welcome, <?= htmlspecialchars($user_name) ?>!</div>
+        <div class="user-info">
+            KPluz SHS - Manage Questions
+            <span class="role-badge"><?= ucfirst($user_role) ?></span>
         </div>
-    <?php endif; ?>
+    </div>
 
-    <form method="POST">
-        <div class="test-selection">
-            <div class="form-group">
-                <label>Select an existing test:</label>
-                <select name="test">
-                    <option value="">-- Select a test --</option>
-                    <?php foreach ($tests as $t): ?>
-                        <option value="<?= htmlspecialchars($t) ?>"><?= htmlspecialchars($t) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Or create a new test:</label>
-                <input type="text" name="new_test" placeholder="Enter new test name">
-            </div>
+    <div class="dashboard-content">
+        <h2>Manage Questions</h2>
+        <div class="page-info">
+            Add new questions or edit/delete existing ones. Select a lesson to view its questions.
         </div>
 
+        <div class="form-container">
+            <?php if ($submitted): ?>
+                <div class="success-message">
+                    &#10003; Question submitted successfully!
+                </div>
+            <?php endif; ?>
+            
+            <?php if (isset($error)): ?>
+                <div class="error-message">
+                    &#10007; <?= htmlspecialchars($error) ?>
+                </div>
+            <?php endif; ?>
+
+            <form method="POST">
+                <div class="lesson-selection">
+                    <div class="form-group">
+                        <label>Select an existing lesson:</label>
+                        <select name="lesson">
+                            <option value="">-- Select a lesson --</option>
+                            <?php foreach ($lessons as $l): ?>
+                                <option value="<?= htmlspecialchars($l) ?>"><?= htmlspecialchars($l) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Or create a new lesson:</label>
+                        <input type="text" name="new_lesson" placeholder="Enter new lesson name (e.g., Q1 Lesson 2)">
+                        <span class="required">Note: Lesson must match exactly with tests table</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Question Type:</label>
+                    <select name="type" required>
+                        <option value="MC">Multiple Choice</option>
+                        <option value="TF">True/False</option>
+                        <option value="FB">Fill in the Blank</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Question:</label>
+                    <textarea name="question" required placeholder="Enter your question here..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Correct Answer:</label>
+                    <input type="text" name="correct_answer" required placeholder="Enter the correct answer">
+                </div>
+
+                <div class="form-group">
+                    <label>Wrong Answer 1:</label>
+                    <input type="text" name="wrong_answer1" placeholder="Wrong answer option 1">
+                </div>
+
+                <div class="form-group">
+                    <label>Wrong Answer 2:</label>
+                    <input type="text" name="wrong_answer2" placeholder="Wrong answer option 2">
+                </div>
+
+                <div class="form-group">
+                    <label>Wrong Answer 3:</label>
+                    <input type="text" name="wrong_answer3" placeholder="Wrong answer option 3">
+                </div>
+
+                <div style="text-align: center;">
+                    <input type="submit" value="Submit Question" class="submit-btn">
+                </div>
+            </form>
+        </div>
+        
+        <!-- Existing Questions Section -->
+        <div class="questions-list-container">
+            <h3>Existing Questions</h3>
+            <div id="questionsContainer">
+                <div class="no-questions">Select a lesson to view existing questions.</div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="dashboard.php" class="dashboard-btn">Back to Dashboard</a>
+            <a href="logout.php" class="logout-btn">Logout</a>
+        </div>
+    </div>
+  </div>
+  
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Question</h3>
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+        </div>
         <div class="form-group">
-            <label>Question Type:</label>
-            <select name="type" required>
+            <label>Type:</label>
+            <select id="edit_type" name="edit_type" required>
                 <option value="MC">Multiple Choice</option>
                 <option value="TF">True/False</option>
                 <option value="FB">Fill in the Blank</option>
             </select>
         </div>
-
         <div class="form-group">
             <label>Question:</label>
-            <textarea name="question" required placeholder="Enter your question here..."></textarea>
+            <textarea id="edit_question" name="edit_question" required style="height:80px;"></textarea>
         </div>
-
         <div class="form-group">
             <label>Correct Answer:</label>
-            <input type="text" name="correct_answer" required placeholder="Enter the correct answer">
+            <input type="text" id="edit_correct" name="edit_correct" required>
         </div>
-
         <div class="form-group">
             <label>Wrong Answer 1:</label>
-            <input type="text" name="wrong_answer1" placeholder="Wrong answer option">
+            <input type="text" id="edit_wrong1" name="edit_wrong1">
         </div>
-
         <div class="form-group">
             <label>Wrong Answer 2:</label>
-            <input type="text" name="wrong_answer2" placeholder="Wrong answer option">
+            <input type="text" id="edit_wrong2" name="edit_wrong2">
         </div>
-
         <div class="form-group">
             <label>Wrong Answer 3:</label>
-            <input type="text" name="wrong_answer3" placeholder="Wrong answer option">
+            <input type="text" id="edit_wrong3" name="edit_wrong3">
         </div>
-
+        <input type="hidden" id="edit_question_id">
         <div style="text-align: center;">
-            <input type="submit" value="Submit Question" class="submit-btn">
+            <button type="button" class="save-edit-btn" onclick="saveEdit()">Save Changes</button>
         </div>
-    </form>
-
-    <!-- Action Buttons -->
-    <div class="action-buttons">
-        <a href="dashboard.php" class="dashboard-btn">Back to Dashboard</a>
-        <a href="logout.php" class="logout-btn">Logout</a>
     </div>
   </div>
 </body>
