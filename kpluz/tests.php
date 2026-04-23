@@ -125,6 +125,7 @@ $conn->close();
         text-align: left;
     }
     
+    
     .section-title {
         color: #003366;
         border-bottom: 2px solid #003366;
@@ -334,7 +335,6 @@ $conn->close();
 </head>
 <body>
   <div class="dashboard-container">
-    <!-- Header with tiled background and logo -->
     <div class="header">
         <img src="images/kpluz_logo.png" alt="KPluz Logo" class="header-logo">
     </div>
@@ -371,9 +371,9 @@ $conn->close();
                                         <div class="test-lesson"><?= htmlspecialchars($test['lesson']) ?></div>
                                         <div class="test-topic"><?= htmlspecialchars($test['topic']) ?></div>
                                         <?php if ($is_completed): ?>
-                                            <a href="report-card.php?lesson=<?= urlencode($test['lesson']) ?>" class="report-card-btn">See Report Card</a>
+                                            <a href="report-card.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="report-card-btn">See Report Card</a>
                                         <?php else: ?>
-                                            <a href="taketest.php?lesson=<?= urlencode($test['lesson']) ?>" class="take-test-btn">Take Test</a>
+                                            <a href="taketest.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="take-test-btn">Take Test</a>
                                         <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>

@@ -33,22 +33,43 @@ if (!$user) {
 $user_name = $user['name'];
 $user_role = $user['role'];
 
-// Fetch existing lesson names from tests table
-$lessons = [];
-$sql = "SELECT DISTINCT lesson FROM tests ORDER BY lesson";
+// Fetch existing subject and lesson combinations from tests table
+$tests = [];
+$sql = "SELECT DISTINCT subject, lesson, topic FROM tests ORDER BY subject, lesson";
 $result = $conn->query($sql);
 if ($result) {
     while ($row = $result->fetch_assoc()) {
-        $lessons[] = $row['lesson'];
+        $tests[] = $row;
     }
 }
 
-// Handle AJAX request to get questions for a lesson
-if (isset($_GET['ajax_get_questions']) && isset($_GET['lesson'])) {
+// Fetch unique subjects for dropdown
+$subjects = [];
+$subject_sql = "SELECT DISTINCT subject FROM tests ORDER BY subject";
+$subject_result = $conn->query($subject_sql);
+if ($subject_result) {
+    while ($row = $subject_result->fetch_assoc()) {
+        $subjects[] = $row['subject'];
+    }
+}
+
+// Fetch unique grade levels for dropdown
+$grades = [];
+$grade_sql = "SELECT DISTINCT grade FROM tests ORDER BY grade";
+$grade_result = $conn->query($grade_sql);
+if ($grade_result) {
+    while ($row = $grade_result->fetch_assoc()) {
+        $grades[] = $row['grade'];
+    }
+}
+
+// Handle AJAX request to get questions for a subject and lesson
+if (isset($_GET['ajax_get_questions']) && isset($_GET['subject']) && isset($_GET['lesson'])) {
+    $subject = $_GET['subject'];
     $lesson = $_GET['lesson'];
     $questions = [];
-    $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3 FROM questions WHERE lesson = ? ORDER BY id");
-    $stmt->bind_param("s", $lesson);
+    $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3 FROM questions WHERE subject = ? AND lesson = ? ORDER BY id");
+    $stmt->bind_param("ss", $subject, $lesson);
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
@@ -108,7 +129,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET['ajax_update'])) {
 // Handle form submission for new question
 $submitted = false;
 if ($_SERVER["REQUEST_METHOD"] === "POST" && !isset($_GET['ajax_update'])) {
-    $lesson = !empty($_POST["new_lesson"]) ? $_POST["new_lesson"] : $_POST["lesson"];
+    // Check if using existing or new test
+    if (!empty($_POST["new_lesson"])) {
+        // Creating new test - need grade, subject, lesson, topic, teacher
+        $grade = $_POST["new_grade"];
+        $subject = $_POST["new_subject_select"];
+        $lesson = $_POST["new_lesson"];
+        $topic = $_POST["new_topic"];
+        $teacher = $user_name; // Auto-fill with logged-in user's name
+        
+        // First, insert the new test into the tests table
+        $insert_test = $conn->prepare("INSERT INTO tests (grade, subject, lesson, topic, teacher) VALUES (?, ?, ?, ?, ?)");
+        $insert_test->bind_param("sssss", $grade, $subject, $lesson, $topic, $teacher);
+        $insert_test->execute();
+        $insert_test->close();
+    } else {
+        // Using existing test
+        $subject = $_POST["subject"];
+        $lesson = $_POST["lesson"];
+        // For existing test, we don't need grade/topic/teacher for the question
+        $grade = null;
+        $topic = null;
+        $teacher = null;
+    }
+    
     $type = $_POST["type"];
     $question = $_POST["question"];
     $correct = $_POST["correct_answer"];
@@ -127,8 +171,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !isset($_GET['ajax_update'])) {
         $wrong3 = isset($_POST['wrong_answer3']) ? $_POST['wrong_answer3'] : '';
     }
     
-    $stmt = $conn->prepare("INSERT INTO questions (lesson, type, question, correct, wrong1, wrong2, wrong3) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssssss", $lesson, $type, $question, $correct, $wrong1, $wrong2, $wrong3);
+    $stmt = $conn->prepare("INSERT INTO questions (subject, lesson, type, question, correct, wrong1, wrong2, wrong3) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssssss", $subject, $lesson, $type, $question, $correct, $wrong1, $wrong2, $wrong3);
     
     if ($stmt->execute()) {
         $submitted = true;
@@ -348,7 +392,7 @@ $conn->close();
         border: 1px solid #f5c6cb;
     }
     
-    .lesson-selection {
+    .test-selection {
         background: white;
         padding: 15px;
         border-radius: 4px;
@@ -356,9 +400,57 @@ $conn->close();
         border-left: 4px solid #003366;
     }
     
+    .new-test-section {
+        background: #e7f3ff;
+        padding: 15px;
+        border-radius: 4px;
+        margin-top: 15px;
+    }
+    
     .required {
         color: #dc3545;
         font-size: 0.8em;
+    }
+    
+    .section-divider {
+        text-align: center;
+        margin: 20px 0;
+        position: relative;
+    }
+    
+    .section-divider span {
+        background: #f8f9fa;
+        padding: 0 15px;
+        color: #666;
+    }
+    
+    .section-divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #ddd;
+        z-index: 0;
+    }
+    
+    .section-divider span {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .teacher-info {
+        background: #e9ecef;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .teacher-info strong {
+        color: #003366;
     }
     
     /* Questions List Styles */
@@ -554,6 +646,28 @@ $conn->close();
     .save-edit-btn:hover {
         background: #218838;
     }
+    
+    .lesson-select {
+        width: 100%;
+        min-width: 300px;
+    }
+    
+    hr {
+        margin: 15px 0;
+        border: none;
+        border-top: 1px solid #ddd;
+    }
+    
+    .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
   </style>
   <script>
         function adjustWrongAnswers() {
@@ -592,19 +706,24 @@ $conn->close();
             }
         }
         
-        function loadQuestions(lesson) {
-            if (!lesson) {
-                document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Select a lesson to view existing questions.</div>';
+        function loadQuestions() {
+            const subject = document.getElementById('subjectSelect').value;
+            const lessonDisplay = document.getElementById('lessonSelect').value;
+            
+            if (!subject || !lessonDisplay) {
+                document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Select a subject and lesson to view existing questions.</div>';
                 return;
             }
             
+            const lesson = lessonDisplay.split(':')[0].trim();
+            
             document.getElementById('questionsContainer').innerHTML = '<div class="loading">Loading questions...</div>';
             
-            fetch(`?ajax_get_questions=1&lesson=${encodeURIComponent(lesson)}`)
+            fetch(`?ajax_get_questions=1&subject=${encodeURIComponent(subject)}&lesson=${encodeURIComponent(lesson)}`)
                 .then(response => response.json())
                 .then(questions => {
                     if (questions.length === 0) {
-                        document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">No questions found for this lesson. Add some above!</div>';
+                        document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">No questions found for this subject and lesson. Add some above!</div>';
                         return;
                     }
                     
@@ -612,7 +731,6 @@ $conn->close();
                     html += '<tr><th>#</th><th>Type</th><th>Question</th><th>Choices</th><th>Actions</th></tr>';
                     
                     questions.forEach((q, index) => {
-                        // Build choices list
                         let choicesHtml = '<ul class="choices-list">';
                         
                         if (q.type === 'TF') {
@@ -622,7 +740,6 @@ $conn->close();
                             choicesHtml += `<li class="correct-choice">&#10003; Answer: ${escapeHtml(q.correct)}</li>`;
                             choicesHtml += `<li class="wrong-choice"><em>Fill in the blank question</em></li>`;
                         } else {
-                            // MC - Multiple Choice
                             choicesHtml += `<li class="correct-choice">&#10003; Correct: ${escapeHtml(q.correct)}</li>`;
                             if (q.wrong1) choicesHtml += `<li class="wrong-choice">&#10007; ${escapeHtml(q.wrong1)}</li>`;
                             if (q.wrong2) choicesHtml += `<li class="wrong-choice">&#10007; ${escapeHtml(q.wrong2)}</li>`;
@@ -669,8 +786,7 @@ $conn->close();
                     .then(result => {
                         if (result.success) {
                             alert('Question deleted successfully!');
-                            const lessonSelect = document.querySelector('[name="lesson"]');
-                            loadQuestions(lessonSelect.value);
+                            loadQuestions();
                         } else {
                             alert('Error deleting question.');
                         }
@@ -739,11 +855,39 @@ $conn->close();
                 if (result.success) {
                     alert('Question updated successfully!');
                     document.getElementById('editModal').style.display = 'none';
-                    const lessonSelect = document.querySelector('[name="lesson"]');
-                    loadQuestions(lessonSelect.value);
+                    loadQuestions();
                 } else {
                     alert('Error updating question: ' + result.error);
                 }
+            });
+        }
+        
+        function updateLessonOptions() {
+            const subject = document.getElementById('subjectSelect').value;
+            const lessonSelect = document.getElementById('lessonSelect');
+            
+            lessonSelect.innerHTML = '<option value="">-- Select a lesson --</option>';
+            
+            if (!subject) {
+                lessonSelect.disabled = true;
+                return;
+            }
+            
+            const tests = <?php echo json_encode($tests); ?>;
+            const filteredLessons = tests.filter(test => test.subject === subject);
+            
+            if (filteredLessons.length === 0) {
+                lessonSelect.disabled = true;
+                document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">No lessons found for this subject.</div>';
+                return;
+            }
+            
+            lessonSelect.disabled = false;
+            filteredLessons.forEach(test => {
+                const option = document.createElement('option');
+                option.value = test.lesson + ': ' + test.topic;
+                option.textContent = test.lesson + ': ' + test.topic;
+                lessonSelect.appendChild(option);
             });
         }
         
@@ -751,9 +895,15 @@ $conn->close();
             document.querySelector('[name="type"]').addEventListener('change', adjustWrongAnswers);
             adjustWrongAnswers();
             
-            const lessonSelect = document.querySelector('[name="lesson"]');
+            const subjectSelect = document.getElementById('subjectSelect');
+            const lessonSelect = document.getElementById('lessonSelect');
+            
+            subjectSelect.addEventListener('change', () => {
+                updateLessonOptions();
+            });
+            
             lessonSelect.addEventListener('change', () => {
-                loadQuestions(lessonSelect.value);
+                loadQuestions();
             });
         });
         
@@ -786,7 +936,7 @@ $conn->close();
     <div class="dashboard-content">
         <h2>Manage Questions</h2>
         <div class="page-info">
-            Add new questions or edit/delete existing ones. Select a lesson to view its questions.
+            Add new questions or edit/delete existing ones. Select a subject and lesson to view its questions.
         </div>
 
         <div class="form-container">
@@ -803,22 +953,65 @@ $conn->close();
             <?php endif; ?>
 
             <form method="POST">
-                <div class="lesson-selection">
+                <!-- Existing Test Selection -->
+                <div class="test-selection">
                     <div class="form-group">
-                        <label>Select an existing lesson:</label>
-                        <select name="lesson">
-                            <option value="">-- Select a lesson --</option>
-                            <?php foreach ($lessons as $l): ?>
-                                <option value="<?= htmlspecialchars($l) ?>"><?= htmlspecialchars($l) ?></option>
+                        <label>Select an existing subject and lesson:</label>
+                        <select name="subject" id="subjectSelect">
+                            <option value="">-- Select a subject --</option>
+                            <?php foreach ($subjects as $s): ?>
+                                <option value="<?= htmlspecialchars($s) ?>"><?= htmlspecialchars($s) ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <select name="lesson" id="lessonSelect" disabled class="lesson-select">
+                            <option value="">-- First select a subject --</option>
+                        </select>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label>Or create a new lesson:</label>
-                        <input type="text" name="new_lesson" placeholder="Enter new lesson name (e.g., Q1 Lesson 2)">
-                        <span class="required">Note: Lesson must match exactly with tests table</span>
+                <div class="section-divider">
+                    <span> or </span>
+                </div>
+
+                <!-- New Test Creation -->
+                <div class="new-test-section">
+                    <h3 style="margin-top: 0; margin-bottom: 15px; color: #003366;">Create a New Test</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Grade Level:</label>
+                            <select name="new_grade" required>
+                                <option value="">-- Select grade --</option>
+                                <?php foreach ($grades as $g): ?>
+                                    <option value="<?= htmlspecialchars($g) ?>"><?= htmlspecialchars($g) ?></option>
+                                <?php endforeach; ?>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Subject:</label>
+                            <select name="new_subject_select" required>
+                                <option value="">-- Select subject --</option>
+                                <?php foreach ($subjects as $s): ?>
+                                    <option value="<?= htmlspecialchars($s) ?>"><?= htmlspecialchars($s) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </div>
+<div class="form-row">
+    <div class="form-group">
+        <label>Lesson Name:</label>
+        <input type="text" name="new_lesson" placeholder="e.g., Q1 Lesson 1" required>
+    </div>
+    <div class="form-group">
+        <label>Topic / Title:</label>
+        <input type="text" name="new_topic" placeholder="Brief topic or title of the lesson" required>
+    </div>
+</div>
+<span class="required" style="display: block; margin-top: 10px;">Note: This will create a new test entry in the tests table.</span>                </div>
+
+                <div class="section-divider">
+                    <span> Question Details </span>
                 </div>
 
                 <div class="form-group">
@@ -865,7 +1058,7 @@ $conn->close();
         <div class="questions-list-container">
             <h3>Existing Questions</h3>
             <div id="questionsContainer">
-                <div class="no-questions">Select a lesson to view existing questions.</div>
+                <div class="no-questions">Select a subject and lesson to view existing questions.</div>
             </div>
         </div>
 

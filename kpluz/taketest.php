@@ -10,9 +10,11 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     exit();
 }
 
-if (!isset($_GET['lesson'])) {
-    die("Lesson name required in URL, e.g., ?lesson=Q1 Lesson 1");
+// Get subject and lesson from URL parameters
+if (!isset($_GET['subject']) || !isset($_GET['lesson'])) {
+    die("Subject and lesson required in URL, e.g., ?subject=Effective%20Communication&lesson=Q1%20Lesson%201");
 }
+$subject_name = $_GET['subject'];
 $lesson_name = $_GET['lesson'];
 
 // Connect to MySQL
@@ -43,15 +45,15 @@ if ($user_role !== 'student') {
     die("Access restricted to students only.");
 }
 
-// Fetch test details from tests table using lesson
-$test_stmt = $conn->prepare("SELECT id, subject, lesson, topic FROM tests WHERE lesson = ?");
-$test_stmt->bind_param("s", $lesson_name);
+// Fetch test details from tests table using subject and lesson
+$test_stmt = $conn->prepare("SELECT id, subject, lesson, topic FROM tests WHERE subject = ? AND lesson = ?");
+$test_stmt->bind_param("ss", $subject_name, $lesson_name);
 $test_stmt->execute();
 $test_result = $test_stmt->get_result();
 $test = $test_result->fetch_assoc();
 
 if (!$test) {
-    die("Test not found for lesson: " . htmlspecialchars($lesson_name));
+    die("Test not found for subject: " . htmlspecialchars($subject_name) . " and lesson: " . htmlspecialchars($lesson_name));
 }
 
 $test_id = $test['id'];
@@ -60,8 +62,8 @@ $test_lesson = $test['lesson'];
 $test_topic = $test['topic'];
 
 // Check if student has already taken this test
-$check_stmt = $conn->prepare("SELECT id FROM test_results WHERE user_id = ? AND lesson = ?");
-$check_stmt->bind_param("is", $user_id, $lesson_name);
+$check_stmt = $conn->prepare("SELECT id FROM test_results WHERE user_id = ? AND subject = ? AND lesson = ?");
+$check_stmt->bind_param("iss", $user_id, $subject_name, $lesson_name);
 $check_stmt->execute();
 $check_result = $check_stmt->get_result();
 
@@ -113,10 +115,10 @@ if ($check_result->num_rows > 0) {
     exit();
 }
 
-// Fetch questions for this test from questions table using lesson
+// Fetch questions for this test from questions table using subject AND lesson
 // ORDER BY RAND() randomizes the question order
-$stmt = $conn->prepare("SELECT * FROM questions WHERE lesson = ? ORDER BY RAND()");
-$stmt->bind_param("s", $lesson_name);
+$stmt = $conn->prepare("SELECT * FROM questions WHERE subject = ? AND lesson = ? ORDER BY RAND()");
+$stmt->bind_param("ss", $subject_name, $lesson_name);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -125,8 +127,8 @@ while ($row = $result->fetch_assoc()) {
     $questions[] = $row;
 }
 
-// Store question IDs in session to track which questions were served
-// This ensures all questions are served and no duplicates
+// Store question details in session for grading
+$_SESSION['current_test_subject'] = $subject_name;
 $_SESSION['current_test_lesson'] = $lesson_name;
 $_SESSION['current_test_question_ids'] = array_column($questions, 'id');
 $_SESSION['current_test_question_count'] = count($questions);
@@ -208,10 +210,16 @@ $conn->close();
     /* Topic line - bigger and violet */
     .topic-line {
         font-size: 1.5em;
-        color: #58019b;
+        color: #9b59b6;
         font-weight: bold;
-        margin-bottom: 18px;
+        margin-bottom: 15px;
         margin-top: 10px;
+    }
+    
+    .other-info {
+        color: #666;
+        font-size: 16px;
+        margin-bottom: 10px;
     }
     
     .test-form {
@@ -324,13 +332,6 @@ $conn->close();
         background: #c82333; 
         color: white;
     }
-    
-    /* Other info lines - keep normal */
-    .other-info {
-        color: #666;
-        font-size: 16px;
-        margin-bottom: 10px;
-    }
   </style>
 </head>
 <body>
@@ -362,6 +363,7 @@ $conn->close();
 
         <div class="test-form">
             <form action="gradetest.php" method="post">
+                <input type="hidden" name="subject" value="<?= htmlspecialchars($subject_name) ?>">
                 <input type="hidden" name="lesson" value="<?= htmlspecialchars($lesson_name) ?>">
                 <input type="hidden" name="test_id" value="<?= $test_id ?>">
                 <?php 
