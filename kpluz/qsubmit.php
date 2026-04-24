@@ -244,23 +244,7 @@ $conn->close();
         padding: 40px;
         text-align: left;
     }
-    
-    .header {
-        width: 100%;
-        height: 200px;
-        background: url('images/header-bg.jpg') repeat-x top center;
-        background-size: auto 200px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 0;
-        border-radius: 10px 10px 0 0;
-    }
-    
-    .header-logo {
-        max-height: 120px;
-    }
-    
+        
     h2 {
         color: #003366;
         margin-bottom: 10px;
