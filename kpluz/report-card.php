@@ -364,7 +364,7 @@ $conn->close();
     <div class="user-welcome">
         <div class="welcome-text">Welcome, <?= htmlspecialchars($user_name) ?>!</div>
         <div class="user-info">
-            KPluz SHS - Report Cards
+            KPluz SHS - Report Card
             <span class="role-badge"><?= ucfirst($user_role) ?></span>
         </div>
     </div>
@@ -374,7 +374,7 @@ $conn->close();
             <!-- STUDENT REPORT CARDS VIEW - SHOW ALL TESTS -->
             <div class="reports-section">
                 <h2 class="section-title">
-                    My Report Cards
+                    My Report Card
                     <span class="report-count">Total: <?= $total_tests ?> Test(s)</span>
                 </h2>
                 
@@ -401,12 +401,12 @@ $conn->close();
                                             <div class="score-display <?= $passed ? 'score-passed' : 'score-failed' ?>">
                                                 Score: <?= $score ?>/25 (<?= $percentage ?>%)
                                             </div>
-                                            <a href="report-card.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="view-report-btn">View Full Report</a>
+                                            <a href="test-results.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="view-report-btn">View Test Results</a>
                                         <?php else: ?>
                                             <div class="not-taken">
                                                 &#9888;&#65039; Test Not Taken Yet
                                             </div>
-                                            <div class="disabled-btn">No Report Available</div>
+                                            <div class="disabled-btn">No Test Results Available</div>
                                         <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>

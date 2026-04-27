@@ -310,11 +310,11 @@ $conn->close();
                 <!-- Report Cards -->
                 <div class="nav-card">
                     <div class="nav-icon">&#128202;</div>
-                    <div class="nav-title">Report Cards</div>
+                    <div class="nav-title">Report Card</div>
                     <div class="nav-description">
                         View your test results, scores, and performance history across all completed assessments.
                     </div>
-                    <a href="report-cards.php" class="nav-btn">View Reports</a>
+                    <a href="report-card.php" class="nav-btn">View Report Card</a>
                 </div>
             </div>
 
