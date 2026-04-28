@@ -16,6 +16,53 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Function to format solution with semicolons between steps
+function format_solution($solution) {
+    if (empty($solution) || trim($solution) === '') {
+        return '';
+    }
+    
+    // First, handle common step separators
+    // Replace newlines, periods with spaces, and multiple spaces
+    $formatted = str_replace(["\r\n", "\n", "\r"], ' ', $solution);
+    
+    // Split by common step indicators
+    // Pattern matches: numbers with dots (1., 2.), or words like "Step", "Then", "Next", "Finally"
+    // Also matches patterns like "Efficiency =" or "Final Answer:"
+    $steps = preg_split('/(?=\d+\.\s+)|(?=\b(?:Step|Then|Next|Finally|Therefore|Thus|So)\b\s*:?\s*)|(?=\b(?:Efficiency|Output|Input|Work|Force|Distance|MA|VR|Efficiency)\s*=)/i', $formatted);
+    
+    // Clean up each step
+    $steps = array_map(function($step) {
+        // Remove extra spaces
+        $step = trim($step);
+        // Remove trailing periods
+        $step = rtrim($step, '.');
+        return $step;
+    }, $steps);
+    
+    // Remove empty steps
+    $steps = array_filter($steps);
+    
+    // If we have multiple steps, join with semicolons
+    if (count($steps) > 1) {
+        return implode('; ', $steps);
+    }
+    
+    // If no clear steps detected, try splitting by common formulas
+    if (strpos($solution, '=') !== false) {
+        $formula_parts = preg_split('/(?=[A-Z][a-z]*\s*=)/', $solution);
+        if (count($formula_parts) > 1) {
+            $formula_parts = array_map('trim', $formula_parts);
+            $formula_parts = array_filter($formula_parts);
+            if (count($formula_parts) > 1) {
+                return implode('; ', $formula_parts);
+            }
+        }
+    }
+    
+    return $solution;
+}
+
 // Get user details
 $user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT name, role FROM users WHERE id = ?");
@@ -68,7 +115,7 @@ if (isset($_GET['ajax_get_questions']) && isset($_GET['subject']) && isset($_GET
     $subject = $_GET['subject'];
     $lesson = $_GET['lesson'];
     $questions = [];
-    $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3 FROM questions WHERE subject = ? AND lesson = ? ORDER BY id");
+    $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3, solution FROM questions WHERE subject = ? AND lesson = ? ORDER BY id");
     $stmt->bind_param("ss", $subject, $lesson);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -96,7 +143,7 @@ if (isset($_GET['ajax_delete_question']) && isset($_GET['question_id'])) {
 // Handle AJAX request to get a single question for editing
 if (isset($_GET['ajax_get_question']) && isset($_GET['question_id'])) {
     $question_id = $_GET['question_id'];
-    $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3 FROM questions WHERE id = ?");
+    $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3, solution FROM questions WHERE id = ?");
     $stmt->bind_param("i", $question_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -116,9 +163,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET['ajax_update'])) {
     $wrong1 = $_POST['wrong1'] ?? '';
     $wrong2 = $_POST['wrong2'] ?? '';
     $wrong3 = $_POST['wrong3'] ?? '';
+    $solution = $_POST['solution'] ?? '';
     
-    $stmt = $conn->prepare("UPDATE questions SET type=?, question=?, correct=?, wrong1=?, wrong2=?, wrong3=? WHERE id=?");
-    $stmt->bind_param("ssssssi", $type, $question, $correct, $wrong1, $wrong2, $wrong3, $id);
+    $stmt = $conn->prepare("UPDATE questions SET type=?, question=?, correct=?, wrong1=?, wrong2=?, wrong3=?, solution=? WHERE id=?");
+    $stmt->bind_param("ssssssss", $type, $question, $correct, $wrong1, $wrong2, $wrong3, $solution, $id);
     $success = $stmt->execute();
     header('Content-Type: application/json');
     echo json_encode(['success' => $success, 'error' => $conn->error]);
@@ -156,6 +204,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !isset($_GET['ajax_update'])) {
     $type = $_POST["type"];
     $question = $_POST["question"];
     $correct = $_POST["correct_answer"];
+    $solution = $_POST["solution"] ?? '';
+    
+    // Auto-add blank solution for Math or Science subjects (can be edited later)
+    if (($subject == 'Math' || $subject == 'Science') && empty($solution)) {
+        $solution = ''; // Keep as empty string, teacher can add later
+    }
     
     if ($type == "FB") {
         $wrong1 = "";
@@ -171,8 +225,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !isset($_GET['ajax_update'])) {
         $wrong3 = isset($_POST['wrong_answer3']) ? $_POST['wrong_answer3'] : '';
     }
     
-    $stmt = $conn->prepare("INSERT INTO questions (subject, lesson, type, question, correct, wrong1, wrong2, wrong3) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssssss", $subject, $lesson, $type, $question, $correct, $wrong1, $wrong2, $wrong3);
+    $stmt = $conn->prepare("INSERT INTO questions (subject, lesson, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssssss", $subject, $lesson, $type, $question, $correct, $wrong1, $wrong2, $wrong3, $solution);
     
     if ($stmt->execute()) {
         $submitted = true;
@@ -499,6 +553,15 @@ $conn->close();
         color: #dc3545;
     }
     
+    .solution-text {
+        color: #6f42c1;
+        font-style: italic;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px dashed #ccc;
+        line-height: 1.5;
+    }
+    
     .action-icons {
         display: flex;
         gap: 10px;
@@ -652,6 +715,11 @@ $conn->close();
         flex: 1;
         margin-bottom: 0;
     }
+    
+    .solution-label {
+        color: #6f42c1;
+        font-weight: bold;
+    }
   </style>
   <script>
         function adjustWrongAnswers() {
@@ -659,6 +727,7 @@ $conn->close();
             const wrong1 = document.querySelector('[name="wrong_answer1"]');
             const wrong2 = document.querySelector('[name="wrong_answer2"]');
             const wrong3 = document.querySelector('[name="wrong_answer3"]');
+            const solution = document.querySelector('[name="solution"]');
 
             if (type === "TF") {
                 wrong1.disabled = false;
@@ -690,71 +759,115 @@ $conn->close();
             }
         }
         
-        function loadQuestions() {
-            const subject = document.getElementById('subjectSelect').value;
-            const lessonDisplay = document.getElementById('lessonSelect').value;
-            
-            if (!subject || !lessonDisplay) {
-                document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Select a subject and lesson to view existing questions.</div>';
+function loadQuestions() {
+    const subject = document.getElementById('subjectSelect').value;
+    const lessonDisplay = document.getElementById('lessonSelect').value;
+    
+    if (!subject || !lessonDisplay) {
+        document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Select a subject and lesson to view existing questions.</div>';
+        return;
+    }
+    
+    const lesson = lessonDisplay.split(':')[0].trim();
+    
+    document.getElementById('questionsContainer').innerHTML = '<div class="loading">Loading questions...</div>';
+    
+    fetch(`?ajax_get_questions=1&subject=${encodeURIComponent(subject)}&lesson=${encodeURIComponent(lesson)}`)
+        .then(response => response.json())
+        .then(questions => {
+            if (questions.length === 0) {
+                document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">No questions found for this subject and lesson. Add some above!</div>';
                 return;
             }
             
-            const lesson = lessonDisplay.split(':')[0].trim();
+            let html = '<table class="questions-table">';
+            html += '<tr><th>#</th><th>Type</th><th>Question</th><th>Choices & Solutions</th><th>Actions</th></tr>';
             
-            document.getElementById('questionsContainer').innerHTML = '<div class="loading">Loading questions...</div>';
-            
-            fetch(`?ajax_get_questions=1&subject=${encodeURIComponent(subject)}&lesson=${encodeURIComponent(lesson)}`)
-                .then(response => response.json())
-                .then(questions => {
-                    if (questions.length === 0) {
-                        document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">No questions found for this subject and lesson. Add some above!</div>';
-                        return;
-                    }
-                    
-                    let html = '<table class="questions-table">';
-                    html += '<tr><th>#</th><th>Type</th><th>Question</th><th>Choices</th><th>Actions</th></tr>';
-                    
-                    questions.forEach((q, index) => {
-                        let choicesHtml = '<ul class="choices-list">';
-                        
-                        if (q.type === 'TF') {
-                            choicesHtml += `<li class="correct-choice">&#10003; Correct: ${escapeHtml(q.correct)}</li>`;
-                            if (q.wrong1) choicesHtml += `<li class="wrong-choice">&#10007; Wrong: ${escapeHtml(q.wrong1)}</li>`;
-                        } else if (q.type === 'FB') {
-                            choicesHtml += `<li class="correct-choice">&#10003; Answer: ${escapeHtml(q.correct)}</li>`;
-                            choicesHtml += `<li class="wrong-choice"><em>Fill in the blank question</em></li>`;
-                        } else {
-                            choicesHtml += `<li class="correct-choice">&#10003; Correct: ${escapeHtml(q.correct)}</li>`;
-                            if (q.wrong1) choicesHtml += `<li class="wrong-choice">&#10007; ${escapeHtml(q.wrong1)}</li>`;
-                            if (q.wrong2) choicesHtml += `<li class="wrong-choice">&#10007; ${escapeHtml(q.wrong2)}</li>`;
-                            if (q.wrong3) choicesHtml += `<li class="wrong-choice">&#10007; ${escapeHtml(q.wrong3)}</li>`;
-                        }
-                        
-                        choicesHtml += '</ul>';
-                        
-                        let typeClass = '';
-                        if (q.type === 'MC') typeClass = 'type-MC';
-                        else if (q.type === 'TF') typeClass = 'type-TF';
-                        else typeClass = 'type-FB';
-                        
-                        html += `<tr>
-                            <td>${index + 1}</td>
-                            <td><span class="type-badge ${typeClass}">${escapeHtml(q.type)}</span></td>
-                            <td class="question-text-cell">${escapeHtml(q.question)}</td>
-                            <td class="choices-cell">${choicesHtml}</td>
-                            <td class="action-icons">
-                                <button class="edit-btn" onclick="editQuestion(${q.id})">&#9999;&#65039; Edit</button>
-                                <button class="delete-btn" onclick="deleteQuestion(${q.id}, '${escapeHtml(q.question)}')">&#128465;&#65039; Delete</button>
-                            </td>
-                        </tr>`;
-                    });
-                    html += '</table>';
-                    document.getElementById('questionsContainer').innerHTML = html;
-                })
-                .catch(error => {
-                    document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Error loading questions.</div>';
-                });
-        }
+            questions.forEach((q, index) => {
+                let choicesHtml = '<ul class="choices-list">';
+                
+                if (q.type === 'TF') {
+                    choicesHtml += `<li class="correct-choice">&#10003; Correct: ${escapeHtml(q.correct)}</li>`;
+                    if (q.wrong1) choicesHtml += `<li class="wrong-choice">&#10007; Wrong: ${escapeHtml(q.wrong1)}</li>`;
+                } else if (q.type === 'FB') {
+                    choicesHtml += `<li class="correct-choice">&#10003; Answer: ${escapeHtml(q.correct)}</li>`;
+                    choicesHtml += `<li class="wrong-choice"><em>Fill in the blank question</em></li>`;
+                } else {
+                    choicesHtml += `<li class="correct-choice">&#10003; Correct: ${escapeHtml(q.correct)}</li>`;
+                    if (q.wrong1) choicesHtml += `<li class="wrong-choice">&#10007; ${escapeHtml(q.wrong1)}</li>`;
+                    if (q.wrong2) choicesHtml += `<li class="wrong-choice">&#10007; ${escapeHtml(q.wrong2)}</li>`;
+                    if (q.wrong3) choicesHtml += `<li class="wrong-choice">&#10007; ${escapeHtml(q.wrong3)}</li>`;
+                }
+                
+                choicesHtml += '</ul>';
+                
+                // Add solution AFTER the wrong answers (below wrong3)
+                if (q.solution && q.solution.trim() !== '') {
+                    let solutionText = q.solution;
+                    solutionText = formatSolutionWithSemicolons(solutionText);
+                    choicesHtml += `<div class="solution-text">&#128161; Solution: ${escapeHtml(solutionText)}</div>`;
+                }
+                
+                let typeClass = '';
+                if (q.type === 'MC') typeClass = 'type-MC';
+                else if (q.type === 'TF') typeClass = 'type-TF';
+                else typeClass = 'type-FB';
+                
+                html += `<tr>
+                    <td>${index + 1}</td>
+                    <td><span class="type-badge ${typeClass}">${escapeHtml(q.type)}</span></td>
+                    <td class="question-text-cell">${escapeHtml(q.question)}</td>
+                    <td class="choices-cell">${choicesHtml}</td>
+                    <td class="action-icons">
+                        <button class="edit-btn" onclick="editQuestion(${q.id})">&#9999;&#65039; Edit</button>
+                        <button class="delete-btn" onclick="deleteQuestion(${q.id}, '${escapeHtml(q.question)}')">&#128465;&#65039; Delete</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</table>';
+            document.getElementById('questionsContainer').innerHTML = html;
+        })
+        .catch(error => {
+            document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Error loading questions.</div>';
+        });
+}
+        
+        // JavaScript function to format solution with semicolons
+// JavaScript function to format solution with semicolons
+function formatSolutionWithSemicolons(solution) {
+    if (!solution || solution.trim() === '') return '';
+    
+    // If already has semicolons, return as is
+    if (solution.includes(';') && !solution.includes('\n')) return solution;
+    
+    // Split by line breaks first
+    let steps = solution.split(/\r?\n/);
+    
+    // Remove empty steps and trim whitespace
+    steps = steps.map(step => step.trim()).filter(step => step.length > 0);
+    
+    // If we have multiple steps from line breaks, join with semicolons
+    if (steps.length > 1) {
+        return steps.join('; ');
+    }
+    
+    // If no line breaks, try to split by patterns
+    let formatted = solution;
+    
+    // Add semicolon before "Final Answer" or "Therefore"
+    formatted = formatted.replace(/\s+(Final Answer:|Therefore,?)/gi, '; $1');
+    
+    // Add semicolon between formula and calculation
+    formatted = formatted.replace(/([a-z0-9)])\s+([A-Z][a-z]?\s*=)/g, '$1; $2');
+    
+    // Add semicolon after closing parenthesis before new formula
+    formatted = formatted.replace(/\)\s+([A-Z])/g, '); $1');
+    
+    // Remove double semicolons
+    formatted = formatted.replace(/;+/g, ';');
+    
+    return formatted;
+}
         
         function escapeHtml(text) {
             if (!text) return '';
@@ -797,6 +910,7 @@ $conn->close();
             document.getElementById('edit_wrong1').value = question.wrong1 || '';
             document.getElementById('edit_wrong2').value = question.wrong2 || '';
             document.getElementById('edit_wrong3').value = question.wrong3 || '';
+            document.getElementById('edit_solution').value = question.solution || '';
             
             const type = question.type;
             const wrong1Field = document.getElementById('edit_wrong1');
@@ -829,6 +943,7 @@ $conn->close();
             formData.append('wrong1', document.getElementById('edit_wrong1').value);
             formData.append('wrong2', document.getElementById('edit_wrong2').value);
             formData.append('wrong3', document.getElementById('edit_wrong3').value);
+            formData.append('solution', document.getElementById('edit_solution').value);
             
             fetch('?ajax_update=1', {
                 method: 'POST',
@@ -982,17 +1097,18 @@ $conn->close();
                             </select>
                         </div>
                     </div>
-<div class="form-row">
-    <div class="form-group">
-        <label>Lesson Name:</label>
-        <input type="text" name="new_lesson" placeholder="e.g., Q1 Lesson 1" required>
-    </div>
-    <div class="form-group">
-        <label>Topic / Title:</label>
-        <input type="text" name="new_topic" placeholder="Brief topic or title of the lesson" required>
-    </div>
-</div>
-<span class="required" style="display: block; margin-top: 10px;">Note: This will create a new test entry in the tests table.</span>                </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Lesson Name:</label>
+                            <input type="text" name="new_lesson" placeholder="e.g., Q1 Lesson 1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Topic / Title:</label>
+                            <input type="text" name="new_topic" placeholder="Brief topic or title of the lesson" required>
+                        </div>
+                    </div>
+                    <span class="required" style="display: block; margin-top: 10px;">Note: This will create a new test entry in the tests table.</span>
+                </div>
 
                 <div class="section-divider">
                     <span> Question Details </span>
@@ -1030,6 +1146,11 @@ $conn->close();
                 <div class="form-group">
                     <label>Wrong Answer 3:</label>
                     <input type="text" name="wrong_answer3" placeholder="Wrong answer option 3">
+                </div>
+
+                <div class="form-group">
+                    <label class="solution-label">Solution (Optional - especially useful for Math/Science):</label>
+                    <textarea name="solution" placeholder="Enter step-by-step solution or explanation for this question..."></textarea>
                 </div>
 
                 <div style="text-align: center;">
@@ -1087,6 +1208,10 @@ $conn->close();
         <div class="form-group">
             <label>Wrong Answer 3:</label>
             <input type="text" id="edit_wrong3" name="edit_wrong3">
+        </div>
+        <div class="form-group">
+            <label>Solution:</label>
+            <textarea id="edit_solution" name="edit_solution" style="height:80px;"></textarea>
         </div>
         <input type="hidden" id="edit_question_id">
         <div style="text-align: center;">
