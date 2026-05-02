@@ -432,6 +432,14 @@ function getWorldIcon($world) {
     return $icons[$world] ?? 'globe';
 }
 
+function displayGradeLevel($start, $end) {
+    if ($start == $end) {
+        return "Grade " . $start;
+    } else {
+        return "Grades " . $start . "-" . $end;
+    }
+}
+
 // Get question type display name
 function getQuestionTypeName($type) {
     $names = [
@@ -1510,46 +1518,46 @@ function getEditValue($editData, $key, $default = '') {
             </div>
             <?php endif; ?>
             
-            <!-- QUIZ SELECTOR DROPDOWN -->
-            <div class="quiz-selector">
-                <div class="selector-header">
-                    <i class="fas fa-clipboard-list"></i>
-                    <h3>Select a Quiz to Add Questions</h3>
-                </div>
-                
-                <form method="POST" action="add-questions.php" class="quiz-dropdown">
-                    <input type="hidden" name="action" value="select_quiz">
-                    <select name="selected_quiz_id" id="quizSelector" onchange="this.form.submit()" <?php echo empty($teacherQuizzes) ? 'disabled' : ''; ?>>
-                        <option value="">-- Choose a Quiz --</option>
-                        <?php foreach ($teacherQuizzes as $quiz): ?>
-                        <option value="<?php echo $quiz['id']; ?>" 
-                                <?php echo ($quiz_id == $quiz['id']) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($quiz['title']); ?> 
-                            (<?php echo getIntelligenceName($quiz['intelligence_type']); ?> - <?php echo getWorldName($quiz['virtual_world']); ?>)
-                            [<?php echo $quiz['type'] == 'inworld' ? '3D' : 'Standard'; ?>]
-                            - <?php echo $quiz['question_count']; ?> questions
-                        </option>
-                        <?php endforeach; ?>
-                    </select>
-                    
-                    <?php if (empty($teacherQuizzes)): ?>
-                    <a href="create-quiz.php" class="btn btn-primary">
-                        <i class="fas fa-plus-circle"></i> Create Your First Quiz
-                    </a>
-                    <?php else: ?>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-check"></i> Select Quiz
-                    </button>
-                    <?php endif; ?>
-                </form>
-            </div>
+<!-- QUIZ SELECTOR DROPDOWN -->
+<div class="quiz-selector">
+    <div class="selector-header">
+        <i class="fas fa-clipboard-list"></i>
+        <h3>Select a Quiz</h3>
+    </div>
+    
+    <form method="POST" action="add-questions.php">
+        <input type="hidden" name="action" value="select_quiz">
+        <!-- Full width dropdown - no button next to it -->
+        <select name="selected_quiz_id" id="quizSelector" style="width: 100%; margin-bottom: 15px;" <?php echo empty($teacherQuizzes) ? 'disabled' : ''; ?>>
+            <option value="">-- Choose a Quiz --</option>
+            <?php foreach ($teacherQuizzes as $quiz): ?>
+            <?php 
+                // Truncate title to 50 chars max to keep dropdown clean
+                $displayTitle = (strlen($quiz['title']) > 100) ? substr($quiz['title'], 0, 97) . '...' : $quiz['title'];
+            ?>
+            <option value="<?php echo $quiz['id']; ?>" 
+                    <?php echo ($quiz_id == $quiz['id']) ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($displayTitle); ?>
+            </option>
+            <?php endforeach; ?>
+        </select>
+        
+        <!-- Select Quiz button on its own line below -->
+        <?php if (empty($teacherQuizzes)): ?>
+        <a href="create-quiz.php" class="btn btn-primary" style="width: 100%; justify-content: center;">
+            <i class="fas fa-plus-circle"></i> Create Your First Quiz
+        </a>
+        <?php else: ?>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+            <i class="fas fa-check"></i> Select Quiz
+        </button>
+        <?php endif; ?>
+    </form>
+</div>
             
             <?php if ($quiz_info): ?>
             <!-- QUIZ INFO -->
             <div class="quiz-info-card">
-                <div class="quiz-icon-large">
-                    <i class="fas fa-<?php echo getWorldIcon($quiz_info['virtual_world']); ?>"></i>
-                </div>
                 <div class="quiz-details">
                     <div class="quiz-title">
                         <?php echo htmlspecialchars($quiz_info['title']); ?>
@@ -1559,6 +1567,10 @@ function getEditValue($editData, $key, $default = '') {
                     </div>
                     <div><?php echo htmlspecialchars($quiz_info['description']); ?></div>
                     <div class="quiz-meta">
+                        <div class="meta-item">
+       	 					<i class="fas fa-graduation-cap"></i>
+        					<?php echo displayGradeLevel($quiz_info['grade_start'], $quiz_info['grade_end']); ?>
+    					</div>
                         <div class="meta-item">
                             <i class="fas fa-<?php echo getIntelligenceIcon($quiz_info['intelligence_type']); ?>"></i>
                             <?php echo getIntelligenceName($quiz_info['intelligence_type']); ?>
@@ -1570,10 +1582,6 @@ function getEditValue($editData, $key, $default = '') {
                         <div class="meta-item">
                             <i class="fas fa-user"></i>
                             <?php echo htmlspecialchars($quiz_info['teacher_name']); ?>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-question"></i>
-                            <?php echo $quiz_info['question_count']; ?> Questions
                         </div>
                     </div>
                 </div>
