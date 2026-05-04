@@ -1801,21 +1801,22 @@ function getEditValue($editData, $key, $default = '') {
                 </div>
                 
                 <!-- BUTTONS -->
-                <div class="button-group">
-                    <button type="submit" class="btn <?php echo $edit_question_data ? 'btn-warning' : 'btn-primary'; ?>">
-                        <i class="fas <?php echo $edit_question_data ? 'fa-save' : 'fa-plus-circle'; ?>"></i> 
-                        <?php echo $edit_question_data ? 'Update Question' : 'Add Question'; ?>
-                    </button>
-                    <?php if ($edit_question_data): ?>
-                    <a href="add-questions.php?quiz_id=<?php echo $quiz_id; ?>" class="btn btn-primary">
-                        <i class="fas fa-plus-circle"></i> Add New Question
-                    </a>
-                    <?php endif; ?>
-                    <button type="reset" class="btn btn-primary">
-                        <i class="fas fa-redo"></i> Clear Form
-                    </button>
-                </div>
-            </form>
+<!-- BUTTONS -->
+<div class="button-group">
+    <button type="submit" class="btn <?php echo $edit_question_data ? 'btn-warning' : 'btn-primary'; ?>" style="padding: 10px 20px; font-size: 1.1rem; width: 220px;">
+        <i class="fas <?php echo $edit_question_data ? 'fa-save' : 'fa-plus-circle'; ?>"></i> 
+        <?php echo $edit_question_data ? 'Update Question' : 'Add Question'; ?>
+    </button>
+    <?php if ($edit_question_data): ?>
+    <a href="add-questions.php?quiz_id=<?php echo $quiz_id; ?>" class="btn btn-primary" style="padding: 10px 20px; font-size: 1.1rem; width: 230px; text-align: center;">
+        <i class="fas fa-plus-circle"></i> Add New Question
+    </a>
+    <?php endif; ?>
+    <button type="reset" class="btn btn-primary" style="padding: 10px 20px; font-size: 1.1rem; width: 220px;">
+        <i class="fas fa-redo"></i> Clear Form
+    </button>
+</div>            
+</form>
             
             <!-- EXISTING QUESTIONS LIST -->
             <?php if (!empty($questions)): ?>
