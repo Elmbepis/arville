@@ -559,7 +559,7 @@ function getEditValue($editData, $key, $default = '') {
         }
         
         .container {
-            max-width: 800px; /* SAME WIDTH AS teacher-dashboard.php */
+            max-width: 1200px; 
             margin: 0 auto;
             position: relative;
             z-index: 1;
