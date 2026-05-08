@@ -318,7 +318,7 @@ function getQuizWorldImage($worldName, &$debug = null) {
         }
         
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -525,7 +525,7 @@ function getQuizWorldImage($worldName, &$debug = null) {
         
         .quiz-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 15px;
             margin-bottom: 20px;
         }
@@ -732,7 +732,7 @@ function getQuizWorldImage($worldName, &$debug = null) {
         
         .world-selector {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 15px;
             margin-top: 10px;
         }
@@ -1098,7 +1098,7 @@ function getQuizWorldImage($worldName, &$debug = null) {
                             <?php endfor; ?>
                         <?php else: ?>
                             <?php 
-                            $displayQuizzes = array_slice($availableQuizzes, 0, 8);
+                            $displayQuizzes = $availableQuizzes;
                             $quizCount = 0;
                             ?>
                             <?php foreach ($displayQuizzes as $quiz): $quizCount++; 

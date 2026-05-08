@@ -374,6 +374,7 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
         }        
         
         .bottom-buttons-container {
+        	margin-top: 3px !important;
             margin-bottom: 30px !important;
         }
 
@@ -1540,47 +1541,6 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
                     </div>
                 </div>
             </div>
-
-            <!-- RECENT STUDENT SCORES -->
-            <?php if (!empty($studentScores)): ?>
-            <div class="card fade-in">
-                <h2 class="card-title">
-                    <i class="fas fa-history"></i> Recent Student Scores
-                    <span class="badge badge-primary"><?php echo count($studentScores); ?> total</span>
-                </h2>
-                
-                <div class="score-list">
-                    <?php foreach (array_slice($studentScores, 0, 20) as $score): ?>
-                    <div class="score-item">
-                        <div class="score-header">
-                            <span class="score-student">
-                                <i class="fas fa-user-graduate"></i> <?php echo htmlspecialchars($score['student_name']); ?>
-                            </span>
-                            <span class="score-value"><?php echo $score['score']; ?>%</span>
-                        </div>
-                        <div class="score-quiz">
-                            <i class="fas fa-clipboard-list"></i> <?php echo htmlspecialchars($score['quiz_title']); ?>
-                        </div>
-                        <div class="score-details">
-                            <span><i class="fas fa-calendar"></i> <?php echo formatDateTime($score['completed_at']); ?></span>
-                            <?php if ($score['grade_level']): ?>
-                            <span><i class="fas fa-graduation-cap"></i> Grade <?php echo $score['grade_level']; ?></span>
-                            <?php endif; ?>
-                            <?php if ($score['class_name']): ?>
-                            <span><i class="fas fa-users"></i> <?php echo htmlspecialchars($score['class_name']); ?></span>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                    
-                    <?php if (count($studentScores) > 20): ?>
-                    <div style="text-align: center; margin-top: 10px;">
-                        <small>Showing 20 of <?php echo count($studentScores); ?> scores. <a href="view-all-scores.php">View all</a></small>
-                    </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-            <?php endif; ?>
 
             <div class="bottom-buttons-container fade-in">
                 <form method="POST" action="teacher-dashboard.php" style="display: inline;">
