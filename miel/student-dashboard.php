@@ -1,5 +1,5 @@
 <?php
-// student-dashboard.php - WITH EXTENSIVE DEBUGGING
+// student-dashboard.php - WITH ALL ACTIVITIES (NO LIMIT)
 session_name('MIEL_SESSION');
 session_start();
 
@@ -33,7 +33,7 @@ try {
     
     $studentGrade = $student['grade_level'];
     
-    // Get available quizzes
+    // Get available quizzes (ALL - no limit)
     $quizStmt = $pdo->prepare("
         SELECT q.*, u.full_name as teacher_name 
         FROM quizzes q 
@@ -59,7 +59,7 @@ try {
     $scoreStmt->execute([$_SESSION['user_id']]);
     $studentQuizScores = $scoreStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get Available Activities
+    // Get Available Activities (ALL - no limit)
     $activitiesStmt = $pdo->prepare("
         SELECT a.*, u.full_name as teacher_name 
         FROM activities a 
@@ -889,7 +889,10 @@ function getQuizWorldImage($worldName, &$debug = null) {
                 font-size: 1.8rem;
             }
             
-            .quiz-grid,
+            .quiz-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+            
             .world-selector {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -948,7 +951,10 @@ function getQuizWorldImage($worldName, &$debug = null) {
         }
         
         @media (max-width: 480px) {
-            .quiz-grid,
+            .quiz-grid {
+                grid-template-columns: 1fr;
+            }
+            
             .world-selector {
                 grid-template-columns: 1fr;
             }
@@ -1090,18 +1096,14 @@ function getQuizWorldImage($worldName, &$debug = null) {
                 <div class="quiz-grid-section">
                     <div class="quiz-grid">
                         <?php if (empty($availableQuizzes)): ?>
-                            <?php for ($i = 1; $i <= 8; $i++): ?>
                             <div class="empty-icon">
                                 <i class="fas fa-plus-circle"></i>
                                 <div class="empty-text">No Quiz Yet</div>
                             </div>
-                            <?php endfor; ?>
                         <?php else: ?>
                             <?php 
-                            $displayQuizzes = $availableQuizzes;
                             $quizCount = 0;
-                            ?>
-                            <?php foreach ($displayQuizzes as $quiz): $quizCount++; 
+                            foreach ($availableQuizzes as $quiz): $quizCount++; 
                                 $quizTaken = false;
                                 $quizScore = null;
                                 foreach ($studentQuizScores as $score) {
@@ -1143,13 +1145,6 @@ function getQuizWorldImage($worldName, &$debug = null) {
                                 <?php endif; ?>
                             </div>
                             <?php endforeach; ?>
-                            
-                            <?php for ($i = $quizCount + 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon">
-                                <i class="fas fa-plus-circle"></i>
-                                <div class="empty-text">Coming Soon</div>
-                            </div>
-                            <?php endfor; ?>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -1165,18 +1160,14 @@ function getQuizWorldImage($worldName, &$debug = null) {
                 <div class="quiz-grid-section">
                     <div class="quiz-grid">
                         <?php if (empty($availableActivities)): ?>
-                            <?php for ($i = 1; $i <= 8; $i++): ?>
                             <div class="empty-icon">
                                 <i class="fas fa-plus-circle"></i>
                                 <div class="empty-text">No Activity Yet</div>
                             </div>
-                            <?php endfor; ?>
                         <?php else: ?>
                             <?php 
-                            $displayActivities = array_slice($availableActivities, 0, 8);
                             $activityCount = 0;
-                            ?>
-                            <?php foreach ($displayActivities as $activity): $activityCount++; 
+                            foreach ($availableActivities as $activity): $activityCount++; 
                                 $activityGraded = false;
                                 $activityPoints = null;
                                 $maxPoints = $activity['max_points'] ?? 100;
@@ -1192,13 +1183,8 @@ function getQuizWorldImage($worldName, &$debug = null) {
                                 $intelligenceType = $activity['intelligence_type'];
                                 $virtualWorld = $activity['virtual_world'];
                                 
-                                // DEBUG: Log each activity's virtual world value
-                                $debugInfo = [];
-                                $worldImage = getVirtualWorldImage($virtualWorld, $debugInfo);
+                                $worldImage = getVirtualWorldImage($virtualWorld);
                                 $intelligenceImage = getIntelligenceImage($intelligenceType);
-                                
-                                // Store debug info for this activity
-                                $activityDebug[$activity['id']] = $debugInfo;
                             ?>
                             <div class="quiz-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)"
                                  data-activity-id="<?php echo $activity['id']; ?>"
@@ -1229,13 +1215,6 @@ function getQuizWorldImage($worldName, &$debug = null) {
                                 <?php endif; ?>
                             </div>
                             <?php endforeach; ?>
-                            
-                            <?php for ($i = $activityCount + 1; $i <= 8; $i++): ?>
-                            <div class="empty-icon">
-                                <i class="fas fa-plus-circle"></i>
-                                <div class="empty-text">Coming Soon</div>
-                            </div>
-                            <?php endfor; ?>
                         <?php endif; ?>
                     </div>
                 </div>
