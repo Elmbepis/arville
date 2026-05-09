@@ -88,7 +88,7 @@ if (isset($_POST['submit_activity'])) {
         
         // Define file type categories
         $imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
-        $textTypes = ['txt', 'doc', 'docx', 'pdf', 'rtf'];
+        $textTypes = ['txt', 'doc', 'docx', 'pdf', 'rtf', 'xls', 'xlsx'];
         $allowedTypes = array_merge($imageTypes, $textTypes);
         
         // Process all uploaded files
@@ -1643,6 +1643,7 @@ function getFileExtension($filename) {
                                 <span class="type-badge">.txt</span>
                                 <span class="type-badge">.doc/.docx</span>
                                 <span class="type-badge">.pdf</span>
+                                <span class="type-badge">.xls/.xlsx</span>
                                 <span class="type-badge">.jpg/.jpeg</span>
                                 <span class="type-badge">.png</span>
                                 <span class="type-badge">.gif/.bmp</span>

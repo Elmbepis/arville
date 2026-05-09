@@ -1378,53 +1378,58 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
                 </div>
             </div>
 
-            <!-- MY ACTIVITIES SECTION - ALL ACTIVITIES -->
-            <div class="card fade-in">
-                <h2 class="card-title">
-                    <i class="fas fa-tasks"></i> My Activities
-                    <span class="badge badge-purple"><?php echo count($teacherActivities); ?></span>
-                </h2>
-                
-                <div class="quiz-grid-section">
-                    <div class="scrollable-section">
-                        <div class="activity-grid">
-                            <?php if (empty($teacherActivities)): ?>
-                                <div class="empty-icon" onclick="window.location.href='create-activity.php'">
-                                    <i class="fas fa-plus-circle"></i>
-                                    <div class="empty-text">Create Your First Activity</div>
-                                </div>
-                            <?php else: ?>
-                                <?php $activityCounter = 0; ?>
-                                <?php foreach ($teacherActivities as $activity): $activityCounter++; 
-                                    $intelligenceType = $activity['intelligence_type'];
-                                    $virtualWorld = $activity['virtual_world'] ?? 'zoo';
-                                    $worldImage = getVirtualWorldImage($virtualWorld);
-                                    $intelligenceImage = getActivityIntelligenceImage($intelligenceType);
-                                ?>
-                                <div class="activity-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)">
-                                    <div class="icon-badge"><?php echo $activityCounter; ?></div>
-                                    <div class="combined-icon-container">
-                                        <img src="<?php echo $worldImage; ?>" alt="<?php echo getVirtualWorldName($virtualWorld); ?>" class="virtual-world-icon">
-                                        <div class="mi-badge-overlay">
-                                            <img src="<?php echo $intelligenceImage; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
-                                        </div>
-                                    </div>
-                                    <div class="icon-title">
-                                        <?php echo htmlspecialchars($activity['title']); ?>
-                                    </div>
-                                </div>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
+<!-- MY ACTIVITIES SECTION - ALL ACTIVITIES -->
+<div class="card fade-in">
+    <h2 class="card-title">
+        <i class="fas fa-tasks"></i> My Activities
+        <span class="badge badge-purple"><?php echo count($teacherActivities); ?></span>
+    </h2>
+    
+    <div class="quiz-grid-section">
+        <div class="scrollable-section">
+            <div class="activity-grid">
+                <?php if (empty($teacherActivities)): ?>
+                    <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                        <i class="fas fa-plus-circle"></i>
+                        <div class="empty-text">Create Your First Activity</div>
+                    </div>
+                <?php else: ?>
+                    <?php $activityCounter = 0; ?>
+                    <?php foreach ($teacherActivities as $activity): $activityCounter++; 
+                        $intelligenceType = $activity['intelligence_type'];
+                        $virtualWorld = $activity['virtual_world'] ?? 'zoo';
+                        $worldImage = getVirtualWorldImage($virtualWorld);
+                        $intelligenceImage = getActivityIntelligenceImage($intelligenceType);
+                        $gradeDisplay = formatGradeDisplay($activity['grade_start'], $activity['grade_end']);
+                    ?>
+                    <div class="activity-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)">
+                        <div class="icon-badge"><?php echo $activityCounter; ?></div>
+                        <div class="combined-icon-container">
+                            <img src="<?php echo $worldImage; ?>" alt="<?php echo getVirtualWorldName($virtualWorld); ?>" class="virtual-world-icon">
+                            <div class="mi-badge-overlay">
+                                <img src="<?php echo $intelligenceImage; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
+                            </div>
+                        </div>
+                        <div class="icon-title">
+                            <?php echo htmlspecialchars($activity['title']); ?>
+                        </div>
+                        <div class="grade-level-display">
+                            <?php echo $gradeDisplay; ?>
                         </div>
                     </div>
-                    
-                    <div class="action-buttons">
-                        <a href="create-activity.php" class="action-btn">
-                            <i class="fas fa-plus-circle"></i> Create New Activity
-                        </a>
-                    </div>
-                </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="create-activity.php" class="action-btn">
+                <i class="fas fa-plus-circle"></i> Create New Activity
+            </a>
+        </div>
+    </div>
+</div>
+
 
             <!-- STUDENT QUIZ SCORES SECTION - ALL QUIZZES -->
             <div class="card fade-in">
@@ -1485,62 +1490,66 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
                 </div>
             </div>
 
-            <!-- ACTIVITY GRADES SECTION - ALL ACTIVITIES -->
-            <div class="card fade-in">
-                <h2 class="card-title">
-                    <i class="fas fa-check-double"></i> Activity Grades
-                    <span class="badge badge-purple"><?php echo count($activitiesToGrade); ?> activities</span>
-                </h2>
-                
-                <div class="quiz-grid-section">
-                    <div class="scrollable-section">
-                        <div class="grading-grid">
-                            <?php if (empty($activitiesToGrade)): ?>
-                                <div class="empty-icon" onclick="window.location.href='create-activity.php'">
-                                    <i class="fas fa-check-circle"></i>
-                                    <div class="empty-text">No Activities to Grade</div>
-                                </div>
-                            <?php else: ?>
-                                <?php $gradingCounter = 0; ?>
-                                <?php foreach ($activitiesToGrade as $activity): $gradingCounter++; 
-                                    $intelligenceType = $activity['intelligence_type'];
-                                    $virtualWorld = $activity['virtual_world'] ?? 'zoo';
-                                    $worldImage = getVirtualWorldImage($virtualWorld);
-                                    $intelligenceImage = getActivityIntelligenceImage($intelligenceType);
-                                ?>
-                                <div class="grading-icon" onclick="window.location.href='grade-activity.php?activity_id=<?php echo $activity['id']; ?>'">
-                                    <?php if ($activity['students_to_grade'] > 0): ?>
-                                    <div class="grading-badge pulse"><?php echo $activity['students_to_grade']; ?></div>
-                                    <?php endif; ?>
-                                    <div class="combined-icon-container">
-                                        <img src="<?php echo $worldImage; ?>" alt="<?php echo getVirtualWorldName($virtualWorld); ?>" class="virtual-world-icon">
-                                        <div class="mi-badge-overlay">
-                                            <img src="<?php echo $intelligenceImage; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
-                                        </div>
-                                    </div>
-                                    <div class="icon-title">
-                                        <?php echo htmlspecialchars($activity['title']); ?>
-                                    </div>
-                                    <?php if ($activity['students_graded'] > 0): ?>
-                                    <div class="activity-grade">
-                                        <?php echo $activity['students_graded']; ?>/<?php echo $activity['students_submitted']; ?> Graded
-                                    </div>
-                                    <?php else: ?>
-                                    <div class="no-grades">No Grades Yet</div>
-                                    <?php endif; ?>
-                                </div>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
+<!-- ACTIVITY GRADES SECTION - ALL ACTIVITIES -->
+<div class="card fade-in">
+    <h2 class="card-title">
+        <i class="fas fa-check-double"></i> Activity Grades
+        <span class="badge badge-purple"><?php echo count($activitiesToGrade); ?> activities</span>
+    </h2>
+    
+    <div class="quiz-grid-section">
+        <div class="scrollable-section">
+            <div class="grading-grid">
+                <?php if (empty($activitiesToGrade)): ?>
+                    <div class="empty-icon" onclick="window.location.href='create-activity.php'">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="empty-text">No Activities to Grade</div>
+                    </div>
+                <?php else: ?>
+                    <?php $gradingCounter = 0; ?>
+                    <?php foreach ($activitiesToGrade as $activity): $gradingCounter++; 
+                        $intelligenceType = $activity['intelligence_type'];
+                        $virtualWorld = $activity['virtual_world'] ?? 'zoo';
+                        $worldImage = getVirtualWorldImage($virtualWorld);
+                        $intelligenceImage = getActivityIntelligenceImage($intelligenceType);
+                        $gradeDisplay = formatGradeDisplay($activity['grade_start'], $activity['grade_end']);
+                    ?>
+                    <div class="grading-icon" onclick="window.location.href='grade-activity.php?activity_id=<?php echo $activity['id']; ?>'">
+                        <?php if ($activity['students_to_grade'] > 0): ?>
+                        <div class="grading-badge pulse"><?php echo $activity['students_to_grade']; ?></div>
+                        <?php endif; ?>
+                        <div class="combined-icon-container">
+                            <img src="<?php echo $worldImage; ?>" alt="<?php echo getVirtualWorldName($virtualWorld); ?>" class="virtual-world-icon">
+                            <div class="mi-badge-overlay">
+                                <img src="<?php echo $intelligenceImage; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>">
+                            </div>
                         </div>
+                        <div class="icon-title">
+                            <?php echo htmlspecialchars($activity['title']); ?>
+                        </div>
+                        <div class="grade-level-display">
+                            <?php echo $gradeDisplay; ?>
+                        </div>
+                        <?php if ($activity['students_graded'] > 0): ?>
+                        <div class="activity-grade">
+                            <?php echo $activity['students_graded']; ?>/<?php echo $activity['students_submitted']; ?> Graded
+                        </div>
+                        <?php else: ?>
+                        <div class="no-grades">No Grades Yet</div>
+                        <?php endif; ?>
                     </div>
-                    
-                    <div class="action-buttons">
-                        <button class="action-btn" onclick="viewAllActivities()">
-                            <i class="fas fa-list"></i> Export All Activity Grades
-                        </button>
-                    </div>
-                </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="action-btn" onclick="exportAllActivityGrades()">
+                <i class="fas fa-download"></i> Export All Activity Grades
+            </button>
+        </div>
+    </div>
+</div>
 
             <div class="bottom-buttons-container fade-in">
                 <form method="POST" action="teacher-dashboard.php" style="display: inline;">
