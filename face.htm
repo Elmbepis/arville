@@ -45,44 +45,27 @@
   let faceId = urlParams.get('id');
   faceId = (faceId && !isNaN(faceId) && parseInt(faceId) > 0) ? parseInt(faceId) : 1;
 
-  // Get the current path dynamically
-  const currentPath = window.location.pathname;
-  let baseUrl = '';
+  // AUTO-DETECT THE CORRECT PATH BASED ON URL
+  const currentUrl = window.location.href;
+  let scriptPath;
   
-  // Extract base URL from current path
-  if (currentPath.includes('/arville/')) {
-    baseUrl = '/arville/';
-  } else if (currentPath.includes('/universe/')) {
-    baseUrl = '/';
+  if (currentUrl.includes('localhost:8081/arville/')) {
+    // Local XAMPP - includes /arville in path
+    scriptPath = `/arville/universe/faces/face${faceId}.js`;
   } else {
-    baseUrl = '/';
+    // Online server - no /arville in path
+    scriptPath = `/universe/faces/face${faceId}.js`;
   }
   
-  // Build the correct script path
-  const scriptPath = `${baseUrl}universe/faces/face${faceId}.js`;
-  
-  console.log(`Loading: ${scriptPath}`);
-  
-  // Load the corresponding face controller
+  console.log(`Loading face from: ${scriptPath}`);
+
   const script = document.createElement('script');
   script.src = scriptPath;
   script.onerror = () => {
-    // Try alternative path if first fails
-    const altPath = `/arville/universe/faces/face${faceId}.js`;
-    console.log(`Retrying: ${altPath}`);
-    const script2 = document.createElement('script');
-    script2.src = altPath;
-    script2.onerror = () => {
-      document.body.innerHTML = `<div style="color: red; text-align: center; padding: 50px; font-family: monospace;">
-        <h2>&#10060; ERROR: Failed to load face${faceId}.js</h2>
-        <p>Tried paths:<br>
-        ${scriptPath}<br>
-        ${altPath}</p>
-        <p>Make sure the file exists at:<br>
-        /arville/universe/faces/face${faceId}.js</p>
-      </div>`;
-    };
-    document.head.appendChild(script2);
+    document.body.innerHTML = `<div style="color: red; text-align: center; padding: 50px; font-family: monospace;">
+      <h2>&#10060; ERROR: Failed to load face${faceId}.js</h2>
+      <p>Expected path: ${scriptPath}</p>
+    </div>`;
   };
   document.head.appendChild(script);
 </script>
