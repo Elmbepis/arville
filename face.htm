@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Robot Face - Dynamic Expressions</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: #000000;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      overflow: hidden;
+      touch-action: pan-x pan-y;
+    }
+
+    .face-stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #000000;
+      overflow: hidden;
+    }
+
+    .face-image-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000000;
+    }
+
+    #faceImg {
+      width: auto;
+      height: 100%;
+      max-width: none;
+      object-fit: contain;
+      display: block;
+      /* No transform animation - removed the shaking effect */
+    }
+
+    .speech-bubble {
+      position: absolute;
+      bottom: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px);
+      color: #fff3cf;
+      padding: 12px 24px;
+      border-radius: 60px;
+      font-size: 1rem;
+      font-weight: 500;
+      text-align: center;
+      font-family: monospace;
+      letter-spacing: 1px;
+      border: 1px solid rgba(255,200,100,0.5);
+      box-shadow: 0 4px 12px black;
+      pointer-events: none;
+      z-index: 10;
+      max-width: 80%;
+      white-space: normal;
+      word-break: keep-all;
+    }
+
+    .control-bar {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 20;
+    }
+
+    .speak-toggle {
+      background: #ff914d;
+      border: none;
+      border-radius: 60px;
+      padding: 8px 20px;
+      font-weight: bold;
+      font-size: 14px;
+      color: #1e1a2e;
+      cursor: pointer;
+      box-shadow: 0 2px 8px black;
+      transition: 0.1s linear;
+      font-family: monospace;
+    }
+
+    .speak-toggle:active {
+      transform: scale(0.96);
+    }
+
+    .face-id-badge {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(5px);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #ffaa66;
+      font-family: monospace;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: opacity 0.3s ease;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255,140,0,0.3);
+      border-top: 4px solid #ff8c00;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 600px) {
+      .speech-bubble {
+        font-size: 0.8rem;
+        padding: 8px 16px;
+        bottom: 6%;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="face-stage">
+  <div class="face-id-badge" id="faceIdBadge">Loading...</div>
+  <div class="face-image-container">
+    <img id="faceImg" alt="robot face">
+  </div>
+  <div id="speechText" class="speech-bubble">&#129302; Initializing...</div>
+  <div class="control-bar">
+    <button id="toggleSpeechBtn" class="speak-toggle">&#128266; Start Chat</button>
+  </div>
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  // FACE CORE ENGINE - Loads faceX.js dynamically based on ID
+  // Images are loaded from: universe/textures/faces/{ID}/
+  // ============================================================
+  
+  (function() {
+    // Get face ID from URL parameter (face.htm?id=1)
+    const urlParams = new URLSearchParams(window.location.search);
+    const faceId = urlParams.get('id');
+    
+    // Validate ID - must be positive integer, default to 1
+    let validId = 1;
+    if (faceId !== null && !isNaN(faceId) && parseInt(faceId, 10) > 0) {
+      validId = parseInt(faceId, 10);
+    }
+    
+    // Display the ID badge
+    const badge = document.getElementById('faceIdBadge');
+    if (badge) {
+      badge.textContent = `&#129302; FACE #${validId}`;
+    }
+    
+    // DOM elements
+    const faceImg = document.getElementById('faceImg');
+    const speechBubble = document.getElementById('speechText');
+    const toggleBtn = document.getElementById('toggleSpeechBtn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    
+    // Build the correct image path based on face ID
+    // For id=1: universe/textures/faces/1/
+    // For id=2: universe/textures/faces/2/
+    // etc.
+    const TEXTURES_BASE = 'universe/textures/faces/';
+    const FACE_IMAGE_PATH = `${TEXTURES_BASE}${validId}/`;
+    
+    console.log(`&#128193; Loading images from: ${FACE_IMAGE_PATH}`);
+    
+    // Global face controller object
+    window.__faceController = {
+      faceId: validId,
+      textureBase: FACE_IMAGE_PATH,
+      phrases: [],
+      voiceName: null,
+      pitch: 1.1,
+      rate: 0.95,
+      blinkIntervalMin: 4000,
+      blinkIntervalMax: 5500,
+      
+      // Image path builder
+      getImagePath: function(viseme, eyeState) {
+        // viseme: 'smile', 'a', 'e', 'i'
+        // eyeState: 'open' or 'closed'
+        return `${this.textureBase}${viseme}-${eyeState}.jpg`;
+      },
+      
+      // Viseme mapping
+      visemeMap: {
+        CLOSED: 'smile',
+        A: 'a',
+        E: 'e',
+        I: 'i'
+      },
+      
+      // Word to viseme mapping logic
+      getVisemeForWord: function(word) {
+        const lower = word.toLowerCase();
+        if (/a[^eiou]*$|^a|ah|aa|ar/gi.test(lower) || lower.includes('ah')) return 'A';
+        if (/e[^iou]|eh/gi.test(lower) || lower.includes('eh')) return 'E';
+        if (/i[^eou]|ee|ie/gi.test(lower) || lower.includes('ee')) return 'I';
+        if (lower.includes('o') && !lower.includes('oo')) return 'A';
+        return 'CLOSED';
+      }
+    };
+    
+    // Face state
+    let currentViseme = 'CLOSED';
+    let currentEyeState = 'open';
+    let isSpeakingActive = false;
+    let isPlaying = false;
+    let currentUtterance = null;
+    let blinkTimer = null;
+    let currentSentenceWords = [];
+    let currentWordVisemeSequence = [];
+    let currentWordIndex = 0;
+    let mouthResetTimeout = null;
+    let speechLoopTimeout = null;
+    
+    // Update face image based on current viseme and eye state
+    function updateFaceImage() {
+      if (!faceImg) return;
+      const visemeKey = window.__faceController.visemeMap[currentViseme] || 'smile';
+      const imgPath = window.__faceController.getImagePath(visemeKey, currentEyeState);
+      
+      if (faceImg.src !== imgPath) {
+        // REMOVED: faceImg.style.transform = 'scale(0.98)';
+        // REMOVED: setTimeout scale reset - no more vibration!
+        faceImg.src = imgPath;
+        console.log(`&#128444;&#65039; Loading: ${imgPath}`);
+      }
+    }
+    
+    // Set mouth shape
+    function setMouthShape(viseme) {
+      if (currentViseme === viseme) return;
+      currentViseme = viseme;
+      updateFaceImage();
+    }
+    
+    // Perform eye blink
+    function performBlink() {
+      if (currentEyeState === 'closed') return;
+      currentEyeState = 'closed';
+      updateFaceImage();
+      setTimeout(() => {
+        if (currentEyeState === 'closed') {
+          currentEyeState = 'open';
+          updateFaceImage();
+        }
+      }, 150);
+    }
+    
+    // Start periodic blinking
+    function startPeriodicBlink() {
+      if (blinkTimer) clearTimeout(blinkTimer);
+      
+      function scheduleBlink() {
+        const min = window.__faceController.blinkIntervalMin;
+        const max = window.__faceController.blinkIntervalMax;
+        const delay = Math.floor(Math.random() * (max - min + 1)) + min;
+        blinkTimer = setTimeout(() => {
+          performBlink();
+          scheduleBlink();
+        }, delay);
+      }
+      
+      scheduleBlink();
+    }
+    
+    // Stop lip sync and reset mouth
+    function stopLipSync() {
+      if (mouthResetTimeout) clearTimeout(mouthResetTimeout);
+      setMouthShape('CLOSED');
+    }
+    
+    // Word boundary handler for lip sync
+    function onWordBoundary(word, wordIdx) {
+      if (!isPlaying || !isSpeakingActive) return;
+      const visemeKey = currentWordVisemeSequence[wordIdx] || 'CLOSED';
+      setMouthShape(visemeKey);
+      
+      if (mouthResetTimeout) clearTimeout(mouthResetTimeout);
+      mouthResetTimeout = setTimeout(() => {
+        if (isPlaying && isSpeakingActive && currentViseme !== 'CLOSED') {
+          setMouthShape('CLOSED');
+        }
+      }, 280);
+      
+      // Update speech bubble with remaining text
+      if (speechBubble && currentSentenceWords) {
+        const remaining = currentSentenceWords.slice(wordIdx).join(' ');
+        speechBubble.innerHTML = `&#128172; ${remaining.substring(0, 60)}${remaining.length > 60 ? '...' : ''}`;
+      }
+    }
+    
+    // Prepare lip sync for a sentence
+    function prepareLipSync(sentence) {
+      stopLipSync();
+      const words = sentence.split(/\s+/).filter(w => w.length > 0);
+      if (words.length === 0) return;
+      
+      currentSentenceWords = words;
+      currentWordVisemeSequence = words.map(w => window.__faceController.getVisemeForWord(w));
+      currentWordIndex = 0;
+    }
+    
+    // Finish speaking
+    function finishSpeaking() {
+      isPlaying = false;
+      stopLipSync();
+      currentEyeState = 'open';
+      updateFaceImage();
+      
+      if (speechBubble && !isSpeakingActive) {
+        speechBubble.innerHTML = '&#129302; Idle mode';
+      } else if (speechBubble && isSpeakingActive) {
+        speechBubble.innerHTML = '&#128266; Listening...';
+      }
+      
+      currentUtterance = null;
+      
+      // Continue auto-speaking if enabled
+      if (isSpeakingActive) {
+        if (speechLoopTimeout) clearTimeout(speechLoopTimeout);
+        speechLoopTimeout = setTimeout(() => {
+          if (isSpeakingActive && !isPlaying) {
+            speakRandomPhrase();
+          }
+        }, 1800);
+      }
+    }
+    
+    // Speak a phrase
+    function speakPhrase(text) {
+      if (!window.speechSynthesis) {
+        console.warn("SpeechSynthesis not supported");
+        return;
+      }
+      
+      if (currentUtterance) {
+        window.speechSynthesis.cancel();
+      }
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = window.__faceController.rate;
+      utterance.pitch = window.__faceController.pitch;
+      utterance.volume = 1;
+      
+      // Set voice if specified
+      function setVoice() {
+        const voices = window.speechSynthesis.getVoices();
+        if (window.__faceController.voiceName) {
+          const targetVoice = voices.find(v => v.name === window.__faceController.voiceName || 
+                                                  v.name.includes(window.__faceController.voiceName));
+          if (targetVoice) utterance.voice = targetVoice;
+        } else {
+          const preferred = voices.find(v => v.lang === 'en-US' && v.name.includes('Female'));
+          if (preferred) utterance.voice = preferred;
+        }
+      }
+      
+      if (window.speechSynthesis.getVoices().length) setVoice();
+      else window.speechSynthesis.onvoiceschanged = setVoice;
+      
+      // Prepare lip sync
+      prepareLipSync(text);
+      
+      utterance.onboundary = (event) => {
+        if (event.name === 'word' && isPlaying) {
+          const idx = currentWordIndex;
+          if (idx < currentWordVisemeSequence.length) {
+            onWordBoundary(currentSentenceWords[idx], idx);
+          }
+          currentWordIndex++;
+        }
+      };
+      
+      utterance.onstart = () => {
+        isPlaying = true;
+        if (speechBubble) speechBubble.innerHTML = `&#128483;&#65039; ${text}`;
+        if (currentEyeState !== 'open') {
+          currentEyeState = 'open';
+          updateFaceImage();
+        }
+      };
+      
+      utterance.onend = () => {
+        finishSpeaking();
+      };
+      
+      utterance.onerror = () => {
+        finishSpeaking();
+      };
+      
+      currentUtterance = utterance;
+      window.speechSynthesis.speak(utterance);
+    }
+    
+    // Speak random phrase from configured list
+    function speakRandomPhrase() {
+      if (!isSpeakingActive) return;
+      if (isPlaying) return;
+      
+      const phrases = window.__faceController.phrases;
+      if (!phrases || phrases.length === 0) {
+        console.warn("No phrases configured for face #${validId}");
+        return;
+      }
+      
+      const randomIndex = Math.floor(Math.random() * phrases.length);
+      const phrase = phrases[randomIndex];
+      speakPhrase(phrase);
+    }
+    
+    // Start auto chat
+    function startAutoChat() {
+      if (isSpeakingActive) return;
+      isSpeakingActive = true;
+      isPlaying = false;
+      currentEyeState = 'open';
+      updateFaceImage();
+      setMouthShape('CLOSED');
+      
+      if (speechBubble) speechBubble.innerHTML = '&#129302; Starting conversation...';
+      
+      setTimeout(() => {
+        if (isSpeakingActive && !isPlaying) {
+          speakRandomPhrase();
+        }
+      }, 300);
+      
+      if (toggleBtn) toggleBtn.textContent = '&#128263; Stop Chat';
+    }
+    
+    // Stop auto chat
+    function stopAutoChat() {
+      isSpeakingActive = false;
+      if (currentUtterance) {
+        window.speechSynthesis.cancel();
+        currentUtterance = null;
+      }
+      isPlaying = false;
+      stopLipSync();
+      setMouthShape('CLOSED');
+      currentEyeState = 'open';
+      updateFaceImage();
+      
+      if (speechBubble) speechBubble.innerHTML = '&#128564; Standby';
+      if (toggleBtn) toggleBtn.textContent = '&#128266; Start Chat';
+      if (speechLoopTimeout) clearTimeout(speechLoopTimeout);
+    }
+    
+    // Toggle speech
+    function toggleSpeech() {
+      if (isSpeakingActive) {
+        stopAutoChat();
+      } else {
+        startAutoChat();
+      }
+    }
+    
+    // Initialize face with configuration from loaded JS
+    function initializeWithConfig(config) {
+      // Merge config into faceController, but preserve textureBase which is ID-based
+      const preservedTextureBase = window.__faceController.textureBase;
+      Object.assign(window.__faceController, config);
+      // Ensure textureBase remains the ID-specific path
+      window.__faceController.textureBase = preservedTextureBase;
+      
+      // Set initial face
+      currentViseme = 'CLOSED';
+      currentEyeState = 'open';
+      updateFaceImage();
+      
+      // Start blinking
+      startPeriodicBlink();
+      
+      // Set initial speech bubble
+      if (speechBubble) {
+        speechBubble.innerHTML = window.__faceController.initialMessage || '&#128172; Ready to chat!';
+      }
+      
+      // Hide loading overlay
+      if (loadingOverlay) {
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => {
+          if (loadingOverlay) loadingOverlay.style.display = 'none';
+        }, 500);
+      }
+      
+      console.log(`&#9989; Face #${validId} initialized`);
+      console.log(`&#128193; Image folder: ${window.__faceController.textureBase}`);
+      console.log(`&#128221; Phrases: ${window.__faceController.phrases.length}`);
+    }
+    
+    // Default configuration for face ID (fallback if faceX.js doesn't provide one)
+    const defaultConfig = {
+      voiceName: null,
+      pitch: 1.2,
+      rate: 0.95,
+      blinkIntervalMin: 4000,
+      blinkIntervalMax: 5500,
+      initialMessage: `&#129302; Hello! I am robot #${validId}.`,
+      phrases: [
+        `Hello! I'm robot number ${validId}.`,
+        "How are you doing today?",
+        "I can speak and move my lips.",
+        "This is fun, isn't it?",
+        "Would you like to chat some more?"
+      ]
+    };
+    
+    // Expose initialization function for faceX.js to call
+    window.initFace = function(customConfig) {
+      const config = { ...defaultConfig, ...customConfig };
+      initializeWithConfig(config);
+    };
+    
+    // Also expose direct config setter for simpler faceX.js files
+    window.setFaceConfig = function(config) {
+      initializeWithConfig(config);
+    };
+    
+    // Set up toggle button
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', toggleSpeech);
+    }
+    
+    // Load the appropriate faceX.js file
+    const scriptUrl = `face${validId}.js`;
+    console.log(`&#128260; Loading face configuration: ${scriptUrl}`);
+    
+    const script = document.createElement('script');
+    script.src = scriptUrl;
+    script.onload = () => {
+      console.log(`&#9989; Successfully loaded ${scriptUrl}`);
+      // If faceX.js doesn't call initFace, use default after a short delay
+      setTimeout(() => {
+        if (loadingOverlay && loadingOverlay.style.display !== 'none') {
+          console.log(`&#9888;&#65039; ${scriptUrl} didn't initialize, using default config`);
+          window.initFace(defaultConfig);
+        }
+      }, 1000);
+    };
+    script.onerror = () => {
+      console.error(`&#10060; Failed to load ${scriptUrl}, using default face`);
+      window.initFace(defaultConfig);
+    };
+    document.head.appendChild(script);
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (currentUtterance) window.speechSynthesis.cancel();
+      if (blinkTimer) clearTimeout(blinkTimer);
+      if (speechLoopTimeout) clearTimeout(speechLoopTimeout);
+      if (mouthResetTimeout) clearTimeout(mouthResetTimeout);
+    });
+    
+    // Handle visibility change
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && isSpeakingActive && currentUtterance) {
+        window.speechSynthesis.cancel();
+        isPlaying = false;
+      }
+    });
+  })();
+</script>
+</body>
+</html>
