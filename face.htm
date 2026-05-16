@@ -45,14 +45,44 @@
   let faceId = urlParams.get('id');
   faceId = (faceId && !isNaN(faceId) && parseInt(faceId) > 0) ? parseInt(faceId) : 1;
 
+  // Get the current path dynamically
+  const currentPath = window.location.pathname;
+  let baseUrl = '';
+  
+  // Extract base URL from current path
+  if (currentPath.includes('/arville/')) {
+    baseUrl = '/arville/';
+  } else if (currentPath.includes('/universe/')) {
+    baseUrl = '/';
+  } else {
+    baseUrl = '/';
+  }
+  
+  // Build the correct script path
+  const scriptPath = `${baseUrl}universe/faces/face${faceId}.js`;
+  
+  console.log(`Loading: ${scriptPath}`);
+  
   // Load the corresponding face controller
   const script = document.createElement('script');
-  script.src = `/arville/universe/faces/face${faceId}.js`;
+  script.src = scriptPath;
   script.onerror = () => {
-    document.body.innerHTML = `<div style="color: red; text-align: center; padding: 50px;">
-      <h2>&#10060; ERROR: Failed to load face${faceId}.js</h2>
-      <p>File should be at: /arville/universe/faces/face${faceId}.js</p>
-    </div>`;
+    // Try alternative path if first fails
+    const altPath = `/arville/universe/faces/face${faceId}.js`;
+    console.log(`Retrying: ${altPath}`);
+    const script2 = document.createElement('script');
+    script2.src = altPath;
+    script2.onerror = () => {
+      document.body.innerHTML = `<div style="color: red; text-align: center; padding: 50px; font-family: monospace;">
+        <h2>&#10060; ERROR: Failed to load face${faceId}.js</h2>
+        <p>Tried paths:<br>
+        ${scriptPath}<br>
+        ${altPath}</p>
+        <p>Make sure the file exists at:<br>
+        /arville/universe/faces/face${faceId}.js</p>
+      </div>`;
+    };
+    document.head.appendChild(script2);
   };
   document.head.appendChild(script);
 </script>
