@@ -520,6 +520,30 @@
       "lesson": "Q2 Lesson 6",
       "file_path": "rmats/Kasaysayan/Q2_LE6.pdf",
       "description": "Pagsasakonteksto ng Kasalukuyang Anyo ng Pakikibaka at Pakikiangkop"
+    },
+    {
+      "id": 300,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 1",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Biology 1/Q1_LE1.pdf",
+      "description": "The Cell – The Fundamental Unit of Life"
+    },
+    {
+      "id": 301,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 1",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Biology 1/Q1_LE2.pdf",
+      "description": "The Cell Cycle – Growth, Division, and Life"
+    },
+    {
+      "id": 302,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 1",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Biology 1/Q1_LE3.pdf",
+      "description": "Transport Mechanisms – How Cells Control What Enters and Leaves"
     }
 
   ]
