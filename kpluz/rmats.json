@@ -544,7 +544,46 @@
       "lesson": "Q1 Lesson 3",
       "file_path": "rmats/Biology 1/Q1_LE3.pdf",
       "description": "Transport Mechanisms – How Cells Control What Enters and Leaves"
+    },
+    {
+      "id": 303,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 1",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Biology 1/Q2_LE1.pdf",
+      "description": "Cell Requirements – Energy, Nutrients, and Waste Removal"
+    },
+    {
+      "id": 304,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 1",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Biology 1/Q2_LE2.pdf",
+      "description": "Photosynthesis – Transforming Light into Life"
+    },
+    {
+      "id": 305,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 1",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Biology 1/Q2_LE3.pdf",
+      "description": "Cell Respiration – Converting Chemical Energy into ATP (Energy for Cells)"
+    },
+    {
+      "id": 320,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Chemistry 1",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Chemistry 1/Q1_LE1.pdf",
+      "description": "Scientific Measurement – The Foundation of Reliable Science"
+    },
+    {
+      "id": 321,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Chemistry 1",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Chemistry 1/Q1_LE2.pdf",
+      "description": "The Quantum Theory and the Electronic Structure of Atoms"
     }
-
   ]
 }
