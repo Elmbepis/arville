@@ -615,7 +615,87 @@
       "subject": "Chemistry 1",
       "lesson": "Q2 Lesson 3",
       "file_path": "rmats/Chemistry 1/Q2_LE3.pdf",
-      "description": "Chemical Bonds and Properties of Chemical Compounds "
+      "description": "Chemical Bonds and Properties of Chemical Compounds"
+    },
+    {
+      "id": 350,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Creative Composition 1",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Creative Comp 1/Q1_LE1.pdf",
+      "description": "Analyzing Creative Nonfiction"
+    },
+    {
+      "id": 351,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Creative Composition 1",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Creative Comp 1/Q1_LE2.pdf",
+      "description": "Composing Creative Nonfiction"
+    },
+    {
+      "id": 352,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Creative Composition 1",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Creative Comp 1/Q1_LE3.pdf",
+      "description": "Reflecting on Creative Nonfiction"
+    },
+    {
+      "id": 353,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Creative Composition 1",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Creative Comp 1/Q2_LE1.pdf",
+      "description": "Analyzing Poetry"
+    },
+    {
+      "id": 354,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Creative Composition 1",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Creative Comp 1/Q2_LE2.pdf",
+      "description": "Composing Poetry"
+    },
+    {
+      "id": 355,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Creative Composition 1",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Creative Comp 1/Q2_LE3.pdf",
+      "description": "Reflecting on Poetry"
+    },
+    {
+      "id": 380,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Social Sciences/Q1_LE1.pdf",
+      "description": "Social Sciences as the Study of Society"
+    },
+    {
+      "id": 381,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Social Sciences/Q1_LE2.pdf",
+      "description": "Historical Context of the Emergence of the Social Sciences"
+    },
+    {
+      "id": 382,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Social Sciences/Q1_LE3.pdf",
+      "description": "The Social Science Disciplines"
+    },
+    {
+      "id": 383,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q1 Lesson 4",
+      "file_path": "rmats/Social Sciences/Q1_LE4.pdf",
+      "description": "Integration and Collaboration Among and Beyond the Disciplines"
     }
 
   ]
