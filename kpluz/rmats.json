@@ -696,6 +696,54 @@
       "lesson": "Q1 Lesson 4",
       "file_path": "rmats/Social Sciences/Q1_LE4.pdf",
       "description": "Integration and Collaboration Among and Beyond the Disciplines"
+    },
+    {
+      "id": 384,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Social Sciences/Q2_LE1.pdf",
+      "description": "Psychology and Counseling as Applied Sciences"
+    },
+    {
+      "id": 385,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Social Sciences/Q2_LE2.pdf",
+      "description": "The Focus of Social Work as an Applied Social Science"
+    },
+    {
+      "id": 386,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Social Sciences/Q2_LE3.pdf",
+      "description": "The Role of Education"
+    },
+    {
+      "id": 387,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 4",
+      "file_path": "rmats/Social Sciences/Q2_LE4.pdf",
+      "description": "Criminology as an Applied Social Science"
+    },
+    {
+      "id": 388,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 5",
+      "file_path": "rmats/Social Sciences/Q2_LE5.pdf",
+      "description": "Communication and Multimedia Arts as an Applied Social Science"
+    },
+    {
+      "id": 389,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 6",
+      "file_path": "rmats/Social Sciences/Q2_LE6.pdf",
+      "description": "Gender Studies and Development as an Interdisciplinary Social Science"
     }
 
   ]
