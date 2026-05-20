@@ -744,6 +744,38 @@
       "lesson": "Q2 Lesson 6",
       "file_path": "rmats/Social Sciences/Q2_LE6.pdf",
       "description": "Gender Studies and Development as an Interdisciplinary Social Science"
+    },
+    {
+      "id": 390,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 7",
+      "file_path": "rmats/Social Sciences/Q2_LE7.pdf",
+      "description": "The Interdisciplinary Lens: Viewing Society Through Multiple Social Science Fields"
+    },
+    {
+      "id": 420,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Org Management/Q1_LE1.pdf",
+      "description": "Understanding Management Concepts and the Business Environment"
+    },
+    {
+      "id": 421,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Org Management/Q1_LE2.pdf",
+      "description": "Planning, Organizing, and Staffing"
+    },
+    {
+      "id": 422,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Org Management/Q1_LE3.pdf",
+      "description": "Leadership Versus Management"
     }
 
   ]
