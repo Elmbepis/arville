@@ -807,7 +807,47 @@
       "subject": "Introduction to Organization and Management",
       "lesson": "Q2 Lesson 4",
       "file_path": "rmats/Org Management/Q2_LE4.pdf",
-      "description": "The United Nations Sustainable Development Goals "
+      "description": "The United Nations Sustainable Development Goals"
+    },
+    {
+      "id": 450,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Basic Accounting/Q1_LE1.pdf",
+      "description": "Introduction to Accounting – Nature, History, Concepts, and Principles"
+    },
+    {
+      "id": 451,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Basic Accounting/Q1_LE2.pdf",
+      "description": "The Five Major Accounts – Assets, Liabilities, Equity, Income, and Expenses"
+    },
+    {
+      "id": 452,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Basic Accounting/Q1_LE3.pdf",
+      "description": "Analyzing Business Transactions – The Rules of Debit and Credit"
+    },
+    {
+      "id": 453,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q1 Lesson 4",
+      "file_path": "rmats/Basic Accounting/Q1_LE4.pdf",
+      "description": "Books of Accounts – General Journal, General Ledger, and Special Journals"
+    },
+    {
+      "id": 454,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q1 Lesson 5",
+      "file_path": "rmats/Basic Accounting/Q1_LE5.pdf",
+      "description": "Understanding and Preparing Financial Statements"
     }
 
   ]
