@@ -776,6 +776,38 @@
       "lesson": "Q1 Lesson 3",
       "file_path": "rmats/Org Management/Q1_LE3.pdf",
       "description": "Leadership Versus Management"
+    },
+    {
+      "id": 423,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Org Management/Q2_LE1.pdf",
+      "description": "Management Control:  Nature, Methods, Systems, and Application"
+    },
+    {
+      "id": 424,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Org Management/Q2_LE2.pdf",
+      "description": "Functional Areas of Management and Their Roles in Controlling"
+    },
+    {
+      "id": 425,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Org Management/Q2_LE3.pdf",
+      "description": "Legal Foundations and Business Ethics for  Micro,  Small, and Medium Enterprises"
+    },
+    {
+      "id": 426,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q2 Lesson 4",
+      "file_path": "rmats/Org Management/Q2_LE4.pdf",
+      "description": "The United Nations Sustainable Development Goals "
     }
 
   ]

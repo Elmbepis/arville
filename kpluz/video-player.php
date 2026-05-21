@@ -37,6 +37,8 @@ $user_role = $user['role'];
 // Get video details - Changed to videos table
 $video_id = $_GET['video_id'] ?? null;
 $video = null;
+$youtube_id = null;
+$is_youtube = false;
 
 if ($video_id && $user_role === 'student') {
     $video_stmt = $conn->prepare("SELECT id, video_title, video_url FROM videos WHERE id = ?");
@@ -44,6 +46,30 @@ if ($video_id && $user_role === 'student') {
     $video_stmt->execute();
     $video_result = $video_stmt->get_result();
     $video = $video_result->fetch_assoc();
+    
+    // Check if it's a YouTube video and extract ID
+    if ($video) {
+        $video_url = $video['video_url'];
+        
+        // Check for YouTube URL patterns
+        if (preg_match('/(youtube\.com|youtu\.be)/', $video_url)) {
+            $is_youtube = true;
+            
+            // Extract YouTube video ID from various URL formats
+            $patterns = [
+                '/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/',
+                '/youtube\.com\/embed\/([a-zA-Z0-9_-]+)/',
+                '/youtube\.com\/v\/([a-zA-Z0-9_-]+)/'
+            ];
+            
+            foreach ($patterns as $pattern) {
+                if (preg_match($pattern, $video_url, $matches)) {
+                    $youtube_id = $matches[1];
+                    break;
+                }
+            }
+        }
+    }
 }
 
 $conn->close();
@@ -74,6 +100,17 @@ $conn->close();
         max-width: 1200px;
         margin: 0 auto;
         padding: 0;
+    }
+    
+    .header {
+        background: #003366;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .header-logo {
+        max-height: 80px;
+        width: auto;
     }
     
     .user-welcome {
@@ -117,7 +154,6 @@ $conn->close();
         font-size: 1.5em;
     }
     
-    
     /* Video Player Section */
     .video-player-section {
         margin-bottom: 40px;
@@ -146,12 +182,17 @@ $conn->close();
         background: #000;
         border-radius: 8px;
         margin: 0 auto 30px;
+        position: relative;
     }
     
-    video {
+    video, iframe {
         width: 100%;
         height: 100%;
         border-radius: 8px;
+    }
+    
+    iframe {
+        border: none;
     }
     
     .video-controls {
@@ -296,12 +337,26 @@ $conn->close();
                     <div class="video-title"><?= htmlspecialchars($video['video_title']) ?></div>
                     
                     <div class="video-player">
-                        <video id="videoPlayer" controls controlsList="nodownload" preload="metadata">
-                            <source src="video-stream.php?video_id=<?= $video['id'] ?>" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
+                        <?php if ($is_youtube && $youtube_id): ?>
+                            <!-- YouTube Embed -->
+                            <iframe 
+                                id="videoPlayer"
+                                src="https://www.youtube.com/embed/<?= $youtube_id ?>?enablejsapi=1&origin=<?= $_SERVER['HTTP_HOST'] ?>" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>
+                        <?php else: ?>
+                            <!-- Direct video file (MP4, etc.) -->
+                            <video id="videoPlayer" controls controlsList="nodownload" preload="metadata">
+                                <source src="<?= htmlspecialchars($video['video_url']) ?>" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        <?php endif; ?>
                     </div>
                     
+                    <?php if (!$is_youtube): ?>
+                    <!-- Only show custom controls for direct video files -->
                     <div class="video-controls">
                         <button class="control-btn" onclick="playVideo()">&#9654; Play</button>
                         <button class="control-btn" onclick="pauseVideo()">&#9208; Pause</button>
@@ -309,6 +364,7 @@ $conn->close();
                         <button class="control-btn" onclick="toggleMute()">&#128266; Mute/Unmute</button>
                         <button class="control-btn" onclick="toggleFullscreen()">&#9974; Fullscreen</button>
                     </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -336,23 +392,24 @@ $conn->close();
   </div>
 
   <script>
+  // These functions only work for direct video files (not YouTube)
   function playVideo() {
       const video = document.getElementById('videoPlayer');
-      if (video) {
+      if (video && video.tagName === 'VIDEO') {
           video.play().catch(e => console.log('Play failed:', e));
       }
   }
 
   function pauseVideo() {
       const video = document.getElementById('videoPlayer');
-      if (video) {
+      if (video && video.tagName === 'VIDEO') {
           video.pause();
       }
   }
 
   function restartVideo() {
       const video = document.getElementById('videoPlayer');
-      if (video) {
+      if (video && video.tagName === 'VIDEO') {
           video.currentTime = 0;
           video.play().catch(e => console.log('Play failed:', e));
       }
@@ -360,7 +417,7 @@ $conn->close();
 
   function toggleMute() {
       const video = document.getElementById('videoPlayer');
-      if (video) {
+      if (video && video.tagName === 'VIDEO') {
           video.muted = !video.muted;
       }
   }
@@ -368,25 +425,37 @@ $conn->close();
   function toggleFullscreen() {
       const video = document.getElementById('videoPlayer');
       if (!document.fullscreenElement) {
-          video.requestFullscreen().catch(err => {
-              console.log(`Error attempting to enable fullscreen: ${err.message}`);
-          });
+          if (video.requestFullscreen) {
+              video.requestFullscreen().catch(err => {
+                  console.log(`Error attempting to enable fullscreen: ${err.message}`);
+              });
+          } else if (video.webkitRequestFullscreen) { /* Safari */
+              video.webkitRequestFullscreen();
+          } else if (video.msRequestFullscreen) { /* IE/Edge */
+              video.msRequestFullscreen();
+          }
       } else {
           document.exitFullscreen();
       }
   }
 
-  // Add event listeners
+  // Log video type on load
   document.addEventListener('DOMContentLoaded', function() {
       const video = document.getElementById('videoPlayer');
       if (video) {
-          video.addEventListener('waiting', function() {
-              console.log('Video is buffering...');
-          });
+          if (video.tagName === 'VIDEO') {
+              console.log('Direct video player loaded');
+              
+              video.addEventListener('waiting', function() {
+                  console.log('Video is buffering...');
+              });
 
-          video.addEventListener('canplay', function() {
-              console.log('Video can start playing');
-          });
+              video.addEventListener('canplay', function() {
+                  console.log('Video can start playing');
+              });
+          } else if (video.tagName === 'IFRAME') {
+              console.log('YouTube video player loaded');
+          }
       }
   });
   </script>
