@@ -848,6 +848,30 @@
       "lesson": "Q1 Lesson 5",
       "file_path": "rmats/Basic Accounting/Q1_LE5.pdf",
       "description": "Understanding and Preparing Financial Statements"
+    },
+    {
+      "id": 455,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q1 Lesson 6",
+      "file_path": "rmats/Basic Accounting/Q1_LE6.pdf",
+      "description": "The Accounting Cycle of a Service Business"
+    },
+    {
+      "id": 456,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Basic Accounting/Q2_LE1.pdf",
+      "description": "Introduction to Merchandising Business"
+    },
+    {
+      "id": 457,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Basic Accounting/Q2_LE2.pdf",
+      "description": "The Accounting Cycle of a Merchandising Business"
     }
 
   ]
