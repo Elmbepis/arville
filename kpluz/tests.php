@@ -39,7 +39,16 @@ $tests_by_subject = [];
 $total_tests = 0;
 
 if ($user_role === 'student') {
-    $test_result = $conn->query("SELECT id, subject, lesson, topic FROM tests ORDER BY subject, lesson");
+$test_result = $conn->query("
+    SELECT id, subject, lesson, topic FROM tests 
+    ORDER BY 
+        CASE 
+            WHEN subject IN ('General Science', 'General Mathematics', 'Effective Communication', 'Life and Career Skills', 'Mabisang Komunikasyon', 'Kasaysayan at Lipunang Pilipino') THEN 0 
+            ELSE 1 
+        END, 
+        subject, 
+        lesson
+");    
     while ($row = $test_result->fetch_assoc()) {
         $subject = $row['subject'];
         if (!isset($tests_by_subject[$subject])) {

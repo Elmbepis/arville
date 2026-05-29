@@ -1,42 +1,33 @@
 <?php
+session_name('KPLUZ_SESSION');
+session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Check if user is logged in
-session_start();
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     header("Location: login.php");
     exit();
 }
 
-if (!isset($_POST['question_ids']) || !is_array($_POST['question_ids'])) {
-    die("No questions submitted.");
+// Get subject and lesson from URL parameters
+if (!isset($_GET['subject']) || !isset($_GET['lesson'])) {
+    die("Subject and lesson required in URL, e.g., ?subject=Effective%20Communication&lesson=Q1%20Lesson%201");
 }
+$subject_name = $_GET['subject'];
+$lesson_name = $_GET['lesson'];
 
-// ADDED: Use stored question order from session if available
-if (isset($_SESSION['current_test_questions_order']) && !empty($_SESSION['current_test_questions_order'])) {
-    $questions_in_order = $_SESSION['current_test_questions_order'];
-    $question_ids = array_column($questions_in_order, 'id');
-} else {
-    $question_ids = $_POST['question_ids'];
-}
-// END ADDED
+// Determine which student to view (for teachers) or default to logged in user
+$view_student_id = isset($_GET['student_id']) ? intval($_GET['student_id']) : $_SESSION['user_id'];
 
-$total = count($question_ids);
-$score = 0;
-
-// Get subject and lesson from POST
-$subject = isset($_POST['subject']) ? $_POST['subject'] : '';
-$lesson = isset($_POST['lesson']) ? $_POST['lesson'] : '';
-
-// Connect to DB - Changed to kpluz database
+// Connect to MySQL
 $conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get user details
+// Get current logged in user details
 $user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT name, role FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
@@ -53,155 +44,86 @@ if (!$user) {
 $user_name = $user['name'];
 $user_role = $user['role'];
 
+// Get the student's name (the one whose results we're viewing)
+$student_stmt = $conn->prepare("SELECT name FROM users WHERE id = ?");
+$student_stmt->bind_param("i", $view_student_id);
+$student_stmt->execute();
+$student_result = $student_stmt->get_result();
+$student_data = $student_result->fetch_assoc();
+
+if (!$student_data) {
+    die("Student not found.");
+}
+
+$student_name = $student_data['name'];
+
+// For teachers: verify they are viewing a student (not themselves or another teacher)
+$is_teacher_viewing = ($user_role === 'teacher' && $view_student_id != $user_id);
+
+// Get test results from database
+$result_stmt = $conn->prepare("SELECT * FROM test_results WHERE user_id = ? AND subject = ? AND lesson = ?");
+$result_stmt->bind_param("iss", $view_student_id, $subject_name, $lesson_name);
+$result_stmt->execute();
+$test_result = $result_stmt->get_result()->fetch_assoc();
+
+if (!$test_result) {
+    die("No test results found for student: " . htmlspecialchars($student_name) . " - Subject: " . htmlspecialchars($subject_name) . " and Lesson: " . htmlspecialchars($lesson_name));
+}
+
+// Check if answers field exists and is not null
+if (!isset($test_result['answers']) || empty($test_result['answers'])) {
+    die("No answer data found for this test. The answers field is empty.");
+}
+
+// Decode the answers JSON (preserves the exact order shown to student)
+$answers = json_decode($test_result['answers'], true);
+
+if (!$answers || empty($answers)) {
+    die("Unable to decode answer data. JSON format may be invalid.");
+}
+
+// Get all question IDs from the answers (in the order they were shown)
+$question_ids = array_column($answers, 'question_id');
+
+// Fetch all questions from database
+$placeholders = implode(',', array_fill(0, count($question_ids), '?'));
+$q_stmt = $conn->prepare("SELECT * FROM questions WHERE id IN ($placeholders)");
+$q_stmt->bind_param(str_repeat('i', count($question_ids)), ...$question_ids);
+$q_stmt->execute();
+$questions_result = $q_stmt->get_result();
+
+// Map questions by ID for easy lookup
+$questions_map = [];
+while ($q = $questions_result->fetch_assoc()) {
+    $questions_map[$q['id']] = $q;
+}
+
+// Build results array in the exact order from answers
 $results = [];
-
-// Normalization function for comparisons
-function normalize_answer($answer) {
-    // Handle null or empty values
-    if ($answer === null || $answer === '') {
-        return '';
-    }
-    $a = strtolower(trim($answer));
-    if ($a === 'true') return 't';
-    if ($a === 'false') return 'f';
-    return $a;
-}
-
-foreach ($question_ids as $id) {
-    $stmt = $conn->prepare("SELECT * FROM questions WHERE id = ?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $res = $stmt->get_result();
-    $q = $res->fetch_assoc();
-    
-    // Skip if question not found
-    if (!$q) {
-        continue;
-    }
-
-    // Get user's submitted answer
-    $user_answer_raw = isset($_POST["answer_$id"]) ? $_POST["answer_$id"] : '';
-    // Handle null or empty values for htmlspecialchars later
-    $user_answer = ($user_answer_raw !== null && $user_answer_raw !== '') ? trim($user_answer_raw) : '(no answer)';
-    
-    // Get correct answer with null check
-    $correct_answer = isset($q['correct']) ? $q['correct'] : '';
-    
-    // Get solution if present
-    $solution = isset($q['solution']) && $q['solution'] !== '' && $q['solution'] !== null ? $q['solution'] : '';
-
-    // Normalize both user and correct answers (skip if empty)
-    $user_norm = ($user_answer !== '(no answer)') ? normalize_answer($user_answer) : '';
-    $correct_norm = ($correct_answer !== '') ? normalize_answer($correct_answer) : '';
-
-    $is_correct = ($user_norm !== '' && $correct_norm !== '' && $user_norm === $correct_norm);
-
-    if ($is_correct) {
-        $score++;
-    }
-
-    $results[] = [
-        'question' => isset($q['question']) ? $q['question'] : 'Question not found',
-        'type' => isset($q['type']) ? $q['type'] : 'MC',
-        'user_answer' => $user_answer,
-        'correct_answer' => $correct_answer,
-        'is_correct' => $is_correct,
-        'solution' => $solution
-    ];
-}
-
-// ADDED: Build answers data in the order shown to student
-$answers_data = [];
-foreach ($question_ids as $position => $qid) {
-    // Find the corresponding result for this question
-    $user_answer_for_q = '';
-    $is_correct_for_q = false;
-    foreach ($results as $result_item) {
-        // Need to match by question text or store question id in results
-        // For now, we'll re-fetch the user answer from POST
-        $user_answer_raw = isset($_POST["answer_$qid"]) ? $_POST["answer_$qid"] : '';
-        $user_answer_val = ($user_answer_raw !== null && $user_answer_raw !== '') ? trim($user_answer_raw) : '(no answer)';
-        
-        // Get correct answer to determine correctness
-        $q_stmt = $conn->prepare("SELECT correct FROM questions WHERE id = ?");
-        $q_stmt->bind_param("i", $qid);
-        $q_stmt->execute();
-        $q_res = $q_stmt->get_result();
-        $q_data = $q_res->fetch_assoc();
-        $correct_val = $q_data['correct'] ?? '';
-        
-        $user_norm = normalize_answer($user_answer_val);
-        $correct_norm = normalize_answer($correct_val);
-        $is_correct_val = ($user_norm !== '' && $correct_norm !== '' && $user_norm === $correct_norm);
-        
-        $answers_data[] = [
-            'question_id' => $qid,
-            'user_answer' => $user_answer_val,
-            'is_correct' => $is_correct_val
+foreach ($answers as $answer) {
+    $qid = $answer['question_id'];
+    if (isset($questions_map[$qid])) {
+        $q = $questions_map[$qid];
+        $results[] = [
+            'question' => $q['question'],
+            'type' => $q['type'],
+            'user_answer' => $answer['user_answer'],
+            'correct_answer' => $q['correct'],
+            'is_correct' => $answer['is_correct'],
+            'solution' => $q['solution'] ?? '',
+            'wrong1' => $q['wrong1'] ?? '',
+            'wrong2' => $q['wrong2'] ?? '',
+            'wrong3' => $q['wrong3'] ?? ''
         ];
-        break; // Process one question at a time
     }
 }
-$answers_json = json_encode($answers_data);
-// END ADDED
 
-// Save test result to database - Check if record already exists
-$existing_id = null;
-$action_taken = "insert"; // Track what action was taken
-
-if ($subject !== '' && $lesson !== '') {
-    $percentage = $total > 0 ? round(($score / $total) * 100) : 0;
-    
-    // Check if a record already exists for this user, subject, and lesson
-    $check_stmt = $conn->prepare("SELECT id, score, total_questions, percentage FROM test_results WHERE user_id = ? AND subject = ? AND lesson = ?");
-    $check_stmt->bind_param("iss", $user_id, $subject, $lesson);
-    $check_stmt->execute();
-    $check_result = $check_stmt->get_result();
-    
-    if ($check_result->num_rows > 0) {
-        // Record exists - update it instead of inserting
-        $existing_record = $check_result->fetch_assoc();
-        $existing_id = $existing_record['id'];
-        
-        // MODIFIED: Include answers in update
-        $update_stmt = $conn->prepare("UPDATE test_results SET score = ?, total_questions = ?, percentage = ?, answers = ? WHERE id = ?");
-        $update_stmt->bind_param("iiidsi", $score, $total, $percentage, $answers_json, $existing_id);
-        
-        if ($update_stmt->execute()) {
-            $action_taken = "updated";
-        } else {
-            // Log error but continue
-            error_log("Failed to update test result: " . $conn->error);
-        }
-        $update_stmt->close();
-    } else {
-        // No existing record - insert new one with answers
-        // MODIFIED: Include answers in insert
-        $insert_stmt = $conn->prepare("INSERT INTO test_results (user_id, subject, lesson, score, total_questions, percentage, answers) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $insert_stmt->bind_param("issiids", $user_id, $subject, $lesson, $score, $total, $percentage, $answers_json);
-        
-        if ($insert_stmt->execute()) {
-            $action_taken = "inserted";
-        } else {
-            // Log error but continue
-            error_log("Failed to insert test result: " . $conn->error);
-        }
-        $insert_stmt->close();
-    }
-    $check_stmt->close();
-} else {
-    $percentage = $total > 0 ? round(($score / $total) * 100) : 0;
-}
-
-// ADDED: Clear session data after saving
-unset($_SESSION['current_test_questions_order']);
-// END ADDED
+$score = $test_result['score'];
+$total = $test_result['total_questions'];
+$percentage = $test_result['percentage'];
+$passed = $percentage >= 75;
 
 $conn->close();
-
-// Calculate percentage for display
-$percentage = $total > 0 ? round(($score / $total) * 100) : 0;
-$passed = $percentage >= 75;
 ?>
 
 <!DOCTYPE html>
@@ -285,6 +207,12 @@ $passed = $percentage >= 75;
         text-align: center;
         margin-bottom: 30px;
         border-left: 4px solid #003366;
+    }
+    
+    .student-info {
+        color: #666;
+        margin-bottom: 10px;
+        font-size: 0.9em;
     }
     
     .score-number {
@@ -434,8 +362,6 @@ $passed = $percentage >= 75;
         background: #c82333; 
         color: white;
     }
-
-
   </style>
 </head>
 <body>
@@ -445,10 +371,10 @@ $passed = $percentage >= 75;
     </div>
     
     <div class="user-welcome">
-        <div class="welcome-text">Welcome, <?= htmlspecialchars($user_name ?? 'Student') ?>!</div>
+        <div class="welcome-text">Welcome, <?= htmlspecialchars($user_name) ?>!</div>
         <div class="user-info">
             KPluz SHS - Test Results
-            <span class="role-badge"><?= ucfirst($user_role ?? 'student') ?></span>
+            <span class="role-badge"><?= ucfirst($user_role) ?></span>
         </div>
     </div>
 
@@ -458,9 +384,12 @@ $passed = $percentage >= 75;
         <div class="results-container">
             
             <div class="score-summary">
-                <h3>Your Test Score</h3>
+                <?php if ($is_teacher_viewing): ?>
+                    <div class="student-info">Student: <?= htmlspecialchars($student_name) ?></div>
+                <?php endif; ?>
+                <h3><?= htmlspecialchars($subject_name) ?> - <?= htmlspecialchars($lesson_name) ?></h3>
                 <div class="score-number"><?= $score ?>/<?= $total ?></div>
-                <div class="score-percentage"><?= $percentage ?>%</div>
+                <div class="score-percentage"><?= number_format($percentage, 1) ?>%</div>
                 <div class="<?= $passed ? 'passed' : 'failed' ?>">
                     <?= $passed ? '&#10003; PASSED' : '&#10007; FAILED' ?>
                 </div>
@@ -472,6 +401,16 @@ $passed = $percentage >= 75;
                     <div class="question-text">
                         <?= ($index+1) ?>. <?= htmlspecialchars($r['question'] ?? '') ?>
                     </div>
+                    
+                    <?php if ($r['type'] == 'MC'): ?>
+                        <div class="answer-section" style="margin-top: 10px; margin-left: 20px;">
+                            <strong>Options:</strong><br>
+                            A. <?= htmlspecialchars($r['correct_answer']) ?><br>
+                            B. <?= htmlspecialchars($r['wrong1']) ?><br>
+                            C. <?= htmlspecialchars($r['wrong2']) ?><br>
+                            D. <?= htmlspecialchars($r['wrong3']) ?>
+                        </div>
+                    <?php endif; ?>
                     
                     <div class="answer-section">
                         <strong>Your Answer:</strong> 
@@ -504,6 +443,11 @@ $passed = $percentage >= 75;
             <?php endforeach; ?>
 
             <div class="action-buttons">
+                <?php if ($is_teacher_viewing): ?>
+                    <a href="results-students.php?subject=<?= urlencode($subject_name) ?>&lesson=<?= urlencode($lesson_name) ?>" class="dashboard-btn">Back to Student List</a>
+                <?php else: ?>
+                    <a href="report_cards.php" class="dashboard-btn">Back to Report Cards</a>
+                <?php endif; ?>
                 <a href="dashboard.php" class="dashboard-btn">Back to Dashboard</a>
                 <a href="logout.php" class="logout-btn">Logout</a>
             </div>

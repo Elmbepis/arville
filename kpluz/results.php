@@ -34,46 +34,83 @@ if (!$user) {
 $user_name = $user['name'];
 $user_role = $user['role'];
 
-// Get ALL tests grouped by subject with core subjects first
+// Restrict to teachers only
+if ($user_role !== 'teacher') {
+    die("Access restricted to teachers only.");
+}
+
+// Define custom subject order
+$subject_order = [
+    'Academic Track - Accountancy, Business and Management (ABM)',
+    'Academic Track - Humanities and Social Sciences (HUMSS)',
+    'Academic Track - Science, Technology, Engineering and Mathematics (STEM)',
+    'Technical-Vocational-Livelihood (TVL) Track - Home Economics (HE)',
+    'Technical-Vocational-Livelihood (TVL) Track - Information and Communications Technology (ICT)',
+    'Technical-Vocational-Livelihood (TVL) Track - Agri-Fishery Arts (AFA)',
+    'Technical-Vocational-Livelihood (TVL) Track - Industrial Arts (IA)',
+    'Sports Track',
+    'Arts and Design Track'
+];
+
+// Get all tests grouped by subject
 $tests_by_subject = [];
 $total_tests = 0;
 
-if ($user_role === 'student') {
-    $test_result = $conn->query("
-        SELECT id, subject, lesson, topic FROM tests 
-        ORDER BY 
-            CASE 
-                WHEN subject IN ('General Science', 'General Mathematics', 'Effective Communication', 'Life and Career Skills', 'Mabisang Komunikasyon', 'Kasaysayan at Lipunang Pilipino') THEN 0 
-                ELSE 1 
-            END, 
-            subject, 
-            lesson
-    ");
-    while ($row = $test_result->fetch_assoc()) {
-        $subject = $row['subject'];
-        if (!isset($tests_by_subject[$subject])) {
-            $tests_by_subject[$subject] = [];
-        }
-        $tests_by_subject[$subject][] = $row;
-        $total_tests++;
+$test_result = $conn->query("
+    SELECT id, subject, lesson, topic FROM tests 
+    ORDER BY subject, lesson
+");
+while ($row = $test_result->fetch_assoc()) {
+    $subject = $row['subject'];
+    if (!isset($tests_by_subject[$subject])) {
+        $tests_by_subject[$subject] = [];
     }
+    $tests_by_subject[$subject][] = $row;
+    $total_tests++;
 }
 
-// Get completed tests with scores - Now using both subject and lesson
-$completed_scores = [];
-if ($user_role === 'student') {
-    $stmt = $conn->prepare("SELECT subject, lesson, score, percentage FROM test_results WHERE user_id = ?");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    while ($row = $result->fetch_assoc()) {
-        $key = $row['subject'] . '|' . $row['lesson'];
-        $completed_scores[$key] = [
-            'score' => $row['score'],
-            'percentage' => $row['percentage']
-        ];
+// Reorder subjects according to custom order
+$ordered_tests_by_subject = [];
+foreach ($subject_order as $ordered_subject) {
+    if (isset($tests_by_subject[$ordered_subject])) {
+        $ordered_tests_by_subject[$ordered_subject] = $tests_by_subject[$ordered_subject];
+        unset($tests_by_subject[$ordered_subject]);
     }
+}
+// Add any remaining subjects not in the custom order at the end
+foreach ($tests_by_subject as $subject => $tests) {
+    $ordered_tests_by_subject[$subject] = $tests;
+}
+
+// Get all students
+$students = [];
+$student_stmt = $conn->prepare("SELECT id, name FROM users WHERE role = 'student' ORDER BY name");
+$student_stmt->execute();
+$student_result = $student_stmt->get_result();
+while ($student = $student_result->fetch_assoc()) {
+    $students[$student['id']] = $student['name'];
+}
+
+// Get all test results for all students
+$test_results = [];
+$results_stmt = $conn->prepare("
+    SELECT user_id, subject, lesson, score, total_questions, percentage 
+    FROM test_results 
+    ORDER BY user_id, subject, lesson
+");
+$results_stmt->execute();
+$results_data = $results_stmt->get_result();
+
+while ($row = $results_data->fetch_assoc()) {
+    $key = $row['subject'] . '|' . $row['lesson'];
+    if (!isset($test_results[$key])) {
+        $test_results[$key] = [];
+    }
+    $test_results[$key][$row['user_id']] = [
+        'score' => $row['score'],
+        'total_questions' => $row['total_questions'],
+        'percentage' => $row['percentage']
+    ];
 }
 
 $conn->close();
@@ -83,7 +120,7 @@ $conn->close();
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>KPluz SHS - Report Cards</title>
+  <title>KPluz SHS - Student Results (Teacher View)</title>
   <style>
     * {
         box-sizing: border-box;
@@ -151,7 +188,7 @@ $conn->close();
         flex-wrap: wrap;
     }
     
-    .report-count {
+    .test-count {
         background: #28a745;
         color: white;
         padding: 5px 15px;
@@ -160,12 +197,12 @@ $conn->close();
         font-weight: normal;
     }
     
-    /* Report Cards Section */
-    .reports-section {
+    /* Tests Section */
+    .tests-section {
         margin-bottom: 50px;
     }
     
-    .subject-reports {
+    .subject-tests {
         margin-bottom: 40px;
         padding: 20px;
         background: #f8f9fa;
@@ -181,81 +218,57 @@ $conn->close();
     }
     
     /* 4-Column Grid */
-    .reports-grid {
+    .tests-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 20px;
         margin-top: 15px;
     }
     
-    .report-card {
+    .test-card {
         background: white;
         border: 1px solid #e1e5e9;
         border-radius: 8px;
         padding: 20px;
         text-align: center;
         transition: transform 0.3s, box-shadow 0.3s;
-        min-height: 200px;
+        min-height: 180px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        cursor: pointer;
     }
     
-    .report-card:hover {
+    .test-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
     
-    .report-icon {
+    .test-icon {
         font-size: 2.5em;
         margin-bottom: 10px;
         color: #003366;
     }
     
-    .report-lesson {
+    .test-lesson {
         font-size: 1em;
         color: #0066cc;
         margin-bottom: 8px;
         font-weight: bold;
     }
     
-    .report-topic {
+    .test-topic {
         font-size: 0.85em;
         color: #555;
         line-height: 1.4;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
         flex-grow: 1;
     }
     
-    .score-display {
-        font-size: 1.1em;
-        font-weight: bold;
-        margin-bottom: 10px;
-        padding: 5px;
-        border-radius: 5px;
-    }
-    
-    .score-passed {
-        color: #28a745;
-    }
-    
-    .score-failed {
-        color: #dc3545;
-    }
-    
-    .not-taken {
-        color: #999;
-        font-style: italic;
-        font-size: 0.85em;
-        margin-bottom: 10px;
-        padding: 5px;
-    }
-    
-    /* Button styles */
-    .view-report-btn {
+    .view-results-btn {
         display: inline-block;
         padding: 8px 16px;
-        background: #28a745;
+        background: #003366;
         color: white;
         text-decoration: none;
         border-radius: 5px;
@@ -263,28 +276,13 @@ $conn->close();
         font-weight: bold;
         font-size: 0.9em;
         width: auto;
-        max-width: 70%;
+        max-width: 80%;
         margin: 0 auto;
     }
     
-    .view-report-btn:hover {
-        background: #218838;
+    .view-results-btn:hover {
+        background: #0055aa;
         color: white;
-    }
-    
-    .disabled-btn {
-        display: inline-block;
-        padding: 8px 16px;
-        background: #6c757d;
-        color: white;
-        border-radius: 5px;
-        font-weight: bold;
-        font-size: 0.9em;
-        width: auto;
-        max-width: 70%;
-        margin: 0 auto;
-        cursor: not-allowed;
-        opacity: 0.6;
     }
     
     .no-results {
@@ -341,15 +339,15 @@ $conn->close();
         color: white;
     }
 
-    /* Responsive design for smaller screens */
+    /* Responsive design */
     @media (max-width: 1200px) {
-        .reports-grid {
+        .tests-grid {
             grid-template-columns: repeat(3, 1fr);
         }
     }
     
     @media (max-width: 900px) {
-        .reports-grid {
+        .tests-grid {
             grid-template-columns: repeat(2, 1fr);
         }
         
@@ -359,7 +357,7 @@ $conn->close();
     }
     
     @media (max-width: 600px) {
-        .reports-grid {
+        .tests-grid {
             grid-template-columns: 1fr;
         }
     }
@@ -374,69 +372,42 @@ $conn->close();
     <div class="user-welcome">
         <div class="welcome-text">Welcome, <?= htmlspecialchars($user_name) ?>!</div>
         <div class="user-info">
-            KPluz SHS - Report Card
+            KPluz SHS - Student Results (Teacher View)
             <span class="role-badge"><?= ucfirst($user_role) ?></span>
         </div>
     </div>
 
     <div class="dashboard-content">
-        <?php if ($user_role === 'student'): ?>
-            <!-- STUDENT REPORT CARDS VIEW - SHOW ALL TESTS -->
-            <div class="reports-section">
-                <h2 class="section-title">
-                    My Report Card
-                    <span class="report-count">Total: <?= $total_tests ?> Test(s)</span>
-                </h2>
-                
-                <?php if (!empty($tests_by_subject)): ?>
-                    <?php foreach ($tests_by_subject as $subject => $tests): ?>
-                        <div class="subject-reports">
-                            <div class="subject-title">
-                                <?= htmlspecialchars($subject) ?>
-                            </div>
-                            <div class="reports-grid">
-                                <?php foreach ($tests as $test): 
-                                    $key = $test['subject'] . '|' . $test['lesson'];
-                                    $is_completed = isset($completed_scores[$key]);
-                                    $score = $is_completed ? $completed_scores[$key]['score'] : null;
-                                    $percentage = $is_completed ? $completed_scores[$key]['percentage'] : null;
-                                    $passed = $is_completed && $percentage >= 75;
-                                ?>
-                                    <div class="report-card">
-                                        <div class="report-icon">&#128202;</div>
-                                        <div class="report-lesson"><?= htmlspecialchars($test['lesson']) ?></div>
-                                        <div class="report-topic"><?= htmlspecialchars($test['topic']) ?></div>
-                                        
-                                        <?php if ($is_completed): ?>
-                                            <div class="score-display <?= $passed ? 'score-passed' : 'score-failed' ?>">
-                                                Score: <?= $score ?>/25 (<?= $percentage ?>%)
-                                            </div>
-                                            <a href="test-results.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="view-report-btn">View Test Results</a>
-                                        <?php else: ?>
-                                            <div class="not-taken">
-                                                &#9888;&#65039; Test Not Taken Yet
-                                            </div>
-                                            <div class="disabled-btn">No Test Results Available</div>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
+        <div class="tests-section">
+            <h2 class="section-title">
+                Student Test Results by Subject
+                <span class="test-count">Total: <?= $total_tests ?> Test(s)</span>
+            </h2>
+            
+            <?php if (!empty($ordered_tests_by_subject)): ?>
+                <?php foreach ($ordered_tests_by_subject as $subject => $tests): ?>
+                    <div class="subject-tests">
+                        <div class="subject-title">
+                            <?= htmlspecialchars($subject) ?>
                         </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <div class="no-results">
-                        <p>No tests available at the moment. Please check back later.</p>
+                        <div class="tests-grid">
+                            <?php foreach ($tests as $test): ?>
+                                <div class="test-card">
+                                    <div class="test-icon">&#128202;</div>
+                                    <div class="test-lesson"><?= htmlspecialchars($test['lesson']) ?></div>
+                                    <div class="test-topic"><?= htmlspecialchars($test['topic']) ?></div>
+                                    <a href="results-students.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="view-results-btn">View Student Results</a>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
-                <?php endif; ?>
-            </div>
-
-        <?php else: ?>
-            <!-- For non-student users (admin or teacher) -->
-            <div style="text-align: center; padding: 50px;">
-                <h2>Access Restricted</h2>
-                <p>This page is only available for students.</p>
-            </div>
-        <?php endif; ?>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="no-results">
+                    <p>No tests available at the moment. Please check back later.</p>
+                </div>
+            <?php endif; ?>
+        </div>
 
         <!-- Action Buttons -->
         <div class="action-buttons">

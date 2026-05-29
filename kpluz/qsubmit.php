@@ -93,6 +93,7 @@ if ($result) {
 // Fetch unique subjects for dropdown
 $subjects = [];
 $subject_sql = "SELECT DISTINCT subject FROM tests ORDER BY subject";
+$subject_sql = "SELECT subject FROM tests GROUP BY subject ORDER BY MIN(id)";
 $subject_result = $conn->query($subject_sql);
 if ($subject_result) {
     while ($row = $subject_result->fetch_assoc()) {

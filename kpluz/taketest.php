@@ -96,7 +96,7 @@ if ($check_result->num_rows > 0) {
             </div>
             <div class='dashboard-content'>
                 <div class='message-box'>
-                    <div class='warning-icon'>&#9888;&#65039;</div>
+                    <div class='warningicon'>&#9888;&#65039;</div>
                     <h2>Test Already Taken</h2>
                     <p>You have already completed the test for:<br/>
                     <strong>" . htmlspecialchars($test_subject) . " - " . htmlspecialchars($test_lesson) . "</strong><br/>
@@ -133,6 +133,7 @@ $_SESSION['current_test_subject'] = $subject_name;
 $_SESSION['current_test_lesson'] = $lesson_name;
 $_SESSION['current_test_question_ids'] = array_column($questions, 'id');
 $_SESSION['current_test_question_count'] = count($questions);
+$_SESSION['current_test_questions_order'] = $questions;  // <-- THIS IS THE ONLY LINE ADDED
 
 $conn->close();
 ?>
