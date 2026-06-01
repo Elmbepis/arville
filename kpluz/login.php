@@ -101,7 +101,7 @@ $conn->close();
     body { 
         font-family: 'Arial', sans-serif; 
         text-align: center; 
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #e0e0e0;
         margin: 0;
         padding: 20px;
         min-height: 100vh;
