@@ -1,0 +1,1313 @@
+<html>
+
+<head>
+						
+						
+						
+						
+<style type="text/css">
+@import url(http://www.google.com/cse/api/branding.css);
+</style>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Reliability Models for Failure Mechanisms</title>
+</head>
+
+
+<body background="bg-home.jpg">
+
+
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" style="border-style:solid; border-width:1px; border-collapse: collapse" bordercolor="#0000FF" width="792" id="table6" height="138" bgcolor="#FFFFFF">
+    <tr>
+      <td width="699" height="109">
+            <a href="http://www.EESemi.com">
+            <img border="0" src="sfe-index-logo.jpg" width="792" height="132"></a></td>
+    </tr>
+    <tr>
+      <td width="699" height="8">
+      <span style="font-size: 5pt">&nbsp; </span></td>
+    </tr>
+    <tr>
+      <td width="792" height="19" valign="top">
+      <div align="center">
+		<table border="0" width="98%" cellspacing="0" cellpadding="0" id="table7">
+			<tr>
+				<td>
+				<div align="center">
+  <table border="0" cellpadding="0" cellspacing="0" style="border:0px solid #AAAAFF; border-collapse: collapse" bordercolor="#111111" width="700" id="table8" height="192" bgcolor="#FFFFFF">
+    <tr>
+      <td width="699" height="19">
+      <p style="margin-top: 0; margin-bottom: 0">&nbsp;</td>
+    </tr><tr>
+      <td width="700" height="73" valign="top">
+        <o:p>
+        <p class="MsoNormal" style="margin:0 3px; " align="justify">
+        <font face="Arial"><span style="font-size: 14pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </span></font> 
+        <p class="MsoNormal" style="margin:0 3px; " align="justify">
+      
+      
+      
+      
+      
+      
+      
+      
+      <!-- google_ad_section_start -->
+
+      
+      
+      
+      
+      
+      
+      
+      <font face="Arial" style="font-size: 14pt" color="#000080">Reliability 
+      Models for Failure Mechanisms</font><font style="font-size: 14pt; font-weight: 700" color="#000080" face="Arial">&nbsp;&nbsp;</font></p>
+        <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; margin-right:3px" align="justify">
+        <font face="Arial" style="font-size: 14pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </font> </p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      <p class="MsoNormal" style="margin:0 3px; " align="justify">
+      <font face="Arial" style="font-size: 10pt"><b>
+      <font color="#B00668">Failure Mechanism Reliability Modeling</font><font color="#444444">,</font></b><font color="#444444"> 
+ </font>
+      </font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+      or </font>
+      <i><font face="Arial" color="#B00668" style="font-size: 10pt"> 
+      reliability modeling</font></i><font face="Arial" color="#444444" style="font-size: 10pt">,  
+      or </font>
+      <i><font face="Arial" color="#B00668" style="font-size: 10pt"> 
+      acceleration modeling</font></i><font face="Arial" color="#444444" style="font-size: 10pt">, or simply 
+      modeling, is the mathematical representation of a failure mechanism in 
+      terms of a set of algebraic or differential equations from the perspective 
+      of its reliability implications. The term </font>
+      <font face="Arial" color="#B00668" style="font-size: 10pt"><i>failure 
+      mechanism</i></font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+      refers to the actual physical phenomenon behind a failure occurrence. 
+      Modeling is a means of determining and understanding the different 
+      variables or factors that bring out and accelerate a failure mechanism.&nbsp; </font>
+        </p>
+      <p class="MsoNormal" style="margin:0 3px; " align="justify">
+      <font color="#444444">
+      <span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span> 
+      </font> </p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
+
+
+        
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <o:p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </o:p>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <p class="MsoNormal" style="margin:0 3px; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">Being able to 
+      model a mechanism and quantify how it is affected by various environmental 
+      factors will allow a reliability engineer to develop appropriate 
+      reliability tests for estimating field failure rates and predicting when 
+      failures will begin to occur. Modeling is often expressed in the form of 
+      time to failure, or </font>
+      <font face="Arial" color="#B00668" style="font-size: 10pt"> <b>tf</b></font><font face="Arial" color="#444444" style="font-size: 10pt">, 
+      or the acceleration factor, </font>
+      <font face="Arial" color="#B00668" style="font-size: 10pt"> 
+      <b>AF</b></font><font face="Arial" color="#444444" style="font-size: 10pt">.</font></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p class="MsoNormal" style="margin:0 3px; " align="justify">
+      <b><font face="Arial" color="#B00668" style="font-size: 10pt">The 
+      Arrhenius Equation</font></b></p>
+      <p class="MsoNormal" style="margin:0 3px; " align="justify">
+      <font color="#444444">
+      <span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+      <span style="font-size: 10pt; font-family: Arial; display: none">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; " align="justify">
+      <font face="Arial" color="#444444"><span style="font-size:10pt">
+      Everything in this universe will decay or degrade with time, and the 
+      Second Law of Thermodynamics is there to make sure of this. Destruction or 
+      degradation of matter is generally due to atomic or molecular changes 
+      accelerated by external factors, one of which is temperature. The response 
+      dependence of degradation or failure mechanisms on temperature is given by 
+      the Arrhenius equation:</span></font></p>
+                
+        
+        
+        
+        
+        
+        
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444"><span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt"><b>R = Ae<sup><span style="position: relative; top: -2.5pt">(-Ea/kT)</span></sup></b></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444"><b><span style="font-size: 10pt"><sup>
+      &nbsp;&nbsp;&nbsp;&nbsp;</sup></span></b></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444"><span style="font-size:10pt">where&nbsp;&nbsp;&nbsp; 
+      R=reaction rate, A=constant, Ea=activation energy, </span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">k</font><font face="Arial" color="#444444"><span style="font-size:10pt">= 
+      Boltzmann’s constant (8.6e-5 eV/K), T=absolute temperature&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444"><span style="font-size: 10pt; font-family: Arial">
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444">
+      <span style="font-size:10pt">For any given reaction obeying the Arrhenius 
+      equation,
+      <b>R</b></span><b><span style="font-size: 10pt; position: relative; top: 1.5pt">1</span><span style="font-size:10pt">t</span><span style="font-size: 10pt; position: relative; top: 1.5pt">1</span><span style="font-size:10pt">=R</span><span style="font-size: 10pt; position: relative; top: 1.5pt">2</span><span style="font-size:10pt">t</span><span style="font-size: 10pt; position: relative; top: 1.5pt">2</span><span style="font-size:10pt">=</span></b><span style="font-size:10pt">constant, 
+      where R is the reaction rate and t is the elapsed reaction time. To 
+      illustrate this, consider a reaction process that occurs at a high 
+      temperature <b>T</b></span><b><span style="font-size: 10pt; position: relative; top: 1.5pt">1</span></b><span style="font-size:10pt"> 
+      and low temperature </span><b><span style="font-size: 10pt">T</span><span style="font-size: 10pt; position: relative; top: 1.5pt">2</span></b><span style="font-size:10pt">.&nbsp; 
+      Since temperature increases the reaction rate, then <b>R</b></span><b><span style="font-size: 10pt; position: relative; top: 1.5pt">1</span></b><span style="font-size:10pt"> 
+      is faster than </span><b><span style="font-size:10pt">R</span><span style="font-size: 10pt; position: relative; top: 1.5pt">2,</span></b><span style="font-size: 10pt"> 
+      or <b>R</b></span><b><span style="font-size: 10pt; position: relative; top: 1.5pt">1</span></b><span style="font-size:10pt"> 
+      &gt; </span><b><span style="font-size:10pt">R</span><span style="font-size: 10pt; position: relative; top: 1.5pt">2 
+      .</span></b></font><font color="#444444"><span style="font-size: 10pt">&nbsp; </span> 
+      </font> <font face="Arial" color="#444444">
+      <span style="font-size:10pt">However, the reaction process also takes a 
+      shorter duration at <b>T</b></span><span style="font-size: 10pt; position: relative; top: 1.5pt"><b>1</b></span><span style="font-size: 10pt">, 
+      or&nbsp; </span><b><span style="font-size:10pt">t</span><span style="font-size: 10pt; position: relative; top: 1.5pt">1</span><span style="font-size: 10pt">&nbsp;&lt; t</span><span style="font-size: 10pt; position: relative; top: 1.5pt">2</span></b><span style="font-size: 10pt">, 
+      such that&nbsp; <b>R</b></span><b><span style="font-size: 10pt; position: relative; top: 1.5pt">1</span><span style="font-size:10pt">t</span><span style="font-size: 10pt; position: relative; top: 1.5pt">1</span><span style="font-size:10pt">=R</span><span style="font-size: 10pt; position: relative; top: 1.5pt">2</span><span style="font-size:10pt">t</span><span style="font-size: 10pt; position: relative; top: 1.5pt">2
+      </span><span style="font-size:10pt">=</span></b><span style="font-size:10pt">constant.</span></font></p>
+      
+      
+      
+      
+      
+      <!-- google_ad_section_end -->
+
+
+      
+      
+      
+      
+      
+      
+      
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444">
+      <span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444">
+      <span style="font-size:10pt">Now, let </span><font style="font-size: 10pt">
+      t</font><i><span style="position: relative; top: 2.0pt"><font style="font-size: 10pt">f</font></span></i><span style="font-size:10pt">=time 
+      to failure, then R</span><font style="font-size: 10pt">t</font><i><span style="position: relative; top: 2.0pt"><font style="font-size: 10pt">f</font></span><span style="font-size:10pt">&nbsp;</span></i><span style="font-size:10pt">=constant, 
+      or </span><font style="font-size: 10pt">t</font><i><span style="position: relative; top: 2.0pt"><font style="font-size: 10pt">f</font></span></i><span style="font-size:10pt">=C</span><span style="position: relative; top: 1.5pt"><font style="font-size: 10pt">1</font></span><span style="font-size:10pt">/R.</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <span style="font-size:10pt">
+      <font color="#444444" face="Arial">
+      Thus,<b> </b></font><b>
+      <font color="#B00668" face="Arial">
+      t</font></b></span><b><font color="#B00668" face="Arial"><i><span style="position: relative; top: 1.5pt"><font style="font-size: 10pt">f</font></span></i></font><font color="#444444" face="Arial"><span style="font-size:10pt">&nbsp;=</span><font style="font-size: 10pt"> 
+      C<span style="position: relative; top: 2.0pt">1</span>/(Ae<sup><span style="position: relative; top: -2.5pt">(-Ea/kT)</span></sup>) 
+      = (C)(e<sup><span style="position: relative; top: -2.5pt">(Ea/kT)</span></sup>)</font></font></b><font style="font-size: 10pt" color="#444444" face="Arial">.</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      &nbsp;</p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">Let the acceleration factor
+      </font><font face="Arial" color="#B00668" style="font-size: 10pt"><b>AF</b></font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+      be the ratio tf<sub>use </sub>/ tf<sub>test</sub> .</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">Thus, </font><b>
+      <font face="Arial" color="#B00668" style="font-size: 10pt">AF</font></b><font face="Arial" color="#444444" style="font-size: 10pt">=[</font><b><font style="font-size: 10pt" color="#444444" face="Arial">(C)(e<sup><span style="position: relative; top: -2.5pt">(Ea/kTuse)</span></sup>) 
+      /</font></b><font style="font-size: 10pt" color="#444444" face="Arial"><b> 
+      (C)(e<sup><span style="position: relative; top: -2.5pt">(Ea/kTtest)</span></sup>)</b>]=</font><b><font face="Arial" size="2" color="#444444">
+      </font><font style="font-size: 10pt" color="#444444" face="Arial">e<sup><span style="position: relative; top: -2.5pt">(Ea/k) 
+      (1/Tuse-1/Ttest)</span></sup></font></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></p>
+        <o:p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </o:p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b>
+      <font color="#B00668" face="Arial">
+      <font style="font-size: 10pt">Estimating Ea and t</font><span style="position: relative; top: 2.0pt"><font style="font-size: 10pt">f</font></span><font style="font-size: 10pt">&nbsp;using 
+      Arrhenius Plots</font></font></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b><font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial">
+      <span style="font-size:10pt">Recall that <b>t</b></span><b><span style="position: relative; top: 1.5pt"><font style="font-size: 10pt">f</font></span><span style="font-size:10pt">&nbsp;=</span><font style="font-size: 10pt"> 
+      (C)(e<sup><span style="position: relative; top: -2.5pt">(Ea/kT)</span></sup>)</font></b><font style="font-size: 10pt">.</font><span style="font-size:10pt">&nbsp; 
+      Then,&nbsp; <b>ln(t</b></span><b><span style="position: relative; top: 1.5pt"><font style="font-size: 10pt">f</font></span><span style="font-size:10pt">) 
+      =&nbsp; ln</span><font style="font-size: 10pt">C</font><span style="font-size:10pt"> 
+      + Ea/kT</span></b><span style="font-size:10pt">.</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial">
+      <span style="font-size:10pt">Thus, the plot of ln(t</span><span style="position: relative; top: 1.5pt"><font style="font-size: 10pt">f</font></span><span style="font-size:10pt">) 
+      vs. 1/T yields a straight line whose slope </span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial">
+      <span style="font-size:10pt">corresponds to Ea/k.</span></font></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p class="MsoNormal" style="margin:0 3px; ">
+      <span style="font-family:&quot;Arial&quot;; font-weight:700">
+      <font color="#B00668" style="font-size: 10pt">
+      Electromigration</font></span><font color="#B00668" face="Arial"><span style="font-size: 10pt">&nbsp;</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">
+      <a href="emig.htm"><font color="#B00668">Electromigration</font></a> is the m</font><font color="#444444" face="Arial"><span style="font-size:10pt">ovement 
+      of metal atoms of a metal line in the direction of the current flow 
+      through that metal line. This mechanism is similar to pebbles in a stream, 
+      which are picked up and transported by the water in the direction of the 
+      water currents.&nbsp; As such, during electromigration, metal atoms are 
+      removed from the starting end of the metal line and accumulates at the 
+      other end, forming voids at the entrance and hillocks at the exit of the 
+      metal line.&nbsp; Thus, electromigration can result in open circuits (due 
+      to the voids) or line-to-line short circuits (due to the hillocks).&nbsp;&nbsp;</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial">
+      <span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></font></p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial">
+      <span style="font-size: 10pt">Electromigration is accelerated by 
+      temperature and current density, and is modeled as follows:</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444">
+      <span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b><font style="font-size: 10pt" face="Arial" color="#444444">t<span style="position: relative; top: 2.0pt">f</span>&nbsp;= 
+      CJ<sup><span style="position: relative; top: -2.5pt">-n</span></sup>e</font><span style="position: relative; top: -2.5pt"><font face="Arial" color="#444444" style="font-size: 10pt"><sup>(Ea/kT) 
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</sup>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </font></span></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+        <font face="Arial" color="#444444" style="font-size: 10pt"><b>AF</b> = tf<sub>use </sub>/ tf<sub>test</sub> </font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial"><b><font style="font-size: 10pt">AF = (J<span style="position: relative; top: -2.5pt"><sub>test</sub>/J<sub>use</sub>)<sup>n
+      </sup></span>e<span style="position: relative; top: -2.5pt"><sup>(Ea/k) 
+      (1/Tuse-1/Ttest)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</sup>
+      </span></font></b></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b><font color="#444444" face="Arial"><span style="position: relative; top: -1.0pt">
+      <font style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </font> </span>
+      </font></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial"><span style="font-size:10pt">where:&nbsp;&nbsp;&nbsp;&nbsp; </span>
+      </font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial"><span style="font-size:10pt">C&nbsp;= 
+      a constant based on metal line properties&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+      </font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial"><span style="font-size:10pt">n = 
+      integer constant from 1 to 7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">T</font><font face="Arial" color="#444444"><span style="font-size: 10pt">use, 
+      Ttest = temperature during use and under test, respectively</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">J</font><font face="Arial" color="#444444"><span style="font-size: 10pt">use, 
+      Jtest = current density during use and under test, respectively</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial"><span style="font-size:10pt">Ea = 0.5 - 
+      0.7 eV for pure Al</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" style="font-size: 10pt">
+      <span style="font-family:&quot;Arial&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+      </font></p>
+      <p style="margin:0 3px; ">
+      <font face="Arial" style="font-size: 10pt">&nbsp;<font color="#444444">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></font><o:p><div align="left">
+
+
+        
+</div>        
+        
+        
+        
+        
+        </o:p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <p class="MsoNormal" style="margin:0 3px; ">
+      <b>
+      <font color="#B00668" face="Arial" style="font-size: 10pt">
+      Corrosion</font></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">
+      <a href="corrosion.htm"><font color="#B00668">Corrosion</font></a> is 
+      metal degradation due to chemical or electrolytic reactions in the 
+      presence of moisture, contaminants, and bias.</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">Corrosion rate 
+      is a function of temperature (T), relative humidity (RH), and bias (V).</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial">
+      <span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+        <font face="Arial" color="#444444" style="font-size: 10pt">Let<b> AF</b> 
+      = tf<sub>use </sub>/ tf<sub>test</sub></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">and </font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b><font face="Arial" style="font-size: 10pt"><i><font color="#444444">t<span style="position: relative; top: 2.0pt">f&nbsp;&nbsp;
+      </span></font></i><font color="#444444">= C(RH)<sup><span style="position: relative; top: -2.5pt">-3</span></sup>e<span style="position: relative; top: -2.5pt"><sup>(0.9/kT)</sup></span></font></font></b><font color="#444444" face="Arial" style="font-size: 10pt">.</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">With no applied 
+      voltage:&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" style="font-size: 10pt"><b><font color="#444444">AF =  (RH<sub>test</sub>/RH<sub>use</sub>)<sup><span style="position: relative; top: -2.5pt">3 </span>
+      </sup>e<span style="position: relative; top: -2.5pt"><sup>(0.9/k) 
+      (1/Tuse-1/Ttest)
+      </sup></span></font></b><font color="#444444">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">With voltage V 
+      applied: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" style="font-size: 10pt"><b><font color="#444444">AF = 
+      (V) (RH<sub>test</sub>/RH<sub>use</sub>)<sup><span style="position: relative; top: -2.5pt">3 </span>
+      </sup>e<span style="position: relative; top: -2.5pt"><sup>(0.9/k) 
+      (1/Tuse-1/Ttest)
+      </sup></span></font></b><font color="#444444">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">
+      <b><span style="position: relative; top: -2.5pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></b>
+      </font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <span style="font-size:10pt">
+      <font color="#444444" face="Arial">where:</font></span></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <span style="font-size:10pt">
+      <font color="#444444" face="Arial">C</font></span><font color="#444444" face="Arial"><span style="font-size:10pt">&nbsp;= 
+      a constant&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+      </font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444">
+      <span style="font-size: 10pt">RHuse, RHtest = relative humidity during use 
+      and under test, respectively</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">T</font><font face="Arial" color="#444444"><span style="font-size: 10pt">use, 
+      Ttest = temperature during use and under test, respectively</span></font></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p class="MsoNormal" style="margin:0 3px; ">
+      <b><span style="position: relative; top: -2.5pt">
+      <font color="#B00668" face="Arial" style="font-size: 10pt">
+      Time-dependent Dielectric Breakdown (TDDB)</font></span></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" style="font-size: 10pt" color="#444444">&nbsp;&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <span style="font-size:10pt"><font face="Arial" color="#444444">
+      <a href="oxidebreakdown.htm"><font color="#B00668">Time-dependent Dielectric Breakdown</font></a>, or TDDB, is the destruction of 
+      dielectric layers occurring over time.</font></span></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" style="font-size: 10pt" face="Arial"><b>R = A<sub><span style="position: relative; top: 2.0pt">1</span></sub>e</b><span style="position: relative; top: -2.5pt"><sup>(-Ea/kT+CV)</sup></span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+        <font face="Arial" color="#444444" style="font-size: 10pt"><b>AF</b> = 
+      tf<sub>use </sub>/ tf<sub>test</sub></font><sub><font face="Arial" color="#444444" style="font-size: 10pt">&nbsp; </font>
+        </sub>
+      <font color="#444444" style="font-size: 10pt" face="Arial"><b>= R</b><sub>test</sub> 
+      /<b>R</b><sub>use</sub></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b><font face="Arial" color="#444444" style="font-size: 10pt">AF
+      =&nbsp; e</font></b><font color="#444444" face="Arial" style="font-size: 10pt"><span style="position: relative; top: -2.5pt"><sup>([-Ea/k] 
+      [1/Ttest-1/Tuse] + C [Vtest-Vuse])</sup></span></font><font face="Arial"><span style="font-size: 10pt"><font color="#444444">&nbsp;</font></span><font color="#444444"><span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;</span></font></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <span style="font-size: 11pt">&nbsp;&nbsp;&nbsp;&nbsp; </span> </p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <span style="font-size:10pt"><font color="#444444" face="Arial">where:&nbsp;&nbsp; 
+      A</font></span><font face="Arial" color="#444444" style="font-size: 10pt"><sub>1</sub>,
+      </font><font color="#444444" face="Arial"><span style="font-size:10pt">&nbsp;C 
+      = constants&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <span style="font-size:
+10pt"> <font color="#444444" face="Arial"> Ea = 0.8 - 0.9 eV</font></span></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">V</font><font face="Arial" color="#444444"><span style="font-size: 10pt">use, 
+      Vtest = voltage applied during use and under test, respectively</span></font></p>
+      
+      
+      
+      <p class="MsoNormal" style="margin:0 3px; ">
+        &nbsp;</p>
+      <![if !mso]>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b>
+      <font color="#B00668" face="Arial" style="font-size: 10pt">
+      Hot Carrier Effects</font></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444">
+      <span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">
+      <a href="hotcarriers.htm"><font color="#B00668">Hot
+      carrier effects</font></a> is a phenomenon involving the injection of highly energetic carriers 
+      into the gate oxide layer and the silicon substrate, resu</font><font color="#444444"><font face="Arial" style="font-size: 10pt">lting
+      in</font><span style="font-size: 10pt"> v</span><font face="Arial" style="font-size: 10pt">olume charge build-up that can
+      shift transistor threshold voltages.&nbsp; This mechanism is</font><span style="font-size: 10pt"> </span></font><font color="#444444" face="Arial" style="font-size: 10pt">
+      accelerated by low temperatures.</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444">
+      <span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">
+        <b>AF</b> = tf<sub>use </sub>/ tf<sub>test </sub></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b><font face="Arial" color="#444444" style="font-size: 10pt">AF</font><font face="Arial" size="2" color="#444444"> </font>
+      <font color="#444444" style="font-size: 11pt">
+      = e</font></b><span style="position: relative; top: -2.5pt"><sup><font color="#444444" style="font-size: 10pt">([Ea/k] 
+      [1/Tuse-1/Ttest] + C [Vtest-Vuse])</font></sup></span><span style="font-size: 10pt"><font color="#444444">&nbsp;</font></span><font color="#444444"><span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b><font face="Arial" color="#444444" style="font-size: 10pt"><span style="position: relative; top: -2.5pt"><sup>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;</sup>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></font></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">where: &nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt"> V = voltage 
+      accelerating the carriers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt"> Ea = -0.2 eV 
+      to -0.06 eV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt"> 
+      C = constant</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" style="font-size: 10pt">
+      <b><span style="position: relative; top: -2.5pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></b>
+      </font><font color="#444444">
+      <span style="font-size: 10pt">&nbsp;&nbsp; </span> </font></p>
+		<p class="MsoNormal" style="margin:0 3px; ">
+      <font size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font></p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <o:p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </o:p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#B00668" face="Arial" style="font-size: 10pt">
+      <b>
+      Bond/Solderability Failures</b></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">
+      &nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">Bond/solderability failures related to
+      intermetallic growths, e.g., 
+      ball lifting due to Kirkendall voids, Cu-Sn intermetallic growths towards 
+      the leadfinish surface, etc. are modeled as follows.</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b><font face="Arial" color="#444444" style="font-size: 10pt"><span style="position: relative; top: -2.5pt"><sup>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;</sup>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></font></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b><i><font color="#444444" face="Arial" style="font-size: 10pt">t<span style="position: relative; top: 2.0pt">f&nbsp;&nbsp; </span></font></i>
+      <font color="#444444" face="Arial" style="font-size: 10pt">= Ae<span style="position: relative; top: -2.5pt"><sup>(Ea/kT)&nbsp;&nbsp;&nbsp;</sup></span></font></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">
+        <b>AF</b> = tf<sub>use </sub>/ tf<sub>test </sub></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+        <b>
+      <font face="Arial" color="#444444" style="font-size: 10pt">AF </font></b>
+        <font face="Arial" color="#444444" style="font-size: 10pt">
+      = </font>
+        <b><font style="font-size: 10pt" color="#444444" face="Arial">e<sup><span style="position: relative; top: -2.5pt">(Ea/k) 
+      (1/Tuse-1/Ttest)</span></sup></font></b><font color="#444444"><span style="font-size: 10pt">&nbsp;</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b><font face="Arial" color="#444444" style="font-size: 10pt"><span style="position: relative; top: -2.5pt"><sup>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;</sup>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></font></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">where:</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">A = constant</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">Ea = 1 eV for Au-Al bonds</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">Ea = 0.5-0.75 eV for Sn-based leadfinish&nbsp;</font></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#B00668" face="Arial" style="font-size: 10pt">
+      <b>TC-induced Package Cracking</b></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">The
+      occurrence 
+      of fracture anywhere in the package after it has undergone several 
+      temperature cycles has also been modeled.</font><font color="#444444" face="Arial"><span style="font-size: 10pt">
+      </span> </font> 
+      <font face="Arial" color="#444444" style="font-size: 10pt">Since
+      the zero-stress condition of the package is at a high temperature (around
+      175 deg C) , the low temperature (cooling) cycle has the main effect on
+      this mechanism.</font></p>
+                      
+        
+        
+        
+        
+        
+        
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444"><b><span style="font-size: 10pt">AF = (<span style="font-family:Symbol">D</span>T<span style="position: relative; top: 2.0pt">accel</span>/<span style="font-family:Symbol">D</span>T<span style="position: relative; top: 2.0pt">use</span>)</span><sup><span style="position: relative; top: -2.5pt"><font style="font-size: 10pt">m</font></span></sup></b></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b><font face="Arial" color="#444444" style="font-size: 10pt"><span style="position: relative; top: -2.5pt"><sup>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;</sup>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></font></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font face="Arial" color="#444444" style="font-size: 10pt">where:&nbsp;&nbsp; </font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" size="2">
+      <span style="font-size:10pt;
+font-family:Symbol">D</span></font><font face="Arial"><font color="#444444" style="font-size: 10pt">T</font><font color="#444444" size="2"><span style="font-size: 10pt; position: relative; top: 1.5pt">accel</span></font><font color="#444444" style="font-size: 10pt" size="2">&nbsp;= 
+      T</font><span style="font-size: 6.5pt; position: relative; top: 1.5pt"><font color="#444444" style="font-size: 10pt">min(accel) </font>
+      </span>
+      <font color="#000080" size="2">
+      <font color="#444444" style="font-size: 10pt">
+      - T</font><font color="#444444" size="2"><span style="font-size: 10pt; position: relative; top: 1.5pt">neutral</span></font><font color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></font></font><font color="#444444" size="2" style="font-size: 10pt" face="Arial">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <span style="font-family: Symbol">
+      <font color="#444444" style="font-size: 10pt">
+      D</font></span><font color="#444444" face="Arial" style="font-size: 10pt">T</font><font color="#444444" size="2" face="Arial"><span style="font-size: 10pt; position: relative; top: 1.5pt">use</span></font><font color="#444444" face="Arial" style="font-size: 10pt">&nbsp;= 
+      T</font><span style="font-size: 6.5pt; position: relative; top: 1.5pt"><font color="#444444" face="Arial" style="font-size: 10pt">min(use) </font>
+      </span><font color="#000080" size="2" face="Arial">
+      <font color="#444444" face="Arial" style="font-size: 10pt">- T</font><font color="#444444" size="2" face="Arial"><span style="font-size: 10pt; position: relative; top: 1.5pt">neutral</span></font></font><font color="#000080" face="Arial" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font>
+      <font color="#000080" size="2" face="Arial" style="font-size: 10pt">
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt"> T</font><font color="#444444" size="2" face="Arial"><span style="font-size: 10pt; position: relative; top: 1.5pt">neutral</span></font><font color="#444444" face="Arial" style="font-size: 10pt">&nbsp;= 
+      zero stress temperature (approx. 175<span style="position: relative; top: -2.0pt">
+      deg </span>C)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">
+      m = 20 (fracture property-dependent)</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444">
+      <span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span> 
+      </font> </p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <span style="font-size:10pt"><b>
+      <font color="#B00668" face="Arial">
+      Fatigue Failures</font></b></span></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial">
+      <span style="font-size:10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial"><span style="font-size:10pt">Fatigue
+      failures are failures due to application of cyclical stresses.</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444">
+      <span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <b><font color="#444444" style="font-size: 10pt">AF = (<span style="font-family:Symbol">D</span>T<span style="position: relative; top: 2.0pt">accel</span>/<span style="font-family:Symbol">D</span>T<span style="position: relative; top: 2.0pt">use</span>)<sup><span style="position: relative; top: -2.5pt">n</span></sup></font></b></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444"><b><font style="font-size: 10pt">Nf = C(<span style="font-family:Symbol">D</span>T)</font><sup><span style="position: relative; top: -2.5pt"><span style="font-size: 10pt">-n</span></span></sup></b></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444"><span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">
+      where:&nbsp;&nbsp;&nbsp;</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">
+      Nf = cycles to failure</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444">
+      <span style="font-size: 10pt; font-family: Symbol">D</span><span style="font-size: 10pt">T
+      </span></font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+      = temperature difference</font></p>
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#444444" face="Arial" style="font-size: 10pt">
+      n = temperature difference factor</font><![endif]></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p class="MsoNormal" style="margin:0 3px; ">
+      <span style="font-weight: 700">
+        <font face="Arial" color="#000080" style="font-size: 10pt">See also</font></span><font face="Arial" color="#000080" style="font-size: 10pt; font-weight:700">:&nbsp; </font>
+		<font face="Arial" style="font-size: 10pt">
+      	<a href="rel.html">
+      Reliability Engineering</a>;</font><font color="#0000FF" face="Arial"><span style="font-size: 10pt">&nbsp;</span></font><font face="Arial" style="font-size: 10pt">
+		<a href="fa.html">
+      	Failure
+      Analysis</a>;<font color="#0000FF">&nbsp; </font><a href="qual.htm">
+      	Process
+      Qualification</a>;&nbsp; </font></p>
+		<p style="margin:0 3px; ">
+        <span style="font-size: 10pt">
+      	<font color="#000080">
+      	<a href="fmechs_pkg.html"><font face="Arial">Package 
+      Failures</font></a></font><font face="Arial" color="#0000FF">;&nbsp;
+		</font></span><a href="fmechs_die.html">
+      	<font face="Arial" style="font-size: 10pt">Die 
+      Failures</font></a></p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
+
+
+
+        <o:p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <p style="word-spacing: 0; margin-left: 3; margin-top: 0; margin-bottom: 0" align="justify">
+        <font color="#444444" style="font-size: 10pt" face="Arial">&nbsp;&nbsp;&nbsp;</font></p>
+      
+      
+      
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+        </o:p>
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
+
+
+
+
+
+      <p class="MsoNormal" style="margin:0 3px; ">
+      <font color="#000080" style="font-size: 10pt"><a href="#top">
+      <font color="#444444" face="Arial">Back to Top</font></a></font></p>
+      <p style="margin:0 3px; ">
+      &nbsp;<p style="margin:0 3px; ">
+      <font face="Arial">
+      <font color="#000080" style="font-size: 10pt"><a href="index.html">
+      <font color="#444444">HOME</font></a></font><font color="#444444"><span style="font-size: 10pt"> </span>
+      </font>
+        </font>
+        <p style="margin:0 3px; ">
+        &nbsp;&nbsp;&nbsp; 
+        <p style="margin:0 3px; ">
+            <font style="font-size: 10pt"><span style="mso-spacerun: yes"><font face="Arial" color="#007171">Copyright
+        </font><font color="#008080">©</font><font face="Arial" color="#008080">
+        </font><font face="Arial" color="#007171">2001-2005</font><font face="Arial" color="#008080">
+        </font><font face="Arial"><font color="#0000FF"><b> EESemi.com</b>.</font>
+        </font><font face="Arial" color="#007171">All Rights Reserved.</font></span></font><o:p><p style="margin-left: 3; margin-top:0; margin-bottom:0">
+            <font face="Arial" size="2" color="#007171">&nbsp;</font><p style="margin-left: 3; margin-top:0; margin-bottom:0">
+            <font face="Arial" size="2" color="#007171">&nbsp; </font>
+            <o:p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
+
+
+
+
+<table border="0" width="160" cellspacing="0" cellpadding="0" style="float: left">
+<tr>
+<td>
+<?php 
+include 'ads-4by4-amazon.php'; 
+?>        
+&nbsp;
+</td>
+</tr>
+</table>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </o:p>
+        <p style="margin-left: 3; margin-top:0; margin-bottom:0">
+            &nbsp;
+            </font></span></font></font></span></font></td>
+    </tr>
+  </table>
+  				</div>
+				</td>
+			</tr>
+		</table>
+		</div>
+		</td>
+    </tr>
+    <tr>
+    <td width="99%" height="19">
+    <span style="font-size: 12pt">&nbsp;&nbsp; </span>
+    </td>
+  	</tr>
+    </table>
+  </center>
+</div>
+
+</body>
+
+</html>

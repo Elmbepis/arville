@@ -1,0 +1,576 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+						
+						
+						
+						
+<style type="text/css">
+@import url(http://www.google.com/cse/api/branding.css);
+</style>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Digital Counters - Ripple or Asynchronous Counter; Synchronous Counter; 
+etc.</title>
+</head>
+
+<body background="bg-home.jpg">
+
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" style="border-style:solid; border-width:1px; border-collapse: collapse" bordercolor="#0000FF" width="792" id="table6" height="138" bgcolor="#FFFFFF">
+    <tr>
+      <td width="699" height="109">
+            <a href="http://www.EESemi.com">
+            <img border="0" src="sfe-index-logo.jpg" width="792" height="132"></a></td>
+    </tr>
+    <tr>
+      <td width="699" height="8">
+      <span style="font-size: 5pt">&nbsp; </span></td>
+    </tr>
+    <tr>
+      <td width="792" height="19" valign="top">
+      <div align="center">
+		<table border="0" width="98%" cellspacing="0" cellpadding="0" id="table7">
+			<tr>
+				<td>
+				<div align="center">
+  <table border="0" cellpadding="0" style="border-style:solid; border-width:0px; border-collapse: collapse" bordercolor="#111111" width="700" id="table8" height="128">
+    <tr>
+      <td width="699" height="19">
+      <p style="margin-top: 0; margin-bottom: 0">&nbsp;</td>
+    </tr><tr>
+      <td width="695" height="8" valign="top">
+        <o:p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0">
+      <font face="Arial"><span style="font-size: 16pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </span></font>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0">
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <!-- google_ad_section_start -->
+
+      
+      
+      
+      
+      
+      
+      
+      <font face="Arial" style="font-size: 14pt" color="#000080">Digital 
+      Counters</font><p style="margin-left: 3; margin-top: 0; margin-bottom: 0; margin-right:3px" align="justify">
+        &nbsp;</p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">A </font>
+      <font face="Arial" color="#CC0066" style="font-size: 10pt; font-weight:700">
+      digital counter</font><font face="Arial" color="#444444" style="font-size: 10pt">, 
+      or simply </font>
+      <font face="Arial" color="#CC0066" style="font-size: 10pt">counter</font><font face="Arial" color="#444444" style="font-size: 10pt">, 
+      is a semiconductor device that is used for counting the number of times 
+      that a digital event has occurred.&nbsp; The counter's output is indexed 
+      by one LSB every time the counter is clocked.</font></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">A simple 
+      implementation of a 4-bit counter is shown in Figure 1, which consists of 
+      4 stages of cascaded J-K flip-flops. This is a binary counter, since the 
+      output is in binary system format, i.e., only two digits are used to 
+      represent the count, i.e., '1' and '0'.&nbsp; With only 4 bits, it can 
+      only count up to '1111', or decimal number 15. </font></p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </font></p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
+
+
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">As one can see 
+      from Figure 1, the 
+      J and K inputs of all the flip-flops are tied to '1', so that they will 
+      toggle between states every time they are clocked. Also, the 
+      output of each flip-flop in the counter is used to clock the next 
+      flip-flop.&nbsp; As a result, the succeeding flip-flop toggles between '1' 
+      and '0' at only half the frequency as the flip-flop before it.&nbsp;
+      </font>
+        </p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </font></p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <img border="0" src="ripplecounter.jpg" width="455" height="111"></p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" style="font-size: 10pt" color="#800080"><b>Figure 1.</b> 
+      A Simple Ripple Counter Consisting of J-K Flip-flops</font></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">Thus, in Figure 
+      1's 4-bit example, the last flip-flop will only toggle after the first 
+      flip-flop has already toggled 8 times. This type of binary counter is 
+      known as a 'serial', 'ripple', or 'asynchronous' counter.&nbsp; The name 
+      'asynchronous' comes from the fact that this counter's flip-flops are not 
+      being clocked at the same time.&nbsp; </font></p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </font></p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">A 4-bit 
+      counter, which has 16 unique states that it can count through, is also 
+      called a modulo-16 counter, or mod-16 counter.&nbsp; By definition, a 
+      modulo-k or base-k counter is one that returns to its initial state after 
+      k cycles of the input waveform.&nbsp; A counter that has N flip-flops is
+      a modulo 2<sup>N</sup> 
+      counter.&nbsp; 
+      </font>
+        </p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;
+      </font></p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">An asynchronous 
+      counter has a serious drawback - its speed is limited by the cumulative 
+      propagation times of the cascaded flip-flops.&nbsp; A counter that has N 
+      flip-flops, each of which has a propagation time t, must therefore wait 
+      for a duration equal to N x t before it can undergo another transition 
+      clocking.&nbsp;</font></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">A better 
+      counter, therefore, is one whose flip-flops are clocked at the same time. 
+      Such a counter is known as a synchronous counter.&nbsp; A simple 4-bit 
+      synchronous counter is shown in Figure 2.</font></p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;
+      </font></p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">Not all 
+      counters with N flip-flops are designed to go through all its 2<sup>N</sup> 
+      possible states of count.&nbsp; In fact, digital counters can be used to 
+      output decimal numbers by using <a href="logicgates.htm">
+      <font color="#CC0066">logic gates</font></a> to force them to reset when 
+      the output becomes equal to decimal 10. Counters used in this manner are 
+      said to be in binary-coded decimal (BCD). </font></p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </font></p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <img border="0" src="synccounter.jpg" width="427" height="114"></p>
+      <p style="margin-left: 3; margin-top: 0; margin-bottom: 0; " align="justify">
+      <font face="Arial" style="font-size: 10pt" color="#800080"><b>Figure 2.</b>&nbsp; 
+      A Simple Synchronous Counter Consisting of J-K Flip-flops and AND gates</font></p>
+                       
+        
+        
+        
+        
+        
+                
+        
+<!-- google_ad_section_end -->
+
+
+
+
+
+
+
+
+
+        <p style="word-spacing: 0; margin-left: 3; margin-top: 0; margin-bottom: 0; margin-right:3px" align="justify">
+        <font color="#444444" style="font-size: 10pt" face="Arial">&nbsp;</font></p>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <p style="margin-left: 3; margin-bottom:0; margin-top:0"><b>
+      <font color="#000080" style="font-size: 10pt" face="Arial">See Also:&nbsp; </font></b>
+        <font face="Arial" style="font-size: 10pt"><a href="whatissemicon.htm">What is a 
+        Semiconductor?</a>;&nbsp;
+        <a href="flipflops-latches.htm">Flip-flops</a>;&nbsp; <a href="shift-registers.htm">Shift 
+              Registers</a></font></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p style="margin-left: 3; margin-bottom:0; margin-top:0">
+		<font face="Arial" style="font-size: 10pt"><a href="index.html">HOME</a></font></p><p style="margin-left: 3; margin-top:0; margin-bottom:0; ">
+        <font face="Arial" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </font><o:p>
+		</o:p>
+		<p style="margin-left: 3; margin-top:0; margin-bottom:0; ">
+            <span style="mso-spacerun: yes">
+            <font style="font-size: 10pt"><font face="Arial" color="#007171">Copyright
+        </font><font color="#008080" face="Arial">© </font><font face="Arial" color="#007171">
+            2005</font><font face="Arial" color="#008080">
+        </font></font><font face="Arial"><font color="#0000FF"><b>
+            <font style="font-size: 10pt">www.EESemi.com</font></b><font style="font-size: 10pt">.</font><span style="font-size: 10pt">
+            </span>
+        </font><font face="Arial" color="#007171"><span style="font-size: 10pt">All Rights Reserved.
+ 
+  
+   
+  
+</font></span></font><o:p><p style="margin-left: 3; margin-top:0; margin-bottom:0">
+            <font face="Arial" size="2" color="#007171">&nbsp;</font><p style="margin-left: 3; margin-top:0; margin-bottom:0">
+            <font face="Arial" size="2" color="#007171">&nbsp; </font>
+            <o:p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
+
+
+
+
+<table border="0" width="160" cellspacing="0" cellpadding="0" style="float: left">
+<tr>
+<td>
+<?php 
+include 'ads-4by4-amazon.php'; 
+?>        
+&nbsp;
+</td>
+</tr>
+</table>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </o:p>
+        <p style="margin-left: 3; margin-top:0; margin-bottom:0">
+            &nbsp;
+            </font></span></font>
+ 
+  
+   
+  
+</span></font></font></span><o:p><div align="left">
+
+        
+</div>        
+        
+        
+        
+        
+        </o:p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <p style="margin-left: 3; margin-top:0; margin-bottom:0; ">
+            &nbsp;</td>
+    </tr>
+  </table>
+  				</div>
+				</td>
+			</tr>
+		</table>
+		</div>
+		</td>
+    </tr>
+    <tr>
+    <td width="99%" height="19">
+    <span style="font-size: 12pt">&nbsp;&nbsp; </span>
+    </td>
+  	</tr>
+    </table>
+  </center>
+</div>
+
+</body>
+
+</html>

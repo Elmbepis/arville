@@ -1,0 +1,797 @@
+<html>
+
+<head>
+						
+						
+						
+						
+<style type="text/css">
+@import url(http://www.google.com/cse/api/branding.css);
+</style>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Life Distribution Methematical Functions - Page 1 of 1: Normal, 
+Exponential Distributions</title>
+</head>
+
+<body background="bg-home.jpg">
+
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" style="border-style:solid; border-width:1px; border-collapse: collapse" bordercolor="#0000FF" width="792" id="table6" height="138" bgcolor="#FFFFFF">
+    <tr>
+      <td width="699" height="109">
+            <a href="http://www.EESemi.com">
+            <img border="0" src="sfe-index-logo.jpg" width="792" height="132"></a></td>
+    </tr>
+    <tr>
+      <td width="699" height="8">
+      <span style="font-size: 5pt">&nbsp; </span></td>
+    </tr>
+    <tr>
+      <td width="792" height="19" valign="top">
+      <div align="center">
+		<table border="0" width="98%" cellspacing="0" cellpadding="0" id="table7">
+			<tr>
+				<td>
+				<div align="center">
+  <table border="0" cellpadding="0" style="border:0px solid #C0C0C0; border-collapse: collapse" bordercolor="#111111" width="700" id="table8" height="203">
+    <tr>
+      <td width="699" height="19">
+      <p style="margin-top: 0; margin-bottom: 0">&nbsp;</td>
+    </tr><tr>
+      <td width="699" height="73" valign="top">
+        <p style="margin:0 3px; ">
+        <font face="Arial" style="font-size: 14pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </font>
+      <p style="margin:0 3px; ">
+      <font face="Arial" style="font-size: 14pt" color="#000080">Life 
+      Distribution Mathematical Functions</font><p style="margin:0 3px; " align="justify">
+        &nbsp;</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">An important 
+        aspect of <a href="rel.html">Reliability Engineering</a> is the analysis 
+        of time-to-failure data (also known as life data) using statistical 
+        methods to assess the reliability of a population of devices and predict 
+        potential failures rates.&nbsp; Life data are not analyzed as individual 
+        numbers, but collectively as a </font>
+        <a href="lifedist.htm">
+        <font face="Arial" style="font-size: 10pt" color="#CC0066">life 
+        distribution</font></a><font face="Arial" color="#444444" style="font-size: 10pt">.&nbsp; 
+        As its name implies, a life distribution shows how a population of 
+        devices fail in time, or how the failures are </font><i>
+        <font face="Arial" style="font-size: 10pt" color="#CC0066">distributed</font><font face="Arial" color="#444444" style="font-size: 10pt">
+        </font></i><font face="Arial" color="#444444" style="font-size: 10pt">in 
+        time. </font></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">There are 
+        four (4) life distributions generally used in semiconductor reliability 
+        analyses today, namely, the </font>
+        <font face="Arial" style="font-size: 10pt" color="#CC0066">normal</font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+        distribution, the </font>
+        <font face="Arial" style="font-size: 10pt" color="#CC0066">lognormal</font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+        distribution, the </font>
+        <font face="Arial" style="font-size: 10pt" color="#CC0066">Weibull</font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+        distribution, and the </font>
+        <font face="Arial" style="font-size: 10pt" color="#CC0066">exponential</font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+        distribution.&nbsp; Among these, the lognormal distribution most closely 
+        represents most of the failure mechanisms in the semiconductor industry 
+        today. </font></p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial">
+        <span style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </span></font></p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">Each of the 
+        four life distributions may be described by three important mathematical 
+        functions:&nbsp; </font></p>
+        <p style="margin:0 3px; " align="justify">
+        <font style="font-size: 10pt" face="Arial">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </font></p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">1)&nbsp; the
+        </font>
+        <font face="Arial" style="font-size: 10pt; font-weight: 700; font-style: italic" color="#CC0066">
+        probability density function</font><font face="Arial" color="#444444" style="font-size: 10pt">, 
+        f(t), which indicates the relative frequency of failures at any time, t;</font></p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">2)&nbsp; the
+        </font><b><font face="Arial" color="#CC0066" style="font-size: 10pt">
+        cumulative density function</font></b><font face="Arial" color="#444444" style="font-size: 10pt">, 
+        F(t), which gives the probability that a device will fail at or before 
+        time t; and</font></p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">3) the<b> </b>
+        </font><b><font face="Arial" color="#CC0066" style="font-size: 10pt">
+        curve of failure rate</font></b><font face="Arial" color="#444444" style="font-size: 10pt">,&nbsp; l(t), 
+        which indicates the instantaneous failure rate at any time, t.&nbsp;
+        </font></p>
+		<p style="word-spacing: 0; margin-left: 3; margin-top: 0; margin-bottom: 0; margin-right:3px" align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;
+		&nbsp;
+		</font></p>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">Tables 1 to 4 
+        show the important characteristics of the 4 life distributions, 
+        particularly their respective probability density functions, cumulative 
+        density functions, and instantaneous failure rates. </font></p>
+        <p style="margin-left: 3px; margin-right: 3px; margin-top: 8; margin-bottom: 0">
+        <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font>
+        <p style="margin-left: 3px; margin-right: 3px; margin-top: 0; margin-bottom: 5">
+        <font face="Arial" color="#800080"><span style="font-size: 10pt"><b>
+        Table 1. Normal Distribution</b></span></font><div align="left">
+          <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border: 1px solid #808080; margin-left: 3" bordercolor="#111111" width="70%" id="table13">
+            <tr>
+              <td width="36%" bordercolor="#808080" bgcolor="#F7F7F7">
+              <p style="margin-top: 8; margin-bottom: 3; margin-left:3px; margin-right:3px" align="center">
+              <font face="Arial" style="font-size: 10pt" color="#CC0066">
+              Probability Density Function</font></p>
+              </td>
+              <td width="64%" bordercolor="#808080" bgcolor="#F7F7F7" align="center">
+              <p style="margin-left: 3px; margin-right: 3px; margin-top: 3; margin-bottom: 8" align="center">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">f(t) = 
+              (e^{-0.5[(t-µ)/</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">s]<sup>2</sup>})
+              </font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">
+              / (</font><font color="#4D4D4D" face="Symbol" style="font-size: 11pt">sÖ<span style="text-decoration: overline">2p</span>)</font></td>
+            </tr>
+            <tr>
+              <td width="36%" bordercolor="#808080" bgcolor="#F7F7F7">
+              <p style="margin-top: 8; margin-bottom: 3; margin-left:3px; margin-right:3px" align="center">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">
+              Cumulative Density Function</font></p>
+              </td>
+              <td width="64%" bordercolor="#808080" bgcolor="#F7F7F7" align="center">
+              <p style="margin-left: 3px; margin-right: 3px">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">F(t) = 
+              (1/[</font><font color="#4D4D4D" face="Symbol" style="font-size: 11pt">sÖ<span style="text-decoration: overline">2p</span>]) 
+              ò</font><sub><font color="#4D4D4D" face="Symbol" style="font-size: 7pt">0</font></sub><sup><font color="#4D4D4D" style="font-size: 11pt" face="Arial">t</font></sup><font color="#4D4D4D" face="Symbol" style="font-size: 11pt"> </font>
+              <font color="#4D4D4D" face="Arial" style="font-size: 11pt">e^{-0.5[(x-µ)/</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">s]<sup>2</sup>}</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">dx</font></td>
+            </tr>
+            <tr>
+              <td width="36%" bordercolor="#808080" bgcolor="#F7F7F7">
+              <p style="margin-top: 8; margin-bottom: 3; margin-left:3px; margin-right:3px" align="center">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">
+              Instantaneous Failure Rate</font></p>
+              </td>
+              <td width="64%" bordercolor="#808080" bgcolor="#F7F7F7" align="center">
+              <p style="margin-left: 3px; margin-right: 3px">
+              <font face="Symbol" style="font-size: 11pt" color="#4D4D4D">l</font><font face="Arial" color="#4D4D4D" style="font-size: 11pt">(t) 
+              = e^{-0.5[(t-µ)/</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">s]<sup>2</sup>}/ò</font><sub><font face="Arial" style="font-size: 11pt" color="#4D4D4D">t</font></sub><sup><font style="font-size: 9pt" color="#4D4D4D" face="Symbol">¥</font></sup><font color="#4D4D4D" face="Symbol" style="font-size: 11pt"> </font>
+              <font color="#4D4D4D" face="Arial" style="font-size: 11pt">e^{-0.5[(x-µ)/</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">s]<sup>2</sup>}</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">dx</font></td>
+            </tr>
+            <tr>
+              <td width="36%" bordercolor="#808080" bgcolor="#F7F7F7" align="center">
+              <p style="margin:3 3px; ">
+              <font face="Arial" style="font-size: 10pt" color="#CC0066">Median</font><font face="Arial" color="#4D4D4D" style="font-size: 10pt">
+              </font></p>
+              </td>
+              <td width="64%" bordercolor="#808080" bgcolor="#F7F7F7" align="center">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">t = t<sub>50%</sub> 
+              = µ</font></td>
+            </tr>
+            <tr>
+              <td width="36%" bordercolor="#808080" bgcolor="#F7F7F7" align="center">
+              <p style="margin:3 3px; ">
+              <font face="Arial" style="font-size: 10pt" color="#CC0066">Mean</font><font face="Arial" color="#4D4D4D" style="font-size: 10pt">
+              </font></p>
+              </td>
+              <td width="64%" bordercolor="#808080" bgcolor="#F7F7F7" align="center">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">t = µ</font></td>
+            </tr>
+            <tr>
+              <td width="36%" bordercolor="#808080" bgcolor="#F7F7F7" align="center">
+              <p style="margin:3 3px; ">
+              <font face="Arial" style="font-size: 10pt" color="#CC0066">Mode</font></p>
+              </td>
+              <td width="64%" bordercolor="#808080" bgcolor="#F7F7F7" align="center">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">t = µ</font></td>
+            </tr>
+            <tr>
+              <td width="36%" bordercolor="#808080" bgcolor="#F7F7F7" align="center">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">
+              Location Parameter</font></p>
+              </td>
+              <td width="64%" bordercolor="#808080" bgcolor="#F7F7F7" align="center">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">µ</font></td>
+            </tr>
+            <tr>
+              <td width="36%" bordercolor="#808080" bgcolor="#F7F7F7" align="center">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">Shape 
+              Parameter </font>
+              <font face="Symbol" style="font-size: 11pt" color="#CC0066">s</font></p>
+              </td>
+              <td width="64%" bordercolor="#808080" bgcolor="#F7F7F7" align="center">
+              <p style="margin-left: 3px; margin-right: 3px; margin-top: 3; margin-bottom: 0">
+              <font face="Symbol" style="font-size: 11pt" color="#4D4D4D">s </font>
+              <font face="Symbol" color="#4D4D4D" size="2">- </font>
+              <font face="Arial" color="#4D4D4D" style="font-size: 10pt">s,estimate of </font>
+              <font face="Symbol" style="font-size: 10pt" color="#4D4D4D">s,</font><font style="font-size: 10pt" color="#4D4D4D" face="Arial"> may be 
+              calculated as t<sub>50%-</sub>t<sub>16%</sub></font></td>
+            </tr>
+            </table>
+        </div>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p style="margin:0 3px; line-height: 150%; ">
+        <font face="Verdana" color="#800080"><span style="font-size: 9pt"><b>
+        Table 2. Exponential Distribution</b></span></font><div align="left">
+          <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border: 1px solid #808080; margin-left: 3" bordercolor="#111111" width="70%" id="table14" height="1">
+            <tr>
+              <td width="36%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-top: 8; margin-bottom: 3; margin-left:3px; margin-right:3px" align="center">
+              <font face="Arial" style="font-size: 10pt" color="#CC0066">
+              Probability Density Function</font></p>
+              </td>
+              <td width="64%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-left: 3px; margin-right: 3px; margin-top: 3; margin-bottom: 8" align="center">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">f(t) =
+              </font>
+              <font color="#4D4D4D" style="font-size: 11pt" face="Symbol">l</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">e<sup>-</sup></font><sup><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">l</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">t</font></sup></td>
+            </tr>
+            <tr>
+              <td width="36%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-top: 8; margin-bottom: 3; margin-left:3px; margin-right:3px" align="center">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">
+              Cumulative Density Function</font></p>
+              </td>
+              <td width="64%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-left: 3px; margin-right: 3px; margin-top: 3; margin-bottom: 8" align="center">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">F(t) =
+              </font><font color="#4D4D4D" style="font-size: 11pt">1 - </font>
+              <font color="#4D4D4D" face="Arial" style="font-size: 11pt">e<sup>-</sup></font><sup><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">l</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">t</font></sup></td>
+            </tr>
+            <tr>
+              <td width="36%" bordercolor="#808080" bgcolor="#F7F7F7" height="30">
+              <p style="margin-top: 8; margin-bottom: 3; margin-left:3px; margin-right:3px" align="center">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">
+              Instantaneous Failure Rate</font></p>
+              </td>
+              <td width="64%" bordercolor="#808080" bgcolor="#F7F7F7" height="30">
+              <p style="margin-left: 3px; margin-right: 3px; margin-top: 3; margin-bottom: 8" align="center">
+              <font face="Symbol" style="font-size: 11pt" color="#4D4D4D">l</font><font face="Arial" color="#4D4D4D" style="font-size: 11pt">(t) 
+              = f(t)/(1-F(t))</font></td>
+            </tr>
+            <tr>
+              <td width="36%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="25">
+              <p style="margin:3 3px; ">
+              <font face="Arial" style="font-size: 10pt" color="#CC0066">Mean or 
+              MTBF</font><font face="Arial" color="#4D4D4D" style="font-size: 10pt">
+              </font></p>
+              </td>
+              <td width="64%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="25">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">t = 1/</font><font face="Symbol" style="font-size: 11pt" color="#4D4D4D">l</font></td>
+            </tr>
+          </table>
+        </div>
+        <o:p>
+        <p style="margin:0 3px; ">
+        <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font>
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <p style="margin-left: 3px; margin-top: 0; margin-bottom: 0">
+        <font face="Verdana" color="#800080"><span style="font-size: 9pt"><b>
+        Table 3. </b></span></font><b>
+        <font face="Verdana" style="font-size: 9pt" color="#800080">Lognormal 
+        Distribution</font></b></p><div align="left">
+          <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border: 1px solid #808080; margin-left: 3" bordercolor="#111111" width="70%" id="table12" height="1">
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-top: 8; margin-bottom: 3; margin-left:3px; margin-right:3px" align="center">
+              <font face="Arial" style="font-size: 10pt" color="#CC0066">
+              Probability Density Function</font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-left: 3px; margin-right: 3px; margin-top: 3; margin-bottom: 8" align="center">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">f(t) = 
+              e^{-0.5[(ln(t)-µ)/</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">s]<sup>2</sup>}
+              </font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">
+              / (</font><font color="#4D4D4D" face="Symbol" style="font-size: 11pt">s</font><font color="#4D4D4D" face="Arial" style="font-size: 11pt">t</font><font color="#4D4D4D" face="Symbol" style="font-size: 11pt">Ö<span style="text-decoration: overline">2p</span>)</font></td>
+            </tr>
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-top: 8; margin-bottom: 3; margin-left:3px; margin-right:3px" align="center">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">
+              Cumulative Density Function</font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-left: 3px; margin-right: 3px; margin-top: 3; margin-bottom: 8" align="center">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">F(t) = 
+              (1/[</font><font color="#4D4D4D" face="Symbol" style="font-size: 11pt">sÖ<span style="text-decoration: overline">(2p)</span>]) 
+              ò</font><sub><font color="#4D4D4D" face="Symbol" style="font-size: 7pt">0</font></sub><sup><font color="#4D4D4D" style="font-size: 11pt" face="Arial">t</font></sup><font color="#4D4D4D" face="Symbol" style="font-size: 11pt"> 
+              (1/</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">x)</font><font color="#4D4D4D" face="Symbol" style="font-size: 11pt"> </font>
+              <font color="#4D4D4D" face="Arial" style="font-size: 11pt">e^{-0.5[(ln(x)-µ)/</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">s]<sup>2</sup>}</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">dx</font></td>
+            </tr>
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-top: 8; margin-bottom: 3; margin-left:3px; margin-right:3px" align="center">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">
+              Instantaneous Failure Rate</font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-left: 3px; margin-right: 3px; margin-top: 3; margin-bottom: 8" align="center">
+              <font face="Symbol" style="font-size: 11pt" color="#4D4D4D">l</font><font face="Arial" color="#4D4D4D" style="font-size: 11pt">(t) 
+              = f(t)/(1-F(t))</font></td>
+            </tr>
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font face="Arial" style="font-size: 10pt" color="#CC0066">Median</font><font face="Arial" color="#4D4D4D" style="font-size: 10pt">
+              </font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">t = t<sub>50%</sub> 
+              = e</font><sup><font color="#4D4D4D" style="font-size: 11pt" face="Arial">µ</font></sup></td>
+            </tr>
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font face="Arial" style="font-size: 10pt" color="#CC0066">Mean</font><font face="Arial" color="#4D4D4D" style="font-size: 10pt">
+              </font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">t = e</font><font color="#4D4D4D" style="font-size: 11pt">^(</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">µ+</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">s<sup>2</sup>/2)</font></td>
+            </tr>
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font face="Arial" style="font-size: 10pt" color="#CC0066">Mode</font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">t = e</font><font color="#4D4D4D"><span style="font-size: 11pt">^(</span></font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">µ-</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">s<sup>2</sup>)</font></td>
+            </tr>
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">
+              Location Parameter</font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font color="#4D4D4D" face="Arial" style="font-size: 11pt">e</font><sup><font face="Arial" color="#4D4D4D" style="font-size: 11pt">µ</font></sup></td>
+            </tr>
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">Shape 
+              Parameter</font><font face="Symbol" style="font-size: 11pt" color="#4D4D4D"> </font>
+              <font face="Symbol" style="font-size: 11pt" color="#CC0066">s</font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font face="Symbol" style="font-size: 11pt" color="#4D4D4D">s - </font>
+              <font face="Arial" color="#4D4D4D" style="font-size: 10pt">
+              s,estimate of </font>
+              <font face="Symbol" style="font-size: 10pt" color="#4D4D4D">s,</font><font style="font-size: 10pt" color="#4D4D4D" face="Arial"> 
+              may be calculated as </font>
+				<p style="margin:3 3px; ">
+              <font style="font-size: 10pt" color="#4D4D4D" face="Arial"> 
+              ln(t<sub>50%</sub>/t<sub>16%</sub>)</font></td>
+            </tr>
+            </table>
+        </div>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p style="margin:0 3px; line-height: 150%; ">
+        <font face="Verdana" color="#800080"><span style="font-size: 9pt"><b>
+        Table 4. Weibull Distribution</b></span></font><div align="left">
+          <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border: 1px solid #808080; margin-left: 3" bordercolor="#111111" width="70%" id="table15" height="1">
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-top: 8; margin-bottom: 3; margin-left:3px; margin-right:3px" align="center">
+              <font face="Arial" style="font-size: 10pt" color="#CC0066">
+              Probability Density Function</font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-left: 3px; margin-right: 3px; margin-top: 3; margin-bottom: 8" align="center">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">f(t) =&nbsp;([</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">b</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">(t-</font><font face="Symbol" style="font-size: 11pt" color="#4D4D4D">g</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">)</font><font color="#4D4D4D" face="Symbol" style="font-size: 11pt"><sup>b-1</sup>]/[a<sup>b</sup>]) 
+              (</font><font color="#4D4D4D" face="Arial" style="font-size: 11pt">e^{-[(t-</font><font face="Symbol" style="font-size: 11pt" color="#4D4D4D">g</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">)/</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">a</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">]</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol"><sup>b</sup>})</font></td>
+            </tr>
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-top: 8; margin-bottom: 3; margin-left:3px; margin-right:3px" align="center">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">
+              Cumulative Density Function</font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-left: 3px; margin-right: 3px; margin-top: 3; margin-bottom: 8" align="center">
+              <font face="Arial" color="#4D4D4D" style="font-size: 11pt">F(t) = 
+              1 - e^{-[(t-</font><font face="Symbol" style="font-size: 11pt" color="#4D4D4D">g</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">)/</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">a</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">]</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol"><sup>b</sup>}</font></td>
+            </tr>
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-top: 8; margin-bottom: 3; margin-left:3px; margin-right:3px" align="center">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">
+              Instantaneous Failure Rate</font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" height="1">
+              <p style="margin-left: 3px; margin-right: 3px; margin-top: 3; margin-bottom: 8" align="center">
+              <font face="Symbol" style="font-size: 11pt" color="#4D4D4D">l</font><font face="Arial" color="#4D4D4D" style="font-size: 11pt">(t) 
+              = [</font><font color="#4D4D4D" style="font-size: 11pt" face="Symbol">b</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">(t-</font><font face="Symbol" style="font-size: 11pt" color="#4D4D4D">g</font><font color="#4D4D4D" style="font-size: 11pt" face="Arial">)</font><font color="#4D4D4D" face="Symbol" style="font-size: 11pt"><sup>b-1</sup>]/[a<sup>b</sup>]
+              </font></td>
+            </tr>
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">
+              Location Parameter</font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font face="Symbol" style="font-size: 11pt" color="#4D4D4D">a</font><font face="Arial" color="#4D4D4D" style="font-size: 11pt"> 
+              = t </font><font face="Arial" color="#4D4D4D" size="2">at 63.2% 
+              failure</font></td>
+            </tr>
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font face="Arial" color="#CC0066" style="font-size: 10pt">Shape 
+              Parameter</font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="1">
+              <p style="margin:3 3px; ">
+              <font face="Symbol" style="font-size: 11pt" color="#4D4D4D">b</font></td>
+            </tr>
+            <tr>
+              <td width="34%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="44">
+              <p style="margin:3 3px; ">
+              <font face="Arial" size="2" color="#CC0066">Time Delay</font><font face="Arial" color="#CC0066" style="font-size: 10pt"> 
+              Parameter</font></p>
+              </td>
+              <td width="66%" bordercolor="#808080" bgcolor="#F7F7F7" align="center" height="44">
+              <p style="margin:3 3px; ">
+              <font face="Symbol" style="font-size: 11pt" color="#4D4D4D">g</font><font style="font-size: 10pt" color="#4D4D4D" face="Arial">, </font>
+              <font style="font-size: 9pt" color="#4D4D4D" face="Arial">not used 
+              unless data do not fit the distribution without time delay</font></td>
+            </tr>
+          </table>
+        </div>
+		<p style="word-spacing: 0; margin-left: 3; margin-top: 0; margin-bottom: 0; margin-right:3px" align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;
+		&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; 
+		</font></p><o:p>
+		</o:p>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <p style="margin:0 3px; ">
+        <i><b>
+        <font face="Arial" style="font-size: 10pt" color="#CC0066">See 
+        also:</font><font face="Arial" style="font-size: 10pt" color="#444444"> </font></b>
+        <font face="Arial" style="font-size: 10pt" color="#444444">&nbsp;separate article on</font></i><font face="Arial" style="font-size: 10pt" color="#444444"> <a href="lifedist.htm">
+        <font color="#CC0066">Life Distributions</font></a></font><p style="margin:0 3px; ">
+        <font face="Arial" style="font-size: 10pt">&nbsp;&nbsp;</font><p style="margin:0 3px; ">
+        <font face="Arial" style="font-size: 10pt"><a href="index.html">HOME</a></font><p style="margin:0 3px; ">
+        <font face="Arial" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </font> <p style="margin:0 3px; ">
+            <font style="font-size: 10pt"><span style="mso-spacerun: yes"><font face="Arial" color="#007171">Copyright
+        </font><font color="#008080" face="Arial">© </font><font face="Arial" color="#007171">2004</font><font face="Arial" color="#008080">
+        </font><font face="Arial"><font color="#0000FF"><b>EESemi.com</b>.</font>
+        </font><font face="Arial" color="#007171">All Rights Reserved.</font></span></font><o:p><p style="margin-left: 3; margin-top:0; margin-bottom:0">
+            <font face="Arial" size="2" color="#007171">&nbsp;</font><p style="margin-left: 3; margin-top:0; margin-bottom:0">
+            <font face="Arial" size="2" color="#007171">&nbsp; </font>
+            <o:p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
+
+
+
+
+<table border="0" width="160" cellspacing="0" cellpadding="0" style="float: left">
+<tr>
+<td>
+<?php 
+include 'ads-4by4-amazon.php'; 
+?>        
+&nbsp;
+</td>
+</tr>
+</table>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </o:p>
+        <p style="margin-left: 3; margin-top:0; margin-bottom:0">
+            &nbsp;
+            </font></span></font></font></span></font></td>
+    </tr>
+  </table>
+  				</div>
+				</td>
+			</tr>
+		</table>
+		</div>
+		</td>
+    </tr>
+    <tr>
+    <td width="99%" height="19">
+    <span style="font-size: 12pt">&nbsp;&nbsp; </span>
+    </td>
+  	</tr>
+    </table>
+  </center>
+</div>
+
+</body>
+
+</html>

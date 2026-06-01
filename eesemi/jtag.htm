@@ -1,0 +1,733 @@
+<html>
+
+<head>
+						
+						
+						
+						
+<style type="text/css">
+@import url(http://www.google.com/cse/api/branding.css);
+</style>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Boundary Scan Testing; Joint Test Action Group - JTAG; IEEE 1149.1 </title>
+<style>
+<!--
+ table.MsoNormalTable
+	{mso-style-parent:"";
+	font-size:10.0pt;
+	font-family:"Times New Roman"}
+-->
+</style>
+</head>
+
+<body background="bg-home.jpg">
+
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" style="border-style:solid; border-width:1px; border-collapse: collapse" bordercolor="#0000FF" width="792" id="table6" height="138" bgcolor="#FFFFFF">
+    <tr>
+      <td width="699" height="109">
+            <a href="http://www.EESemi.com">
+            <img border="0" src="sfe-index-logo.jpg" width="792" height="132"></a></td>
+    </tr>
+    <tr>
+      <td width="699" height="8">
+      <span style="font-size: 5pt">&nbsp; </span></td>
+    </tr>
+    <tr>
+      <td width="792" height="19" valign="top">
+      <div align="center">
+		<table border="0" width="98%" cellspacing="0" cellpadding="0" id="table7">
+			<tr>
+				<td>
+				<div align="center">
+  <table border="0" cellpadding="0" style="border:0px solid #7979FF; border-collapse: collapse" bordercolor="#111111" width="700" id="table8" height="192">
+    <tr>
+      <td width="699" height="19">
+      <p style="margin-top: 0; margin-bottom: 0">&nbsp;</td>
+    </tr><tr>
+      <td width="700" height="73" bgcolor="#FFFFFF" valign="top">
+        <p style="margin:0 3px; ">
+        <font face="Arial" style="font-size: 18pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </font> </p>
+                       
+        
+        
+        
+        
+        
+                
+        
+      <o:p>
+                       
+        
+        
+        <!-- google_ad_section_start -->
+
+
+        
+        
+                
+        
+        <p style="margin:0 3px; line-height: 150%; ">
+        <font face="Arial" style="font-size: 14pt" color="#000080">Boundary-Scan 
+        Testing / JTAG Standard</font></p>
+                       
+        
+        
+        
+        
+        
+                
+        
+        <font face="Arial" color="#800080" style="font-size: 10pt">
+        <p style="margin:0 3px; " align="justify">
+        &nbsp;</p>
+		<p style="margin:0 3px; " align="justify">
+        <b>Boundary-Scan Testing</b></font><font face="verdana,georgia,arial,sans-serif" size="2"><span style="font-size: 10pt"><font face="Arial" color="#444444">, 
+        also known as the JTAG standard, or simply 
+        </font><font face="Arial" color="#CC0066">&quot;JTAG&quot;</font><font face="Arial" color="#444444">, 
+        refers to the</font><font face="Arial" color="#CC0066"> IEEE Standard 1149.1</font><font face="Arial" color="#444444">, which is a standard that defines a 
+        set of design rules for facilitating the testing, programming, and 
+        debugging of a semiconductor device at the chip, board, and systems 
+        level.&nbsp; The acronym &quot;JTAG&quot; stands for </font>
+        <font face="Arial" color="#CC0066">&quot;Joint Test Action Group&quot;</font><font face="Arial" color="#444444">, 
+        which is the consortium of North American and European companies that 
+        defined the standard.</font></span></font></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">The arrival 
+        of various surface mount technologies for semiconductor packaging more 
+        than two decades ago resulted in very dense board assemblies that are 
+        difficult to test or debug at component level, mainly because of the 
+        greater difficulty with which the components' external electrical 
+        connections could be accessed. Furthermore, the problem only got worse 
+        with time as surface-mount packages continued to shrink.</font></p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </font> </p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">
+        'Bed-of-nails'</font><font face="Arial" color="#444444" style="font-size: 10pt">
+        testing, which refers to the use of hardware, jigs, and fixtures to test 
+        a semiconductor device by accessing its pins directly, was no longer a 
+        practical option for 'modern' packages sprung from these newer 
+        technologies. The need to resolve problems associated with the 
+        testability of these surface-mount packages triggered the formation of 
+        the JTAG in 1985, and 
+        the subsequent definition of the boundary-scan testing standard.
+        </font> </p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </font> </p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
+
+
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">Boundary-scan 
+        testing basically involves </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">embedding</font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+        of special test circuits at chip level that would facilitate board-level 
+        testing of the chip and the board itself.&nbsp; These additional 
+        circuits allow </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">input </font>
+        <font face="Arial" color="#444444" style="font-size: 10pt">and </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">output </font>
+        <font face="Arial" color="#444444" style="font-size: 10pt">signals to be </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">scanned</font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+        into and out of the I/O circuits of a device in a </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">serial</font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+        manner, letting the device to be tested with a small number of 
+        accessible pins 
+        (just 4 pins, to be exact). An industry standard since 1990, the JTAG standard is now one of 
+        the most popular and widely-used Design for Test (DFT) techniques today.&nbsp; </font> 
+        </p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;
+        </font> </p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">The </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">benefits </font>
+        <font face="Arial" color="#444444" style="font-size: 10pt">offered by 
+        boundary-scan testing include: 1) significant reduction in the required 
+        number of physical test points on the board; 2) increased board 
+        component density; 3) corresponding reduction in costs associated with 
+        test fixtures; 4) shorter time-to-market; 5) on-board testing and 
+        programming capabilities; 6) reduced in-circuit testing time; and 7) 
+        higher production efficiency.</font></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">A  </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">JTAG-compliant</font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+        device has: 1) a </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">boundary cell</font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+        on each of its I/O pins; 2) a </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">'scan path'</font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+        or 'scan chain' that connects these boundary cells together in 
+        serial 
+        manner; 3) 4 or 5  </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">additional pins</font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+        to handle the JTAG signals; 4) a  </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">Test Access Port (TAP)</font><font face="Arial" color="#444444" style="font-size: 10pt"> for controlling 
+        the JTAG signals used in boundary-scan testing; and 5) a 16-state TAP 
+        controller or</font><font face="Arial" color="#CC0066" style="font-size: 10pt"> 
+        state machine</font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+        that controls the states of operation of the boundary-scan testing. </font> </p>
+        
+        
+        
+        
+        
+        
+        
+        
+        <!-- google_ad_section_end -->
+
+
+        
+        
+        
+        
+        
+        
+        
+        
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;
+        </font>
+                       
+        
+        
+        
+        
+        
+                
+        
+        <font face="Arial" style="font-size: 10pt">
+                       
+        
+        
+        
+        
+        
+                
+        
+        &nbsp; </font> </p>
+        <o:p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </o:p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">Under normal 
+        operating conditions, the boundary cells simply let the input/output 
+        signals pass through them, into and out of the I/O pins. When the device 
+        is placed under the</font><font face="Arial" color="#CC0066" style="font-size: 10pt"> 
+        'Test' mode</font><font face="Arial" color="#444444" style="font-size: 10pt">, 
+        however, these boundary cells become 'active' for use in the direct 
+        capture or control of the signals going into and out of the I/O 
+        circuitries of the device, circumventing the device's normal input and 
+        output connections. The boundary cells basically consist of multiplexed 
+        shift-registers that are located around the chip's periphery (hence the 
+        name 'boundary' cell). </font> </p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </font> </p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">The test 
+        access port is simply a serial interface port defined by the IEEE 1449.1 
+        to consist of at least 4 pins (optionally 5) in a JTAG-compliant device. 
+        These 5 pins, which are used to implement JTAG's serial protocol for 
+        boundary-scan testing, are: 1) the</font><font face="Arial" color="#CC0066" style="font-size: 10pt"> TCK</font><font face="Arial" color="#444444" style="font-size: 10pt"> pin, which is a clock signal that 
+        synchronizes the internal tap controller state machine operations; 2) 
+        the</font><font face="Arial" color="#CC0066" style="font-size: 10pt"> TMS</font><font face="Arial" color="#444444" style="font-size: 10pt"> pin, which is a mode select signal sampled at the rising edge of TCK to determine the next machine state; 3) the  </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">TDI </font>
+        <font face="Arial" color="#444444" style="font-size: 10pt">pin, which is the 
+        data input pin; 4) the</font><font face="Arial" color="#CC0066" style="font-size: 10pt"> TDO</font><font face="Arial" color="#444444" style="font-size: 10pt"> pin, which is the data output pin; and 5) the</font><font face="Arial" color="#CC0066" style="font-size: 10pt"> TRST </font>
+        <font face="Arial" color="#444444" style="font-size: 10pt">pin (optional), which is an asynchronous reset pin.</font></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">The properties and 
+        capabilities of a JTAG-compliant device's boundary-scan logic are 
+        defined by an external file known as the </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">Boundary-Scan Description 
+        Language (BSDL)</font><font face="Arial" color="#444444" style="font-size: 10pt"> file.&nbsp; BSDL files are provided by the manufacturers 
+        of&nbsp; JTAG-compliant devices for use in the definition and generation 
+        of algorithms for the boundary-scan operation of their devices.</font></p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </font></p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">Testing </font>
+                       
+        
+        
+        
+        
+        
+                
+        
+        <font face="Arial" color="#444444" style="font-size: 10pt">a device or 
+        circuit board using boundary-scan technology may consist of the following 
+        basic steps: 1) the external tester applies diagnostic input signals to 
+        the input pins of the device; 2) the boundary-scan cells at the input 
+        pins capture the input signals; 3) 
+        the input data are scanned or serially shifted into the core via the TDI pin; 
+        4) the resulting output data are serially shifted out of the core via the TDO 
+        pin; and 5)&nbsp; the external tester compares the output data  of the device 
+        against expected results.&nbsp; Board defects 
+        such as open pins, missing devices, misoriented components, or dead 
+        devices can be found by such simple tests.</font></p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </font> </p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">Boundary-scan technology has 
+        also been used by some companies in</font><font face="Arial" color="#CC0066" style="font-size: 10pt"> software debugging </font>
+        <font face="Arial" color="#444444" style="font-size: 10pt">functions for 
+        CPU's. Using proprietary techniques complemented by adequate on-chip 
+        support, the JTAG interface was utilized to download code from a CPU, 
+        execute it, and examine register and memory values.&nbsp; These 
+        functions are enough to handle most of the low-level debugging tasks 
+        expected from a typical software debugger. Aside from debugging, the 
+        JTAG interface can also be used for </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">emulation</font><font face="Arial" color="#444444" style="font-size: 10pt">, </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">benchmarking</font><font face="Arial" color="#444444" style="font-size: 10pt">, 
+        and </font>
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">profiling</font><font face="Arial" color="#444444" style="font-size: 10pt"> 
+        applications. </font></p>
+		<p class="MsoPlainText" style="margin-left: 3px; margin-right: 2px; margin-top: 0; margin-bottom: 0" align="justify">
+		<font face="Arial" size="2" color="#444444">&nbsp;&nbsp;&nbsp; </font>
+		
+		
+		
+		
+		
+		
+        
+        
+        
+        
+<br/>        
+        
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square-Responsive1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9756981457055926"
+     data-ad-slot="7642054283"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>        
+        
+<br/>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		</p>        
+        
+        
+        
+        
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#CC0066" style="font-size: 10pt">Primary References:</font><font face="Arial" color="#444444" style="font-size: 10pt"> <a href="http://www.jtag.com">
+      http://www.jtag.com</a>;<font color="#444444"> </font>
+      <a href="http://www.embedded.com">http://www.embedded.com</a>;
+      <a href="http://www.xilinx.com">http://www.xilinx.com</a>;
+      <a href="http://www.corelis.com">http://www.corelis.com</a></font></p>
+                       
+        
+        
+        
+        
+        
+                
+        
+
+
+
+
+
+
+
+        <o:p>
+		<p style="word-spacing: 0; margin-left: 3; margin-top: 0; margin-bottom: 0; margin-right:3px" align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; </font></p><o:p>
+		</o:p>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </o:p>
+      <p style="margin:0 3px; ">
+      <b><font face="Arial" color="#000080" style="font-size: 10pt">See Also:&nbsp; </font></b>
+		<font style="font-size: 10pt" face="Arial"><a href="etest.htm">
+        Electrical Testing</a>;&nbsp; <a href="bist.htm">BIST</a></font></p>
+        <p style="margin:0 3px; " align="justify">
+        <font face="Arial" color="#444444" style="font-size: 10pt">&nbsp;&nbsp; </font></p>
+		<p style="margin:0 3px; ">
+        <font face="Arial" style="font-size: 10pt"><a href="index.html">HOME</a></font><p style="margin:0 3px; ">
+        <font face="Arial" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </font> <p style="margin:0 3px; ">
+            <font style="font-size: 10pt"><span style="mso-spacerun: yes"><font face="Arial" color="#007171">
+            Copyright
+        </font><font color="#008080" face="Arial">© </font>
+            <font color="#007171" face="Arial">2005</font><font face="Arial" color="#008080">
+        </font><font face="Arial"><font color="#0000FF"><b>
+            www.EESemi.com</b>.</font>
+        </font><font face="Arial" color="#007171"></font><font face="Arial" color="#007171">All Rights Reserved.</font></span></font><o:p><p style="margin-left: 3; margin-top:0; margin-bottom:0">
+            <font face="Arial" size="2" color="#007171">&nbsp;</font><p style="margin-left: 3; margin-top:0; margin-bottom:0">
+            <font face="Arial" size="2" color="#007171">&nbsp; </font>
+            <o:p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
+
+
+
+
+<table border="0" width="160" cellspacing="0" cellpadding="0" style="float: left">
+<tr>
+<td>
+<?php 
+include 'ads-4by4-amazon.php'; 
+?>        
+&nbsp;
+</td>
+</tr>
+</table>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </o:p>
+        <p style="margin-left: 3; margin-top:0; margin-bottom:0">
+            &nbsp;
+            </font></span></font></font></span></font></td>
+    </tr>
+  </table>
+  				</div>
+				</td>
+			</tr>
+		</table>
+		</div>
+		</td>
+    </tr>
+    <tr>
+    <td width="99%" height="19">
+    <span style="font-size: 12pt">&nbsp;&nbsp; </span>
+    </td>
+  	</tr>
+    </table>
+  </center>
+</div>
+
+</body>
+
+</html>

@@ -1,0 +1,551 @@
+<html>
+
+<head>
+						
+						
+						
+						
+<style type="text/css">
+@import url(http://www.google.com/cse/api/branding.css);
+</style>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Common Test Parameters for Analog-to-Digital Converters: ADC's</title>
+</head>
+
+<body background="bg-home.jpg">
+
+<div align="center">
+  <center>
+  <table border="0" cellpadding="0" style="border-style:solid; border-width:1px; border-collapse: collapse" bordercolor="#0000FF" width="792" id="table8" height="138" bgcolor="#FFFFFF">
+    <tr>
+      <td width="699" height="109">
+            <a href="http://www.EESemi.com">
+            <img border="0" src="sfe-index-logo.jpg" width="792" height="132"></a></td>
+    </tr>
+    <tr>
+      <td width="699" height="8">
+      <span style="font-size: 5pt">&nbsp; </span></td>
+    </tr>
+    <tr>
+      <td width="792" height="19" valign="top">
+      <div align="center">
+		<table border="0" width="98%" cellspacing="0" cellpadding="0" id="table9">
+			<tr>
+				<td>
+				<div align="center">
+  <table border="0" cellpadding="0" cellspacing="0" style="border:0px solid #C0C0C0; border-collapse: collapse" bordercolor="#111111" width="727" id="table10" height="203">
+    <tr>
+      <td width="699" height="19">
+      <p style="margin-top: 0; margin-bottom: 0">&nbsp;</td>
+    </tr><tr>
+      <td width="727" height="73" valign="top">
+        <p style="margin:0 3px; ">
+        <font style="font-size: 14pt" face="Arial">&nbsp;&nbsp; </font>
+        <p style="margin:0 3px; ">
+      <font face="Arial" style="font-size: 14pt" color="#000080">Common Test 
+		Parameters for ADC's</font><p style="margin-left: 3; margin-top: 0; margin-bottom: 0; margin-right:3px" align="justify">
+        <font face="Arial" style="font-size: 14pt">&nbsp;&nbsp;&nbsp;
+        </font></p>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
+
+
+        <table border="1" cellspacing="0" bordercolor="#FF99FF" width="520" id="table15" bgcolor="#EAEAFF" height="132" style="border-collapse: collapse; margin-left:3; margin-top:4" cellpadding="0">
+			<tr>
+				<td width="154" height="20" bgcolor="#FDFBFF" align="center">
+				<p style="margin-left: 3; margin-right: 3px"><b>
+				<font face="Arial" color="#CC0066" style="font-size: 10pt">Test 
+				Parameter</font></b></td>
+				<td width="58" height="20" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px"><b>
+				<font face="Arial" color="#CC0066" style="font-size: 10pt">Unit</font></b></td>
+				<td width="304" height="20" align="justify" bgcolor="#F4FCFF">
+				<p style="margin-left: 3; margin-right: 3px"><b>
+				<font face="Arial" color="#CC0066" style="font-size: 10pt">
+				Typical Description</font></b></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">
+				Resolution</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">Bits</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; " align="justify">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">If an 
+				ADC has n bits, then its resolution is 2<sup>n</sup>, which is 
+				the number of states or codes that it can divide (or &quot;resolve&quot;) 
+				the analog input into. The higher the number of bits, the better 
+				is the resolution of the ADC, and the more precise the 
+				representation of each state will be.&nbsp;
+      			</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">
+				Unipolar Offset</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">LSB</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">The 
+				first transition of an ADC should occur at an analog value that 
+				is 1/2 LSB above the analog common.&nbsp; The deviation of the 
+				ADC's actual first transition from this ideal level is known as 
+				the unipolar offset.</font><p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Example of an Actual Spec: +/- 1 LSB max</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">
+				Bipolar Offset or</font><p style="margin-left: 3; margin-right: 3px; margin-top:0">
+				<font face="Arial" color="#000080" style="font-size: 9pt">
+				Bipolar Zero Error</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">LSB</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">In the 
+				bipolar mode, the major carry transition from '011111111111' to 
+				'100000000000' should occur at an analog input value that is 1/2 
+				LSB below the analog common. The deviation of the actual value 
+				of this transition at 25 deg C from the ideal level is known as 
+				the Bipolar Offset or Bipolar Zero Error.&nbsp;
+				</font>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Example of an Actual Spec: +/- 1 LSB max</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">
+				Non-Linearity, Differential (DNL)</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">Bits 
+				</font></p>
+				<p style="margin-top: 0; margin-left:3px; margin-right:3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">(with 
+				no missing codes)</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">In an 
+				ADC, code transitions are 1 LSB apart.&nbsp; Maximum deviation 
+				from this ideal value is known as differential non-linearity. It 
+				is often expressed in terms of the number of bits guaranteed to 
+				have no missing codes.</font><p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Example of an Actual Spec: 10 Bits min</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">
+				Non-Linearity, Integral (INL)</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">LSB</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">The 
+				transfer function of an ADC is a straight line from &quot;zero&quot; to 
+				&quot;full scale&quot;.&nbsp; The maximum deviation of a code from this 
+				straight line is the ADC's integral non-linearity.</font><p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Example of an Actual Spec: +/- 2 LSB's max</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px; margin-bottom:0">
+				<font face="Arial" color="#000080" style="font-size: 9pt">Analog 
+				Input Range or Full-Scale Range</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">V</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; " align="justify">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">This 
+				is the difference between the maximum and minimum analog input 
+				values specified for the ADC.</font><p style="margin:3 3px; " align="justify">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Examples of Actual Specs: </font>
+				<p style="margin:3 3px; " align="justify">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">0V to 
+				+10 V, Unipolar Mode; </font>
+				<p style="margin:3 3px; " align="justify">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">-5V to 
+				+5V, Bipolar Mode</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">Logic 
+				Output
+      			</font>
+				<p style="margin-left: 3; margin-right: 3px; margin-top:0">
+				<font face="Arial" color="#000080" style="font-size: 9pt">
+				(Current Sink)</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">mA</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">This 
+				is the amount of current that the digital output of an ADC can 
+				sink when it is at Logic &quot;0&quot;.</font><p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Example of an Actual Spec: </font>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">3.2 mA 
+				when Vout = 0.4V max</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">Logic 
+				Output
+      			</font>
+				<p style="margin-left: 3; margin-right: 3px; margin-top:0">
+				<font face="Arial" color="#000080" style="font-size: 9pt">
+				(Current Source)</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">mA</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">This 
+				is the amount of current that the digital output of an ADC can 
+				source when it is at Logic &quot;1&quot;.</font><p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Example of an Actual Spec: </font>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">0.5 mA 
+				when Vout = 2.4V max</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">Logic 
+				Input Voltage </font>
+				<p style="margin-left: 3; margin-right: 3px; margin-top:0">
+				<font face="Arial" color="#000080" style="font-size: 9pt">(Logic 
+				&quot;1&quot;)</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">V</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">This 
+				is the minimum voltage that the digital inputs of the ADC are 
+				guaranteed to recognize as a Logic &quot;1&quot;.</font><p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				&nbsp;Example of an Actual Spec: 2.0 V min.</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">Logic 
+				Input Voltage </font>
+				<p style="margin-left: 3; margin-right: 3px; margin-top:0">
+				<font face="Arial" color="#000080" style="font-size: 9pt">(Logic 
+				&quot;0&quot;)</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">V</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">This 
+				is the maximum voltage that the digital inputs of the ADC are 
+				guaranteed to recognize as a Logic &quot;0&quot;.</font><p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Example of an Actual Spec: 0.8 V max.</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">
+				Conversion Time</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">µsec</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin: 3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">This 
+				is the time required by an ADC to make a complete measurement.</font></p>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Example of an Actual Spec: </font>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">15 
+				µsec min.; 25 µsec typ.; 40 µsec max.</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">+ 
+				Power Supply (V+)</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">V</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">This 
+				is the voltage range that can be used for the positive supply of 
+				the ADC.</font><p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Example of an Actual Spec: </font>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">+4.5V 
+				min.; +5.0V typ.; +7.0V max.</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">- 
+				Power Supply (V-)</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">V</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">This 
+				is the voltage range that can be used for the negative supply of 
+				the ADC.</font><p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Example of an Actual Spec: </font>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">-12.0V 
+				min.; -15V typ.; -16.5V max.</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">Analog 
+				Input Impedance</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">k</font><font color="#800080" face="Symbol" style="font-size: 9pt">W</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">This 
+				is the dynamic load presented by an ADC to its analog input 
+				source.&nbsp; </font>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Example of an Actual Spec: </font>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">3 
+				</font><font color="#4D4D4D">
+				<font face="Arial" style="font-size: 9pt">k</font><font face="Symbol" style="font-size: 9pt">W</font></font><font face="Arial" color="#4D4D4D" style="font-size: 9pt"> 
+      			min.; 5 </font><font color="#4D4D4D">
+				<font face="Arial" style="font-size: 9pt">k</font><font face="Symbol" style="font-size: 9pt">W</font></font><font face="Arial" color="#4D4D4D" style="font-size: 9pt"> 
+				typ.; 7 </font><font color="#4D4D4D"><font face="Arial" style="font-size: 9pt">
+				k</font><font face="Symbol" style="font-size: 9pt">W</font></font><font face="Arial" color="#4D4D4D" style="font-size: 9pt"> 
+      			max.</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">Gain 
+				Error</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font color="#800080" face="Arial" style="font-size: 9pt">LSB</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">This 
+				is the deviation of the actual difference between the first and 
+				last transitions of an ADC from the ideal difference between its 
+				first and last transitions.&nbsp; The last transition of the ADC 
+				should occur at an analog input value that is 1.5 LSB's below 
+				the nominal full scale. </font>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Example of an Actual Spec: </font>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">+/- 2 
+				LSB's typ.; +/-4 LSB's max.</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">Power 
+				Supply Rejection</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font color="#800080" face="Arial" style="font-size: 9pt">LSB</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin: 3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">This 
+				is the maximum change in the full-scale transition point of the 
+				ADC due to a deviation of its power supply voltage from its 
+				nominal value. This is measured at full-scale.</font></p>
+				<p style="margin: 3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Examples of&nbsp; Actual Specs: </font></p>
+				<p style="margin: 3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">+/- 1 
+				LSB max for V+ = +4.5V to +5.5V;</font></p>
+				<p style="margin: 3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">+/- 1 
+				LSB max for V- = -12.6V to -11.4V</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">
+				Signal-to-Noise Ratio (SNR)</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">dB</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; " align="justify">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">This 
+				is the ratio of the measured signal at the output of the ADC to 
+				the measured noise. 'Signal' is the RMS magnitude of the 
+				fundamental signal while noise is the RMS sum of all 
+				non-fundamental signals up to half the sampling frequency, 
+				excluding the DC signal.&nbsp; </font>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Example of an Actual Spec: </font>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">44 dB 
+				typ. for Fin=1 MHz and Ain=+/-1V</font></td>
+			</tr>
+			<tr>
+				<td width="154" height="19" bgcolor="#FDFBFF">
+				<p style="margin-left: 3; margin-right: 3px">
+				<font face="Arial" color="#000080" style="font-size: 9pt">Total 
+				Harmonic Distortion (THD)</font></td>
+				<td width="58" height="19" bgcolor="#F9F9F9" align="center">
+				<p style="margin-left: 3px; margin-right: 3px">
+				<font face="Arial" color="#800080" style="font-size: 9pt">% or 
+				dB</font></td>
+				<td width="304" height="19" bgcolor="#F4FCFF" align="justify">
+				<p style="margin:3 3px; " align="justify">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">This 
+				is the ratio of the rms sum of the first six harmonic components 
+				to the rms value of a full-scale input signal, expressed either 
+				in % or dB. The aliased component is used for input signals or 
+				harmonics that are above the Nyquist frequency. The Nyquist 
+				frequency is the input signal frequency that is 1/2 the sampling 
+				frequency of the ADC.</font><p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">
+				Examples of Actual Specs: 
+				</font>
+				<p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">-88 dB 
+				typ.; -80 dB max.</font><p style="margin:3 3px; ">
+				<font face="Arial" color="#4D4D4D" style="font-size: 9pt">0.004% 
+				typ.; 0.010% max.</font></td>
+			</tr>
+		</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+<table border="0" width="160" cellspacing="0" cellpadding="0" style="float: left">
+<tr>
+<td>
+<?php 
+include 'ads-2.php'; 
+?>        
+&nbsp;
+</td>
+</tr>
+</table>
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <p style="word-spacing: 0; margin-left: 3; margin-top: 0; margin-bottom: 0; margin-right:3px" align="justify">
+        <font color="#444444" style="font-size: 10pt" face="Arial">&nbsp; &nbsp;&nbsp;&nbsp; </font></p>
+            <p style="margin:0 3px; "><b>
+      <font color="#000080" style="font-size: 10pt" face="Arial">See Also:&nbsp; </font></b>
+			<font face="Arial" style="font-size: 10pt"><a href="adc.htm">ADC's</a>;&nbsp;
+			<a href="testparams_dac.htm">
+        	DAC Parameters</a>;&nbsp; </font><a href="etest.htm">
+      		<font style="font-size: 10pt" face="Arial">Electrical Test</font></a></p>
+		<p style="margin: 0 3px"><font face="Arial" style="font-size: 10pt">&nbsp;&nbsp;
+		</font></p>
+		<o:p>
+            <p style="margin:0 3px; ">
+        <font face="Arial" style="font-size: 10pt"><a href="index.html">HOME</a></font><p style="margin:0 3px; ">
+        <font face="Arial" style="font-size: 10pt">&nbsp;&nbsp;&nbsp;&nbsp;
+        </font> <p style="margin:0 3px; ">
+            <font style="font-size: 10pt"><span style="mso-spacerun: yes"><font face="Arial" color="#007171">
+			Copyright
+        </font><font color="#008080" face="Arial">© </font><font face="Arial" color="#007171">
+            2001-2005 </font><font face="Arial" color="#008080">&nbsp;</font><font face="Arial"><font color="#0000FF"><b>EESemi.com</b>.</font>
+        </font><font face="Arial" color="#007171">All Rights Reserved.</font></span></font></td>
+    </tr>
+  </table>
+  				</div>
+				</td>
+			</tr>
+		</table>
+		</div>
+		</td>
+    </tr>
+    <tr>
+    <td width="99%" height="19">
+    <span style="font-size: 12pt">&nbsp;&nbsp; </span>
+    </td>
+  	</tr>
+    </table>
+  </center>
+</div>
+
+</body>
+
+</html>
