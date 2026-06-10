@@ -42,9 +42,9 @@ if (!$user) {
 $user_name = $user['name'];
 $user_role = $user['role'];
 
-// Restrict to teachers only
-if ($user_role !== 'teacher') {
-    die("Access restricted to teachers only.");
+// Restrict to teachers and admins only
+if ($user_role !== 'teacher' && $user_role !== 'admin') {
+    die("Access restricted to teachers and administrators only.");
 }
 
 // Get test details

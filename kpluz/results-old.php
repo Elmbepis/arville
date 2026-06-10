@@ -52,25 +52,65 @@ $subject_order = [
     'Arts and Design Track'
 ];
 
-// Get unique subjects only (no lessons)
-$subjects_only = [];
-$subject_result = $conn->query("SELECT DISTINCT subject FROM tests ORDER BY subject");
-while ($row = $subject_result->fetch_assoc()) {
-    $subjects_only[] = $row['subject'];
+// Get all tests grouped by subject
+$tests_by_subject = [];
+$total_tests = 0;
+
+$test_result = $conn->query("
+    SELECT id, subject, lesson, topic FROM tests 
+    ORDER BY subject, lesson
+");
+while ($row = $test_result->fetch_assoc()) {
+    $subject = $row['subject'];
+    if (!isset($tests_by_subject[$subject])) {
+        $tests_by_subject[$subject] = [];
+    }
+    $tests_by_subject[$subject][] = $row;
+    $total_tests++;
 }
 
 // Reorder subjects according to custom order
-$ordered_subjects = [];
+$ordered_tests_by_subject = [];
 foreach ($subject_order as $ordered_subject) {
-    if (in_array($ordered_subject, $subjects_only)) {
-        $ordered_subjects[] = $ordered_subject;
+    if (isset($tests_by_subject[$ordered_subject])) {
+        $ordered_tests_by_subject[$ordered_subject] = $tests_by_subject[$ordered_subject];
+        unset($tests_by_subject[$ordered_subject]);
     }
 }
 // Add any remaining subjects not in the custom order at the end
-foreach ($subjects_only as $subject) {
-    if (!in_array($subject, $ordered_subjects)) {
-        $ordered_subjects[] = $subject;
+foreach ($tests_by_subject as $subject => $tests) {
+    $ordered_tests_by_subject[$subject] = $tests;
+}
+
+// Get all students
+$students = [];
+$student_stmt = $conn->prepare("SELECT id, name FROM users WHERE role = 'student' ORDER BY name");
+$student_stmt->execute();
+$student_result = $student_stmt->get_result();
+while ($student = $student_result->fetch_assoc()) {
+    $students[$student['id']] = $student['name'];
+}
+
+// Get all test results for all students
+$test_results = [];
+$results_stmt = $conn->prepare("
+    SELECT user_id, subject, lesson, score, total_questions, percentage 
+    FROM test_results 
+    ORDER BY user_id, subject, lesson
+");
+$results_stmt->execute();
+$results_data = $results_stmt->get_result();
+
+while ($row = $results_data->fetch_assoc()) {
+    $key = $row['subject'] . '|' . $row['lesson'];
+    if (!isset($test_results[$key])) {
+        $test_results[$key] = [];
     }
+    $test_results[$key][$row['user_id']] = [
+        'score' => $row['score'],
+        'total_questions' => $row['total_questions'],
+        'percentage' => $row['percentage']
+    ];
 }
 
 $conn->close();
@@ -148,7 +188,7 @@ $conn->close();
         flex-wrap: wrap;
     }
     
-    .subject-count {
+    .test-count {
         background: #28a745;
         color: white;
         padding: 5px 15px;
@@ -157,60 +197,75 @@ $conn->close();
         font-weight: normal;
     }
     
-    /* Subjects Section */
-    .subjects-section {
+    /* Tests Section */
+    .tests-section {
         margin-bottom: 50px;
     }
     
+    .subject-tests {
+        margin-bottom: 40px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #003366;
+    }
+    
+    .subject-title {
+        font-size: 1.3em;
+        color: #003366;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+    
     /* 4-Column Grid */
-    .subjects-grid {
+    .tests-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 20px;
         margin-top: 15px;
     }
     
-    .subject-card {
+    .test-card {
         background: white;
         border: 1px solid #e1e5e9;
         border-radius: 8px;
-        padding: 25px;
+        padding: 20px;
         text-align: center;
         transition: transform 0.3s, box-shadow 0.3s;
-        min-height: 200px;
+        min-height: 180px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        cursor: pointer;
     }
     
-    .subject-card:hover {
+    .test-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
     
-    .subject-icon {
-        font-size: 3em;
-        margin-bottom: 15px;
+    .test-icon {
+        font-size: 2.5em;
+        margin-bottom: 10px;
         color: #003366;
     }
     
-    .subject-name {
-        font-size: 1.1em;
-        color: #003366;
-        margin-bottom: 20px;
+    .test-lesson {
+        font-size: 1em;
+        color: #0066cc;
+        margin-bottom: 8px;
         font-weight: bold;
-        line-height: 1.3;
+    }
+    
+    .test-topic {
+        font-size: 0.85em;
+        color: #555;
+        line-height: 1.4;
+        margin-bottom: 15px;
         flex-grow: 1;
     }
     
-    .button-group {
-        display: flex;
-        gap: 10px;
-        justify-content: center;
-        margin-top: 10px;
-    }
-    
-    .results-btn {
+    .view-results-btn {
         display: inline-block;
         padding: 8px 16px;
         background: #003366;
@@ -219,29 +274,15 @@ $conn->close();
         border-radius: 5px;
         transition: background 0.3s;
         font-weight: bold;
-        font-size: 0.85em;
-        flex: 1;
+        font-size: 0.9em;
+        width: auto;
+        max-width: 80%;
+        margin: 0 auto;
     }
     
-    .results-btn:hover {
+    .view-results-btn:hover {
         background: #0055aa;
         color: white;
-    }
-    
-    .results-btn-students {
-        background: #28a745;
-    }
-    
-    .results-btn-students:hover {
-        background: #218838;
-    }
-    
-    .results-btn-topics {
-        background: #17a2b8;
-    }
-    
-    .results-btn-topics:hover {
-        background: #138496;
     }
     
     .no-results {
@@ -300,13 +341,13 @@ $conn->close();
 
     /* Responsive design */
     @media (max-width: 1200px) {
-        .subjects-grid {
+        .tests-grid {
             grid-template-columns: repeat(3, 1fr);
         }
     }
     
     @media (max-width: 900px) {
-        .subjects-grid {
+        .tests-grid {
             grid-template-columns: repeat(2, 1fr);
         }
         
@@ -316,7 +357,7 @@ $conn->close();
     }
     
     @media (max-width: 600px) {
-        .subjects-grid {
+        .tests-grid {
             grid-template-columns: 1fr;
         }
     }
@@ -337,28 +378,33 @@ $conn->close();
     </div>
 
     <div class="dashboard-content">
-        <div class="subjects-section">
+        <div class="tests-section">
             <h2 class="section-title">
-                Student Results by Subject
-                <span class="subject-count">Total: <?= count($ordered_subjects) ?> Subject(s)</span>
+                Student Test Results by Subject
+                <span class="test-count">Total: <?= $total_tests ?> Test(s)</span>
             </h2>
             
-            <?php if (!empty($ordered_subjects)): ?>
-                <div class="subjects-grid">
-                    <?php foreach ($ordered_subjects as $subject): ?>
-                        <div class="subject-card">
-                            <div class="subject-icon">&#128214;</div>
-                            <div class="subject-name"><?= htmlspecialchars($subject) ?></div>
-                            <div class="button-group">
-                                <a href="results2.php?subject=<?= urlencode($subject) ?>&id=students" class="results-btn results-btn-students">By Students</a>
-                                <a href="results2.php?subject=<?= urlencode($subject) ?>&id=topics" class="results-btn results-btn-topics">By Topics</a>
-                            </div>
+            <?php if (!empty($ordered_tests_by_subject)): ?>
+                <?php foreach ($ordered_tests_by_subject as $subject => $tests): ?>
+                    <div class="subject-tests">
+                        <div class="subject-title">
+                            <?= htmlspecialchars($subject) ?>
                         </div>
-                    <?php endforeach; ?>
-                </div>
+                        <div class="tests-grid">
+                            <?php foreach ($tests as $test): ?>
+                                <div class="test-card">
+                                    <div class="test-icon">&#128202;</div>
+                                    <div class="test-lesson"><?= htmlspecialchars($test['lesson']) ?></div>
+                                    <div class="test-topic"><?= htmlspecialchars($test['topic']) ?></div>
+                                    <a href="results-students.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="view-results-btn">View Student Results</a>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
             <?php else: ?>
                 <div class="no-results">
-                    <p>No subjects available at the moment. Please check back later.</p>
+                    <p>No tests available at the moment. Please check back later.</p>
                 </div>
             <?php endif; ?>
         </div>
