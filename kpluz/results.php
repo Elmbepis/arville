@@ -34,9 +34,9 @@ if (!$user) {
 $user_name = $user['name'];
 $user_role = $user['role'];
 
-// Restrict to teachers only
-if ($user_role !== 'teacher') {
-    die("Access restricted to teachers only.");
+// Restrict to teachers and admins only
+if ($user_role !== 'teacher' && $user_role !== 'admin') {
+    die("Access restricted to teachers and administrators only.");
 }
 
 // Define custom subject order
@@ -120,7 +120,7 @@ $conn->close();
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>KPluz SHS - Student Results (Teacher View)</title>
+  <title>KPluz SHS - Student Results (Teacher/Admin View)</title>
   <style>
     * {
         box-sizing: border-box;
@@ -372,7 +372,7 @@ $conn->close();
     <div class="user-welcome">
         <div class="welcome-text">Welcome, <?= htmlspecialchars($user_name) ?>!</div>
         <div class="user-info">
-            KPluz SHS - Student Results (Teacher View)
+            KPluz SHS - Student Results (<?= ucfirst($user_role) ?> View)
             <span class="role-badge"><?= ucfirst($user_role) ?></span>
         </div>
     </div>
