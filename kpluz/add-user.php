@@ -10,10 +10,49 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || $_SESSI
     die("Access denied. Admins only.");
 }
 
+require 'offset.php';
+
 // Database connection
 $conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
+}
+
+// Function to compute password from username
+function computePassword($username) {
+    global $offset;
+    
+    // Ensure username has at least 8 characters
+    $username = (string)$username;
+    while (strlen($username) < 8) {
+        $username .= ' ';
+    }
+    
+    $ord0 = ord($username[0]);
+    $ord1 = ord($username[1]);
+    $ord2 = ord($username[2]);
+    $ord3 = ord($username[3]);
+    $ord4 = ord($username[4]);
+    $ord5 = ord($username[5]);
+    $ord6 = ord($username[6]);
+    $ord7 = ord($username[7]);
+    
+    $sub4 = is_numeric($username[4]) ? intval($username[4]) : $ord4;
+    $sub5 = is_numeric($username[5]) ? intval($username[5]) : $ord5;
+    $sub6 = is_numeric($username[6]) ? intval($username[6]) : $ord6;
+    $sub7 = is_numeric($username[7]) ? intval($username[7]) : $ord7;
+    
+    $kpluzbase = $offset + 9876 + 
+                 $ord0 * $ord2 * 318 + 
+                 $ord1 * $ord3 * 1113 + 
+                 $sub4 * $sub5 * 825 + 
+                 $sub6 * $sub7 * 115 + 
+                 $ord0 * $sub6 * 712 + 
+                 $sub7 * $sub7 * 16 * 1989;
+    
+    $validpass11 = $kpluzbase + $ord0 * $ord4 * ($sub5 + 1) * 1989 + 416;
+    
+    return (string)$validpass11;
 }
 
 $message = '';
@@ -25,10 +64,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $username = !empty($_POST['username']) ? trim($_POST['username']) : null;
     $plain_password = $_POST['password'];
     $role = $_POST['role'];
+    $grade = !empty($_POST['grade']) ? trim($_POST['grade']) : null;
+    $school = !empty($_POST['school']) ? trim($_POST['school']) : null;
     
     // Validation
-    if (empty($name) || empty($plain_password)) {
-        $message = "Name and password are required.";
+    if (empty($name)) {
+        $message = "Name is required.";
         $message_type = "error";
     } else {
         // Check if email already exists (if email is provided)
@@ -60,21 +101,37 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
         
         if (empty($message)) {
-            // Generate password hash
-            $hashed_password = password_hash($plain_password, PASSWORD_DEFAULT);
-            
-            // Insert new user (email can be NULL)
-            $insert_stmt = $conn->prepare("INSERT INTO users (name, email, username, password, role, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
-            $insert_stmt->bind_param("sssss", $name, $email, $username, $hashed_password, $role);
-            
-            if ($insert_stmt->execute()) {
-                $message = "User created successfully!";
-                $message_type = "success";
+            // Determine password: if blank, compute from username; otherwise hash the provided password
+            if (empty($plain_password) && !empty($username)) {
+                // Generate computed password
+                $hashed_password = null; // NULL for computed password accounts
+                $computed_password = computePassword($username);
+                $password_note = " (Computed password: " . $computed_password . ")";
+            } elseif (!empty($plain_password)) {
+                // Hash the provided password
+                $hashed_password = password_hash($plain_password, PASSWORD_DEFAULT);
+                $password_note = "";
             } else {
-                $message = "Error: " . $conn->error;
+                // No username and no password - error
+                $message = "Either password or username is required to generate credentials.";
                 $message_type = "error";
             }
-            $insert_stmt->close();
+            
+            if (empty($message)) {
+                // Insert new user with grade and school fields
+                $insert_stmt = $conn->prepare("INSERT INTO users (name, email, username, password, role, grade, school, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+                $insert_stmt->bind_param("sssssss", $name, $email, $username, $hashed_password, $role, $grade, $school);
+                
+                if ($insert_stmt->execute()) {
+                    $display_password = isset($computed_password) ? $computed_password : $plain_password;
+                    $message = "User created successfully!" . ($password_note ?? "") . "\nPassword: " . $display_password;
+                    $message_type = "success";
+                } else {
+                    $message = "Error: " . $conn->error;
+                    $message_type = "error";
+                }
+                $insert_stmt->close();
+            }
         }
     }
 }
@@ -154,6 +211,13 @@ $conn->close();
         color: #666;
     }
     
+    .note {
+        font-size: 0.8em;
+        color: #666;
+        margin-top: 5px;
+        font-style: italic;
+    }
+    
     input[type="text"],
     input[type="email"],
     input[type="password"],
@@ -199,6 +263,7 @@ $conn->close();
         margin-bottom: 20px;
         text-align: center;
         font-weight: bold;
+        white-space: pre-line;
     }
     
     .error {
@@ -258,6 +323,16 @@ $conn->close();
     .logout-btn:hover {
         background: #c82333;
     }
+    
+    .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 0;
+    }
+    
+    .form-row .form-group {
+        flex: 1;
+    }
   </style>
 </head>
 <body>
@@ -273,12 +348,12 @@ $conn->close();
         <h2>Add New User</h2>
         
         <?php if ($message): ?>
-            <div class="message <?= $message_type ?>"><?= htmlspecialchars($message) ?></div>
+            <div class="message <?= $message_type ?>"><?= nl2br(htmlspecialchars($message)) ?></div>
         <?php endif; ?>
 
         <form method="POST">
             <div class="form-group">
-                <label for="name">Full Name</label>
+                <label for="name">Full Name *</label>
                 <input type="text" id="name" name="name" required placeholder="Enter full name">
             </div>
             
@@ -288,22 +363,39 @@ $conn->close();
             </div>
             
             <div class="form-group">
-                <label for="username">Username <span class="optional">(optional)</span></label>
-                <input type="text" id="username" name="username" placeholder="Leave blank for email login only">
+                <label for="username">Username <span class="optional">(required for computed password)</span></label>
+                <input type="text" id="username" name="username" placeholder="Enter username">
+                <div class="note">If password is left blank, a computed password will be generated from this username.</div>
             </div>
             
             <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required placeholder="Enter password">
+                <label for="password">Password <span class="optional">(leave blank for computed password)</span></label>
+                <input type="password" id="password" name="password" placeholder="Enter password or leave blank for computed">
             </div>
             
             <div class="form-group">
-                <label for="role">Role</label>
+                <label for="role">Role *</label>
                 <select id="role" name="role" required>
                     <option value="student">Student</option>
                     <option value="teacher">Teacher</option>
                     <option value="admin">Admin</option>
                 </select>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="grade">Grade Level <span class="optional">(optional)</span></label>
+                    <select id="grade" name="grade">
+                        <option value="">-- Select grade --</option>
+                        <option value="11">Grade 11</option>
+                        <option value="12">Grade 12</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="school">School <span class="optional">(optional)</span></label>
+                    <input type="text" id="school" name="school" placeholder="Enter school name">
+                </div>
             </div>
             
             <button type="submit" class="submit-btn">Create User</button>
