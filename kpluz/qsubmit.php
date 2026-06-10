@@ -124,8 +124,25 @@ if (isset($_GET['ajax_get_questions']) && isset($_GET['subject']) && isset($_GET
     while ($row = $result->fetch_assoc()) {
         $questions[] = $row;
     }
+    
+    // Get test owner for this subject/lesson
+    $test_owner = null;
+    $owner_stmt = $conn->prepare("SELECT teacher FROM tests WHERE subject = ? AND lesson = ? LIMIT 1");
+    $owner_stmt->bind_param("ss", $subject, $lesson);
+    $owner_stmt->execute();
+    $owner_result = $owner_stmt->get_result();
+    if ($owner_result->num_rows > 0) {
+        $test_data = $owner_result->fetch_assoc();
+        $test_owner = $test_data['teacher'];
+    }
+    $owner_stmt->close();
+    
     header('Content-Type: application/json');
-    echo json_encode($questions);
+    echo json_encode([
+        'questions' => $questions,
+        'test_owner' => $test_owner,
+        'current_user' => $user_name
+    ]);
     $conn->close();
     exit();
 }
@@ -776,7 +793,12 @@ function loadQuestions() {
     
     fetch(`?ajax_get_questions=1&subject=${encodeURIComponent(subject)}&lesson=${encodeURIComponent(lesson)}`)
         .then(response => response.json())
-        .then(questions => {
+        .then(data => {
+            const questions = data.questions;
+            const test_owner = data.test_owner;
+            const current_user = data.current_user;
+            const canEdit = (test_owner === current_user);
+            
             if (questions.length === 0) {
                 document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">No questions found for this subject and lesson. Add some above!</div>';
                 return;
@@ -803,7 +825,7 @@ function loadQuestions() {
                 
                 choicesHtml += '</ul>';
                 
-                // Add solution AFTER the wrong answers (below wrong3)
+                // Add solution after the wrong answers
                 if (q.solution && q.solution.trim() !== '') {
                     let solutionText = q.solution;
                     solutionText = formatSolutionWithSemicolons(solutionText);
@@ -820,11 +842,18 @@ function loadQuestions() {
                     <td><span class="type-badge ${typeClass}">${escapeHtml(q.type)}</span></td>
                     <td class="question-text-cell">${escapeHtml(q.question)}</td>
                     <td class="choices-cell">${choicesHtml}</td>
-                    <td class="action-icons">
-                        <button class="edit-btn" onclick="editQuestion(${q.id})">&#9999;&#65039; Edit</button>
-                        <button class="delete-btn" onclick="deleteQuestion(${q.id}, '${escapeHtml(q.question)}')">&#128465;&#65039; Delete</button>
-                    </td>
-                </tr>`;
+                    <td class="action-icons">`;
+                
+                // Only show Edit/Delete buttons if current user owns the test
+                if (canEdit) {
+                    html += `<button class="edit-btn" onclick="editQuestion(${q.id})">&#9999;&#65039; Edit</button>
+                             <button class="delete-btn" onclick="deleteQuestion(${q.id}, '${escapeHtml(q.question)}')">&#128465;&#65039; Delete</button>`;
+                } else {
+                    html += `<span style="color: #999; font-size: 0.85em;">No access</span>`;
+                }
+                
+                html += `</td>
+                <tr>`;
             });
             html += '</table>';
             document.getElementById('questionsContainer').innerHTML = html;
@@ -834,7 +863,6 @@ function loadQuestions() {
         });
 }
         
-        // JavaScript function to format solution with semicolons
 // JavaScript function to format solution with semicolons
 function formatSolutionWithSemicolons(solution) {
     if (!solution || solution.trim() === '') return '';

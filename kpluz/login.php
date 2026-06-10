@@ -6,6 +6,8 @@ error_reporting(E_ALL);
 session_name('KPLUZ_SESSION');
 session_start();
 
+require 'offset.php';
+
 // Database connection
 $conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz");
 if ($conn->connect_error) {
@@ -15,72 +17,167 @@ if ($conn->connect_error) {
 $error = '';
 $success = '';
 
-// Handle login form submission
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['login'])) {
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
+// Function to compute password from username (Grade 11)
+function computePassword($username) {
+    global $offset;
     
-    // Check if user exists
-    $stmt = $conn->prepare("SELECT id, name, password, role FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows === 1) {
-        $user = $result->fetch_assoc();
-        
-        // Verify password (assuming passwords are hashed)
-        if (password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_name'] = $user['name'];
-            $_SESSION['user_role'] = $user['role'];
-            $_SESSION['logged_in'] = true;
-            
-            // Redirect to dashboard or previous page
-            header("Location: dashboard.php");
-            exit();
-        } else {
-            $error = "Invalid email or password.";
-        }
-    } else {
-        $error = "Invalid email or password.";
+    // Ensure username has at least 8 characters
+    $username = (string)$username;
+    while (strlen($username) < 8) {
+        $username .= ' ';
     }
+    
+    $ord0 = ord($username[0]);
+    $ord1 = ord($username[1]);
+    $ord2 = ord($username[2]);
+    $ord3 = ord($username[3]);
+    $ord4 = ord($username[4]);
+    $ord5 = ord($username[5]);
+    $ord6 = ord($username[6]);
+    $ord7 = ord($username[7]);
+    
+    $sub4 = is_numeric($username[4]) ? intval($username[4]) : $ord4;
+    $sub5 = is_numeric($username[5]) ? intval($username[5]) : $ord5;
+    $sub6 = is_numeric($username[6]) ? intval($username[6]) : $ord6;
+    $sub7 = is_numeric($username[7]) ? intval($username[7]) : $ord7;
+    
+    $kpluzbase = $offset + 9876 + 
+                 $ord0 * $ord2 * 318 + 
+                 $ord1 * $ord3 * 1113 + 
+                 $sub4 * $sub5 * 825 + 
+                 $sub6 * $sub7 * 115 + 
+                 $ord0 * $sub6 * 712 + 
+                 $sub7 * $sub7 * 16 * 1989;
+    
+    $validpass11 = $kpluzbase + $ord0 * $ord4 * ($sub5 + 1) * 1989 + 416;
+    
+    return (string)$validpass11;
 }
 
-// Handle registration form submission
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['register'])) {
-    $name = trim($_POST['reg_name']);
-    $email = trim($_POST['reg_email']);
-    $password = $_POST['reg_password'];
-    $confirm_password = $_POST['reg_confirm_password'];
-    $role = 'student'; // Default role for all new registrations (changed from 'trainee')
+// Handle login form submission
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['login'])) {
+    $email_or_username = trim($_POST['email']);
+    $password = $_POST['password'];
     
-    // Validation
-    if (empty($name) || empty($email) || empty($password)) {
-        $error = "All fields are required.";
-    } elseif ($password !== $confirm_password) {
-        $error = "Passwords do not match.";
-    } elseif (strlen($password) < 6) {
-        $error = "Password must be at least 6 characters long.";
-    } else {
-        // Check if email already exists
-        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    // Check if input is email (contains @) or username
+    if (strpos($email_or_username, '@') !== false) {
+        // EMAIL LOGIN - only check hashed password
+        $email = $email_or_username;
+        
+        $stmt = $conn->prepare("SELECT id, name, password, role, first_login, expiration FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
         
-        if ($result->num_rows > 0) {
-            $error = "Email already registered.";
-        } else {
-            // Insert new user with default 'student' role
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("ssss", $name, $email, $hashed_password, $role);
+        if ($result->num_rows === 1) {
+            $user = $result->fetch_assoc();
             
-            if ($stmt->execute()) {
-                $success = "Registration successful! Please login.";
+            // Check expiration
+            if ($user['expiration'] && strtotime($user['expiration']) < time()) {
+                $error = "Your account has expired. Please contact the administrator.";
+            } elseif (!is_null($user['password']) && password_verify($password, $user['password'])) {
+                // Successful login
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_name'] = $user['name'];
+                $_SESSION['user_role'] = $user['role'];
+                $_SESSION['logged_in'] = true;
+                
+                // Set first login if null
+                if (is_null($user['first_login'])) {
+                    $now = date('Y-m-d H:i:s');
+                    $update_stmt = $conn->prepare("UPDATE users SET first_login = ?, expiration = DATE_ADD(?, INTERVAL 1 YEAR) WHERE id = ?");
+                    $update_stmt->bind_param("ssi", $now, $now, $user['id']);
+                    $update_stmt->execute();
+                }
+                
+                header("Location: dashboard.php");
+                exit();
             } else {
-                $error = "Registration failed. Please try again.";
+                $error = "Invalid email or password.";
+            }
+        } else {
+            $error = "Invalid email or password.";
+        }
+    } else {
+        // USERNAME LOGIN
+        $username = $email_or_username;
+        
+        // Check if user exists in database
+        $stmt = $conn->prepare("SELECT id, name, password, role, first_login, expiration FROM users WHERE username = ?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 1) {
+            $user = $result->fetch_assoc();
+            
+            // Check expiration
+            if ($user['expiration'] && strtotime($user['expiration']) < time()) {
+                $error = "Your account has expired. Please contact the administrator.";
+            } else {
+                $login_success = false;
+                
+                // Try hashed password first (for accounts created via add-user.php)
+                if (!is_null($user['password']) && password_verify($password, $user['password'])) {
+                    $login_success = true;
+                }
+                
+                // Only try computed password if password is NULL in database
+                if (!$login_success && is_null($user['password'])) {
+                    $computed = computePassword($username);
+                    if ($password == $computed) {
+                        $login_success = true;
+                    }
+                }
+                
+                if ($login_success) {
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_name'] = $user['name'];
+                    $_SESSION['user_role'] = $user['role'];
+                    $_SESSION['logged_in'] = true;
+                    
+                    // Set first login if null
+                    if (is_null($user['first_login'])) {
+                        $now = date('Y-m-d H:i:s');
+                        $update_stmt = $conn->prepare("UPDATE users SET first_login = ?, expiration = DATE_ADD(?, INTERVAL 1 YEAR) WHERE id = ?");
+                        $update_stmt->bind_param("ssi", $now, $now, $user['id']);
+                        $update_stmt->execute();
+                    }
+                    
+                    header("Location: dashboard.php");
+                    exit();
+                } else {
+                    $error = "Invalid username or password.";
+                }
+            }
+        } else {
+            // User doesn't exist - check if computed password matches for auto-creation
+            $computed = computePassword($username);
+            if ($password == $computed) {
+                // Auto-create account
+                $name = $username;
+                $email = $username . '@kpluz.edu.ph';
+                $role = 'student';
+                $now = date('Y-m-d H:i:s');
+                $expiration = date('Y-m-d', strtotime('+1 year'));
+                
+                $insert_stmt = $conn->prepare("INSERT INTO users (name, email, username, password, role, first_login, expiration, created_at) VALUES (?, ?, ?, NULL, ?, ?, ?, NOW())");
+                $insert_stmt->bind_param("ssssss", $name, $email, $username, $role, $now, $expiration);
+                
+                if ($insert_stmt->execute()) {
+                    $new_id = $conn->insert_id;
+                    $_SESSION['user_id'] = $new_id;
+                    $_SESSION['user_name'] = $name;
+                    $_SESSION['user_role'] = $role;
+                    $_SESSION['logged_in'] = true;
+                    
+                    header("Location: dashboard.php");
+                    exit();
+                } else {
+                    $error = "Invalid username or password.";
+                }
+            } else {
+                $error = "Invalid username or password.";
             }
         }
     }
@@ -123,41 +220,24 @@ $conn->close();
     .form-tabs {
         display: flex;
         background: #003366;
+        height: 12px;
     }
     
-    .tab-button {
-        flex: 1;
-        padding: 15px;
-        background: none;
-        border: none;
-        color: white;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-    
-    .tab-button.active {
+    .light-blue-bar {
         background: #0055aa;
-    }
-    
-    .tab-button:hover {
-        background: #004488;
+        height: 8px;
+        width: 100%;
     }
     
     .tab-content {
-        display: none;
         padding: 40px;
-    }
-    
-    .tab-content.active {
-        display: block;
     }
     
     h2 {
         color: #003366;
         margin-bottom: 30px;
         font-size: 24px;
+        text-align: center;
     }
     
     .form-group {
@@ -236,65 +316,21 @@ $conn->close();
         text-align: center;
         color: #666;
     }
-    
-    .switch-text {
-        color: #003366;
-        cursor: pointer;
-        text-decoration: underline;
-    }
-    
-    .switch-text:hover {
-        color: #0055aa;
-    }
-    
-    .role-notice {
-        background: #e6f7ff;
-        border: 1px solid #91d5ff;
-        border-radius: 6px;
-        padding: 12px;
-        margin-bottom: 20px;
-        text-align: center;
-        color: #003366;
-        font-size: 0.9em;
-    }
   </style>
-  <script>
-    function showTab(tabName) {
-        // Hide all tabs
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.classList.remove('active');
-        });
-        
-        // Show selected tab
-        document.getElementById(tabName + '-tab').classList.add('active');
-        document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        showTab('login'); // Default to login tab
-    });
-  </script>
 </head>
 <body>
   <div class="login-container">
-    <!-- Header with tiled background and logo -->
     <div class="header">
         <img src="images/kpluz_logo.png" alt="KPluz Logo" class="header-logo">
     </div>
 
-    <div class="form-tabs">
-        <button class="tab-button active" onclick="showTab('login')">Login</button>
-        <button class="tab-button" onclick="showTab('register')">Register</button>
-    </div>
+    <div class="form-tabs"></div>
+    <div class="light-blue-bar"></div>
 
-    <!-- Login Tab -->
-    <div id="login-tab" class="tab-content active">
+    <div class="tab-content">
         <h2>Welcome Back</h2>
         
-        <?php if ($error && isset($_POST['login'])): ?>
+        <?php if ($error): ?>
             <div class="message error"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
         
@@ -304,8 +340,8 @@ $conn->close();
 
         <form method="POST">
             <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required placeholder="Enter your email">
+                <label for="email">Email or Username</label>
+                <input type="text" id="email" name="email" required placeholder="Enter your email or username">
             </div>
             
             <div class="form-group">
@@ -317,49 +353,7 @@ $conn->close();
         </form>
         
         <div class="form-footer">
-            Don't have an account? <span class="switch-text" onclick="showTab('register')">Register here</span>
-        </div>
-    </div>
-
-    <!-- Register Tab -->
-    <div id="register-tab" class="tab-content">
-        <h2>Create Account</h2>
-        
-        <div class="role-notice">
-            <strong>Note:</strong> All new accounts are created as <strong>Student</strong> by default.<br>
-            Contact an administrator for teacher or admin access.
-        </div>
-        
-        <?php if ($error && isset($_POST['register'])): ?>
-            <div class="message error"><?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
-
-        <form method="POST">
-            <div class="form-group">
-                <label for="reg_name">Full Name</label>
-                <input type="text" id="reg_name" name="reg_name" required placeholder="Enter your full name">
-            </div>
-            
-            <div class="form-group">
-                <label for="reg_email">Email Address</label>
-                <input type="email" id="reg_email" name="reg_email" required placeholder="Enter your email">
-            </div>
-            
-            <div class="form-group">
-                <label for="reg_password">Password</label>
-                <input type="password" id="reg_password" name="reg_password" required placeholder="At least 6 characters">
-            </div>
-            
-            <div class="form-group">
-                <label for="reg_confirm_password">Confirm Password</label>
-                <input type="password" id="reg_confirm_password" name="reg_confirm_password" required placeholder="Re-enter your password">
-            </div>
-            
-            <button type="submit" name="register" class="submit-btn">Create Account</button>
-        </form>
-        
-        <div class="form-footer">
-            Already have an account? <span class="switch-text" onclick="showTab('login')">Login here</span>
+            Accounts are provided by the system administrator.
         </div>
     </div>
   </div>
