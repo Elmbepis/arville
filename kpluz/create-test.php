@@ -113,67 +113,87 @@ $test_created = false;
 $test_exists_error = '';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Creating new test - need grade, subject, lesson, topic, teacher
-    $grade = $_POST["new_grade"];
-    $subject = $_POST["new_subject_select"];
-    $lesson = trim($_POST["new_lesson"]);
-    $topic = trim($_POST["new_topic"]);
-    $teacher = $user_name;
-    
-    // CHECK IF TEST ALREADY EXISTS (same subject, lesson, AND topic)
-    $check_test_stmt = $conn->prepare("SELECT id FROM tests WHERE subject = ? AND lesson = ? AND topic = ?");
-    $check_test_stmt->bind_param("sss", $subject, $lesson, $topic);
-    $check_test_stmt->execute();
-    $check_test_result = $check_test_stmt->get_result();
-    
-    if ($check_test_result->num_rows > 0) {
-        $test_exists_error = "Test with Subject '$subject', Lesson '$lesson', and Topic '$topic' already exists!";
+    // Check if required POST variables exist
+    if (isset($_POST["new_grade"]) && isset($_POST["new_subject_select"]) && 
+        isset($_POST["new_lesson"]) && isset($_POST["new_topic"])) {
+        
+        // Creating new test - need grade, subject, lesson, topic, teacher
+        $grade = $_POST["new_grade"];
+        $subject = $_POST["new_subject_select"];
+        $lesson = !empty($_POST["new_lesson"]) ? trim($_POST["new_lesson"]) : '';
+        $topic = !empty($_POST["new_topic"]) ? trim($_POST["new_topic"]) : '';
+        $teacher = $user_name;
+        
+        if (!empty($lesson) && !empty($topic)) {
+            // CHECK IF TEST ALREADY EXISTS (same subject, lesson, AND topic)
+            $check_test_stmt = $conn->prepare("SELECT id FROM tests WHERE subject = ? AND lesson = ? AND topic = ?");
+            $check_test_stmt->bind_param("sss", $subject, $lesson, $topic);
+            $check_test_stmt->execute();
+            $check_test_result = $check_test_stmt->get_result();
+            
+            if ($check_test_result->num_rows > 0) {
+                $test_exists_error = "Test with Subject '$subject', Lesson '$lesson', and Topic '$topic' already exists!";
+            } else {
+                // Insert the new test into the tests table
+                $insert_test = $conn->prepare("INSERT INTO tests (grade, subject, lesson, topic, teacher) VALUES (?, ?, ?, ?, ?)");
+                $insert_test->bind_param("sssss", $grade, $subject, $lesson, $topic, $teacher);
+                if ($insert_test->execute()) {
+                    $test_created = true;
+                }
+                $insert_test->close();
+            }
+            $check_test_stmt->close();
+            
+            // Only proceed with question submission if no test duplicate error
+            if (empty($test_exists_error)) {
+                $type = $_POST["type"];
+                $question_text = trim($_POST["question"]);
+                $correct = $_POST["correct_answer"];
+                $solution = $_POST["solution"] ?? '';
+                
+                if (($subject == 'Math' || $subject == 'Science') && empty($solution)) {
+                    $solution = '';
+                }
+                
+                if ($type == "FB") {
+                    $wrong1 = "";
+                    $wrong2 = "";
+                    $wrong3 = "";
+                } elseif ($type == "TF") {
+                    $wrong1 = isset($_POST['wrong_answer1']) ? $_POST['wrong_answer1'] : '';
+                    $wrong2 = "";
+                    $wrong3 = "";
+                } else {
+                    $wrong1 = isset($_POST['wrong_answer1']) ? $_POST['wrong_answer1'] : '';
+                    $wrong2 = isset($_POST['wrong_answer2']) ? $_POST['wrong_answer2'] : '';
+                    $wrong3 = isset($_POST['wrong_answer3']) ? $_POST['wrong_answer3'] : '';
+                }
+                
+                // For new test, insert into questions table (without topic column if it doesn't exist)
+                // Check if topic column exists in questions table
+                $check_column = $conn->query("SHOW COLUMNS FROM questions LIKE 'topic'");
+                if ($check_column->num_rows > 0) {
+                    // Topic column exists
+                    $stmt = $conn->prepare("INSERT INTO questions (subject, lesson, topic, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->bind_param("ssssssssss", $subject, $lesson, $topic, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
+                } else {
+                    // Topic column does not exist
+                    $stmt = $conn->prepare("INSERT INTO questions (subject, lesson, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->bind_param("sssssssss", $subject, $lesson, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
+                }
+                
+                if ($stmt->execute()) {
+                    $submitted = true;
+                } else {
+                    $error = "Error submitting question: " . $conn->error;
+                }
+                $stmt->close();
+            }
+        } else {
+            $error = "Lesson and Topic are required fields.";
+        }
     } else {
-        // Insert the new test into the tests table
-        $insert_test = $conn->prepare("INSERT INTO tests (grade, subject, lesson, topic, teacher) VALUES (?, ?, ?, ?, ?)");
-        $insert_test->bind_param("sssss", $grade, $subject, $lesson, $topic, $teacher);
-        if ($insert_test->execute()) {
-            $test_created = true;
-        }
-        $insert_test->close();
-    }
-    $check_test_stmt->close();
-    
-    // Only proceed with question submission if no test duplicate error
-    if (empty($test_exists_error)) {
-        $type = $_POST["type"];
-        $question_text = trim($_POST["question"]);
-        $correct = $_POST["correct_answer"];
-        $solution = $_POST["solution"] ?? '';
-        
-        if (($subject == 'Math' || $subject == 'Science') && empty($solution)) {
-            $solution = '';
-        }
-        
-        if ($type == "FB") {
-            $wrong1 = "";
-            $wrong2 = "";
-            $wrong3 = "";
-        } elseif ($type == "TF") {
-            $wrong1 = isset($_POST['wrong_answer1']) ? $_POST['wrong_answer1'] : '';
-            $wrong2 = "";
-            $wrong3 = "";
-        } else {
-            $wrong1 = isset($_POST['wrong_answer1']) ? $_POST['wrong_answer1'] : '';
-            $wrong2 = isset($_POST['wrong_answer2']) ? $_POST['wrong_answer2'] : '';
-            $wrong3 = isset($_POST['wrong_answer3']) ? $_POST['wrong_answer3'] : '';
-        }
-        
-        // For new test, topic is always included
-        $stmt = $conn->prepare("INSERT INTO questions (subject, lesson, topic, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssssssss", $subject, $lesson, $topic, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
-        
-        if ($stmt->execute()) {
-            $submitted = true;
-        } else {
-            $error = "Error submitting question: " . $conn->error;
-        }
-        $stmt->close();
+        $error = "All test information fields are required.";
     }
 }
 
@@ -292,22 +312,22 @@ $conn->close();
         resize: vertical;
     }
     
-.submit-btn {
-    padding: 12px 24px;
-    border: none;
-    background: #28a745;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.3s;
-    margin-top: 20px;
-    width: 280px;
-    font-weight: bold;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
+    .submit-btn {
+        padding: 12px 24px;
+        border: none;
+        background: #28a745;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s;
+        margin-top: 20px;
+        width: 280px;
+        font-weight: bold;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
     
     .submit-btn:hover { 
         background: #218838; 
@@ -602,7 +622,7 @@ $conn->close();
                     <div class="form-row">
                         <div class="form-group">
                             <label>Lesson Name: <span class="required">*</span></label>
-                            <select name="new_lesson" id="new_lesson_select" class="new-test-lesson-select" required disabled>
+                            <select name="new_lesson" id="new_lesson_select" required disabled>
                                 <option value="">-- First select a subject --</option>
                             </select>
                         </div>
