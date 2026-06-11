@@ -1,9 +1,10 @@
 <?php
 session_name('KPLUZ_SESSION');
 session_start();
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't display errors in output
+ini_set('log_errors', 1);
+ini_set('error_log', dirname(__FILE__) . '/php_errors.log');
 
 // Check if user is logged in
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
@@ -70,6 +71,13 @@ if (!$user) {
 $user_name = $user['name'];
 $user_role = $user['role'];
 $is_kpluz = ($user_name === 'KPluz');
+
+// Check if topic column exists in questions table
+$has_topic_column = false;
+$check_column = $conn->query("SHOW COLUMNS FROM questions LIKE 'topic'");
+if ($check_column && $check_column->num_rows > 0) {
+    $has_topic_column = true;
+}
 
 // Fetch existing subject, lesson, topic combinations from tests table
 $tests = [];
@@ -138,8 +146,13 @@ if (isset($_GET['ajax_get_questions']) && isset($_GET['subject']) && isset($_GET
         $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3, solution FROM questions WHERE subject = ? AND lesson = ? ORDER BY id");
         $stmt->bind_param("ss", $subject, $lesson);
     } else {
-        $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3, solution FROM questions WHERE subject = ? AND lesson = ? AND topic = ? ORDER BY id");
-        $stmt->bind_param("sss", $subject, $lesson, $topic);
+        if ($has_topic_column) {
+            $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3, solution FROM questions WHERE subject = ? AND lesson = ? AND topic = ? ORDER BY id");
+            $stmt->bind_param("sss", $subject, $lesson, $topic);
+        } else {
+            $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3, solution FROM questions WHERE subject = ? AND lesson = ? ORDER BY id");
+            $stmt->bind_param("ss", $subject, $lesson);
+        }
     }
     $stmt->execute();
     $result = $stmt->get_result();
@@ -147,6 +160,11 @@ if (isset($_GET['ajax_get_questions']) && isset($_GET['subject']) && isset($_GET
         $questions[] = $row;
     }
     $stmt->close();
+    
+    // Clear any output buffers
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
     
     echo json_encode([
         'questions' => $questions,
@@ -173,17 +191,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET['ajax_add_question'])) 
     $wrong3 = $_POST['wrong3'] ?? '';
     
     // Check if question already exists
-    $check_stmt = $conn->prepare("SELECT id FROM questions WHERE subject = ? AND lesson = ? AND topic = ? AND question = ?");
-    $check_stmt->bind_param("ssss", $subject, $lesson, $topic, $question_text);
+    if ($has_topic_column) {
+        $check_stmt = $conn->prepare("SELECT id FROM questions WHERE subject = ? AND lesson = ? AND topic = ? AND question = ?");
+        $check_stmt->bind_param("ssss", $subject, $lesson, $topic, $question_text);
+    } else {
+        $check_stmt = $conn->prepare("SELECT id FROM questions WHERE subject = ? AND lesson = ? AND question = ?");
+        $check_stmt->bind_param("sss", $subject, $lesson, $question_text);
+    }
     $check_stmt->execute();
     $check_result = $check_stmt->get_result();
     
     if ($check_result->num_rows > 0) {
         echo json_encode(['success' => false, 'error' => 'Question already exists for this test!']);
     } else {
-        // Check if topic column exists
-        $check_column = $conn->query("SHOW COLUMNS FROM questions LIKE 'topic'");
-        if ($check_column && $check_column->num_rows > 0) {
+        if ($has_topic_column) {
             $insert_stmt = $conn->prepare("INSERT INTO questions (subject, lesson, topic, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $insert_stmt->bind_param("ssssssssss", $subject, $lesson, $topic, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
         } else {
@@ -735,12 +756,13 @@ $conn->close();
   </style>
   <script>
         const isKpluz = <?php echo $is_kpluz ? 'true' : 'false'; ?>;
+        const hasTopicColumn = <?php echo $has_topic_column ? 'true' : 'false'; ?>;
         let currentSubject = '';
         let currentLesson = '';
         let currentTopic = '';
         let currentTestOwner = '';
         
-        console.log('Page loaded. isKpluz:', isKpluz);
+        console.log('Page loaded. isKpluz:', isKpluz, 'hasTopicColumn:', hasTopicColumn);
         
         function updateLessonOptions() {
             const subject = document.getElementById('subjectSelect').value;
@@ -756,10 +778,10 @@ $conn->close();
             }
             
             const tests = <?php echo json_encode($tests); ?>;
-            console.log('All tests:', tests);
+            console.log('All tests count:', tests.length);
             
             const filteredLessons = tests.filter(test => test.subject === subject);
-            console.log('Filtered lessons for subject:', filteredLessons);
+            console.log('Filtered lessons for subject:', filteredLessons.length);
             
             if (filteredLessons.length === 0) {
                 lessonSelect.disabled = true;
@@ -789,7 +811,7 @@ $conn->close();
             
             const parts = lessonTopicValue.split('|');
             const lesson = parts[0];
-            const topic = parts[1];
+            const topic = parts[1] || '';
             
             console.log('Extracted - Lesson:', lesson, 'Topic:', topic);
             
@@ -799,7 +821,7 @@ $conn->close();
             
             document.getElementById('questionsContainer').innerHTML = '<div class="loading">Loading questions...</div>';
             
-            // Build URL with absolute path
+            // Build URL
             const url = window.location.pathname + `?ajax_get_questions=1&subject=${encodeURIComponent(subject)}&lesson=${encodeURIComponent(lesson)}&topic=${encodeURIComponent(topic)}`;
             console.log('Fetch URL:', url);
             
@@ -809,7 +831,17 @@ $conn->close();
                     if (!response.ok) {
                         throw new Error('HTTP error ' + response.status);
                     }
-                    return response.json();
+                    return response.text(); // Get as text first to see what's returned
+                })
+                .then(text => {
+                    console.log('Raw response:', text.substring(0, 500)); // Log first 500 chars
+                    try {
+                        const data = JSON.parse(text);
+                        return data;
+                    } catch (e) {
+                        console.error('JSON parse error:', e);
+                        throw new Error('Invalid JSON response. Server returned: ' + text.substring(0, 200));
+                    }
                 })
                 .then(data => {
                     console.log('Data received:', data);
@@ -887,7 +919,7 @@ $conn->close();
                         html += `</div>
                             </tr>`;
                     });
-                    html += '</table>';
+                    html += '</tr>';
                     document.getElementById('questionsContainer').innerHTML = html;
                 })
                 .catch(error => {
@@ -955,7 +987,6 @@ $conn->close();
                 console.log('Add question result:', result);
                 if (result.success) {
                     alert('Question added successfully!');
-                    // Clear form
                     document.getElementById('add_type').value = 'MC';
                     document.getElementById('add_question').value = '';
                     document.getElementById('add_correct').value = '';
@@ -963,9 +994,7 @@ $conn->close();
                     document.getElementById('add_wrong2').value = '';
                     document.getElementById('add_wrong3').value = '';
                     document.getElementById('add_solution').value = '';
-                    // Reload questions
                     loadQuestions();
-                    // Hide form
                     toggleAddQuestion();
                 } else {
                     alert('Error: ' + result.error);
