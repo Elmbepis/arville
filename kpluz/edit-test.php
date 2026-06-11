@@ -2,7 +2,7 @@
 session_name('KPLUZ_SESSION');
 session_start();
 error_reporting(E_ALL);
-ini_set('display_errors', 0); // Don't display errors in output
+ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', dirname(__FILE__) . '/php_errors.log');
 
@@ -141,18 +141,15 @@ if (isset($_GET['ajax_get_questions']) && isset($_GET['subject']) && isset($_GET
     }
     $owner_stmt->close();
     
-    // Query questions based on test owner
+    // IMPORTANT: For non-KPluz tests, ALWAYS use topic to distinguish between tests
     if ($test_owner === 'KPluz') {
+        // KPluz tests: query without topic (topic is NULL in questions table)
         $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3, solution FROM questions WHERE subject = ? AND lesson = ? ORDER BY id");
         $stmt->bind_param("ss", $subject, $lesson);
     } else {
-        if ($has_topic_column) {
-            $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3, solution FROM questions WHERE subject = ? AND lesson = ? AND topic = ? ORDER BY id");
-            $stmt->bind_param("sss", $subject, $lesson, $topic);
-        } else {
-            $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3, solution FROM questions WHERE subject = ? AND lesson = ? ORDER BY id");
-            $stmt->bind_param("ss", $subject, $lesson);
-        }
+        // Non-KPluz tests: MUST use topic to get correct questions
+        $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3, solution FROM questions WHERE subject = ? AND lesson = ? AND topic = ? ORDER BY id");
+        $stmt->bind_param("sss", $subject, $lesson, $topic);
     }
     $stmt->execute();
     $result = $stmt->get_result();
@@ -190,36 +187,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET['ajax_add_question'])) 
     $wrong2 = $_POST['wrong2'] ?? '';
     $wrong3 = $_POST['wrong3'] ?? '';
     
-    // Check if question already exists
+    // For non-KPluz tests, ALWAYS include topic in the insert
     if ($has_topic_column) {
-        $check_stmt = $conn->prepare("SELECT id FROM questions WHERE subject = ? AND lesson = ? AND topic = ? AND question = ?");
-        $check_stmt->bind_param("ssss", $subject, $lesson, $topic, $question_text);
+        $insert_stmt = $conn->prepare("INSERT INTO questions (subject, lesson, topic, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $insert_stmt->bind_param("ssssssssss", $subject, $lesson, $topic, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
     } else {
-        $check_stmt = $conn->prepare("SELECT id FROM questions WHERE subject = ? AND lesson = ? AND question = ?");
-        $check_stmt->bind_param("sss", $subject, $lesson, $question_text);
+        $insert_stmt = $conn->prepare("INSERT INTO questions (subject, lesson, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $insert_stmt->bind_param("sssssssss", $subject, $lesson, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
     }
-    $check_stmt->execute();
-    $check_result = $check_stmt->get_result();
     
-    if ($check_result->num_rows > 0) {
-        echo json_encode(['success' => false, 'error' => 'Question already exists for this test!']);
+    if ($insert_stmt->execute()) {
+        echo json_encode(['success' => true]);
     } else {
-        if ($has_topic_column) {
-            $insert_stmt = $conn->prepare("INSERT INTO questions (subject, lesson, topic, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $insert_stmt->bind_param("ssssssssss", $subject, $lesson, $topic, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
-        } else {
-            $insert_stmt = $conn->prepare("INSERT INTO questions (subject, lesson, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $insert_stmt->bind_param("sssssssss", $subject, $lesson, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
-        }
-        
-        if ($insert_stmt->execute()) {
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'error' => $conn->error]);
-        }
-        $insert_stmt->close();
+        echo json_encode(['success' => false, 'error' => $conn->error]);
     }
-    $check_stmt->close();
+    $insert_stmt->close();
     $conn->close();
     exit();
 }
@@ -821,7 +803,6 @@ $conn->close();
             
             document.getElementById('questionsContainer').innerHTML = '<div class="loading">Loading questions...</div>';
             
-            // Build URL
             const url = window.location.pathname + `?ajax_get_questions=1&subject=${encodeURIComponent(subject)}&lesson=${encodeURIComponent(lesson)}&topic=${encodeURIComponent(topic)}`;
             console.log('Fetch URL:', url);
             
@@ -831,17 +812,7 @@ $conn->close();
                     if (!response.ok) {
                         throw new Error('HTTP error ' + response.status);
                     }
-                    return response.text(); // Get as text first to see what's returned
-                })
-                .then(text => {
-                    console.log('Raw response:', text.substring(0, 500)); // Log first 500 chars
-                    try {
-                        const data = JSON.parse(text);
-                        return data;
-                    } catch (e) {
-                        console.error('JSON parse error:', e);
-                        throw new Error('Invalid JSON response. Server returned: ' + text.substring(0, 200));
-                    }
+                    return response.json();
                 })
                 .then(data => {
                     console.log('Data received:', data);
@@ -853,7 +824,6 @@ $conn->close();
                     console.log('Test owner:', currentTestOwner);
                     console.log('Can edit:', canEdit);
                     
-                    // Show/hide add question section based on edit permission
                     const addSection = document.getElementById('addQuestionSection');
                     if (addSection) {
                         if (canEdit) {
@@ -919,7 +889,7 @@ $conn->close();
                         html += `</div>
                             </tr>`;
                     });
-                    html += '</tr>';
+                    html += '</table>';
                     document.getElementById('questionsContainer').innerHTML = html;
                 })
                 .catch(error => {
