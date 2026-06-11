@@ -23,33 +23,22 @@ function format_solution($solution) {
         return '';
     }
     
-    // First, handle common step separators
-    // Replace newlines, periods with spaces, and multiple spaces
     $formatted = str_replace(["\r\n", "\n", "\r"], ' ', $solution);
     
-    // Split by common step indicators
-    // Pattern matches: numbers with dots (1., 2.), or words like "Step", "Then", "Next", "Finally"
-    // Also matches patterns like "Efficiency =" or "Final Answer:"
     $steps = preg_split('/(?=\d+\.\s+)|(?=\b(?:Step|Then|Next|Finally|Therefore|Thus|So)\b\s*:?\s*)|(?=\b(?:Efficiency|Output|Input|Work|Force|Distance|MA|VR|Efficiency)\s*=)/i', $formatted);
     
-    // Clean up each step
     $steps = array_map(function($step) {
-        // Remove extra spaces
         $step = trim($step);
-        // Remove trailing periods
         $step = rtrim($step, '.');
         return $step;
     }, $steps);
     
-    // Remove empty steps
     $steps = array_filter($steps);
     
-    // If we have multiple steps, join with semicolons
     if (count($steps) > 1) {
         return implode('; ', $steps);
     }
     
-    // If no clear steps detected, try splitting by common formulas
     if (strpos($solution, '=') !== false) {
         $formula_parts = preg_split('/(?=[A-Z][a-z]*\s*=)/', $solution);
         if (count($formula_parts) > 1) {
@@ -82,15 +71,15 @@ $user_name = $user['name'];
 $user_role = $user['role'];
 $is_kpluz = ($user_name === 'KPluz');
 
-// Fetch existing subject and lesson combinations from tests table
+// Fetch existing subject, lesson, topic combinations from tests table
 // For KPluz: show all tests
 // For other teachers: show their own tests AND tests created by KPluz (view-only)
 $tests = [];
 if ($is_kpluz) {
-    $sql = "SELECT DISTINCT subject, lesson, topic, teacher FROM tests ORDER BY subject, lesson";
+    $sql = "SELECT DISTINCT subject, lesson, topic, teacher FROM tests ORDER BY subject, lesson, topic";
     $result = $conn->query($sql);
 } else {
-    $sql = "SELECT DISTINCT subject, lesson, topic, teacher FROM tests WHERE teacher = ? OR teacher = 'KPluz' ORDER BY subject, lesson";
+    $sql = "SELECT DISTINCT subject, lesson, topic, teacher FROM tests WHERE teacher = ? OR teacher = 'KPluz' ORDER BY subject, lesson, topic";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $user_name);
     $stmt->execute();
@@ -126,68 +115,29 @@ if (!$is_kpluz && isset($stmt)) {
     $stmt->close();
 }
 
-// Fetch unique lessons for each subject (for new test creation dropdown)
-$lessons_by_subject = [];
-if ($is_kpluz) {
-    $lesson_sql = "SELECT DISTINCT subject, lesson FROM tests ORDER BY subject, lesson";
-    $lesson_result = $conn->query($lesson_sql);
-} else {
-    $lesson_sql = "SELECT DISTINCT subject, lesson FROM tests WHERE teacher = ? OR teacher = 'KPluz' ORDER BY subject, lesson";
-    $stmt = $conn->prepare($lesson_sql);
-    $stmt->bind_param("s", $user_name);
-    $stmt->execute();
-    $lesson_result = $stmt->get_result();
-}
-if ($lesson_result) {
-    while ($row = $lesson_result->fetch_assoc()) {
-        $subject = $row['subject'];
-        if (!isset($lessons_by_subject[$subject])) {
-            $lessons_by_subject[$subject] = [];
-        }
-        if (!in_array($row['lesson'], $lessons_by_subject[$subject])) {
-            $lessons_by_subject[$subject][] = $row['lesson'];
-        }
-    }
-}
-if (!$is_kpluz && isset($stmt)) {
-    $stmt->close();
-}
-
-// Fetch unique grade levels for dropdown
-$grades = [];
-$grade_sql = "SELECT DISTINCT grade FROM tests ORDER BY grade";
-$grade_result = $conn->query($grade_sql);
-if ($grade_result) {
-    while ($row = $grade_result->fetch_assoc()) {
-        $grades[] = $row['grade'];
-    }
-}
-
 // Handle AJAX request to get questions
-if (isset($_GET['ajax_get_questions']) && isset($_GET['subject']) && isset($_GET['lesson'])) {
+if (isset($_GET['ajax_get_questions']) && isset($_GET['subject']) && isset($_GET['lesson']) && isset($_GET['topic'])) {
     $subject = $_GET['subject'];
     $lesson = $_GET['lesson'];
-    $topic = isset($_GET['topic']) ? $_GET['topic'] : '';
+    $topic = $_GET['topic'];
     $questions = [];
     
-    // First, get the test owner using subject, lesson, and topic
-    $owner_check_stmt = $conn->prepare("SELECT teacher FROM tests WHERE subject = ? AND lesson = ? AND topic = ? LIMIT 1");
-    $owner_check_stmt->bind_param("sss", $subject, $lesson, $topic);
-    $owner_check_stmt->execute();
-    $owner_result = $owner_check_stmt->get_result();
+    // Get test owner
+    $owner_stmt = $conn->prepare("SELECT teacher FROM tests WHERE subject = ? AND lesson = ? AND topic = ? LIMIT 1");
+    $owner_stmt->bind_param("sss", $subject, $lesson, $topic);
+    $owner_stmt->execute();
+    $owner_result = $owner_stmt->get_result();
     $test_owner = null;
     if ($owner_result->num_rows > 0) {
         $test_owner = $owner_result->fetch_assoc()['teacher'];
     }
-    $owner_check_stmt->close();
+    $owner_stmt->close();
     
-    // If test owner is KPluz, query by subject and lesson only (no topic)
-    // Because KPluz questions have topic = NULL
+    // Query questions based on test owner
     if ($test_owner === 'KPluz') {
         $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3, solution FROM questions WHERE subject = ? AND lesson = ? ORDER BY id");
         $stmt->bind_param("ss", $subject, $lesson);
     } else {
-        // For non-KPluz tests, query by subject, lesson, AND topic
         $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3, solution FROM questions WHERE subject = ? AND lesson = ? AND topic = ? ORDER BY id");
         $stmt->bind_param("sss", $subject, $lesson, $topic);
     }
@@ -204,6 +154,43 @@ if (isset($_GET['ajax_get_questions']) && isset($_GET['subject']) && isset($_GET
         'test_owner' => $test_owner,
         'current_user' => $user_name
     ]);
+    $conn->close();
+    exit();
+}
+
+// Handle AJAX request to add a question
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET['ajax_add_question'])) {
+    $subject = $_POST['subject'];
+    $lesson = $_POST['lesson'];
+    $topic = $_POST['topic'];
+    $type = $_POST['type'];
+    $question_text = trim($_POST['question']);
+    $correct = $_POST['correct'];
+    $solution = $_POST['solution'] ?? '';
+    $wrong1 = $_POST['wrong1'] ?? '';
+    $wrong2 = $_POST['wrong2'] ?? '';
+    $wrong3 = $_POST['wrong3'] ?? '';
+    
+    // Check if question already exists
+    $check_stmt = $conn->prepare("SELECT id FROM questions WHERE subject = ? AND lesson = ? AND topic = ? AND question = ?");
+    $check_stmt->bind_param("ssss", $subject, $lesson, $topic, $question_text);
+    $check_stmt->execute();
+    $check_result = $check_stmt->get_result();
+    
+    if ($check_result->num_rows > 0) {
+        echo json_encode(['success' => false, 'error' => 'Question already exists for this test!']);
+    } else {
+        $insert_stmt = $conn->prepare("INSERT INTO questions (subject, lesson, topic, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $insert_stmt->bind_param("ssssssssss", $subject, $lesson, $topic, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
+        
+        if ($insert_stmt->execute()) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'error' => $conn->error]);
+        }
+        $insert_stmt->close();
+    }
+    $check_stmt->close();
     $conn->close();
     exit();
 }
@@ -254,127 +241,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET['ajax_update'])) {
     exit();
 }
 
-// Handle form submission for new question
-$submitted = false;
-$duplicate_error = '';
-$test_created = false;
-$test_exists_error = '';
-
-if ($_SERVER["REQUEST_METHOD"] === "POST" && !isset($_GET['ajax_update'])) {
-    
-    $submit_action = isset($_POST['submit_action']) ? $_POST['submit_action'] : '';
-    
-    // Check if using currently selected test (from hidden fields)
-    if ($submit_action === 'current' && !empty($_POST['current_subject']) && !empty($_POST['current_lesson'])) {
-        // Using the currently selected test
-        $subject = $_POST['current_subject'];
-        $lesson = $_POST['current_lesson'];
-        $topic = !empty($_POST['current_topic']) ? $_POST['current_topic'] : null;
-        $grade = null;
-        $teacher = null;
-    } 
-    // Check if creating new test
-    elseif (!empty($_POST["new_lesson"])) {
-        // Creating new test - need grade, subject, lesson, topic, teacher
-        $grade = $_POST["new_grade"];
-        $subject = $_POST["new_subject_select"];
-        $lesson = trim($_POST["new_lesson"]);
-        $topic = trim($_POST["new_topic"]);
-        $teacher = $user_name;
-        
-        // CHECK IF TEST ALREADY EXISTS (same subject, lesson, AND topic)
-        $check_test_stmt = $conn->prepare("SELECT id FROM tests WHERE subject = ? AND lesson = ? AND topic = ?");
-        $check_test_stmt->bind_param("sss", $subject, $lesson, $topic);
-        $check_test_stmt->execute();
-        $check_test_result = $check_test_stmt->get_result();
-        
-        if ($check_test_result->num_rows > 0) {
-            $test_exists_error = "Test with Subject '$subject', Lesson '$lesson', and Topic '$topic' already exists! Cannot create duplicate test.";
-        } else {
-            // Insert the new test into the tests table
-            $insert_test = $conn->prepare("INSERT INTO tests (grade, subject, lesson, topic, teacher) VALUES (?, ?, ?, ?, ?)");
-            $insert_test->bind_param("sssss", $grade, $subject, $lesson, $topic, $teacher);
-            if ($insert_test->execute()) {
-                $test_created = true;
-            }
-            $insert_test->close();
-        }
-        $check_test_stmt->close();
-    } else {
-        // Using existing test from dropdown
-        $subject = $_POST["subject"];
-        $lesson_topic = $_POST["lesson"];
-        $parts = explode(': ', $lesson_topic, 2);
-        $lesson = trim($parts[0]);
-        $topic = isset($parts[1]) ? trim($parts[1]) : '';
-        $grade = null;
-        $teacher = null;
-    }
-    
-    // Only proceed with question submission if no test duplicate error
-    if (empty($test_exists_error)) {
-        $type = $_POST["type"];
-        $question_text = trim($_POST["question"]);
-        $correct = $_POST["correct_answer"];
-        $solution = $_POST["solution"] ?? '';
-        
-        // Auto-add blank solution for Math or Science subjects (can be edited later)
-        if (($subject == 'Math' || $subject == 'Science') && empty($solution)) {
-            $solution = ''; // Keep as empty string, teacher can add later
-        }
-        
-        // CHECK IF QUESTION ALREADY EXISTS
-        if ($is_kpluz || ($submit_action === 'current' && !empty($topic))) {
-            // KPluz or using current test: check by subject, lesson, and question
-            $check_question_stmt = $conn->prepare("SELECT id FROM questions WHERE subject = ? AND lesson = ? AND question = ?");
-            $check_question_stmt->bind_param("sss", $subject, $lesson, $question_text);
-        } else {
-            // Non-KPluz: check by subject, lesson, topic, and question
-            $check_question_stmt = $conn->prepare("SELECT id FROM questions WHERE subject = ? AND lesson = ? AND topic = ? AND question = ?");
-            $check_question_stmt->bind_param("ssss", $subject, $lesson, $topic, $question_text);
-        }
-        $check_question_stmt->execute();
-        $check_question_result = $check_question_stmt->get_result();
-        
-        if ($check_question_result->num_rows > 0) {
-            $duplicate_error = "That question already exists for this test!";
-        } else {
-            if ($type == "FB") {
-                $wrong1 = "";
-                $wrong2 = "";
-                $wrong3 = "";
-            } elseif ($type == "TF") {
-                $wrong1 = isset($_POST['wrong_answer1']) ? $_POST['wrong_answer1'] : '';
-                $wrong2 = "";
-                $wrong3 = "";
-            } else {
-                $wrong1 = isset($_POST['wrong_answer1']) ? $_POST['wrong_answer1'] : '';
-                $wrong2 = isset($_POST['wrong_answer2']) ? $_POST['wrong_answer2'] : '';
-                $wrong3 = isset($_POST['wrong_answer3']) ? $_POST['wrong_answer3'] : '';
-            }
-            
-            // INSERT based on whether topic is needed
-            if (empty($topic) || $is_kpluz) {
-                // No topic needed (KPluz or topic is NULL)
-                $stmt = $conn->prepare("INSERT INTO questions (subject, lesson, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("sssssssss", $subject, $lesson, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
-            } else {
-                // Include topic
-                $stmt = $conn->prepare("INSERT INTO questions (subject, lesson, topic, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("ssssssssss", $subject, $lesson, $topic, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
-            }
-            
-            if ($stmt->execute()) {
-                $submitted = true;
-            } else {
-                $error = "Error submitting question: " . $conn->error;
-            }
-            $stmt->close();
-        }
-        $check_question_stmt->close();
-    }
-}
-
 $conn->close();
 ?>
 
@@ -382,7 +248,7 @@ $conn->close();
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>KPluz SHS - Manage Questions</title>
+  <title>KPluz SHS - Review/Edit Existing Tests</title>
   <style>
     * {
         box-sizing: border-box;
@@ -490,29 +356,33 @@ $conn->close();
         resize: vertical;
     }
     
+    .test-selection {
+        background: white;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        border-left: 4px solid #003366;
+    }
+    
     .submit-btn {
         padding: 12px 24px;
         border: none;
-        background: #003366;
+        background: #28a745;
         color: white;
         border-radius: 4px;
         cursor: pointer;
         font-size: 16px;
         transition: background 0.3s;
         margin-top: 20px;
-        width: auto;
+        width: 280px;
+        font-weight: bold;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
     }
     
     .submit-btn:hover { 
-        background: #0055aa; 
-    }
-    
-    .add-current-btn {
-        background: #28a745;
-    }
-    
-    .add-current-btn:hover {
-        background: #218838;
+        background: #218838; 
     }
     
     .action-buttons {
@@ -584,67 +454,40 @@ $conn->close();
         border-radius: 4px;
         margin-bottom: 20px;
         border: 1px solid #ffeeba;
+        cursor: pointer;
     }
     
-    .test-selection {
-        background: white;
-        padding: 15px;
-        border-radius: 4px;
+    .lesson-select {
+        width: 100%;
+        min-width: 300px;
+    }
+    
+    .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+    
+    .solution-label {
+        color: #6f42c1;
+        font-weight: bold;
+    }
+    
+    .back-link {
+        display: inline-block;
         margin-bottom: 20px;
-        border-left: 4px solid #003366;
-    }
-    
-    .new-test-section {
-        background: #e7f3ff;
-        padding: 15px;
-        border-radius: 4px;
-        margin-top: 15px;
-    }
-    
-    .required {
-        color: #dc3545;
-        font-size: 0.8em;
-    }
-    
-    .section-divider {
-        text-align: center;
-        margin: 20px 0;
-        position: relative;
-    }
-    
-    .section-divider span {
-        background: #f8f9fa;
-        padding: 0 15px;
-        color: #666;
-    }
-    
-    .section-divider::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: #ddd;
-        z-index: 0;
-    }
-    
-    .section-divider span {
-        position: relative;
-        z-index: 1;
-    }
-    
-    .teacher-info {
-        background: #e9ecef;
-        padding: 8px 12px;
-        border-radius: 4px;
-        font-size: 14px;
-        color: #666;
-        margin-top: 5px;
-    }
-    
-    .teacher-info strong {
         color: #003366;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    
+    .back-link:hover {
+        text-decoration: underline;
     }
     
     /* Questions List Styles */
@@ -788,6 +631,38 @@ $conn->close();
         font-style: italic;
     }
     
+    .add-question-section {
+        background: #e7f3ff;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .add-question-toggle {
+        background: #003366;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-bottom: 15px;
+        width: 100%;
+    }
+    
+    .add-question-toggle:hover {
+        background: #0055aa;
+    }
+    
+    .add-question-form {
+        display: none;
+    }
+    
+    .add-question-form.visible {
+        display: block;
+    }
+    
     /* Modal Styles */
     .modal {
         display: none;
@@ -849,183 +724,81 @@ $conn->close();
     .save-edit-btn:hover {
         background: #218838;
     }
-    
-    .lesson-select {
-        width: 100%;
-        min-width: 300px;
-    }
-    
-    hr {
-        margin: 15px 0;
-        border: none;
-        border-top: 1px solid #ddd;
-    }
-    
-    .form-row {
-        display: flex;
-        gap: 15px;
-        margin-bottom: 15px;
-    }
-    
-    .form-row .form-group {
-        flex: 1;
-        margin-bottom: 0;
-    }
-    
-    .solution-label {
-        color: #6f42c1;
-        font-weight: bold;
-    }
-    
-    /* New test lesson dropdown styling */
-    .new-test-lesson-select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 14px;
-    }
-    
-    .button-group {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-        margin-top: 20px;
-    }
   </style>
   <script>
-        // Store lessons by subject for new test dropdown
-        const lessonsBySubject = <?php echo json_encode($lessons_by_subject); ?>;
         const isKpluz = <?php echo $is_kpluz ? 'true' : 'false'; ?>;
+        let currentSubject = '';
+        let currentLesson = '';
+        let currentTopic = '';
+        let currentTestOwner = '';
         
-        function adjustWrongAnswers() {
-            const type = document.querySelector('[name="type"]').value;
-            const wrong1 = document.querySelector('[name="wrong_answer1"]');
-            const wrong2 = document.querySelector('[name="wrong_answer2"]');
-            const wrong3 = document.querySelector('[name="wrong_answer3"]');
-            const solution = document.querySelector('[name="solution"]');
-
-            if (type === "TF") {
-                wrong1.disabled = false;
-                wrong1.placeholder = "Wrong answer (usually 'False' for True/False)";
-                wrong1.value = "False";
-                wrong2.value = "";
-                wrong2.disabled = true;
-                wrong2.placeholder = "";
-                wrong3.value = "";
-                wrong3.disabled = true;
-                wrong3.placeholder = "";
-            } else if (type === "FB") {
-                wrong1.value = "";
-                wrong1.disabled = true;
-                wrong1.placeholder = "Not needed for Fill in the Blank";
-                wrong2.value = "";
-                wrong2.disabled = true;
-                wrong2.placeholder = "";
-                wrong3.value = "";
-                wrong3.disabled = true;
-                wrong3.placeholder = "";
-            } else {
-                wrong1.disabled = false;
-                wrong1.placeholder = "Wrong answer option 1";
-                wrong2.disabled = false;
-                wrong2.placeholder = "Wrong answer option 2";
-                wrong3.disabled = false;
-                wrong3.placeholder = "Wrong answer option 3";
-            }
-        }
-        
-        function updateNewTestLessonOptions() {
-            const subjectSelect = document.getElementById('new_subject_select');
-            const lessonSelect = document.getElementById('new_lesson_select');
-            const selectedSubject = subjectSelect.value;
+        function updateLessonOptions() {
+            const subject = document.getElementById('subjectSelect').value;
+            const lessonSelect = document.getElementById('lessonSelect');
             
             lessonSelect.innerHTML = '<option value="">-- Select a lesson --</option>';
             
-            if (!selectedSubject) {
+            if (!subject) {
                 lessonSelect.disabled = true;
                 return;
             }
             
-            const lessons = lessonsBySubject[selectedSubject] || [];
+            const tests = <?php echo json_encode($tests); ?>;
+            const filteredLessons = tests.filter(test => test.subject === subject);
             
-            if (lessons.length === 0) {
+            if (filteredLessons.length === 0) {
                 lessonSelect.disabled = true;
-                lessonSelect.innerHTML = '<option value="">-- No lessons available for this subject --</option>';
+                document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">No lessons found for this subject.</div>';
                 return;
             }
             
             lessonSelect.disabled = false;
-            lessons.forEach(lesson => {
+            filteredLessons.forEach(test => {
                 const option = document.createElement('option');
-                option.value = lesson;
-                option.textContent = lesson;
+                option.value = test.lesson + '|' + test.topic;
+                option.textContent = test.lesson + ': ' + test.topic;
                 lessonSelect.appendChild(option);
             });
         }
         
         function loadQuestions() {
             const subject = document.getElementById('subjectSelect').value;
-            const lessonDisplay = document.getElementById('lessonSelect').value;
+            const lessonTopicValue = document.getElementById('lessonSelect').value;
             
-            if (!subject || !lessonDisplay) {
+            if (!subject || !lessonTopicValue) {
                 document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Select a subject and lesson to view existing questions.</div>';
                 return;
             }
             
-            let url;
-            if (isKpluz) {
-                // KPluz: only need subject and lesson
-                const lesson = lessonDisplay.split(':')[0].trim();
-                document.getElementById('currentSubject').value = subject;
-                document.getElementById('currentLesson').value = lesson;
-                document.getElementById('currentTopic').value = '';
-                url = `?ajax_get_questions=1&subject=${encodeURIComponent(subject)}&lesson=${encodeURIComponent(lesson)}`;
-            } else {
-                // Non-KPluz: need subject, lesson, and topic
-                const parts = lessonDisplay.split(': ');
-                const lesson = parts[0].trim();
-                const topic = parts.length > 1 ? parts[1].trim() : '';
-                document.getElementById('currentSubject').value = subject;
-                document.getElementById('currentLesson').value = lesson;
-                document.getElementById('currentTopic').value = topic;
-                url = `?ajax_get_questions=1&subject=${encodeURIComponent(subject)}&lesson=${encodeURIComponent(lesson)}&topic=${encodeURIComponent(topic)}`;
-            }
+            const parts = lessonTopicValue.split('|');
+            const lesson = parts[0];
+            const topic = parts[1];
+            
+            currentSubject = subject;
+            currentLesson = lesson;
+            currentTopic = topic;
             
             document.getElementById('questionsContainer').innerHTML = '<div class="loading">Loading questions...</div>';
             
-            fetch(url)
+            fetch(`?ajax_get_questions=1&subject=${encodeURIComponent(subject)}&lesson=${encodeURIComponent(lesson)}&topic=${encodeURIComponent(topic)}`)
                 .then(response => response.json())
                 .then(data => {
                     const questions = data.questions;
-                    const test_owner = data.test_owner;
-                    const current_user = data.current_user;
-                    const canEdit = (test_owner === current_user);
+                    currentTestOwner = data.test_owner;
+                    const canEdit = (currentTestOwner === data.current_user);
                     
-                    // Store test owner for button control
-                    document.getElementById('currentTestOwner').value = test_owner;
-                    
-                    // Control submit button visibility/disabled state
-                    const addCurrentBtn = document.querySelector('.add-current-btn');
-                    
-                    if (!isKpluz && test_owner === 'KPluz') {
-                        // Non-KPluz viewing KPluz test - disable the Add to Current Test button
-                        if (addCurrentBtn) {
-                            addCurrentBtn.disabled = true;
-                            addCurrentBtn.style.opacity = '0.5';
-                            addCurrentBtn.title = 'You cannot add questions to KPluz tests';
-                        }
-                    } else {
-                        // Enable the Add to Current Test button
-                        if (addCurrentBtn) {
-                            addCurrentBtn.disabled = false;
-                            addCurrentBtn.style.opacity = '1';
-                            addCurrentBtn.title = '';
+                    // Show/hide add question section based on edit permission
+                    const addSection = document.getElementById('addQuestionSection');
+                    if (addSection) {
+                        if (canEdit) {
+                            addSection.style.display = 'block';
+                        } else {
+                            addSection.style.display = 'none';
                         }
                     }
                     
                     if (questions.length === 0) {
-                        document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">No questions found for this test. Add some above!</div>';
+                        document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">No questions found for this test.</div>';
                         return;
                     }
                     
@@ -1050,7 +823,6 @@ $conn->close();
                         
                         choicesHtml += '</ul>';
                         
-                        // Add solution after the wrong answers
                         if (q.solution && q.solution.trim() !== '') {
                             let solutionText = q.solution;
                             solutionText = formatSolutionWithSemicolons(solutionText);
@@ -1069,7 +841,6 @@ $conn->close();
                             <td class="choices-cell">${choicesHtml}</td>
                             <td class="action-icons">`;
                         
-                        // Only show Edit/Delete buttons if current user owns the test
                         if (canEdit) {
                             html += `<button class="edit-btn" onclick="editQuestion(${q.id})">&#9999;&#65039; Edit</button>
                                      <button class="delete-btn" onclick="deleteQuestion(${q.id}, '${escapeHtml(q.question)}')">&#128465;&#65039; Delete</button>`;
@@ -1080,7 +851,7 @@ $conn->close();
                         html += `</div>
                             </tr>`;
                     });
-                    html += '</table>';
+                    html += '</td>';
                     document.getElementById('questionsContainer').innerHTML = html;
                 })
                 .catch(error => {
@@ -1089,39 +860,19 @@ $conn->close();
                 });
         }
         
-        // JavaScript function to format solution with semicolons
         function formatSolutionWithSemicolons(solution) {
             if (!solution || solution.trim() === '') return '';
-            
-            // If already has semicolons, return as is
             if (solution.includes(';') && !solution.includes('\n')) return solution;
-            
-            // Split by line breaks first
             let steps = solution.split(/\r?\n/);
-            
-            // Remove empty steps and trim whitespace
             steps = steps.map(step => step.trim()).filter(step => step.length > 0);
-            
-            // If we have multiple steps from line breaks, join with semicolons
             if (steps.length > 1) {
                 return steps.join('; ');
             }
-            
-            // If no line breaks, try to split by patterns
             let formatted = solution;
-            
-            // Add semicolon before "Final Answer" or "Therefore"
             formatted = formatted.replace(/\s+(Final Answer:|Therefore,?)/gi, '; $1');
-            
-            // Add semicolon between formula and calculation
             formatted = formatted.replace(/([a-z0-9)])\s+([A-Z][a-z]?\s*=)/g, '$1; $2');
-            
-            // Add semicolon after closing parenthesis before new formula
             formatted = formatted.replace(/\)\s+([A-Z])/g, '); $1');
-            
-            // Remove double semicolons
             formatted = formatted.replace(/;+/g, ';');
-            
             return formatted;
         }
         
@@ -1130,6 +881,57 @@ $conn->close();
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+        
+        function toggleAddQuestion() {
+            const form = document.getElementById('addQuestionForm');
+            const toggleBtn = document.getElementById('toggleAddBtn');
+            if (form.classList.contains('visible')) {
+                form.classList.remove('visible');
+                toggleBtn.textContent = 'Add New Question to This Test';
+            } else {
+                form.classList.add('visible');
+                toggleBtn.textContent = 'Cancel';
+            }
+        }
+        
+        function addQuestion() {
+            const formData = new FormData();
+            formData.append('subject', currentSubject);
+            formData.append('lesson', currentLesson);
+            formData.append('topic', currentTopic);
+            formData.append('type', document.getElementById('add_type').value);
+            formData.append('question', document.getElementById('add_question').value);
+            formData.append('correct', document.getElementById('add_correct').value);
+            formData.append('wrong1', document.getElementById('add_wrong1').value);
+            formData.append('wrong2', document.getElementById('add_wrong2').value);
+            formData.append('wrong3', document.getElementById('add_wrong3').value);
+            formData.append('solution', document.getElementById('add_solution').value);
+            
+            fetch('?ajax_add_question=1', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('Question added successfully!');
+                    // Clear form
+                    document.getElementById('add_type').value = 'MC';
+                    document.getElementById('add_question').value = '';
+                    document.getElementById('add_correct').value = '';
+                    document.getElementById('add_wrong1').value = '';
+                    document.getElementById('add_wrong2').value = '';
+                    document.getElementById('add_wrong3').value = '';
+                    document.getElementById('add_solution').value = '';
+                    // Reload questions
+                    loadQuestions();
+                    // Hide form
+                    toggleAddQuestion();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            });
         }
         
         function deleteQuestion(questionId, questionText) {
@@ -1217,78 +1019,62 @@ $conn->close();
             });
         }
         
-        function updateLessonOptions() {
-            const subject = document.getElementById('subjectSelect').value;
-            const lessonSelect = document.getElementById('lessonSelect');
-            
-            lessonSelect.innerHTML = '<option value="">-- Select a lesson --</option>';
-            
-            if (!subject) {
-                lessonSelect.disabled = true;
-                return;
-            }
-            
-            const tests = <?php echo json_encode($tests); ?>;
-            const filteredLessons = tests.filter(test => test.subject === subject);
-            
-            if (filteredLessons.length === 0) {
-                lessonSelect.disabled = true;
-                document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">No lessons found for this subject.</div>';
-                return;
-            }
-            
-            lessonSelect.disabled = false;
-            
-            if (isKpluz) {
-                // KPluz: show unique lessons (no topic needed)
-                const uniqueLessons = [];
-                filteredLessons.forEach(test => {
-                    if (!uniqueLessons.includes(test.lesson)) {
-                        uniqueLessons.push(test.lesson);
-                    }
-                });
-                uniqueLessons.forEach(lesson => {
-                    const option = document.createElement('option');
-                    option.value = lesson;
-                    option.textContent = lesson;
-                    lessonSelect.appendChild(option);
-                });
+        function adjustWrongAnswers(prefix) {
+            const type = document.getElementById(prefix + '_type').value;
+            const wrong1 = document.getElementById(prefix + '_wrong1');
+            const wrong2 = document.getElementById(prefix + '_wrong2');
+            const wrong3 = document.getElementById(prefix + '_wrong3');
+
+            if (type === "TF") {
+                wrong1.disabled = false;
+                wrong1.placeholder = "Wrong answer (usually 'False' for True/False)";
+                wrong1.value = "False";
+                wrong2.value = "";
+                wrong2.disabled = true;
+                wrong2.placeholder = "";
+                wrong3.value = "";
+                wrong3.disabled = true;
+                wrong3.placeholder = "";
+            } else if (type === "FB") {
+                wrong1.value = "";
+                wrong1.disabled = true;
+                wrong1.placeholder = "Not needed for Fill in the Blank";
+                wrong2.value = "";
+                wrong2.disabled = true;
+                wrong2.placeholder = "";
+                wrong3.value = "";
+                wrong3.disabled = true;
+                wrong3.placeholder = "";
             } else {
-                // Non-KPluz: show lesson: topic
-                filteredLessons.forEach(test => {
-                    const option = document.createElement('option');
-                    option.value = test.lesson + ': ' + test.topic;
-                    option.textContent = test.lesson + ': ' + test.topic;
-                    lessonSelect.appendChild(option);
-                });
+                wrong1.disabled = false;
+                wrong1.placeholder = "Wrong answer option 1";
+                wrong2.disabled = false;
+                wrong2.placeholder = "Wrong answer option 2";
+                wrong3.disabled = false;
+                wrong3.placeholder = "Wrong answer option 3";
             }
         }
         
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+        
         window.addEventListener('DOMContentLoaded', () => {
-            document.querySelector('[name="type"]').addEventListener('change', adjustWrongAnswers);
-            adjustWrongAnswers();
-            
             const subjectSelect = document.getElementById('subjectSelect');
             const lessonSelect = document.getElementById('lessonSelect');
             
             subjectSelect.addEventListener('change', () => {
                 updateLessonOptions();
+                document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Select a lesson to view questions.</div>';
             });
             
             lessonSelect.addEventListener('change', () => {
                 loadQuestions();
             });
             
-            // New test subject change event
-            const newSubjectSelect = document.getElementById('new_subject_select');
-            if (newSubjectSelect) {
-                newSubjectSelect.addEventListener('change', updateNewTestLessonOptions);
-            }
+            document.getElementById('add_type').addEventListener('change', () => adjustWrongAnswers('add'));
+            adjustWrongAnswers('add');
         });
-        
-        function closeModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
         
         window.onclick = function(event) {
             const modal = document.getElementById('editModal');
@@ -1307,122 +1093,49 @@ $conn->close();
     <div class="user-welcome">
         <div class="welcome-text">Welcome, <?= htmlspecialchars($user_name) ?>!</div>
         <div class="user-info">
-            KPluz SHS - Manage Questions
+            KPluz SHS - Review/Edit Existing Tests
             <span class="role-badge"><?= ucfirst($user_role) ?></span>
         </div>
     </div>
 
     <div class="dashboard-content">
-        <h2>Manage Questions</h2>
+        <a href="dashboard.php" class="back-link">&larr; Back to Dashboard</a>
+        
+        <h2>Review/Edit Existing Tests</h2>
         <div class="page-info">
-            Add new questions or edit/delete existing ones. Select a subject and lesson to view its questions.
+            Select a subject and lesson to view, edit, or add questions to existing tests.
         </div>
 
         <div class="form-container">
-            <?php if ($submitted): ?>
-                <div class="success-message">
-                    &#10003; Question submitted successfully!
+            <!-- Test Selection -->
+            <div class="test-selection">
+                <div class="form-group">
+                    <label>Select Subject:</label>
+                    <select name="subject" id="subjectSelect" class="lesson-select">
+                        <option value="">-- Select a subject --</option>
+                        <?php foreach ($subjects as $s): ?>
+                            <option value="<?= htmlspecialchars($s) ?>"><?= htmlspecialchars($s) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
-            <?php endif; ?>
-            
-            <?php if ($test_created): ?>
-                <div class="success-message">
-                    &#10003; New test created successfully!
+                <div class="form-group">
+                    <label>Select Lesson/Topic:</label>
+                    <select name="lesson" id="lessonSelect" disabled class="lesson-select">
+                        <option value="">-- First select a subject --</option>
+                    </select>
                 </div>
-            <?php endif; ?>
-            
-            <?php if (!empty($test_exists_error)): ?>
-                <div class="warning-message">
-                    &#9888; <?= htmlspecialchars($test_exists_error) ?>
-                </div>
-            <?php endif; ?>
-            
-            <?php if (!empty($duplicate_error)): ?>
-                <div class="warning-message">
-                    &#9888; <?= htmlspecialchars($duplicate_error) ?>
-                </div>
-            <?php endif; ?>
-            
-            <?php if (isset($error)): ?>
-                <div class="error-message">
-                    &#10007; <?= htmlspecialchars($error) ?>
-                </div>
-            <?php endif; ?>
-
-            <form method="POST">
-                <!-- Hidden fields for current test selection -->
-                <input type="hidden" name="current_subject" id="currentSubject" value="">
-                <input type="hidden" name="current_lesson" id="currentLesson" value="">
-                <input type="hidden" name="current_topic" id="currentTopic" value="">
-                <input type="hidden" name="current_test_owner" id="currentTestOwner" value="">
+            </div>
+        </div>
+        
+        <!-- Add Question Section (hidden for view-only users) -->
+        <div id="addQuestionSection" class="add-question-section" style="display: none;">
+            <button type="button" id="toggleAddBtn" class="add-question-toggle" onclick="toggleAddQuestion()">Add New Question to This Test</button>
+            <div id="addQuestionForm" class="add-question-form">
+                <h3 style="margin-top: 0; margin-bottom: 15px; color: #003366;">Add New Question</h3>
                 
-                <!-- Existing Test Selection -->
-                <div class="test-selection">
-                    <div class="form-group">
-                        <label>Select an existing subject and lesson:</label>
-                        <select name="subject" id="subjectSelect">
-                            <option value="">-- Select a subject --</option>
-                            <?php foreach ($subjects as $s): ?>
-                                <option value="<?= htmlspecialchars($s) ?>"><?= htmlspecialchars($s) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <select name="lesson" id="lessonSelect" disabled class="lesson-select">
-                            <option value="">-- First select a subject --</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="section-divider">
-                    <span> or </span>
-                </div>
-
-                <!-- New Test Creation -->
-                <div class="new-test-section">
-                    <h3 style="margin-top: 0; margin-bottom: 15px; color: #003366;">Create a New Test</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Grade Level:</label>
-                            <select name="new_grade" required>
-                                <option value="">-- Select grade --</option>
-                                <?php foreach ($grades as $g): ?>
-                                    <option value="<?= htmlspecialchars($g) ?>"><?= htmlspecialchars($g) ?></option>
-                                <?php endforeach; ?>
-                                <option value="11">11</option>
-                                <option value="12">12</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Subject:</label>
-                            <select name="new_subject_select" id="new_subject_select" required>
-                                <option value="">-- Select subject --</option>
-                                <?php foreach ($subjects as $s): ?>
-                                    <option value="<?= htmlspecialchars($s) ?>"><?= htmlspecialchars($s) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Lesson Name:</label>
-                            <select name="new_lesson" id="new_lesson_select" class="new-test-lesson-select" required disabled>
-                                <option value="">-- First select a subject --</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Topic / Title:</label>
-                            <input type="text" name="new_topic" placeholder="Enter topic or title for this test" required>
-                        </div>
-                    </div>
-                    <span class="required" style="display: block; margin-top: 10px;">Note: This will create a new test entry in the tests table.</span>
-                </div>
-
-                <div class="section-divider">
-                    <span> Question Details </span>
-                </div>
-
                 <div class="form-group">
                     <label>Question Type:</label>
-                    <select name="type" required>
+                    <select id="add_type" required>
                         <option value="MC">Multiple Choice</option>
                         <option value="TF">True/False</option>
                         <option value="FB">Fill in the Blank</option>
@@ -1431,39 +1144,36 @@ $conn->close();
 
                 <div class="form-group">
                     <label>Question:</label>
-                    <textarea name="question" required placeholder="Enter your question here..."></textarea>
+                    <textarea id="add_question" required placeholder="Enter your question here..."></textarea>
                 </div>
 
                 <div class="form-group">
                     <label>Correct Answer:</label>
-                    <input type="text" name="correct_answer" required placeholder="Enter the correct answer">
+                    <input type="text" id="add_correct" required placeholder="Enter the correct answer">
                 </div>
 
                 <div class="form-group">
                     <label>Wrong Answer 1:</label>
-                    <input type="text" name="wrong_answer1" placeholder="Wrong answer option 1">
+                    <input type="text" id="add_wrong1" placeholder="Wrong answer option 1">
                 </div>
 
                 <div class="form-group">
                     <label>Wrong Answer 2:</label>
-                    <input type="text" name="wrong_answer2" placeholder="Wrong answer option 2">
+                    <input type="text" id="add_wrong2" placeholder="Wrong answer option 2">
                 </div>
 
                 <div class="form-group">
                     <label>Wrong Answer 3:</label>
-                    <input type="text" name="wrong_answer3" placeholder="Wrong answer option 3">
+                    <input type="text" id="add_wrong3" placeholder="Wrong answer option 3">
                 </div>
 
                 <div class="form-group">
-                    <label class="solution-label">Solution (Optional - especially useful for Math/Science):</label>
-                    <textarea name="solution" placeholder="Enter step-by-step solution or explanation for this question..."></textarea>
+                    <label class="solution-label">Solution (Optional):</label>
+                    <textarea id="add_solution" placeholder="Enter step-by-step solution or explanation..."></textarea>
                 </div>
 
-                <div class="button-group">
-                    <button type="submit" name="submit_action" value="current" class="submit-btn add-current-btn">Add Question to Current Test</button>
-                    <button type="submit" name="submit_action" value="new" class="submit-btn">Submit as New Test</button>
-                </div>
-            </form>
+                <button type="button" class="submit-btn" onclick="addQuestion()" style="width: 100%;">Add Question</button>
+            </div>
         </div>
         
         <!-- Existing Questions Section -->
@@ -1476,6 +1186,7 @@ $conn->close();
 
         <div class="action-buttons">
             <a href="dashboard.php" class="dashboard-btn">Back to Dashboard</a>
+            <a href="create-test.php" class="dashboard-btn" style="background: #28a745;">Create New Test</a>
             <a href="logout.php" class="logout-btn">Logout</a>
         </div>
     </div>

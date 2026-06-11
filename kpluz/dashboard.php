@@ -270,11 +270,11 @@ $conn->close();
 
     <div class="dashboard-content">
         <?php if ($user_role === 'student'): ?>
-            <!-- STUDENT DASHBOARD - DepEd PDFs REMOVED -->
+            <!-- STUDENT DASHBOARD -->
             <h2 class="section-title">Training Portal</h2>
             
             <div class="nav-grid">
-                <!-- Reading Materials (First for students now) -->
+                <!-- Reading Materials -->
                 <div class="nav-card">
                     <div class="nav-icon">&#128214;</div>
                     <div class="nav-title">Reading Materials</div>
@@ -319,7 +319,7 @@ $conn->close();
             </div>
 
         <?php elseif ($user_role === 'admin' || $user_role === 'teacher'): ?>
-            <!-- ADMIN/TEACHER DASHBOARD - DepEd PDFs KEPT -->
+            <!-- ADMIN/TEACHER DASHBOARD -->
             <h2 class="section-title">Administration Portal</h2>
             
             <div class="nav-grid">
@@ -349,15 +349,27 @@ $conn->close();
                     <a href="rmats.php" class="nav-btn">View Reading Materials</a>
                 </div>
                 
+                <!-- Create a New Test -->
                 <div class="nav-card">
-                    <div class="nav-icon">&#128221;</div>
-                    <div class="nav-title">Manage Questions</div>
+                    <div class="nav-icon">&#128221;&#10004;</div>
+                    <div class="nav-title">Create a New Test</div>
                     <div class="nav-description">
-                        Add, edit, or remove test questions from the question bank.
+                        Create a brand new test with custom subject, lesson, and topic. Add questions to build a complete assessment.
                     </div>
-                    <a href="qsubmit.php" class="nav-btn">Go to Questions</a>
+                    <a href="create-test.php" class="nav-btn">Create New Test</a>
                 </div>
                 
+                <!-- Review/Edit Existing Test -->
+                <div class="nav-card">
+                    <div class="nav-icon">&#9999;&#65039;&#128221;</div>
+                    <div class="nav-title">Review/Edit Existing Test</div>
+                    <div class="nav-description">
+                        View, edit, or add questions to existing tests in the question bank.
+                    </div>
+                    <a href="edit-test.php" class="nav-btn">Review/Edit Tests</a>
+                </div>
+                
+                <!-- User Management -->
                 <div class="nav-card">
                     <div class="nav-icon">&#128101;</div>
                     <div class="nav-title">User Management</div>
@@ -367,6 +379,7 @@ $conn->close();
                     <a href="users.php" class="nav-btn">Manage Users</a>
                 </div>
                 
+                <!-- View Results -->
                 <div class="nav-card">
                     <div class="nav-icon">&#128202;</div>
                     <div class="nav-title">View Results</div>
