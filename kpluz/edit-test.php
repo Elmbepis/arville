@@ -72,8 +72,6 @@ $user_role = $user['role'];
 $is_kpluz = ($user_name === 'KPluz');
 
 // Fetch existing subject, lesson, topic combinations from tests table
-// For KPluz: show all tests
-// For other teachers: show their own tests AND tests created by KPluz (view-only)
 $tests = [];
 if ($is_kpluz) {
     $sql = "SELECT DISTINCT subject, lesson, topic, teacher FROM tests ORDER BY subject, lesson, topic";
@@ -115,8 +113,10 @@ if (!$is_kpluz && isset($stmt)) {
     $stmt->close();
 }
 
-// Handle AJAX request to get questions
+// Handle AJAX request to get questions - MUST be before any HTML output
 if (isset($_GET['ajax_get_questions']) && isset($_GET['subject']) && isset($_GET['lesson']) && isset($_GET['topic'])) {
+    header('Content-Type: application/json');
+    
     $subject = $_GET['subject'];
     $lesson = $_GET['lesson'];
     $topic = $_GET['topic'];
@@ -148,7 +148,6 @@ if (isset($_GET['ajax_get_questions']) && isset($_GET['subject']) && isset($_GET
     }
     $stmt->close();
     
-    header('Content-Type: application/json');
     echo json_encode([
         'questions' => $questions,
         'test_owner' => $test_owner,
@@ -160,6 +159,8 @@ if (isset($_GET['ajax_get_questions']) && isset($_GET['subject']) && isset($_GET
 
 // Handle AJAX request to add a question
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET['ajax_add_question'])) {
+    header('Content-Type: application/json');
+    
     $subject = $_POST['subject'];
     $lesson = $_POST['lesson'];
     $topic = $_POST['topic'];
@@ -180,8 +181,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET['ajax_add_question'])) 
     if ($check_result->num_rows > 0) {
         echo json_encode(['success' => false, 'error' => 'Question already exists for this test!']);
     } else {
-        $insert_stmt = $conn->prepare("INSERT INTO questions (subject, lesson, topic, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $insert_stmt->bind_param("ssssssssss", $subject, $lesson, $topic, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
+        // Check if topic column exists
+        $check_column = $conn->query("SHOW COLUMNS FROM questions LIKE 'topic'");
+        if ($check_column && $check_column->num_rows > 0) {
+            $insert_stmt = $conn->prepare("INSERT INTO questions (subject, lesson, topic, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $insert_stmt->bind_param("ssssssssss", $subject, $lesson, $topic, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
+        } else {
+            $insert_stmt = $conn->prepare("INSERT INTO questions (subject, lesson, type, question, correct, wrong1, wrong2, wrong3, solution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $insert_stmt->bind_param("sssssssss", $subject, $lesson, $type, $question_text, $correct, $wrong1, $wrong2, $wrong3, $solution);
+        }
         
         if ($insert_stmt->execute()) {
             echo json_encode(['success' => true]);
@@ -197,11 +205,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET['ajax_add_question'])) 
 
 // Handle AJAX request to delete a question
 if (isset($_GET['ajax_delete_question']) && isset($_GET['question_id'])) {
+    header('Content-Type: application/json');
     $question_id = $_GET['question_id'];
     $stmt = $conn->prepare("DELETE FROM questions WHERE id = ?");
     $stmt->bind_param("i", $question_id);
     $success = $stmt->execute();
-    header('Content-Type: application/json');
     echo json_encode(['success' => $success]);
     $conn->close();
     exit();
@@ -209,13 +217,13 @@ if (isset($_GET['ajax_delete_question']) && isset($_GET['question_id'])) {
 
 // Handle AJAX request to get a single question for editing
 if (isset($_GET['ajax_get_question']) && isset($_GET['question_id'])) {
+    header('Content-Type: application/json');
     $question_id = $_GET['question_id'];
     $stmt = $conn->prepare("SELECT id, type, question, correct, wrong1, wrong2, wrong3, solution FROM questions WHERE id = ?");
     $stmt->bind_param("i", $question_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $question = $result->fetch_assoc();
-    header('Content-Type: application/json');
     echo json_encode($question);
     $conn->close();
     exit();
@@ -223,6 +231,7 @@ if (isset($_GET['ajax_get_question']) && isset($_GET['question_id'])) {
 
 // Handle AJAX request to update a question
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET['ajax_update'])) {
+    header('Content-Type: application/json');
     $id = $_POST['question_id'];
     $type = $_POST['type'];
     $question = $_POST['question'];
@@ -235,7 +244,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET['ajax_update'])) {
     $stmt = $conn->prepare("UPDATE questions SET type=?, question=?, correct=?, wrong1=?, wrong2=?, wrong3=?, solution=? WHERE id=?");
     $stmt->bind_param("ssssssss", $type, $question, $correct, $wrong1, $wrong2, $wrong3, $solution, $id);
     $success = $stmt->execute();
-    header('Content-Type: application/json');
     echo json_encode(['success' => $success, 'error' => $conn->error]);
     $conn->close();
     exit();
@@ -732,9 +740,13 @@ $conn->close();
         let currentTopic = '';
         let currentTestOwner = '';
         
+        console.log('Page loaded. isKpluz:', isKpluz);
+        
         function updateLessonOptions() {
             const subject = document.getElementById('subjectSelect').value;
             const lessonSelect = document.getElementById('lessonSelect');
+            
+            console.log('updateLessonOptions - Subject selected:', subject);
             
             lessonSelect.innerHTML = '<option value="">-- Select a lesson --</option>';
             
@@ -744,7 +756,10 @@ $conn->close();
             }
             
             const tests = <?php echo json_encode($tests); ?>;
+            console.log('All tests:', tests);
+            
             const filteredLessons = tests.filter(test => test.subject === subject);
+            console.log('Filtered lessons for subject:', filteredLessons);
             
             if (filteredLessons.length === 0) {
                 lessonSelect.disabled = true;
@@ -765,6 +780,8 @@ $conn->close();
             const subject = document.getElementById('subjectSelect').value;
             const lessonTopicValue = document.getElementById('lessonSelect').value;
             
+            console.log('loadQuestions called - Subject:', subject, 'LessonTopicValue:', lessonTopicValue);
+            
             if (!subject || !lessonTopicValue) {
                 document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Select a subject and lesson to view existing questions.</div>';
                 return;
@@ -774,30 +791,49 @@ $conn->close();
             const lesson = parts[0];
             const topic = parts[1];
             
+            console.log('Extracted - Lesson:', lesson, 'Topic:', topic);
+            
             currentSubject = subject;
             currentLesson = lesson;
             currentTopic = topic;
             
             document.getElementById('questionsContainer').innerHTML = '<div class="loading">Loading questions...</div>';
             
-            fetch(`?ajax_get_questions=1&subject=${encodeURIComponent(subject)}&lesson=${encodeURIComponent(lesson)}&topic=${encodeURIComponent(topic)}`)
-                .then(response => response.json())
+            // Build URL with absolute path
+            const url = window.location.pathname + `?ajax_get_questions=1&subject=${encodeURIComponent(subject)}&lesson=${encodeURIComponent(lesson)}&topic=${encodeURIComponent(topic)}`;
+            console.log('Fetch URL:', url);
+            
+            fetch(url)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error('HTTP error ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Data received:', data);
                     const questions = data.questions;
                     currentTestOwner = data.test_owner;
                     const canEdit = (currentTestOwner === data.current_user);
+                    
+                    console.log('Questions count:', questions ? questions.length : 0);
+                    console.log('Test owner:', currentTestOwner);
+                    console.log('Can edit:', canEdit);
                     
                     // Show/hide add question section based on edit permission
                     const addSection = document.getElementById('addQuestionSection');
                     if (addSection) {
                         if (canEdit) {
                             addSection.style.display = 'block';
+                            console.log('Add section shown');
                         } else {
                             addSection.style.display = 'none';
+                            console.log('Add section hidden');
                         }
                     }
                     
-                    if (questions.length === 0) {
+                    if (!questions || questions.length === 0) {
                         document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">No questions found for this test.</div>';
                         return;
                     }
@@ -851,12 +887,12 @@ $conn->close();
                         html += `</div>
                             </tr>`;
                     });
-                    html += '</td>';
+                    html += '</table>';
                     document.getElementById('questionsContainer').innerHTML = html;
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Error loading questions.</div>';
+                    console.error('Error loading questions:', error);
+                    document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Error loading questions. Check browser console for details.</div>';
                 });
         }
         
@@ -908,12 +944,15 @@ $conn->close();
             formData.append('wrong3', document.getElementById('add_wrong3').value);
             formData.append('solution', document.getElementById('add_solution').value);
             
-            fetch('?ajax_add_question=1', {
+            console.log('Adding question to test:', currentSubject, currentLesson, currentTopic);
+            
+            fetch(window.location.pathname + '?ajax_add_question=1', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(result => {
+                console.log('Add question result:', result);
                 if (result.success) {
                     alert('Question added successfully!');
                     // Clear form
@@ -931,31 +970,46 @@ $conn->close();
                 } else {
                     alert('Error: ' + result.error);
                 }
+            })
+            .catch(error => {
+                console.error('Error adding question:', error);
+                alert('Error adding question. Check console for details.');
             });
         }
         
         function deleteQuestion(questionId, questionText) {
             if (confirm(`Are you sure you want to delete:\n\n"${questionText}"\n\nThis action cannot be undone!`)) {
-                fetch(`?ajax_delete_question=1&question_id=${questionId}`)
+                console.log('Deleting question ID:', questionId);
+                fetch(window.location.pathname + `?ajax_delete_question=1&question_id=${questionId}`)
                     .then(response => response.json())
                     .then(result => {
+                        console.log('Delete result:', result);
                         if (result.success) {
                             alert('Question deleted successfully!');
                             loadQuestions();
                         } else {
                             alert('Error deleting question.');
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting question:', error);
+                        alert('Error deleting question. Check console for details.');
                     });
             }
         }
         
         function editQuestion(questionId) {
-            fetch(`?ajax_get_question=1&question_id=${questionId}`)
+            console.log('Editing question ID:', questionId);
+            fetch(window.location.pathname + `?ajax_get_question=1&question_id=${questionId}`)
                 .then(response => response.json())
                 .then(question => {
                     if (question) {
                         showEditModal(question);
                     }
+                })
+                .catch(error => {
+                    console.error('Error fetching question:', error);
+                    alert('Error loading question for editing.');
                 });
         }
         
@@ -1003,12 +1057,15 @@ $conn->close();
             formData.append('wrong3', document.getElementById('edit_wrong3').value);
             formData.append('solution', document.getElementById('edit_solution').value);
             
-            fetch('?ajax_update=1', {
+            console.log('Saving question ID:', document.getElementById('edit_question_id').value);
+            
+            fetch(window.location.pathname + '?ajax_update=1', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(result => {
+                console.log('Update result:', result);
                 if (result.success) {
                     alert('Question updated successfully!');
                     document.getElementById('editModal').style.display = 'none';
@@ -1016,6 +1073,10 @@ $conn->close();
                 } else {
                     alert('Error updating question: ' + result.error);
                 }
+            })
+            .catch(error => {
+                console.error('Error updating question:', error);
+                alert('Error updating question. Check console for details.');
             });
         }
         
@@ -1060,20 +1121,29 @@ $conn->close();
         }
         
         window.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM fully loaded');
+            
             const subjectSelect = document.getElementById('subjectSelect');
             const lessonSelect = document.getElementById('lessonSelect');
             
             subjectSelect.addEventListener('change', () => {
+                console.log('Subject changed to:', subjectSelect.value);
                 updateLessonOptions();
                 document.getElementById('questionsContainer').innerHTML = '<div class="no-questions">Select a lesson to view questions.</div>';
             });
             
             lessonSelect.addEventListener('change', () => {
+                console.log('Lesson changed to:', lessonSelect.value);
                 loadQuestions();
             });
             
-            document.getElementById('add_type').addEventListener('change', () => adjustWrongAnswers('add'));
-            adjustWrongAnswers('add');
+            const addTypeSelect = document.getElementById('add_type');
+            if (addTypeSelect) {
+                addTypeSelect.addEventListener('change', () => adjustWrongAnswers('add'));
+                adjustWrongAnswers('add');
+            }
+            
+            console.log('Event listeners attached');
         });
         
         window.onclick = function(event) {
