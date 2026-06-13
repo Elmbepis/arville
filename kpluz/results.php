@@ -59,6 +59,17 @@ while ($row = $subject_result->fetch_assoc()) {
     $subjects_only[] = $row['subject'];
 }
 
+// Get subjects that have at least one test result (by joining with test_results)
+$subjects_with_results = [];
+$results_query = $conn->query("
+    SELECT DISTINCT t.subject 
+    FROM tests t 
+    INNER JOIN test_results tr ON t.id = tr.test_id
+");
+while ($row = $results_query->fetch_assoc()) {
+    $subjects_with_results[] = $row['subject'];
+}
+
 // Reorder subjects according to custom order
 $ordered_subjects = [];
 foreach ($subject_order as $ordered_subject) {
@@ -221,6 +232,7 @@ $conn->close();
         font-weight: bold;
         font-size: 0.85em;
         flex: 1;
+        cursor: pointer;
     }
     
     .results-btn:hover {
@@ -242,6 +254,14 @@ $conn->close();
     
     .results-btn-topics:hover {
         background: #138496;
+    }
+    
+    /* Disabled button styles */
+    .results-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+        background: #6c757d !important;
     }
     
     .no-results {
@@ -345,13 +365,20 @@ $conn->close();
             
             <?php if (!empty($ordered_subjects)): ?>
                 <div class="subjects-grid">
-                    <?php foreach ($ordered_subjects as $subject): ?>
+                    <?php foreach ($ordered_subjects as $subject): 
+                        $has_results = in_array($subject, $subjects_with_results);
+                    ?>
                         <div class="subject-card">
                             <div class="subject-icon">&#128214;</div>
                             <div class="subject-name"><?= htmlspecialchars($subject) ?></div>
                             <div class="button-group">
-                                <a href="results2.php?subject=<?= urlencode($subject) ?>&id=students" class="results-btn results-btn-students">By Students</a>
-                                <a href="results2.php?subject=<?= urlencode($subject) ?>&id=topics" class="results-btn results-btn-topics">By Topics</a>
+                                <?php if ($has_results): ?>
+                                    <a href="results2.php?subject=<?= urlencode($subject) ?>&id=students" class="results-btn results-btn-students">By Students</a>
+                                    <a href="results2.php?subject=<?= urlencode($subject) ?>&id=topics" class="results-btn results-btn-topics">By Topics</a>
+                                <?php else: ?>
+                                    <span class="results-btn results-btn-students disabled" title="No test results available for this subject">By Students</span>
+                                    <span class="results-btn results-btn-topics disabled" title="No test results available for this subject">By Topics</span>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>

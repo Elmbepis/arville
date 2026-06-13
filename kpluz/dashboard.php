@@ -369,7 +369,8 @@ $conn->close();
                     <a href="edit-test.php" class="nav-btn">Review/Edit Tests</a>
                 </div>
                 
-                <!-- User Management -->
+                <!-- User Management (Admin only) -->
+                <?php if ($user_role === 'admin'): ?>
                 <div class="nav-card">
                     <div class="nav-icon">&#128101;</div>
                     <div class="nav-title">User Management</div>
@@ -378,6 +379,7 @@ $conn->close();
                     </div>
                     <a href="users.php" class="nav-btn">Manage Users</a>
                 </div>
+                <?php endif; ?>
                 
                 <!-- View Results -->
                 <div class="nav-card">

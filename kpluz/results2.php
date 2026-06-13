@@ -259,10 +259,18 @@ if ($view_type === 'students') {
                 border-radius: 4px;
                 font-size: 0.85em;
                 transition: background 0.3s;
+                display: inline-block;
             }
             
             .view-student-btn:hover {
                 background: #218838;
+            }
+            
+            .view-student-btn.disabled {
+                background: #6c757d;
+                opacity: 0.6;
+                cursor: not-allowed;
+                pointer-events: none;
             }
             
             .action-buttons {
@@ -356,9 +364,13 @@ if ($view_type === 'students') {
                                     <?= $data['modules_ratio'] ?>
                                 </td>
                                 <td>
-                                    <a href="test-results.php?subject=<?= urlencode($subject) ?>&student_id=<?= $student_id ?>" class="view-student-btn">View Test Results</a>
-                                </td>
-                            </tr>
+                                    <?php if ($data['modules_taken'] > 0): ?>
+                                        <a href="test-results.php?subject=<?= urlencode($subject) ?>&student_id=<?= $student_id ?>" class="view-student-btn">View Test Results</a>
+                                    <?php else: ?>
+                                        <span class="view-student-btn disabled" title="No test results for this student in <?= htmlspecialchars($subject) ?>">View Test Results</span>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -375,18 +387,16 @@ if ($view_type === 'students') {
     
 <?php
 } elseif ($view_type === 'topics') {
-    // TOPICS VIEW - Show results organized by topics/lessons for this subject
-    
-    // Get all tests (lessons/topics) for this subject
-    $tests_stmt = $conn->prepare("SELECT id, lesson, topic FROM tests WHERE subject = ? ORDER BY lesson");
+    // TOPICS VIEW - Show results per test (lesson + topic) using test_id to separate duplicates
+    $tests_stmt = $conn->prepare("SELECT id, lesson, topic FROM tests WHERE subject = ? ORDER BY lesson, topic");
     $tests_stmt->bind_param("s", $subject);
     $tests_stmt->execute();
     $tests = $tests_stmt->get_result();
     $test_list = [];
     while ($test = $tests->fetch_assoc()) {
-        $test_list[] = $test;
+        $test_list[$test['id']] = $test;  // key by test_id
     }
-    
+
     // Get all students
     $student_stmt = $conn->prepare("SELECT id, name FROM users WHERE role = 'student' ORDER BY name");
     $student_stmt->execute();
@@ -395,45 +405,45 @@ if ($view_type === 'students') {
     while ($student = $students->fetch_assoc()) {
         $student_list[$student['id']] = $student['name'];
     }
-    
-    // Get all test results for this subject by joining with tests table
+
+    // Get all test results for this subject, grouped by test_id
     $results_data = [];
     $results_stmt = $conn->prepare("
-        SELECT tr.user_id, t.lesson, tr.score, tr.total_questions, tr.percentage 
+        SELECT tr.user_id, t.id AS test_id, tr.score, tr.total_questions, tr.percentage
         FROM test_results tr
         JOIN tests t ON tr.test_id = t.id
         WHERE t.subject = ?
-        ORDER BY tr.user_id, t.lesson
+        ORDER BY tr.user_id, t.id
     ");
     $results_stmt->bind_param("s", $subject);
     $results_stmt->execute();
     $results = $results_stmt->get_result();
-    
+
     while ($row = $results->fetch_assoc()) {
-        $lesson = $row['lesson'];
+        $test_id = $row['test_id'];
         $user_id = $row['user_id'];
-        if (!isset($results_data[$lesson])) {
-            $results_data[$lesson] = [];
+        if (!isset($results_data[$test_id])) {
+            $results_data[$test_id] = [];
         }
-        $results_data[$lesson][$user_id] = [
+        $results_data[$test_id][$user_id] = [
             'score' => $row['score'],
             'total_questions' => $row['total_questions'],
             'percentage' => $row['percentage']
         ];
     }
-    
-    // Calculate statistics per lesson
+
+    // Calculate statistics per test
     $lesson_stats = [];
-    foreach ($test_list as $test) {
+    foreach ($test_list as $test_id => $test) {
         $lesson = $test['lesson'];
         $topic = $test['topic'];
         $total_score_sum = 0;
         $total_questions_sum = 0;
         $students_taken = 0;
         $students_passed = 0;
-        
-        if (isset($results_data[$lesson])) {
-            foreach ($results_data[$lesson] as $student_id => $result) {
+
+        if (isset($results_data[$test_id])) {
+            foreach ($results_data[$test_id] as $student_id => $result) {
                 $students_taken++;
                 $total_score_sum += $result['score'];
                 $total_questions_sum += $result['total_questions'];
@@ -442,9 +452,9 @@ if ($view_type === 'students') {
                 }
             }
         }
-        
+
         $average_percentage = $total_questions_sum > 0 ? ($total_score_sum / $total_questions_sum) * 100 : 0;
-        
+
         $lesson_stats[] = [
             'lesson' => $lesson,
             'topic' => $topic,
@@ -455,7 +465,7 @@ if ($view_type === 'students') {
             'passing_rate' => $students_taken > 0 ? ($students_passed / $students_taken) * 100 : 0
         ];
     }
-    
+
     $conn->close();
     ?>
     
@@ -620,10 +630,19 @@ if ($view_type === 'students') {
                 font-weight: bold;
                 font-size: 0.85em;
                 margin-top: 15px;
+                cursor: pointer;
             }
             
             .view-topic-btn:hover {
                 background: #0055aa;
+                color: white;
+            }
+            
+            .view-topic-btn.disabled {
+                background: #6c757d;
+                opacity: 0.6;
+                cursor: not-allowed;
+                pointer-events: none;
             }
             
             .action-buttons {
@@ -724,7 +743,11 @@ if ($view_type === 'students') {
                                 </div>
                                 <div class="stat-label">Passing Rate</div>
                             </div>
-                            <a href="results-students.php?subject=<?= urlencode($subject) ?>&lesson=<?= urlencode($stat['lesson']) ?>" class="view-topic-btn">View Students</a>
+                            <?php if ($stat['students_taken'] > 0): ?>
+                                <a href="results-students.php?subject=<?= urlencode($subject) ?>&lesson=<?= urlencode($stat['lesson']) ?>" class="view-topic-btn">View Students</a>
+                            <?php else: ?>
+                                <span class="view-topic-btn disabled" title="No students have taken this test">View Students</span>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
