@@ -19,7 +19,7 @@ if ($conn->connect_error) {
 
 // Get user details
 $user_id = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT name, role FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT name, role, school FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -33,43 +33,82 @@ if (!$user) {
 
 $user_name = $user['name'];
 $user_role = $user['role'];
+$user_school = $user['school'];
 
 // Get available tests grouped by subject
 $tests_by_subject = [];
 $total_tests = 0;
 
 if ($user_role === 'student') {
-$test_result = $conn->query("
-    SELECT id, subject, lesson, topic FROM tests 
-    ORDER BY 
-        CASE 
-            WHEN subject IN ('General Science', 'General Mathematics', 'Effective Communication', 'Life and Career Skills', 'Mabisang Komunikasyon', 'Kasaysayan at Lipunang Pilipino') THEN 0 
-            ELSE 1 
-        END, 
-        subject, 
-        lesson
-");    
-    while ($row = $test_result->fetch_assoc()) {
-        $subject = $row['subject'];
-        if (!isset($tests_by_subject[$subject])) {
-            $tests_by_subject[$subject] = [];
+    // Get all tests created by KPluz (universal access - no school restriction)
+    $kpluz_tests = $conn->query("
+        SELECT id, subject, lesson, topic, teacher 
+        FROM tests 
+        WHERE teacher = 'KPluz'
+        ORDER BY subject, lesson
+    ");
+    
+    if ($kpluz_tests) {
+        while ($row = $kpluz_tests->fetch_assoc()) {
+            $subject = $row['subject'];
+            if (!isset($tests_by_subject[$subject])) {
+                $tests_by_subject[$subject] = [];
+            }
+            $tests_by_subject[$subject][] = $row;
+            $total_tests++;
         }
-        $tests_by_subject[$subject][] = $row;
-        $total_tests++;
+    }
+    
+    // Get tests created by non-KPluz teachers from the student's school
+    // Only if the student has a school assigned
+    if (!empty($user_school)) {
+        $school_tests = $conn->prepare("
+            SELECT DISTINCT t.id, t.subject, t.lesson, t.topic, t.teacher 
+            FROM tests t
+            WHERE t.teacher != 'KPluz'
+            AND t.teacher IN (
+                SELECT name FROM users WHERE role = 'teacher' AND school = ?
+            )
+            ORDER BY subject, lesson
+        ");
+        $school_tests->bind_param("s", $user_school);
+        $school_tests->execute();
+        $school_data = $school_tests->get_result();
+        
+        while ($row = $school_data->fetch_assoc()) {
+            $subject = $row['subject'];
+            if (!isset($tests_by_subject[$subject])) {
+                $tests_by_subject[$subject] = [];
+            }
+            // Avoid duplicates (in case a test appears in both)
+            $exists = false;
+            foreach ($tests_by_subject[$subject] as $existing) {
+                if ($existing['id'] == $row['id']) {
+                    $exists = true;
+                    break;
+                }
+            }
+            if (!$exists) {
+                $tests_by_subject[$subject][] = $row;
+                $total_tests++;
+            }
+        }
+        $school_tests->close();
     }
 }
 
-// Get completed tests to check which tests have scores
-$completed_tests = [];
+// Get completed tests based on test_id (most accurate - uses the actual test ID)
+$completed_test_ids = [];
 if ($user_role === 'student') {
-    $stmt = $conn->prepare("SELECT DISTINCT lesson FROM test_results WHERE user_id = ?");
+    $stmt = $conn->prepare("SELECT DISTINCT test_id FROM test_results WHERE user_id = ? AND answers IS NOT NULL AND answers != ''");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
     
     while ($row = $result->fetch_assoc()) {
-        $completed_tests[] = $row['lesson'];
+        $completed_test_ids[] = $row['test_id'];
     }
+    $stmt->close();
 }
 
 $conn->close();
@@ -134,7 +173,6 @@ $conn->close();
         padding: 40px;
         text-align: left;
     }
-    
     
     .section-title {
         color: #003366;
@@ -224,7 +262,18 @@ $conn->close();
         flex-grow: 1;
     }
     
-    /* Button styles - exactly matching original */
+    .teacher-badge {
+        display: inline-block;
+        background: #e9ecef;
+        color: #0066cc;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7em;
+        margin-top: 5px;
+        font-weight: normal;
+    }
+    
+    /* Button styles */
     .take-test-btn {
         display: inline-block;
         padding: 8px 16px;
@@ -362,26 +411,36 @@ $conn->close();
             <!-- STUDENT TESTS VIEW -->
             <div class="tests-section">
                 <h2 class="section-title">
-                    Available Tests (Based on DepEd Lesson Exemplars)
+                    Available Tests
                     <span class="test-count">Total: <?= $total_tests ?> Test(s)</span>
                 </h2>
                 
                 <?php if (!empty($tests_by_subject)): ?>
-                    <?php foreach ($tests_by_subject as $subject => $tests): ?>
+                    <?php 
+                    // Sort subjects with core subjects first
+                    $core_subjects = ['General Science', 'General Mathematics', 'Effective Communication', 'Life and Career Skills', 'Mabisang Komunikasyon', 'Kasaysayan at Lipunang Pilipino'];
+                    $sorted_subjects = array_merge(array_intersect($core_subjects, array_keys($tests_by_subject)), array_diff(array_keys($tests_by_subject), $core_subjects));
+                    ?>
+                    <?php foreach ($sorted_subjects as $subject): ?>
+                        <?php $tests = $tests_by_subject[$subject]; ?>
                         <div class="subject-tests">
                             <div class="subject-title">
                                 <?= htmlspecialchars($subject) ?>
                             </div>
                             <div class="tests-grid">
                                 <?php foreach ($tests as $test): 
-                                    $is_completed = in_array($test['lesson'], $completed_tests);
+                                    // Check if test is completed using test_id
+                                    $is_completed = in_array($test['id'], $completed_test_ids);
                                 ?>
                                     <div class="test-card">
                                         <div class="test-icon">&#128203;</div>
                                         <div class="test-lesson"><?= htmlspecialchars($test['lesson']) ?></div>
                                         <div class="test-topic"><?= htmlspecialchars($test['topic']) ?></div>
+                                        <?php if ($test['teacher'] !== 'KPluz'): ?>
+                                            <div class="teacher-badge">Teacher: <?= htmlspecialchars($test['teacher']) ?></div>
+                                        <?php endif; ?>
                                         <?php if ($is_completed): ?>
-                                            <a href="report-card.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="report-card-btn">See Report Card</a>
+                                            <a href="test-results.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="report-card-btn">See Report Card</a>
                                         <?php else: ?>
                                             <a href="taketest.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="take-test-btn">Take Test</a>
                                         <?php endif; ?>
@@ -393,6 +452,9 @@ $conn->close();
                 <?php else: ?>
                     <div class="no-results">
                         <p>No tests available at the moment. Please check back later.</p>
+                        <?php if (empty($user_school)): ?>
+                            <p><small>Note: Your school is not set. Please contact your administrator.</small></p>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
             </div>

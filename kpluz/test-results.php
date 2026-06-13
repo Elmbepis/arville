@@ -66,11 +66,24 @@ $student_name = $student_data['name'];
 // Check if viewing as teacher/admin
 $is_admin_view = ($user_role === 'teacher' || $user_role === 'admin') && $view_student_id != $user_id;
 
+// First, get the test_id from tests table using subject and lesson
+$test_id_stmt = $conn->prepare("SELECT id FROM tests WHERE subject = ? AND lesson = ?");
+$test_id_stmt->bind_param("ss", $subject_name, $lesson_name);
+$test_id_stmt->execute();
+$test_id_result = $test_id_stmt->get_result();
+$test_info = $test_id_result->fetch_assoc();
+
+if (!$test_info) {
+    die("Test not found for subject: " . htmlspecialchars($subject_name) . " and lesson: " . htmlspecialchars($lesson_name));
+}
+
+$test_id = $test_info['id'];
+
 // CASE 1: Lesson is provided - Show specific test with detailed answers
 if (!empty($lesson_name)) {
-    // Get specific test results
-    $result_stmt = $conn->prepare("SELECT * FROM test_results WHERE user_id = ? AND subject = ? AND lesson = ?");
-    $result_stmt->bind_param("iss", $view_student_id, $subject_name, $lesson_name);
+    // Get specific test results using test_id instead of subject and lesson
+    $result_stmt = $conn->prepare("SELECT * FROM test_results WHERE user_id = ? AND test_id = ?");
+    $result_stmt->bind_param("ii", $view_student_id, $test_id);
     $result_stmt->execute();
     $test_result = $result_stmt->get_result()->fetch_assoc();
     
@@ -234,7 +247,8 @@ if (!empty($lesson_name)) {
     
     $all_tests_list = [];
     while ($test = $all_tests_result->fetch_assoc()) {
-        $all_tests_list[$test['lesson']] = [
+        $all_tests_list[$test['id']] = [
+            'id' => $test['id'],
             'lesson' => $test['lesson'],
             'topic' => $test['topic'],
             'taken' => false,
@@ -245,19 +259,19 @@ if (!empty($lesson_name)) {
         ];
     }
     
-    // Get taken tests for this student
-    $taken_tests_stmt = $conn->prepare("SELECT * FROM test_results WHERE user_id = ? AND subject = ? ORDER BY lesson");
-    $taken_tests_stmt->bind_param("is", $view_student_id, $subject_name);
+    // Get taken tests for this student using test_id
+    $taken_tests_stmt = $conn->prepare("SELECT test_id, score, total_questions, percentage, completed_at FROM test_results WHERE user_id = ?");
+    $taken_tests_stmt->bind_param("i", $view_student_id);
     $taken_tests_stmt->execute();
     $taken_tests_result = $taken_tests_stmt->get_result();
     
     while ($taken = $taken_tests_result->fetch_assoc()) {
-        if (isset($all_tests_list[$taken['lesson']])) {
-            $all_tests_list[$taken['lesson']]['taken'] = true;
-            $all_tests_list[$taken['lesson']]['score'] = $taken['score'];
-            $all_tests_list[$taken['lesson']]['total_questions'] = $taken['total_questions'];
-            $all_tests_list[$taken['lesson']]['percentage'] = $taken['percentage'];
-            $all_tests_list[$taken['lesson']]['completed_at'] = $taken['completed_at'];
+        if (isset($all_tests_list[$taken['test_id']])) {
+            $all_tests_list[$taken['test_id']]['taken'] = true;
+            $all_tests_list[$taken['test_id']]['score'] = $taken['score'];
+            $all_tests_list[$taken['test_id']]['total_questions'] = $taken['total_questions'];
+            $all_tests_list[$taken['test_id']]['percentage'] = $taken['percentage'];
+            $all_tests_list[$taken['test_id']]['completed_at'] = $taken['completed_at'];
         }
     }
     

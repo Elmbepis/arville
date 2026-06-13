@@ -62,9 +62,9 @@ $test_subject = $test['subject'];
 $test_lesson = $test['lesson'];
 $test_topic = $test['topic'];
 
-// Check if student has already taken this test
-$check_stmt = $conn->prepare("SELECT id FROM test_results WHERE user_id = ? AND subject = ? AND lesson = ?");
-$check_stmt->bind_param("iss", $user_id, $subject_name, $lesson_name);
+// Check if student has already taken this test using test_id
+$check_stmt = $conn->prepare("SELECT id FROM test_results WHERE user_id = ? AND test_id = ?");
+$check_stmt->bind_param("ii", $user_id, $test_id);
 $check_stmt->execute();
 $check_result = $check_stmt->get_result();
 
@@ -96,7 +96,7 @@ if ($check_result->num_rows > 0) {
             </div>
             <div class='dashboard-content'>
                 <div class='message-box'>
-                    <div class='warningicon'>&#9888;&#65039;</div>
+                    <div class='warning-icon'>&#9888;&#65039;</div>
                     <h2>Test Already Taken</h2>
                     <p>You have already completed the test for:<br/>
                     <strong>" . htmlspecialchars($test_subject) . " - " . htmlspecialchars($test_lesson) . "</strong><br/>
@@ -131,9 +131,10 @@ while ($row = $result->fetch_assoc()) {
 // Store question details in session for grading
 $_SESSION['current_test_subject'] = $subject_name;
 $_SESSION['current_test_lesson'] = $lesson_name;
+$_SESSION['current_test_id'] = $test_id;
 $_SESSION['current_test_question_ids'] = array_column($questions, 'id');
 $_SESSION['current_test_question_count'] = count($questions);
-$_SESSION['current_test_questions_order'] = $questions;  // <-- THIS IS THE ONLY LINE ADDED
+$_SESSION['current_test_questions_order'] = $questions;
 
 $conn->close();
 ?>
@@ -209,7 +210,6 @@ $conn->close();
         font-size: 16px;
     }
     
-    /* Topic line - bigger and violet */
     .topic-line {
         font-size: 1.5em;
         color: #9b59b6;
@@ -290,7 +290,6 @@ $conn->close();
         background: #0055aa; 
     }
     
-    /* Action Buttons */
     .action-buttons {
         display: flex;
         justify-content: center;
@@ -353,7 +352,6 @@ $conn->close();
     <div class="dashboard-content">
         <h2><span class="test-for-text">Test for:</span><br/><?= htmlspecialchars($test_subject) ?> - <?= htmlspecialchars($test_lesson) ?></h2>
         
-        <!-- Topic line - bigger and violet -->
         <div class="topic-line">&#128214; Topic: <?= htmlspecialchars($test_topic) ?></div>
         
         <div class="other-info">

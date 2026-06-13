@@ -26,9 +26,10 @@ if (isset($_SESSION['current_test_questions_order']) && !empty($_SESSION['curren
 $total = count($question_ids);
 $score = 0;
 
-// Get subject and lesson from POST
+// Get subject, lesson, and test_id from POST
 $subject = isset($_POST['subject']) ? $_POST['subject'] : '';
 $lesson = isset($_POST['lesson']) ? $_POST['lesson'] : '';
+$test_id = isset($_POST['test_id']) ? intval($_POST['test_id']) : 0;
 
 // Connect to DB - Changed to kpluz database
 $conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz");
@@ -175,10 +176,9 @@ if ($subject !== '' && $lesson !== '') {
         }
         $update_stmt->close();
     } else {
-        // No existing record - insert new one with answers
-        // MODIFIED: Include answers in insert
-        $insert_stmt = $conn->prepare("INSERT INTO test_results (user_id, subject, lesson, score, total_questions, percentage, answers) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $insert_stmt->bind_param("issiids", $user_id, $subject, $lesson, $score, $total, $percentage, $answers_json);
+        // No existing record - insert new one with test_id
+        $insert_stmt = $conn->prepare("INSERT INTO test_results (user_id, subject, lesson, test_id, score, total_questions, percentage, answers) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $insert_stmt->bind_param("issiiids", $user_id, $subject, $lesson, $test_id, $score, $total, $percentage, $answers_json);
         
         if ($insert_stmt->execute()) {
             $action_taken = "inserted";
