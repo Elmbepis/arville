@@ -59,18 +59,18 @@ if ($user_role === 'student') {
     }
 }
 
-// Get completed tests with scores - Now using both subject and lesson
+// Get completed tests with scores using test_id
 $completed_scores = [];
 if ($user_role === 'student') {
-    $stmt = $conn->prepare("SELECT subject, lesson, score, percentage FROM test_results WHERE user_id = ?");
+    $stmt = $conn->prepare("SELECT test_id, score, total_questions, percentage FROM test_results WHERE user_id = ? AND answers IS NOT NULL AND answers != ''");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
     
     while ($row = $result->fetch_assoc()) {
-        $key = $row['subject'] . '|' . $row['lesson'];
-        $completed_scores[$key] = [
+        $completed_scores[$row['test_id']] = [
             'score' => $row['score'],
+            'total_questions' => $row['total_questions'],
             'percentage' => $row['percentage']
         ];
     }
@@ -396,10 +396,11 @@ $conn->close();
                             </div>
                             <div class="reports-grid">
                                 <?php foreach ($tests as $test): 
-                                    $key = $test['subject'] . '|' . $test['lesson'];
-                                    $is_completed = isset($completed_scores[$key]);
-                                    $score = $is_completed ? $completed_scores[$key]['score'] : null;
-                                    $percentage = $is_completed ? $completed_scores[$key]['percentage'] : null;
+                                    $test_id = $test['id'];
+                                    $is_completed = isset($completed_scores[$test_id]);
+                                    $score = $is_completed ? $completed_scores[$test_id]['score'] : null;
+                                    $total_qs = $is_completed ? $completed_scores[$test_id]['total_questions'] : null;
+                                    $percentage = $is_completed ? $completed_scores[$test_id]['percentage'] : null;
                                     $passed = $is_completed && $percentage >= 75;
                                 ?>
                                     <div class="report-card">
@@ -409,9 +410,9 @@ $conn->close();
                                         
                                         <?php if ($is_completed): ?>
                                             <div class="score-display <?= $passed ? 'score-passed' : 'score-failed' ?>">
-                                                Score: <?= $score ?>/25 (<?= $percentage ?>%)
+                                                Score: <?= $score ?>/<?= $total_qs ?> (<?= number_format($percentage, 1) ?>%)
                                             </div>
-                                            <a href="test-results.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="view-report-btn">View Test Results</a>
+                                            <a href="test-results.php?test_id=<?= $test_id ?>" class="view-report-btn">View Test Results</a>
                                         <?php else: ?>
                                             <div class="not-taken">
                                                 &#9888;&#65039; Test Not Taken Yet

@@ -47,7 +47,7 @@ if ($user_role !== 'teacher' && $user_role !== 'admin') {
     die("Access restricted to teachers and administrators only.");
 }
 
-// Get test details
+// Get test details and test_id
 $test_stmt = $conn->prepare("SELECT id, subject, lesson, topic FROM tests WHERE subject = ? AND lesson = ?");
 $test_stmt->bind_param("ss", $subject_name, $lesson_name);
 $test_stmt->execute();
@@ -58,15 +58,17 @@ if (!$test) {
     die("Test not found");
 }
 
-// Get all students who took this test with their scores
+$test_id = $test['id'];
+
+// Get all students who took this test with their scores (using test_id)
 $students_stmt = $conn->prepare("
     SELECT u.id, u.name, tr.score, tr.total_questions, tr.percentage, tr.completed_at
     FROM users u
     INNER JOIN test_results tr ON u.id = tr.user_id
-    WHERE u.role = 'student' AND tr.subject = ? AND tr.lesson = ?
+    WHERE u.role = 'student' AND tr.test_id = ?
     ORDER BY tr.percentage DESC, u.name ASC
 ");
-$students_stmt->bind_param("ss", $subject_name, $lesson_name);
+$students_stmt->bind_param("i", $test_id);
 $students_stmt->execute();
 $students_results = $students_stmt->get_result();
 
@@ -393,7 +395,7 @@ $conn->close();
                             </td>
                             <td><?= date('M d, Y', strtotime($student['completed_at'])) ?></td>
                             <td>
-                                <a href="test-results.php?subject=<?= urlencode($subject_name) ?>&lesson=<?= urlencode($lesson_name) ?>&student_id=<?= $student['id'] ?>" class="view-student-btn">View Student Report</a>
+                                <a href="test-results.php?test_id=<?= $test_id ?>&student_id=<?= $student['id'] ?>" class="view-student-btn">View Student Report</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

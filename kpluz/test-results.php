@@ -11,13 +11,14 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     exit();
 }
 
-// Get parameters
+// Get parameters - support both test_id (new) and subject+lesson (legacy)
+$test_id_param = isset($_GET['test_id']) ? intval($_GET['test_id']) : 0;
 $subject_name = isset($_GET['subject']) ? $_GET['subject'] : '';
 $lesson_name = isset($_GET['lesson']) ? $_GET['lesson'] : '';
 $student_id_param = isset($_GET['student_id']) ? intval($_GET['student_id']) : null;
 
-if (empty($subject_name)) {
-    die("Subject required in URL, e.g., ?subject=Biology+1&student_id=9");
+if (empty($subject_name) && $test_id_param == 0) {
+    die("Subject required in URL, e.g., ?subject=Biology+1&student_id=9 or ?test_id=5");
 }
 
 // Determine which student to view
@@ -66,22 +67,38 @@ $student_name = $student_data['name'];
 // Check if viewing as teacher/admin
 $is_admin_view = ($user_role === 'teacher' || $user_role === 'admin') && $view_student_id != $user_id;
 
-// First, get the test_id from tests table using subject and lesson
-$test_id_stmt = $conn->prepare("SELECT id FROM tests WHERE subject = ? AND lesson = ?");
-$test_id_stmt->bind_param("ss", $subject_name, $lesson_name);
-$test_id_stmt->execute();
-$test_id_result = $test_id_stmt->get_result();
-$test_info = $test_id_result->fetch_assoc();
+// Get test_id - either from parameter or lookup by subject/lesson
+$test_id = $test_id_param;
 
-if (!$test_info) {
-    die("Test not found for subject: " . htmlspecialchars($subject_name) . " and lesson: " . htmlspecialchars($lesson_name));
+if ($test_id == 0 && !empty($subject_name) && !empty($lesson_name)) {
+    $test_id_stmt = $conn->prepare("SELECT id FROM tests WHERE subject = ? AND lesson = ?");
+    $test_id_stmt->bind_param("ss", $subject_name, $lesson_name);
+    $test_id_stmt->execute();
+    $test_id_result = $test_id_stmt->get_result();
+    $test_info = $test_id_result->fetch_assoc();
+    if ($test_info) {
+        $test_id = $test_info['id'];
+    }
+    $test_id_stmt->close();
 }
 
-$test_id = $test_info['id'];
-
 // CASE 1: Lesson is provided - Show specific test with detailed answers
-if (!empty($lesson_name)) {
-    // Get specific test results using test_id instead of subject and lesson
+if (!empty($lesson_name) || $test_id > 0) {
+    // Get test details
+    $test_details_stmt = $conn->prepare("SELECT id, subject, lesson, topic FROM tests WHERE id = ?");
+    $test_details_stmt->bind_param("i", $test_id);
+    $test_details_stmt->execute();
+    $test_details = $test_details_stmt->get_result()->fetch_assoc();
+    
+    if (!$test_details) {
+        die("Test not found");
+    }
+    
+    $subject_name = $test_details['subject'];
+    $lesson_name = $test_details['lesson'];
+    $test_topic = $test_details['topic'];
+    
+    // Get specific test results using test_id
     $result_stmt = $conn->prepare("SELECT * FROM test_results WHERE user_id = ? AND test_id = ?");
     $result_stmt->bind_param("ii", $view_student_id, $test_id);
     $result_stmt->execute();
@@ -403,7 +420,7 @@ if (!empty($lesson_name)) {
                                         <td class="<?= $passed ? 'score-passed' : 'score-failed' ?>"><?= number_format($test['percentage'], 1) ?>%</td>
                                         <td><?= $passed ? '<span style="color:#28a745;">&#10003; Passed</span>' : '<span style="color:#dc3545;">&#10007; Failed</span>' ?></td>
                                         <td><?= date('M d, Y', strtotime($test['completed_at'])) ?></td>
-                                        <td><a href="test-results.php?subject=<?= urlencode($subject_name) ?>&lesson=<?= urlencode($test['lesson']) ?>&student_id=<?= $view_student_id ?>" class="view-test-btn">View Details</a></td>
+                                        <td><a href="test-results.php?test_id=<?= $test['id'] ?>&student_id=<?= $view_student_id ?>" class="view-test-btn">View Details</a></td>
                                     <?php else: ?>
                                         <td class="na-text">N/A</td>
                                         <td class="na-text">N/A</td>

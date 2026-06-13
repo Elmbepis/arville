@@ -65,8 +65,7 @@ if ($view_type === 'students') {
         $test_list[] = $test;
     }
     
-    // Get all test results for this subject
-    $results_data = [];
+    // Get all test results for this subject by joining with tests table
     $student_performance = [];
     
     foreach ($students as $student) {
@@ -78,9 +77,12 @@ if ($view_type === 'students') {
         $module_results = [];
         
         foreach ($test_list as $test) {
+            $test_id = $test['id'];
             $lesson = $test['lesson'];
-            $result_stmt = $conn->prepare("SELECT score, total_questions, percentage FROM test_results WHERE user_id = ? AND subject = ? AND lesson = ?");
-            $result_stmt->bind_param("iss", $student_id, $subject, $lesson);
+            
+            // Query test_results using test_id
+            $result_stmt = $conn->prepare("SELECT score, total_questions, percentage FROM test_results WHERE user_id = ? AND test_id = ?");
+            $result_stmt->bind_param("ii", $student_id, $test_id);
             $result_stmt->execute();
             $result_data = $result_stmt->get_result()->fetch_assoc();
             
@@ -100,6 +102,7 @@ if ($view_type === 'students') {
             } else {
                 $module_results[$lesson] = null;
             }
+            $result_stmt->close();
         }
         
         $average_percentage = $total_questions > 0 ? ($total_score / $total_questions) * 100 : 0;
@@ -393,13 +396,14 @@ if ($view_type === 'students') {
         $student_list[$student['id']] = $student['name'];
     }
     
-    // Get all test results for this subject
+    // Get all test results for this subject by joining with tests table
     $results_data = [];
     $results_stmt = $conn->prepare("
-        SELECT user_id, lesson, score, total_questions, percentage 
-        FROM test_results 
-        WHERE subject = ?
-        ORDER BY user_id, lesson
+        SELECT tr.user_id, t.lesson, tr.score, tr.total_questions, tr.percentage 
+        FROM test_results tr
+        JOIN tests t ON tr.test_id = t.id
+        WHERE t.subject = ?
+        ORDER BY tr.user_id, t.lesson
     ");
     $results_stmt->bind_param("s", $subject);
     $results_stmt->execute();
@@ -423,7 +427,6 @@ if ($view_type === 'students') {
     foreach ($test_list as $test) {
         $lesson = $test['lesson'];
         $topic = $test['topic'];
-        $scores = [];
         $total_score_sum = 0;
         $total_questions_sum = 0;
         $students_taken = 0;
