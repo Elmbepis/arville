@@ -46,8 +46,8 @@ if ($user_role !== 'student') {
     die("Access restricted to students only.");
 }
 
-// Fetch test details from tests table using subject and lesson
-$test_stmt = $conn->prepare("SELECT id, subject, lesson, topic FROM tests WHERE subject = ? AND lesson = ?");
+// Fetch test details (including teacher and topic)
+$test_stmt = $conn->prepare("SELECT id, subject, lesson, topic, teacher FROM tests WHERE subject = ? AND lesson = ?");
 $test_stmt->bind_param("ss", $subject_name, $lesson_name);
 $test_stmt->execute();
 $test_result = $test_stmt->get_result();
@@ -61,6 +61,7 @@ $test_id = $test['id'];
 $test_subject = $test['subject'];
 $test_lesson = $test['lesson'];
 $test_topic = $test['topic'];
+$test_teacher = $test['teacher'];
 
 // Check if student has already taken this test using test_id
 $check_stmt = $conn->prepare("SELECT id FROM test_results WHERE user_id = ? AND test_id = ?");
@@ -69,7 +70,7 @@ $check_stmt->execute();
 $check_result = $check_stmt->get_result();
 
 if ($check_result->num_rows > 0) {
-    // Student already took this test
+    // Student already took this test – show message (unchanged)
     echo "<!DOCTYPE html>
     <html lang='en'>
     <head>
@@ -116,10 +117,16 @@ if ($check_result->num_rows > 0) {
     exit();
 }
 
-// Fetch questions for this test from questions table using subject AND lesson
-// ORDER BY RAND() randomizes the question order
-$stmt = $conn->prepare("SELECT * FROM questions WHERE subject = ? AND lesson = ? ORDER BY RAND()");
-$stmt->bind_param("ss", $subject_name, $lesson_name);
+// &#9989; Correct question loading based on test owner
+if ($test_teacher === 'KPluz') {
+    // KPluz questions have topic = NULL
+    $stmt = $conn->prepare("SELECT * FROM questions WHERE subject = ? AND lesson = ? AND topic IS NULL ORDER BY RAND()");
+    $stmt->bind_param("ss", $subject_name, $lesson_name);
+} else {
+    // Non&#8209;KPluz questions have a specific topic
+    $stmt = $conn->prepare("SELECT * FROM questions WHERE subject = ? AND lesson = ? AND topic = ? ORDER BY RAND()");
+    $stmt->bind_param("sss", $subject_name, $lesson_name, $test_topic);
+}
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -138,7 +145,6 @@ $_SESSION['current_test_questions_order'] = $questions;
 
 $conn->close();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
