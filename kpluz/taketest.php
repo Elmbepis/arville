@@ -11,12 +11,14 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     exit();
 }
 
-// Get subject and lesson from URL parameters
-if (!isset($_GET['subject']) || !isset($_GET['lesson'])) {
+// Get parameters – topic is optional (for KPluz tests)
+$subject_name = isset($_GET['subject']) ? $_GET['subject'] : '';
+$lesson_name   = isset($_GET['lesson'])   ? $_GET['lesson']   : '';
+$topic_name    = isset($_GET['topic'])    ? $_GET['topic']    : null;
+
+if (empty($subject_name) || empty($lesson_name)) {
     die("Subject and lesson required in URL, e.g., ?subject=Effective%20Communication&lesson=Q1%20Lesson%201");
 }
-$subject_name = $_GET['subject'];
-$lesson_name = $_GET['lesson'];
 
 // Connect to MySQL
 $conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz");
@@ -46,15 +48,21 @@ if ($user_role !== 'student') {
     die("Access restricted to students only.");
 }
 
-// Fetch test details (including teacher and topic)
-$test_stmt = $conn->prepare("SELECT id, subject, lesson, topic, teacher FROM tests WHERE subject = ? AND lesson = ?");
-$test_stmt->bind_param("ss", $subject_name, $lesson_name);
+// Fetch test details – using topic if provided, otherwise only subject+lesson (KPluz)
+if ($topic_name !== null) {
+    $test_stmt = $conn->prepare("SELECT id, subject, lesson, topic, teacher FROM tests WHERE subject = ? AND lesson = ? AND topic = ?");
+    $test_stmt->bind_param("sss", $subject_name, $lesson_name, $topic_name);
+} else {
+    $test_stmt = $conn->prepare("SELECT id, subject, lesson, topic, teacher FROM tests WHERE subject = ? AND lesson = ?");
+    $test_stmt->bind_param("ss", $subject_name, $lesson_name);
+}
 $test_stmt->execute();
 $test_result = $test_stmt->get_result();
 $test = $test_result->fetch_assoc();
 
 if (!$test) {
-    die("Test not found for subject: " . htmlspecialchars($subject_name) . " and lesson: " . htmlspecialchars($lesson_name));
+    die("Test not found for subject: " . htmlspecialchars($subject_name) . " and lesson: " . htmlspecialchars($lesson_name) .
+        ($topic_name ? " and topic: " . htmlspecialchars($topic_name) : ""));
 }
 
 $test_id = $test['id'];
@@ -70,7 +78,7 @@ $check_stmt->execute();
 $check_result = $check_stmt->get_result();
 
 if ($check_result->num_rows > 0) {
-    // Student already took this test – show message (unchanged)
+    // Student already took this test – original message (unchanged)
     echo "<!DOCTYPE html>
     <html lang='en'>
     <head>
@@ -117,18 +125,18 @@ if ($check_result->num_rows > 0) {
     exit();
 }
 
-// &#9989; Correct question loading based on test owner
+// &#9989; Load questions based on test owner (KPluz vs other teachers)
 if ($test_teacher === 'KPluz') {
     // KPluz questions have topic = NULL
-    $stmt = $conn->prepare("SELECT * FROM questions WHERE subject = ? AND lesson = ? AND topic IS NULL ORDER BY RAND()");
-    $stmt->bind_param("ss", $subject_name, $lesson_name);
+    $q_stmt = $conn->prepare("SELECT * FROM questions WHERE subject = ? AND lesson = ? AND topic IS NULL ORDER BY RAND()");
+    $q_stmt->bind_param("ss", $subject_name, $lesson_name);
 } else {
     // Non&#8209;KPluz questions have a specific topic
-    $stmt = $conn->prepare("SELECT * FROM questions WHERE subject = ? AND lesson = ? AND topic = ? ORDER BY RAND()");
-    $stmt->bind_param("sss", $subject_name, $lesson_name, $test_topic);
+    $q_stmt = $conn->prepare("SELECT * FROM questions WHERE subject = ? AND lesson = ? AND topic = ? ORDER BY RAND()");
+    $q_stmt->bind_param("sss", $subject_name, $lesson_name, $test_topic);
 }
-$stmt->execute();
-$result = $stmt->get_result();
+$q_stmt->execute();
+$result = $q_stmt->get_result();
 
 $questions = [];
 while ($row = $result->fetch_assoc()) {
@@ -145,6 +153,7 @@ $_SESSION['current_test_questions_order'] = $questions;
 
 $conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -282,17 +282,6 @@ $conn->close();
         flex-grow: 1;
     }
     
-    .teacher-badge {
-        display: inline-block;
-        background: #e9ecef;
-        color: #0066cc;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 0.7em;
-        margin-top: 5px;
-        font-weight: normal;
-    }
-    
     /* Button styles */
     .take-test-btn {
         display: inline-block;
@@ -449,20 +438,25 @@ $conn->close();
                             </div>
                             <div class="tests-grid">
                                 <?php foreach ($tests as $test): 
-                                    // Check if test is completed using test_id
                                     $is_completed = in_array($test['id'], $completed_test_ids);
                                 ?>
                                     <div class="test-card">
                                         <div class="test-icon">&#128203;</div>
                                         <div class="test-lesson"><?= htmlspecialchars($test['lesson']) ?></div>
                                         <div class="test-topic"><?= htmlspecialchars($test['topic']) ?></div>
-                                        <?php if ($test['teacher'] !== 'KPluz'): ?>
-                                            <div class="teacher-badge">Teacher: <?= htmlspecialchars($test['teacher']) ?></div>
-                                        <?php endif; ?>
-                                        <?php if ($is_completed): ?>
-                                            <a href="test-results.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="report-card-btn">See Report Card</a>
+                                        
+                                        <?php if ($test['teacher'] === 'KPluz'): ?>
+                                            <?php if ($is_completed): ?>
+                                                <a href="test-results.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="report-card-btn">See Report Card</a>
+                                            <?php else: ?>
+                                                <a href="taketest.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="take-test-btn">Take Test</a>
+                                            <?php endif; ?>
                                         <?php else: ?>
-                                            <a href="taketest.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>" class="take-test-btn">Take Test</a>
+                                            <?php if ($is_completed): ?>
+                                                <a href="test-results.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>&topic=<?= urlencode($test['topic']) ?>" class="report-card-btn">See Report Card</a>
+                                            <?php else: ?>
+                                                <a href="taketest.php?subject=<?= urlencode($test['subject']) ?>&lesson=<?= urlencode($test['lesson']) ?>&topic=<?= urlencode($test['topic']) ?>" class="take-test-btn">Take Test</a>
+                                            <?php endif; ?>
                                         <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>
