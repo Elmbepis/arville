@@ -62,14 +62,15 @@ if ($user_role === 'student') {
     // Get tests created by non-KPluz teachers from the student's school
     // Only if the student has a school assigned
     if (!empty($user_school)) {
+        // FIXED: Use JOIN with case&#8209;insensitive, trimmed comparison
         $school_tests = $conn->prepare("
             SELECT DISTINCT t.id, t.subject, t.lesson, t.topic, t.teacher 
             FROM tests t
+            INNER JOIN users u ON LOWER(TRIM(t.teacher)) = LOWER(TRIM(u.name))
             WHERE t.teacher != 'KPluz'
-            AND t.teacher IN (
-                SELECT name FROM users WHERE role = 'teacher' AND school = ?
-            )
-            ORDER BY subject, lesson
+            AND u.role = 'teacher'
+            AND LOWER(TRIM(u.school)) = LOWER(TRIM(?))
+            ORDER BY t.subject, t.lesson
         ");
         $school_tests->bind_param("s", $user_school);
         $school_tests->execute();
