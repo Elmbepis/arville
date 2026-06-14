@@ -33,21 +33,44 @@ if (!$user) {
 
 $user_name = $user['name'];
 $user_role = $user['role'];
-$user_school = $user['school'];
+$user_school = trim($user['school'] ?? '');   // Trim spaces!
+
+// Debug mode (only visible to admins/teachers when ?debug=1 is added)
+$debug_output = '';
+if (($user_role === 'admin' || $user_role === 'teacher') && isset($_GET['debug'])) {
+    // Simulate what the student would see
+    $debug_school = $user_school;
+    $debug_query = $conn->prepare("
+        SELECT COUNT(DISTINCT t.id) as cnt
+        FROM tests t
+        INNER JOIN users u ON LOWER(TRIM(t.teacher)) = LOWER(TRIM(u.name))
+        WHERE t.teacher != 'KPluz'
+          AND u.role = 'teacher'
+          AND LOWER(TRIM(u.school)) = LOWER(TRIM(?))
+    ");
+    $debug_query->bind_param("s", $debug_school);
+    $debug_query->execute();
+    $debug_count = $debug_query->get_result()->fetch_assoc()['cnt'];
+    $debug_output = "<div style='background:#e0f0ff; padding:12px; margin-bottom:20px; border:1px solid #0066cc;'>
+        <strong>&#128269; Debug (visible only to you)</strong><br>
+        Student school: '<code>" . htmlspecialchars($debug_school) . "</code>'<br>
+        Non&#8209;KPluz tests that would be shown: <strong>$debug_count</strong><br>
+        (If zero, check that the student's school in `users` matches the teacher's school exactly, no extra spaces.)
+        </div>";
+}
 
 // Get available tests grouped by subject
 $tests_by_subject = [];
 $total_tests = 0;
 
 if ($user_role === 'student') {
-    // Get all tests created by KPluz (universal access - no school restriction)
+    // 1. KPluz tests (always visible)
     $kpluz_tests = $conn->query("
         SELECT id, subject, lesson, topic, teacher 
         FROM tests 
         WHERE teacher = 'KPluz'
         ORDER BY subject, lesson
     ");
-    
     if ($kpluz_tests) {
         while ($row = $kpluz_tests->fetch_assoc()) {
             $subject = $row['subject'];
@@ -58,30 +81,28 @@ if ($user_role === 'student') {
             $total_tests++;
         }
     }
-    
-    // Get tests created by non-KPluz teachers from the student's school
-    // Only if the student has a school assigned
+
+    // 2. Non&#8209;KPluz tests – only from teachers whose school matches the student's school
     if (!empty($user_school)) {
-        // FIXED: Use JOIN with case&#8209;insensitive, trimmed comparison
         $school_tests = $conn->prepare("
-            SELECT DISTINCT t.id, t.subject, t.lesson, t.topic, t.teacher 
+            SELECT DISTINCT t.id, t.subject, t.lesson, t.topic, t.teacher
             FROM tests t
             INNER JOIN users u ON LOWER(TRIM(t.teacher)) = LOWER(TRIM(u.name))
             WHERE t.teacher != 'KPluz'
-            AND u.role = 'teacher'
-            AND LOWER(TRIM(u.school)) = LOWER(TRIM(?))
+              AND u.role = 'teacher'
+              AND LOWER(TRIM(u.school)) = LOWER(TRIM(?))
             ORDER BY t.subject, t.lesson
         ");
         $school_tests->bind_param("s", $user_school);
         $school_tests->execute();
         $school_data = $school_tests->get_result();
-        
+
         while ($row = $school_data->fetch_assoc()) {
             $subject = $row['subject'];
             if (!isset($tests_by_subject[$subject])) {
                 $tests_by_subject[$subject] = [];
             }
-            // Avoid duplicates (in case a test appears in both)
+            // Avoid duplicates (should not happen)
             $exists = false;
             foreach ($tests_by_subject[$subject] as $existing) {
                 if ($existing['id'] == $row['id']) {
@@ -98,14 +119,13 @@ if ($user_role === 'student') {
     }
 }
 
-// Get completed tests based on test_id (most accurate - uses the actual test ID)
+// Completed tests based on test_id
 $completed_test_ids = [];
 if ($user_role === 'student') {
     $stmt = $conn->prepare("SELECT DISTINCT test_id FROM test_results WHERE user_id = ? AND answers IS NOT NULL AND answers != ''");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
-    
     while ($row = $result->fetch_assoc()) {
         $completed_test_ids[] = $row['test_id'];
     }
@@ -114,7 +134,6 @@ if ($user_role === 'student') {
 
 $conn->close();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -409,7 +428,7 @@ $conn->close();
 
     <div class="dashboard-content">
         <?php if ($user_role === 'student'): ?>
-            <!-- STUDENT TESTS VIEW -->
+            <?= $debug_output ?>
             <div class="tests-section">
                 <h2 class="section-title">
                     Available Tests
