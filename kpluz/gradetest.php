@@ -26,9 +26,7 @@ if (isset($_SESSION['current_test_questions_order']) && !empty($_SESSION['curren
 $total = count($question_ids);
 $score = 0;
 
-// Get subject, lesson, and test_id from POST
-$subject = isset($_POST['subject']) ? $_POST['subject'] : '';
-$lesson = isset($_POST['lesson']) ? $_POST['lesson'] : '';
+// Get test_id from POST (subject and lesson are no longer needed for DB)
 $test_id = isset($_POST['test_id']) ? intval($_POST['test_id']) : 0;
 
 // Connect to DB - Changed to kpluz database
@@ -146,16 +144,16 @@ foreach ($question_ids as $position => $qid) {
 $answers_json = json_encode($answers_data);
 // END ADDED
 
-// Save test result to database - Check if record already exists
+// Save test result to database - Check if record already exists using test_id
 $existing_id = null;
 $action_taken = "insert"; // Track what action was taken
 
-if ($subject !== '' && $lesson !== '') {
+if ($test_id > 0) {
     $percentage = $total > 0 ? round(($score / $total) * 100) : 0;
     
-    // Check if a record already exists for this user, subject, and lesson
-    $check_stmt = $conn->prepare("SELECT id, score, total_questions, percentage FROM test_results WHERE user_id = ? AND subject = ? AND lesson = ?");
-    $check_stmt->bind_param("iss", $user_id, $subject, $lesson);
+    // Check if a record already exists for this user and test_id
+    $check_stmt = $conn->prepare("SELECT id, score, total_questions, percentage FROM test_results WHERE user_id = ? AND test_id = ?");
+    $check_stmt->bind_param("ii", $user_id, $test_id);
     $check_stmt->execute();
     $check_result = $check_stmt->get_result();
     
@@ -176,9 +174,9 @@ if ($subject !== '' && $lesson !== '') {
         }
         $update_stmt->close();
     } else {
-        // No existing record - insert new one with test_id
-        $insert_stmt = $conn->prepare("INSERT INTO test_results (user_id, subject, lesson, test_id, score, total_questions, percentage, answers) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $insert_stmt->bind_param("issiiids", $user_id, $subject, $lesson, $test_id, $score, $total, $percentage, $answers_json);
+        // No existing record - insert new one using test_id (subject and lesson no longer stored)
+        $insert_stmt = $conn->prepare("INSERT INTO test_results (user_id, test_id, score, total_questions, percentage, answers) VALUES (?, ?, ?, ?, ?, ?)");
+        $insert_stmt->bind_param("iiiiis", $user_id, $test_id, $score, $total, $percentage, $answers_json);
         
         if ($insert_stmt->execute()) {
             $action_taken = "inserted";
@@ -190,6 +188,7 @@ if ($subject !== '' && $lesson !== '') {
     }
     $check_stmt->close();
 } else {
+    // Fallback: if test_id is missing (should not happen), compute percentage without saving
     $percentage = $total > 0 ? round(($score / $total) * 100) : 0;
 }
 
