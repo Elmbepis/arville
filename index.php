@@ -1,4 +1,31 @@
 <?php
+// ========== SESSION HANDLING (check both ARVILLE and MIEL sessions) ==========
+$logged_in = false;
+
+// Try ARVILLE_SESSION first
+@session_name('ARVILLE_SESSION');
+@session_start();
+if (isset($_SESSION['user_id'])) {
+    $logged_in = true;
+} else {
+    // No ARVILLE session, try MIEL_SESSION
+    session_write_close();  // close the previous session
+    @session_name('MIEL_SESSION');
+    @session_start();
+    if (isset($_SESSION['user_id'])) {
+        $logged_in = true;
+    }
+}
+// Now $logged_in tells us if the user is authenticated
+
+// Determine the link text and target for the navbar/footer
+if ($logged_in) {
+    $login_link = 'logout.php';
+    $login_text = 'Log out';
+} else {
+    $login_link = 'login.php';
+    $login_text = 'Log in';
+}
 
 //Preload mouseover icons
 //Preload mouseover icons
@@ -77,7 +104,7 @@ echo "    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.
 echo "</head>";
 echo "<body>";
 
-// Navbar Section
+// Navbar Section (dynamic login/logout link)
 echo "<nav class='navbar navbar-expand-lg navbar-light bg-light'>";
 echo "    <div class='container'>";
 echo "        <a class='navbar-brand' href='index.php'>";
@@ -90,11 +117,12 @@ echo "        </button>";
 echo "        <div class='collapse navbar-collapse' id='navbarNav'>";
 echo "            <ul class='navbar-nav ms-auto'>";
 echo "                <li class='nav-item'><a class='nav-link' href='index.php'>Home</a></li>";
+echo "                <li class='nav-item'><a class='nav-link' href='$login_link'>$login_text</a></li>";
 echo "                <li class='nav-item'><a class='nav-link' href='plans.php'>Plans</a></li>";
-echo "                <li class='nav-item'><a class='nav-link' href='miel/login.php'>MIEL</a></li>";
 echo "                <li class='nav-item'><a class='nav-link' href='about-us.php'>About Us</a></li>";
 echo "                <li class='nav-item'><a class='nav-link' href='contact.php'>Contact</a></li>";
 echo "            </ul>";
+echo "        </div>";
 echo "    </div>";
 echo "</nav>";
 
@@ -164,7 +192,7 @@ $largeCategories = [
     ["title" => "Candy Land", "tagline" => "A sweet paradise of sugary delights and colorful confections", "icon" => "candyland.jpg", "hoverIcon" => "candyland2.jpg", "link" => "village.htm?id=1"],
     ["title" => "Zombie Zone", "tagline" => "A bloodcurdling necropolis ruled by the walking dead", "icon" => "zombiezone.jpg", "hoverIcon" => "zombiezone2.jpg", "link" => "village.htm?id=2"],
     ["title" => "Toy World", "tagline" => "A magical realm where toys come to life and adventures begin", "icon" => "toyworld.jpg", "hoverIcon" => "toyworld2.jpg", "link" => "village.htm?id=3"],
-	["title" => "Robot City", "tagline" => "A futuristic community of intelligent machines and robots", "icon" => "robotcity.jpg", "hoverIcon" => "robotcity2.jpg", "link" => "village.htm?id=4"],
+    ["title" => "Robot City", "tagline" => "A futuristic community of intelligent machines and robots", "icon" => "robotcity.jpg", "hoverIcon" => "robotcity2.jpg", "link" => "village.htm?id=4"],
 ];
 
 // Display only first 4 as large landscape images
@@ -224,7 +252,7 @@ $smallCategories = [
     ["title" => "Dogville Delight", "tagline" => "A grassy village where twelve playful dogs rule the neighborhood", "icon" => "dogsa.jpg", "hoverIcon" => "dogsb.jpg", "link" => "nature.htm?id=12"],
     ["title" => "Home of Roaming Objects", "tagline" => "Where everyday objects come to life and wander around", "icon" => "objectsa.jpg", "hoverIcon" => "objectsb.jpg", "link" => "village2.htm?id=17"],
     ["title" => "Futuristic City", "tagline" => "A gleaming metropolis where neon lights dazzle and vehicles defy gravity", "icon" => "futuristica.jpg", "hoverIcon" => "futuristicb.jpg", "link" => "village2.htm?id=14"],
-    ];
+];
 
 for ($i = 0; $i < 31; $i++) {
     $category = $smallCategories[$i];
@@ -477,12 +505,12 @@ echo "    min-width: 120px;";
 echo "}";
 echo "</style>";
 
-// Footer
+// Footer with dynamic login/logout link
 echo "<footer class='footer py-4 bg-dark text-white text-center'>";
 echo "    <div class='container'>";
 echo "        <p>&copy; " . date('Y') . " ARville. All rights reserved.</p>";
 echo "        <div class='footer-links'>";
-echo "            <a href='miel/login.php' class='text-white'>MIEL</a> | ";
+echo "            <a href='$login_link' class='text-white'>$login_text</a> | ";
 echo "            <a href='plans.php' class='text-white'>Subscription Plans</a> | ";
 echo "            <a href='about-us.php' class='text-white'>About Us</a> | ";
 echo "            <a href='contact.php' class='text-white'>Contact</a>";
@@ -493,3 +521,4 @@ echo "</footer>";
 echo "<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script>";
 echo "</body>";
 echo "</html>";
+?>

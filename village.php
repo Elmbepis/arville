@@ -1,0 +1,884 @@
+<?php require_once 'auth.php'; ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="dynamic-title">Arville Virtual Village</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #87CEEB;
+      font-family: Arial, sans-serif;
+    }
+    #info, #instructions {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      color: white;
+      z-index: 10;
+    }
+    #info {
+      top: 10px;
+      background: rgba(0,0,0,0.5);
+      padding: 5px;
+    }
+    #instructions {
+      bottom: 20px;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+    }
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 100;
+    }
+    
+    /* Mobile Controls - Hidden by default */
+    #mobile-controls {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+    
+    #joystick-container {
+      position: absolute;
+      bottom: 100px;
+      left: 20px;
+      width: 120px;
+      height: 120px;
+      pointer-events: auto;
+    }
+    
+    #joystick-base {
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      position: absolute;
+      border: 2px solid rgba(255,255,255,0.5);
+      top: 20px;
+      left: 20px;
+    }
+    
+    #joystick-handle {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 50%;
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      transition: transform 0.1s;
+    }
+    
+    #camera-control-area {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40%;
+      height: 100%;
+      pointer-events: auto;
+    }
+    
+    #center-tap-area {
+      position: absolute;
+      top: 0;
+      left: 40%;
+      width: 20%;
+      height: 100%;
+      pointer-events: auto;
+    }
+    
+    /* Ride Controls */
+    #ride-controls {
+      position: absolute;
+      top: 60px;
+      right: 10px;
+      z-index: 100;
+    }
+    
+    #start-ride {
+      display: block;
+      margin: 5px;
+      padding: 10px 20px;
+      background: rgba(0,150,0,0.7);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    #start-ride:hover {
+      background: rgba(0,180,0,0.9);
+    }
+    
+    #start-ride.riding {
+      background: rgba(150,0,0,0.7);
+    }
+    
+    #start-ride.riding:hover {
+      background: rgba(180,0,0,0.9);
+    }
+  </style>
+  
+</head>
+<body>
+  <div id="info">Virtual Village | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset | H: Home</div>
+  <div id="loading">Loading village areas...</div>
+  
+  <!-- Ride Controls -->
+  <div id="ride-controls">
+    <button id="start-ride">Start Ride</button>
+  </div>
+  
+  <!-- Mobile Controls - Only shown on mobile devices -->
+  <div id="mobile-controls">
+    <div id="joystick-container">
+      <div id="joystick-base"></div>
+      <div id="joystick-handle"></div>
+    </div>
+    <div id="camera-control-area"></div>
+    <div id="center-tap-area"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="universe/js/GLTFLoader.js"></script>
+  <script src="universe/js/animation-controller.js"></script>
+  <script src="universe/js/audio-mappings.js"></script>
+  <script src="universe/js/navigation.js"></script>
+  <script src="universe/obj_create_park.js"></script>
+  <script src="universe/obj_create_house.js"></script>
+  <script src="universe/obj_create_room.js"></script>
+  <script src="universe/obj_create_toyland.js"></script>
+  <script src="universe/obj_create_robotcity.js"></script>
+  <script src="universe/js/sky-effect.js"></script>
+  <script src="universe/js/brightenGLB.js"></script>
+  <script src="universe/js/darkenGLB.js"></script>
+  <script src="universe/js/GLB-movements.js"></script>
+  <script src="universe/js/aquatic-atmosphere.js"></script>
+  <script src="universe/js/modelPath.js"></script>
+  <script src="universe/js/clickedObject.js"></script>
+
+  <script>
+    let scene, camera, renderer;
+    const clock = new THREE.Clock();
+    const EYE_HEIGHT = 1.6;
+    let currentAreas = [];
+    let isRiding = false;
+    let ridePath = [];
+    let currentRidePoint = 0;
+    let rideSpeed = 0.5;
+    let originalMouseLook = null;
+    
+    // Village dimensions - renamed to PLACE for generic use
+    const PLACE_WIDTH = 200;
+    const PLACE_DEPTH = 400;
+    const AREA_SIZE = 40;
+    
+    // Get villageId from URL - fixed to handle numeric IDs
+    const urlId = new URLSearchParams(window.location.search).get('id');
+    const villageId = urlId || 'default';
+    console.log(`&#127757; URL id parameter: ${urlId}, villageId: ${villageId}`);
+
+    // Set dynamic title based on villageId
+    const TITLE_CONFIG = {
+      'default': 'ARville Virtual Village',
+      '1': 'ARville Candy Land',
+      '2': 'ARville Zombie Zone',
+      '3': 'ARville Toy World',
+      '4': 'ARville Robot City'
+    };
+    
+    // Set the page title
+    document.title = TITLE_CONFIG[villageId] || TITLE_CONFIG['default'];
+    console.log(`&#128221; Set page title to: ${document.title}`);
+
+    // Texture configuration based on villageId - use numeric keys for ?id=1, ?id=2, etc.
+    const TEXTURE_CONFIG = {
+      'default': {
+        ground: 'universe/textures/grass1.jpg',
+        roads: 'universe/textures/concrete2.jpg'
+      },
+      '1': {
+        ground: 'universe/textures/candies/candy10.jpg',
+        roads: 'universe/textures/candies/candy11.jpg'
+      },
+      '2': {
+        ground: 'universe/textures/soil-grass10.jpg',
+        roads: 'universe/textures/concrete4.jpg'
+      },
+      '3': {
+        ground: 'universe/textures/plastic1.jpg',
+        roads: 'universe/textures/plastic2.jpg'
+      },
+      '4': {
+        ground: 'universe/textures/metal10.jpg',
+        roads: 'universe/textures/metal11.jpg'
+      },
+    };
+
+    // Get texture paths for current villageId
+    const currentTextures = TEXTURE_CONFIG[villageId] || TEXTURE_CONFIG['default'];
+    console.log(`&#127912; Using textures for villageId: ${villageId}`);
+    console.log(`&#127793; Ground texture: ${currentTextures.ground}`);
+    console.log(`&#128739;&#65039; Road texture: ${currentTextures.roads}`);
+    console.log(`&#128193; Available configs:`, Object.keys(TEXTURE_CONFIG));
+
+    // CAMERA_LIMITS is now defined in navigation.js
+    
+// Replace the entire AREA_POSITIONS object with this function:
+function generateAreaPositions(villageId) {
+  return {
+    // Row 1 (Back row) - Z = -150
+    [`${villageId}a`]: new THREE.Vector3(-75, 0, -150),
+    [`${villageId}b`]: new THREE.Vector3(-25, 0, -150),
+    [`${villageId}c`]: new THREE.Vector3(25, 0, -150),
+    [`${villageId}d`]: new THREE.Vector3(75, 0, -150),
+    
+    // Row 2 - Z = -50
+    [`${villageId}e`]: new THREE.Vector3(-75, 0, -50),
+    [`${villageId}f`]: new THREE.Vector3(-25, 0, -50),
+    [`${villageId}g`]: new THREE.Vector3(25, 0, -50),
+    [`${villageId}h`]: new THREE.Vector3(75, 0, -50),
+    
+    // Row 3 - Z = 50
+    [`${villageId}i`]: new THREE.Vector3(-75, 0, 50),
+    [`${villageId}j`]: new THREE.Vector3(-25, 0, 50),
+    [`${villageId}k`]: new THREE.Vector3(25, 0, 50),
+    [`${villageId}m`]: new THREE.Vector3(75, 0, 50),
+    
+    // Row 4 (Front row) - Z = 150
+    [`${villageId}n`]: new THREE.Vector3(-75, 0, 150),
+    [`${villageId}o`]: new THREE.Vector3(-25, 0, 150),
+    [`${villageId}p`]: new THREE.Vector3(25, 0, 150),
+    [`${villageId}q`]: new THREE.Vector3(75, 0, 150)
+  };
+}
+
+// Then initialize AREA_POSITIONS with the current villageId
+const AREA_POSITIONS = generateAreaPositions(villageId);
+
+    // Define ride path points following the concrete road system (outer rectangle)
+    function createRidePath() {
+      const rectWidth = PLACE_WIDTH - 90;
+      const rectDepth = PLACE_DEPTH - 90;
+      const halfWidth = rectWidth / 2;
+      const halfDepth = rectDepth / 2;
+      
+      // Define points along the outer rectangular pathway
+      return [
+        // Start at bottom center (south)
+        new THREE.Vector3(0, EYE_HEIGHT, -halfDepth),
+        
+        // Move to bottom-right corner (southeast)
+        new THREE.Vector3(halfWidth, EYE_HEIGHT, -halfDepth),
+        
+        // Move up right side (east)
+        new THREE.Vector3(halfWidth, EYE_HEIGHT, 0),
+        
+        // Move to top-right corner (northeast)
+        new THREE.Vector3(halfWidth, EYE_HEIGHT, halfDepth),
+        
+        // Move left along top (north)
+        new THREE.Vector3(0, EYE_HEIGHT, halfDepth),
+        
+        // Move to top-left corner (northwest)
+        new THREE.Vector3(-halfWidth, EYE_HEIGHT, halfDepth),
+        
+        // Move down left side (west)
+        new THREE.Vector3(-halfWidth, EYE_HEIGHT, 0),
+        
+        // Move to bottom-left corner (southwest)
+        new THREE.Vector3(-halfWidth, EYE_HEIGHT, -halfDepth),
+        
+        // Return to start (bottom center)
+        new THREE.Vector3(0, EYE_HEIGHT, -halfDepth)
+      ];
+    }
+
+    // Find the closest point on the ride path to the current camera position
+    function findClosestRidePoint() {
+      let closestPoint = 0;
+      let closestDistance = Infinity;
+      
+      for (let i = 0; i < ridePath.length; i++) {
+        const distance = camera.position.distanceTo(ridePath[i]);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestPoint = i;
+        }
+      }
+      
+      return closestPoint;
+    }
+
+    // Simple function to get all area IDs
+    function getAvailableAreas() {
+      const suffix = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'o', 'p', 'q'];
+      return suffix.map(s => `${villageId}${s}`);
+    }
+
+function loadObjectCreator() {
+  return new Promise((resolve, reject) => {
+    // Since scripts are loaded in HTML, just initialize textures
+    setTimeout(() => {
+      if (!window.textureLoader) {
+        window.textureLoader = new THREE.TextureLoader();
+      }
+      if (window.initObjectTextures) {
+        window.initObjectTextures(window.textureLoader);
+      }
+      console.log('&#9989; Object creators initialized');
+      resolve();
+    }, 100);
+  });
+}
+
+    init();
+    animate();
+
+function init() {
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  //camera.position.set(0, EYE_HEIGHT, 60); 
+  //camera.rotation.set(0, 0 * Math.PI / 180, 0);
+  camera.position.set(0, EYE_HEIGHT, 60); 
+  camera.rotation.set(0, 0 * Math.PI / 180, 0);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x87CEEB); // Sky blue background
+  document.body.appendChild(renderer.domElement);
+
+  window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 60);
+  window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0 * Math.PI / 180, 0, 'YXZ');
+  
+  // Add H key handler for Home
+  window.addEventListener('keydown', (event) => {
+    if (event.key.toLowerCase() === 'h') {
+      // Navigate to site's index.php
+      window.location.href = 'index.php';
+    }
+  });
+  
+  // Initialize mobile controls using the shared navigation.js
+  setTimeout(() => {
+    initMobileControls();
+  }, 100);
+
+  // Initialize ride path
+  ridePath = createRidePath();
+
+  // Setup ride button
+  const rideButton = document.getElementById('start-ride');
+  rideButton.addEventListener('click', toggleRide);
+
+  // OPTIMIZED NATURAL OUTDOOR LIGHTING
+  // 1. Strong hemisphere light with sky/ground colors
+  const hemiLight = new THREE.HemisphereLight(0x88CCFF, 0x228822, 1.2);
+  hemiLight.position.set(0, 50, 0);
+  scene.add(hemiLight);
+
+  // 2. Main sunlight (afternoon sun position)
+  const sunLight = new THREE.DirectionalLight(0xFFFFDD, 0.9);
+  sunLight.position.set(30, 40, 20);
+  sunLight.castShadow = true;
+  
+  // Optimized shadow settings
+  sunLight.shadow.mapSize.width = 1024;
+  sunLight.shadow.mapSize.height = 1024;
+  sunLight.shadow.camera.near = 0.5;
+  sunLight.shadow.camera.far = 500;
+  sunLight.shadow.camera.left = -150;
+  sunLight.shadow.camera.right = 150;
+  sunLight.shadow.camera.top = 150;
+  sunLight.shadow.camera.bottom = -150;
+  
+  scene.add(sunLight);
+
+  // 3. Sky fill light (diffuse blueish light from sky)
+  const skyLight = new THREE.DirectionalLight(0x4488FF, 0.5);
+  skyLight.position.set(0, 30, 0);
+  scene.add(skyLight);
+
+  // 4. Ambient base light
+  const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(ambient);
+
+  // 5. Balanced fill lights from cardinal directions
+  // North fill (positive Z)
+  const northLight = new THREE.DirectionalLight(0xFFFFFF, 0.4);
+  northLight.position.set(0, 15, 30);
+  scene.add(northLight);
+
+  // South fill (negative Z)
+  const southLight = new THREE.DirectionalLight(0xFFFFFF, 0.4);
+  southLight.position.set(0, 15, -30);
+  scene.add(southLight);
+
+  // East fill (positive X)
+  const eastLight = new THREE.DirectionalLight(0xFFFFFF, 0.4);
+  eastLight.position.set(30, 15, 0);
+  scene.add(eastLight);
+
+  // West fill (negative X)
+  const westLight = new THREE.DirectionalLight(0xFFFFFF, 0.4);
+  westLight.position.set(-30, 15, 0);
+  scene.add(westLight);
+
+  // 6. Overhead soft light for top surfaces
+  const overheadLight = new THREE.DirectionalLight(0xFFFFFF, 0.3);
+  overheadLight.position.set(0, 25, 0);
+  scene.add(overheadLight);
+
+  console.log('&#128161; Natural outdoor lighting: Sun + Sky + 4 cardinal directions + overhead');
+
+  // First load obj_create_village, then create village and load areas
+  loadObjectCreator().then(() => {
+    createVillage();
+    createRectangularPathway();
+    loadAreas();
+  }).catch((error) => {
+    console.error('Failed to load object creator:', error);
+    createVillage();
+    createRectangularPathway();
+    loadAreas();
+  });
+
+  // Use the shared navigation controls - pass PLACE dimensions with normal speed
+  setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.8);
+  window.addEventListener("resize", onWindowResize);
+}
+
+   
+ 
+function updateRide() {
+  if (!isRiding) return;
+  
+  const targetPoint = ridePath[currentRidePoint];
+  const nextPoint = ridePath[(currentRidePoint + 1) % ridePath.length];
+  const direction = new THREE.Vector3().subVectors(targetPoint, camera.position);
+  const distance = direction.length();
+  
+  // === FIXED ROTATION CODE ===
+  // Only start rotating toward next point when close to current target
+  const rotationBlend = Math.max(0, 1 - distance / 15.0); // Blend over last 15 units
+  
+  // Calculate direction to current target
+  const currentDirection = new THREE.Vector3().subVectors(targetPoint, camera.position).normalize();
+  
+  // Calculate direction to next target  
+  const nextDirection = new THREE.Vector3().subVectors(nextPoint, targetPoint).normalize();
+  
+  // Blend directions based on distance to current target
+  const blendedDirection = new THREE.Vector3()
+    .copy(currentDirection)
+    .lerp(nextDirection, rotationBlend);
+  
+  const forwardDirection = new THREE.Vector3(-blendedDirection.x, -blendedDirection.y, -blendedDirection.z);
+  let targetRotation = Math.atan2(forwardDirection.x, forwardDirection.z);
+  
+  // ADD 90 DEGREES CLOCKWISE (&#960;/2 radians) to face right side
+  targetRotation += -Math.PI / 2;
+  
+  const currentRotation = camera.rotation.y;
+  let rotationDiff = targetRotation - currentRotation;
+  
+  // Normalize the difference to the shortest path
+  if (rotationDiff > Math.PI) rotationDiff -= 2 * Math.PI;
+  if (rotationDiff < -Math.PI) rotationDiff += 2 * Math.PI;
+  
+  // Smoother rotation with distance-based influence
+  const maxRotationPerFrame = 0.05; // Reduced from 0.087
+  if (Math.abs(rotationDiff) > maxRotationPerFrame) {
+    rotationDiff = Math.sign(rotationDiff) * maxRotationPerFrame;
+  }
+  
+  // Apply rotation with smoothing
+  const rotationInfluence = 0.3; // Reduced from 0.8 for smoother turns
+  camera.rotation.y += rotationDiff * rotationInfluence;
+  // === END FIXED ROTATION CODE ===
+  
+  // MOVEMENT LOGIC - THIS SHOULD ALWAYS RUN (not just in else block)
+  if (distance < 5.0) {
+    // Close enough to target - move to next point
+    currentRidePoint = (currentRidePoint + 1) % ridePath.length;
+  } else {
+    // Move towards current target point
+    direction.normalize();
+    camera.position.add(direction.multiplyScalar(0.1));
+  }
+}
+
+
+function toggleRide() {
+  isRiding = !isRiding;
+  const rideButton = document.getElementById('start-ride');
+  
+  if (isRiding) {
+    // Start ride - DO NOT reset position or rotation
+    rideButton.textContent = 'Stop Ride';
+    rideButton.classList.add('riding');
+    
+    // Find the closest point but DON'T teleport - use current position
+    currentRidePoint = findClosestRidePoint();
+    // camera.position stays where it is - no teleporting!
+    
+    // Keep current camera rotation - don't override it
+    // camera.rotation.y stays as is
+    
+    // Disable movement keys but keep mouse look ENABLED
+    if (camera.userData.controls) {
+      camera.userData.controls.moveForward = false;
+      camera.userData.controls.moveBackward = false;
+      camera.userData.controls.moveLeft = false;
+      camera.userData.controls.moveRight = false;
+      camera.userData.controls.enabled = true; // Ensure mouse look is enabled
+    }
+    
+    // Update info text
+    document.getElementById('info').textContent = 'Virtual Village | Auto Ride Mode | Mouse: Look Around | Click Stop Ride to regain control | H: Home';
+    document.getElementById('instructions').textContent = 'Enjoy the automated tour! Use mouse to look around while riding.';
+    
+    console.log('&#128663; Ride resumed from current position and rotation');
+  } else {
+    // Stop ride
+    rideButton.textContent = 'Start Ride';
+    rideButton.classList.remove('riding');
+    
+    // Restore controls
+    if (camera.userData.controls) {
+      camera.userData.controls.moveForward = true;
+      camera.userData.controls.moveBackward = true;
+      camera.userData.controls.moveLeft = true;
+      camera.userData.controls.moveRight = true;
+      camera.userData.controls.enabled = true;
+    }
+    
+    // Update info text
+    document.getElementById('info').textContent = 'Virtual Village | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset | H: Home';
+    document.getElementById('instructions').textContent = 'Manual control enabled. Use WASD to move, mouse to look around.';
+    
+    console.log('&#128721; Ride stopped - position and rotation preserved');
+  }
+}
+
+
+    function createVillage() {
+      // Create ground with texture based on villageId
+      const groundMat = new THREE.MeshLambertMaterial({ 
+        color: 0x888888 // Fallback color if texture fails to load
+      });
+
+      // Create the ground
+      const ground = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_WIDTH, PLACE_DEPTH), groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      scene.add(ground);
+
+      // Load ground texture based on villageId
+      if (window.textureLoader) {
+        try {
+          const groundTexture = window.textureLoader.load(currentTextures.ground);
+          groundTexture.wrapS = THREE.RepeatWrapping;
+          groundTexture.wrapT = THREE.RepeatWrapping;
+          
+          // Fine tiling for sharp texture
+          const repeatX = PLACE_WIDTH / 1;   
+          const repeatY = PLACE_DEPTH / 2;   
+          groundTexture.repeat.set(repeatX, repeatY);
+          
+          groundMat.map = groundTexture;
+          groundMat.needsUpdate = true;
+          
+          console.log(`&#9989; Ground texture loaded: ${currentTextures.ground} - repeat:`, repeatX, repeatY);
+        } catch (error) {
+          console.error(`&#10060; Failed to load ground texture: ${currentTextures.ground}`, error);
+        }
+      }
+      
+      console.log('&#9989; Village base created successfully');
+    }
+
+    function createRectangularPathway() {
+      // Create a rectangular pathway around the village
+      const pathwayWidth = 6;
+      const pathwayHeight = 0.05;
+      
+      // Use PLACE dimensions
+      const rectWidth = PLACE_WIDTH - 90;
+      const rectDepth = PLACE_DEPTH - 90;
+      
+      // Create road material - using the texture based on villageId
+      const roadMat = new THREE.MeshLambertMaterial({ 
+          color: 0x666666 // Default road color
+      });
+      
+      // Load road texture based on villageId
+      if (window.textureLoader) {
+          try {
+              const roadTexture = window.textureLoader.load(currentTextures.roads);
+              roadTexture.wrapS = THREE.RepeatWrapping;
+              roadTexture.wrapT = THREE.RepeatWrapping;
+              roadTexture.repeat.set(4, 4); 
+              roadMat.map = roadTexture;
+              console.log(`&#9989; Road texture loaded: ${currentTextures.roads}`);
+          } catch (error) {
+              console.error(`&#10060; Failed to load road texture: ${currentTextures.roads}, using default color:`, error);
+          }
+      }
+      
+      const halfRectWidth = rectWidth / 2;
+      const halfRectDepth = rectDepth / 2;
+      const adjustedHalfWidth = halfRectWidth - pathwayWidth/2;
+      const adjustedHalfDepth = halfRectDepth - pathwayWidth/2;
+      
+      // Helper function to create pathway segments with proper texture scaling
+      function createPathSegment(width, depth) {
+          const geometry = new THREE.PlaneGeometry(width, depth);
+          const uvAttribute = geometry.attributes.uv;
+          
+          // Calculate how many times the texture should repeat based on segment size
+          // Using pathwayWidth as the base unit for texture scale
+          const repeatX = width / pathwayWidth;
+          const repeatY = depth / pathwayWidth;
+          
+          // Scale UV coordinates to repeat the texture properly
+          for (let i = 0; i < uvAttribute.count; i++) {
+              const u = uvAttribute.getX(i);
+              const v = uvAttribute.getY(i);
+              uvAttribute.setXY(i, u * repeatX, v * repeatY);
+          }
+          
+          uvAttribute.needsUpdate = true;
+          return geometry;
+      }
+      
+      // Top border (positive Z) - LONGER SIDE
+      const topPath = new THREE.Mesh(
+          createPathSegment(rectWidth, pathwayWidth),
+          roadMat
+      );
+      topPath.rotation.x = -Math.PI / 2;
+      topPath.position.set(0, pathwayHeight, adjustedHalfDepth);
+      
+      // Bottom border (negative Z) - LONGER SIDE
+      const bottomPath = new THREE.Mesh(
+          createPathSegment(rectWidth, pathwayWidth),
+          roadMat
+      );
+      bottomPath.rotation.x = -Math.PI / 2;
+      bottomPath.position.set(0, pathwayHeight, -adjustedHalfDepth);
+      
+      // Left border (negative X) - SHORTER SIDE
+      const leftPath = new THREE.Mesh(
+          createPathSegment(pathwayWidth, rectDepth - 6),
+          roadMat
+      );
+      leftPath.rotation.x = -Math.PI / 2;
+      leftPath.position.set(-adjustedHalfWidth, pathwayHeight, 0);
+      
+      // Right border (positive X) - SHORTER SIDE
+      const rightPath = new THREE.Mesh(
+          createPathSegment(pathwayWidth, rectDepth - 6),
+          roadMat
+      );
+      rightPath.rotation.x = -Math.PI / 2;
+      rightPath.position.set(adjustedHalfWidth, pathwayHeight, 0);
+      
+      // Add border paths to scene
+      scene.add(topPath, bottomPath, leftPath, rightPath);
+      
+      // Add 2 additional short roads parallel to the shorter sides (horizontal roads)
+      const shortRoadWidth = 6;
+      const spacing = (rectDepth - 6) / 6;
+      
+      // First short road (upper third)
+      const shortRoad1 = new THREE.Mesh(
+          createPathSegment(rectWidth - 6, shortRoadWidth),
+          roadMat
+      );
+      shortRoad1.rotation.x = -Math.PI / 2;
+      shortRoad1.position.set(0, pathwayHeight + 0.001, spacing);
+      
+      // Second short road (lower third)
+      const shortRoad2 = new THREE.Mesh(
+          createPathSegment(rectWidth - 6, shortRoadWidth),
+          roadMat
+      );
+      shortRoad2.rotation.x = -Math.PI / 2;
+      shortRoad2.position.set(0, pathwayHeight + 0.001, -spacing);
+      
+      // Add short roads to scene
+      scene.add(shortRoad1, shortRoad2);
+      
+      console.log('&#128295; Rectangular pathway created with proper texture scaling');
+    }
+
+async function loadAreas() {
+  const loadingDiv = document.getElementById('loading');
+  
+  // Get all area IDs
+  const areaIds = getAvailableAreas();
+  const loadedAreas = [];
+  
+  if (loadingDiv) {
+    loadingDiv.textContent = `Loading ${areaIds.length} park areas...`;
+    loadingDiv.style.display = 'block';
+  }
+  
+  // Try to load each area
+  for (const areaId of areaIds) {
+    if (loadingDiv) {
+      loadingDiv.textContent = `Loading area ${areaId}...`;
+    }
+    try {
+      await loadAreaContent(areaId);
+      loadedAreas.push(areaId);
+    } catch (error) {
+      console.log(`Area ${areaId} not available - leaving empty`);
+    }
+  }
+  
+  // Hide loading div after all areas are loaded
+  if (loadingDiv) {
+    loadingDiv.style.display = 'none';
+  }
+  
+  // Update instructions
+  const instructionsDiv = document.getElementById('instructions');
+  if (instructionsDiv) {
+    if (!isMobile) {
+      instructionsDiv.textContent = 
+        `Loaded ${loadedAreas.length} area(s) | WASD: Move | Mouse: Look | Q/E: Fly | R: Reset | H: Home`;
+    } else {
+      instructionsDiv.style.display = 'none';
+    }
+  }
+  
+  console.log(`&#9989; All areas loaded: ${loadedAreas.length} successful`);
+}
+
+     async function loadAreaContent(areaId) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = `universe/village-areas/${villageId}/village${areaId}.js`;        
+        
+        script.onload = () => {
+          // Wait a frame to ensure the area group is created
+          setTimeout(() => {
+            const areaGroup = scene.getObjectByName(`village-area-${areaId}`);
+            if (areaGroup) {
+              console.log(`&#9989; Found area group: area-${areaId} with ${areaGroup.children.length} children`);
+              positionArea(areaId);
+              currentAreas.push(areaId);
+              console.log(`&#9989; Area ${areaId} loaded successfully`);
+              resolve();
+            } else {
+              console.error(`&#10060; Area group area-${areaId} not found after loading script`);
+              reject(new Error(`Area group not found: area-${areaId}`));
+            }
+          }, 0);
+        };
+        
+        script.onerror = () => {
+          reject(new Error(`Area ${areaId} file not found`));
+        };
+        
+        document.head.appendChild(script);
+      });
+    }
+
+    function positionArea(areaId) {
+      const areaGroup = scene.getObjectByName(`village-area-${areaId}`);
+      if (areaGroup && AREA_POSITIONS[areaId]) {
+        const areaPosition = AREA_POSITIONS[areaId];
+        areaGroup.position.copy(areaPosition);
+        console.log(`&#128205; Positioned area ${areaId} at:`, areaPosition);
+        console.log(`&#128205; Area group has ${areaGroup.children.length} children`);
+        
+        // Force update of world matrices
+        areaGroup.updateMatrixWorld(true);
+      } else {
+        console.error(`&#10060; Could not position area ${areaId}`);
+      }
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+function animate() {
+    requestAnimationFrame(animate);
+    const delta = clock.getDelta();
+    
+    if (isRiding) {
+        updateRide();
+    }
+    
+    if (camera.userData.update) {
+        camera.userData.update();
+    }
+    
+    if (window.animationController) {
+        window.animationController.update(camera);
+    }
+    
+    if (window.updateAllAnimations) {
+        window.updateAllAnimations(delta);
+    }
+
+    if (window.spinningTops && window.spinningTops.length > 0) {
+        window.spinningTops.forEach(top => {
+            if (top && top.update) top.update(delta);
+        });
+    }
+    
+    scene.traverse((object) => {
+        if (object.userData && object.userData.type === 'pinwheel_toy' && object.update) {
+            object.update(delta);
+        }
+    });
+    
+    scene.traverse((object) => {
+        if (object.userData && object.userData.type === 'bouncing_ball' && object.update) {
+            object.update(delta);
+        }
+    });
+    
+    // ADD ONLY THIS LINE FOR ModelPathSystem
+    if (window.ModelPathSystem && window.ModelPathSystem.updateModelAnimations) {
+        window.ModelPathSystem.updateModelAnimations(delta);
+    }
+    
+ 	// Call all registered area update functions
+    if (window.areaUpdateFunctions && window.areaUpdateFunctions.length > 0) {
+        window.areaUpdateFunctions.forEach(fn => {
+            if (typeof fn === 'function') {
+                fn(delta);
+            }
+        });
+    }    
+    renderer.render(scene, camera);
+}
+
+</script>
+</body>
+</html>

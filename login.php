@@ -81,12 +81,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>ARville - Universal Login</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
-        body { background: #c2ddfc; min-height: 100vh; display: flex; flex-direction: column; }
-        .login-card { background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 2rem; max-width: 450px; width: 100%; margin: 2rem auto; }
-        .btn-primary { background: #0d6efd; border: none; transition: all 0.3s; }
-        .btn-primary:hover { background: #0b5ed7; transform: translateY(-2px); }
-        footer a { text-decoration: none; }
-        footer a:hover { text-decoration: underline; }
+        /* ===== MIEL STYLE BACKGROUND (gradient + tiled image + overlay) ===== */
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
+        }
+        
+        /* Tiled semi-opaque image background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('miel/background-tile.jpg');
+            background-repeat: repeat;
+            background-size: 1980px 1080px;
+            opacity: 0.9;
+            z-index: -1;
+        }
+
+        /* Light overlay for readability */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(248, 249, 255, 0.3);
+            z-index: -2;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 2rem;
+            max-width: 450px;
+            width: 100%;
+            margin: 2rem auto;
+        }
+        .btn-primary {
+            background: #0d6efd;
+            border: none;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            background: #0b5ed7;
+            transform: translateY(-2px);
+        }
+        footer a {
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
