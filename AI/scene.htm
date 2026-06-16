@@ -27,20 +27,15 @@
   </script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="/arville/universe/js/GLTFLoader.js"></script>
-  <script src="/arville/universe/js/animation-controller.js"></script>
-  <script src="/arville/universe/js/navigation.js"></script>
-  <script src="/arville/universe/obj_create_park.js"></script>
-  <!-- Load obj_create_room.js only once -->
-  <script>
-    if (typeof window._obj_create_room_loaded === 'undefined') {
-      document.write('<script src="/arville/universe/obj_create_room.js"><\/script>');
-      window._obj_create_room_loaded = true;
-    }
-  </script>
-  <script src="/arville/universe/obj_create_model.js"></script>
-  <script src="/arville/universe/js/modelPath.js"></script>
-  <script src="/arville/universe/js/GLB-movements.js"></script>
+  <!-- &#9989; All paths are now relative to the current directory (AI/) -->
+  <script src="../universe/js/GLTFLoader.js"></script>
+  <script src="../universe/js/animation-controller.js"></script>
+  <script src="../universe/js/navigation.js"></script>
+  <script src="../universe/obj_create_park.js"></script>
+  <script src="../universe/obj_create_room.js"></script>
+  <script src="../universe/obj_create_model.js"></script>
+  <script src="../universe/js/modelPath.js"></script>
+  <script src="../universe/js/GLB-movements.js"></script>
 
   <script>
     // === MAIN SCENE CODE ===
@@ -161,7 +156,8 @@
     function loadObjectCreator() {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = '/arville/universe/obj_create_room.js?v='+Date.now();
+        // &#9989; Relative path: from AI/ go up to parent, then into universe/
+        script.src = '../universe/obj_create_room.js?v='+Date.now();
         script.onload = function() {
           if (!window.textureLoader) window.textureLoader = new THREE.TextureLoader();
           if (window.initObjectTextures) window.initObjectTextures(window.textureLoader);
@@ -177,19 +173,18 @@
       if (loadingDiv) loadingDiv.textContent = `Loading room ${roomNumber}...`;
 
       const script = document.createElement('script');
-      script.src = `/arville/AI/scenes/scene${roomNumber}.js`;
+      // &#9989; Relative path: scenes/ is a subfolder of the current directory (AI/)
+      script.src = `scenes/scene${roomNumber}.js`;
       script.onload = () => {
         setTimeout(() => {
           if (loadingDiv) loadingDiv.style.display = 'none';
           if (!window.isMobile) document.getElementById('instructions').textContent = `Room ${roomNumber} ready | WASD: Move | Q/E: Fly Up/Down | Mouse: Look Around | R: Reset | H: Home`;
           debugLog('Room loaded');
-          setTimeout(() => { debugEnabled = false; }, 500);
         }, 100);
       };
       script.onerror = () => {
         if (loadingDiv) loadingDiv.style.display = 'none';
         if (!window.isMobile) document.getElementById('instructions').textContent = `Room ${roomNumber} ready (no objects)`;
-        setTimeout(() => { debugEnabled = false; }, 500);
       };
       document.head.appendChild(script);
     }
