@@ -34,32 +34,29 @@ if (!$user) {
 $user_name = $user['name'];
 $user_role = $user['role'];
 
-// Restrict to teachers and admins only
+// Restrict to teachers and admins only (unchanged)
 if ($user_role !== 'teacher' && $user_role !== 'admin') {
     die("Access restricted to teachers and administrators only.");
 }
 
-// Define custom subject order
-$subject_order = [
-    'Academic Track - Accountancy, Business and Management (ABM)',
-    'Academic Track - Humanities and Social Sciences (HUMSS)',
-    'Academic Track - Science, Technology, Engineering and Mathematics (STEM)',
-    'Technical-Vocational-Livelihood (TVL) Track - Home Economics (HE)',
-    'Technical-Vocational-Livelihood (TVL) Track - Information and Communications Technology (ICT)',
-    'Technical-Vocational-Livelihood (TVL) Track - Agri-Fishery Arts (AFA)',
-    'Technical-Vocational-Livelihood (TVL) Track - Industrial Arts (IA)',
-    'Sports Track',
-    'Arts and Design Track'
+// ---- Custom subject ordering (core first, then electives) ----
+$elective_list = [
+    "Introduction to Organization and Management",
+    "Business 1 - Basic Accounting",
+    "Social Sciences",
+    "Creative Composition 1",
+    "Chemistry 1",
+    "Biology 1"
 ];
 
-// Get unique subjects only (no lessons)
+// Get all distinct subjects
 $subjects_only = [];
 $subject_result = $conn->query("SELECT DISTINCT subject FROM tests ORDER BY subject");
 while ($row = $subject_result->fetch_assoc()) {
     $subjects_only[] = $row['subject'];
 }
 
-// Get subjects that have at least one test result (by joining with test_results)
+// Get subjects that have at least one test result (for disabling buttons)
 $subjects_with_results = [];
 $results_query = $conn->query("
     SELECT DISTINCT t.subject 
@@ -70,19 +67,16 @@ while ($row = $results_query->fetch_assoc()) {
     $subjects_with_results[] = $row['subject'];
 }
 
-// Reorder subjects according to custom order
-$ordered_subjects = [];
-foreach ($subject_order as $ordered_subject) {
-    if (in_array($ordered_subject, $subjects_only)) {
-        $ordered_subjects[] = $ordered_subject;
-    }
-}
-// Add any remaining subjects not in the custom order at the end
-foreach ($subjects_only as $subject) {
-    if (!in_array($subject, $ordered_subjects)) {
-        $ordered_subjects[] = $subject;
-    }
-}
+// Determine core subjects (subjects not in elective list)
+$core_subjects = array_diff($subjects_only, $elective_list);
+// Determine elective subjects present
+$elective_present = array_intersect($subjects_only, $elective_list);
+// Sort electives according to the order in $elective_list
+$sorted_electives = array_intersect($elective_list, $elective_present);
+// Final ordered subjects: core first, then electives, then any leftovers
+$ordered_subjects = array_merge($core_subjects, $sorted_electives);
+$other_subjects = array_diff($subjects_only, $core_subjects, $elective_present);
+$ordered_subjects = array_merge($ordered_subjects, $other_subjects);
 
 $conn->close();
 ?>
