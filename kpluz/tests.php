@@ -17,9 +17,9 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get user details
+// Get user details including electives
 $user_id = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT name, role, school FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT name, role, school, electives FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -33,12 +33,12 @@ if (!$user) {
 
 $user_name = $user['name'];
 $user_role = $user['role'];
-$user_school = trim($user['school'] ?? '');   // Trim spaces!
+$user_school = trim($user['school'] ?? '');
+$electives_json = $user['electives'];
 
 // Debug mode (only visible to admins/teachers when ?debug=1 is added)
 $debug_output = '';
 if (($user_role === 'admin' || $user_role === 'teacher') && isset($_GET['debug'])) {
-    // Simulate what the student would see
     $debug_school = $user_school;
     $debug_query = $conn->prepare("
         SELECT COUNT(DISTINCT t.id) as cnt
@@ -59,9 +59,19 @@ if (($user_role === 'admin' || $user_role === 'teacher') && isset($_GET['debug']
         </div>";
 }
 
-// Get available tests grouped by subject
-$tests_by_subject = [];
-$total_tests = 0;
+// ----- New code: define elective list and filter subjects -----
+$elective_list = [
+    "Introduction to Organization and Management",
+    "Business 1 - Basic Accounting",
+    "Social Sciences",
+    "Creative Composition 1",
+    "Chemistry 1",
+    "Biology 1"
+];
+
+// We'll fetch all tests first, then filter and sort later.
+$all_tests = [];
+$total_all_tests = 0;
 
 if ($user_role === 'student') {
     // 1. KPluz tests (always visible)
@@ -73,12 +83,8 @@ if ($user_role === 'student') {
     ");
     if ($kpluz_tests) {
         while ($row = $kpluz_tests->fetch_assoc()) {
-            $subject = $row['subject'];
-            if (!isset($tests_by_subject[$subject])) {
-                $tests_by_subject[$subject] = [];
-            }
-            $tests_by_subject[$subject][] = $row;
-            $total_tests++;
+            $all_tests[] = $row;
+            $total_all_tests++;
         }
     }
 
@@ -98,28 +104,108 @@ if ($user_role === 'student') {
         $school_data = $school_tests->get_result();
 
         while ($row = $school_data->fetch_assoc()) {
-            $subject = $row['subject'];
-            if (!isset($tests_by_subject[$subject])) {
-                $tests_by_subject[$subject] = [];
-            }
             // Avoid duplicates (should not happen)
             $exists = false;
-            foreach ($tests_by_subject[$subject] as $existing) {
+            foreach ($all_tests as $existing) {
                 if ($existing['id'] == $row['id']) {
                     $exists = true;
                     break;
                 }
             }
             if (!$exists) {
-                $tests_by_subject[$subject][] = $row;
-                $total_tests++;
+                $all_tests[] = $row;
+                $total_all_tests++;
             }
         }
         $school_tests->close();
     }
+
+    // ----- Filter tests based on electives -----
+    $filtered_tests = [];
+    if (!empty($electives_json)) {
+        $student_electives = json_decode($electives_json, true);
+        if (is_array($student_electives) && count($student_electives) > 0) {
+            // Get all distinct subjects from tests
+            $all_subjects = array_unique(array_column($all_tests, 'subject'));
+            // Core subjects = all subjects not in elective list
+            $core_subjects = array_diff($all_subjects, $elective_list);
+            // Allowed subjects = core + student's electives
+            $allowed_subjects = array_merge($core_subjects, $student_electives);
+            $allowed_subjects = array_unique($allowed_subjects);
+            // Filter tests
+            foreach ($all_tests as $test) {
+                $subject = $test['subject'];
+                if (in_array($subject, $allowed_subjects)) {
+                    $filtered_tests[] = $test;
+                }
+            }
+        } else {
+            // electives is non-empty but not a valid array – show all
+            $filtered_tests = $all_tests;
+        }
+    } else {
+        // No electives set – show all tests (for students without electives, maybe they should see all?)
+        $filtered_tests = $all_tests;
+    }
+
+    // ----- Group filtered tests by subject and sort -----
+    $tests_by_subject = [];
+    foreach ($filtered_tests as $test) {
+        $subject = $test['subject'];
+        if (!isset($tests_by_subject[$subject])) {
+            $tests_by_subject[$subject] = [];
+        }
+        $tests_by_subject[$subject][] = $test;
+    }
+
+    // ----- Sort subjects: core first, then electives in the order defined in $elective_list -----
+    // Get all subjects present in filtered tests
+    $present_subjects = array_keys($tests_by_subject);
+    // Core subjects present
+    $core_present = array_intersect($present_subjects, $core_subjects ?? []);
+    // Elective subjects present (those that are in the elective list)
+    $elective_present = array_intersect($present_subjects, $elective_list);
+    // Sort electives according to the order in $elective_list
+    $sorted_electives = array_intersect($elective_list, $elective_present);
+    // Final sorted order
+    $sorted_subjects = array_merge($core_present, $sorted_electives);
+    // Add any remaining subjects not in core or electives (should not happen)
+    $other_subjects = array_diff($present_subjects, $core_present, $elective_present);
+    $sorted_subjects = array_merge($sorted_subjects, $other_subjects);
+
+    $total_tests = count($filtered_tests);
+} else {
+    // For non&#8209;students, show all tests (no filtering)
+    $tests_by_subject = [];
+    $all_tests = [];
+    if ($user_role === 'admin' || $user_role === 'teacher') {
+        // Fetch all tests (you might want to keep the existing logic for teachers/admin)
+        // For simplicity, we'll just fetch everything.
+        $all_tests_result = $conn->query("SELECT id, subject, lesson, topic, teacher FROM tests ORDER BY subject, lesson");
+        while ($row = $all_tests_result->fetch_assoc()) {
+            $subject = $row['subject'];
+            if (!isset($tests_by_subject[$subject])) {
+                $tests_by_subject[$subject] = [];
+            }
+            $tests_by_subject[$subject][] = $row;
+            $total_tests++;
+        }
+    }
+    // Use the same sorting for teachers/admins as well (core first)
+    if (!empty($tests_by_subject)) {
+        $present_subjects = array_keys($tests_by_subject);
+        $core_present = array_intersect($present_subjects, $elective_list);
+        $elective_present = array_intersect($present_subjects, $elective_list);
+        $sorted_electives = array_intersect($elective_list, $elective_present);
+        $sorted_subjects = array_merge($core_present, $sorted_electives);
+        $other_subjects = array_diff($present_subjects, $core_present, $elective_present);
+        $sorted_subjects = array_merge($sorted_subjects, $other_subjects);
+    } else {
+        $sorted_subjects = [];
+    }
 }
 
-// Completed tests based on test_id
+// Completed tests based on test_id (only for students)
 $completed_test_ids = [];
 if ($user_role === 'student') {
     $stmt = $conn->prepare("SELECT DISTINCT test_id FROM test_results WHERE user_id = ? AND answers IS NOT NULL AND answers != ''");
@@ -140,6 +226,7 @@ $conn->close();
   <meta charset="utf-8">
   <title>KPluz SHS - Tests</title>
   <style>
+    /* Your existing CSS – unchanged */
     * {
         box-sizing: border-box;
     }
@@ -425,11 +512,6 @@ $conn->close();
                 </h2>
                 
                 <?php if (!empty($tests_by_subject)): ?>
-                    <?php 
-                    // Sort subjects with core subjects first
-                    $core_subjects = ['General Science', 'General Mathematics', 'Effective Communication', 'Life and Career Skills', 'Mabisang Komunikasyon', 'Kasaysayan at Lipunang Pilipino'];
-                    $sorted_subjects = array_merge(array_intersect($core_subjects, array_keys($tests_by_subject)), array_diff(array_keys($tests_by_subject), $core_subjects));
-                    ?>
                     <?php foreach ($sorted_subjects as $subject): ?>
                         <?php $tests = $tests_by_subject[$subject]; ?>
                         <div class="subject-tests">
@@ -465,9 +547,17 @@ $conn->close();
                     <?php endforeach; ?>
                 <?php else: ?>
                     <div class="no-results">
-                        <p>No tests available at the moment. Please check back later.</p>
+                        <p>
+                            <?php if (!empty($electives_json) && $total_tests == 0): ?>
+                                No tests available for your chosen electives.
+                            <?php else: ?>
+                                No tests available at the moment.
+                            <?php endif; ?>
+                        </p>
                         <?php if (empty($user_school)): ?>
                             <p><small>Note: Your school is not set. Please contact your administrator.</small></p>
+                        <?php elseif (!empty($electives_json) && $total_tests == 0): ?>
+                            <p><small>Check that your electives are correctly set.</small></p>
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>

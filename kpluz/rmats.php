@@ -17,9 +17,9 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get user details
+// Get user details including electives
 $user_id = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT name, role FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT name, role, electives FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -33,6 +33,7 @@ if (!$user) {
 
 $user_name = $user['name'];
 $user_role = $user['role'];
+$electives_json = $user['electives'];
 
 $conn->close();
 
@@ -41,21 +42,59 @@ $conn->close();
 // ==============================================
 $json_file = 'rmats.json';
 $all_pdfs = [];
-$total_pdfs = 0;
 
 if (file_exists($json_file)) {
     $json_content = file_get_contents($json_file);
     $data = json_decode($json_content, true);
-    
     if ($data && isset($data['pdfs'])) {
         $all_pdfs = $data['pdfs'];
-        $total_pdfs = count($all_pdfs);
     }
 }
 
-// Group by shs_pathway and subject for display
-$pdf_groups = [];
+// Define the list of elective subjects (must match the list used in add-user.php)
+$elective_list = [
+    "Introduction to Organization and Management",
+    "Business 1 - Basic Accounting",
+    "Social Sciences",
+    "Creative Composition 1",
+    "Chemistry 1",
+    "Biology 1"
+];
+
+// Extract all distinct subjects from the PDFs
+$all_subjects = array_unique(array_column($all_pdfs, 'subject'));
+
+// Core subjects are those NOT in the elective list
+$core_subjects = array_diff($all_subjects, $elective_list);
+
+// Determine which subjects to show
+$allowed_subjects = null;
+if ($user_role === 'student' && !empty($electives_json)) {
+    $student_electives = json_decode($electives_json, true);
+    if (is_array($student_electives) && count($student_electives) > 0) {
+        // Show core subjects + the student's chosen electives
+        $allowed_subjects = array_merge($core_subjects, $student_electives);
+        $allowed_subjects = array_unique($allowed_subjects); // remove duplicates
+    }
+}
+
+// If no filter, show all subjects
+if ($allowed_subjects === null) {
+    $allowed_subjects = $all_subjects;
+}
+
+// Filter PDFs based on allowed subjects
+$filtered_pdfs = [];
 foreach ($all_pdfs as $pdf) {
+    $subject = isset($pdf['subject']) ? trim($pdf['subject']) : '';
+    if (in_array($subject, $allowed_subjects)) {
+        $filtered_pdfs[] = $pdf;
+    }
+}
+
+// Group filtered PDFs by shs_pathway and subject
+$pdf_groups = [];
+foreach ($filtered_pdfs as $pdf) {
     $key = $pdf['shs_pathway'] . '|' . $pdf['subject'];
     if (!isset($pdf_groups[$key])) {
         $pdf_groups[$key] = [
@@ -68,10 +107,12 @@ foreach ($all_pdfs as $pdf) {
     $pdf_groups[$key]['pdfs'][] = [
         'id' => $pdf['id'],
         'pdf_name' => $pdf['lesson'],
-        'description' => $pdf['description'],
+        'description' => $pdf['description'] ?? '',
         'file_path' => $pdf['file_path']
     ];
 }
+
+$total_filtered = count($filtered_pdfs);
 ?>
 
 <!DOCTYPE html>
@@ -328,11 +369,10 @@ foreach ($all_pdfs as $pdf) {
     </div>
 
     <div class="dashboard-content">
-        <!-- STUDENT, ADMIN, TEACHER PDF VIEW PAGE -->
         <div class="pdfs-section">
             <h2 class="section-title">
                 KPluz Reading Materials (based on DepEd Lesson Exemplars)
-                <span class="pdf-count">Total: <?= $total_pdfs ?> Material(s)</span>
+                <span class="pdf-count">Total: <?= $total_filtered ?> Material(s)</span>
             </h2>
             
             <?php if (!empty($pdf_groups)): ?>
@@ -357,8 +397,18 @@ foreach ($all_pdfs as $pdf) {
                 <?php endforeach; ?>
             <?php else: ?>
                 <div class="no-results">
-                    <p>No DepEd Reading Materials available at the moment.</p>
-                    <p>Please check back later for learning materials.</p>
+                    <p>
+                        <?php if ($user_role === 'student' && !empty($electives_json) && $total_filtered == 0): ?>
+                            No reading materials available for your chosen electives.
+                        <?php else: ?>
+                            No DepEd Reading Materials available at the moment.
+                        <?php endif; ?>
+                    </p>
+                    <?php if ($user_role === 'student' && !empty($electives_json) && $total_filtered == 0): ?>
+                        <p>Please check your electives or contact your administrator.</p>
+                    <?php else: ?>
+                        <p>Please check back later for learning materials.</p>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
