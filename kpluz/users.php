@@ -55,7 +55,7 @@ function computePassword($username) {
     return (string)$validpass11;
 }
 
-// List of valid electives (same as provided)
+// List of valid electives
 $valid_electives = [
     "Introduction to Organization and Management",
     "Business 1 - Basic Accounting",
@@ -95,6 +95,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         } else {
             $electives = json_encode([$elective1, $elective2]);
         }
+    }
+
+    // --- School is required for students AND teachers ---
+    if (($role === 'student' || $role === 'teacher') && empty($school)) {
+        $message = "School is required for students and teachers.";
+        $message_type = "error";
     }
 
     // --- Existing validation (unchanged) ---
@@ -390,11 +396,26 @@ $conn->close();
         font-size: 1.2em;
         margin-left: 3px;
     }
+
+    /* School required indicator – shown for student and teacher */
+    .school-required {
+        display: none;
+    }
+    .school-required.visible {
+        display: inline;
+        color: #dc3545;
+        font-weight: bold;
+        margin-left: 3px;
+    }
   </style>
   <script>
-    function toggleElectives() {
+    function toggleStudentFields() {
         var role = document.getElementById('role').value;
         var container = document.getElementById('electives_container');
+        var schoolInput = document.getElementById('school');
+        var schoolRequired = document.getElementById('school_required_indicator');
+
+        // Electives only for students
         if (role === 'student') {
             container.classList.add('visible');
             document.getElementById('elective_1').required = true;
@@ -404,10 +425,19 @@ $conn->close();
             document.getElementById('elective_1').required = false;
             document.getElementById('elective_2').required = false;
         }
+
+        // School required for students and teachers
+        if (role === 'student' || role === 'teacher') {
+            schoolInput.required = true;
+            schoolRequired.classList.add('visible');
+        } else {
+            schoolInput.required = false;
+            schoolRequired.classList.remove('visible');
+        }
     }
     window.addEventListener('DOMContentLoaded', function() {
-        toggleElectives();
-        document.getElementById('role').addEventListener('change', toggleElectives);
+        toggleStudentFields();
+        document.getElementById('role').addEventListener('change', toggleStudentFields);
     });
   </script>
 </head>
@@ -492,8 +522,9 @@ $conn->close();
                 </div>
                 
                 <div class="form-group">
-                    <label for="school">School <span class="optional">(optional)</span></label>
+                    <label for="school">School <span id="school_required_indicator" class="school-required">*</span></label>
                     <input type="text" id="school" name="school" placeholder="Enter school name">
+                    <div class="note">Required for students and teachers.</div>
                 </div>
             </div>
             
