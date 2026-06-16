@@ -10,50 +10,21 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || $_SESSI
     die("Access denied. Admins only.");
 }
 
-require 'offset.php';
-
 // Database connection
 $conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Function to compute password from username
-function computePassword($username) {
-    global $offset;
-    
-    // Ensure username has at least 8 characters
-    $username = (string)$username;
-    while (strlen($username) < 8) {
-        $username .= ' ';
-    }
-    
-    $ord0 = ord($username[0]);
-    $ord1 = ord($username[1]);
-    $ord2 = ord($username[2]);
-    $ord3 = ord($username[3]);
-    $ord4 = ord($username[4]);
-    $ord5 = ord($username[5]);
-    $ord6 = ord($username[6]);
-    $ord7 = ord($username[7]);
-    
-    $sub4 = is_numeric($username[4]) ? intval($username[4]) : $ord4;
-    $sub5 = is_numeric($username[5]) ? intval($username[5]) : $ord5;
-    $sub6 = is_numeric($username[6]) ? intval($username[6]) : $ord6;
-    $sub7 = is_numeric($username[7]) ? intval($username[7]) : $ord7;
-    
-    $kpluzbase = $offset + 9876 + 
-                 $ord0 * $ord2 * 318 + 
-                 $ord1 * $ord3 * 1113 + 
-                 $sub4 * $sub5 * 825 + 
-                 $sub6 * $sub7 * 115 + 
-                 $ord0 * $sub6 * 712 + 
-                 $sub7 * $sub7 * 16 * 1989;
-    
-    $validpass11 = $kpluzbase + $ord0 * $ord4 * ($sub5 + 1) * 1989 + 416;
-    
-    return (string)$validpass11;
-}
+// List of valid electives
+$valid_electives = [
+    "Introduction to Organization and Management",
+    "Business 1 - Basic Accounting",
+    "Social Sciences",
+    "Creative Composition 1",
+    "Chemistry 1",
+    "Biology 1"
+];
 
 $message = '';
 $message_type = '';
@@ -66,73 +37,76 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $role = $_POST['role'];
     $grade = !empty($_POST['grade']) ? trim($_POST['grade']) : null;
     $school = !empty($_POST['school']) ? trim($_POST['school']) : null;
-    
+
+    // Electives – only if role is student
+    $electives = null;
+    if ($role === 'student') {
+        $elective1 = isset($_POST['elective_1']) ? trim($_POST['elective_1']) : '';
+        $elective2 = isset($_POST['elective_2']) ? trim($_POST['elective_2']) : '';
+
+        if (empty($elective1) || empty($elective2)) {
+            $message = "Both electives are required for students.";
+            $message_type = "error";
+        } elseif ($elective1 === $elective2) {
+            $message = "Elective 1 and Elective 2 must be different.";
+            $message_type = "error";
+        } elseif (!in_array($elective1, $valid_electives) || !in_array($elective2, $valid_electives)) {
+            $message = "Invalid elective selected.";
+            $message_type = "error";
+        } else {
+            $electives = json_encode([$elective1, $elective2]);
+        }
+    }
+
     // Validation
-    if (empty($name)) {
-        $message = "Name is required.";
+    if (empty($message) && (empty($name) || empty($plain_password))) {
+        $message = "Name and password are required.";
         $message_type = "error";
-    } else {
-        // Check if email already exists (if email is provided)
+    }
+
+    // Check duplicate email/username if not already in error
+    if (empty($message)) {
         if ($email) {
             $check_stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
             $check_stmt->bind_param("s", $email);
             $check_stmt->execute();
-            $check_result = $check_stmt->get_result();
-            
-            if ($check_result->num_rows > 0) {
+            if ($check_stmt->get_result()->num_rows > 0) {
                 $message = "Email already exists. Please use a different email.";
                 $message_type = "error";
             }
             $check_stmt->close();
         }
-        
-        // Check if username already exists (if provided)
         if ($username && empty($message)) {
             $check_user_stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
             $check_user_stmt->bind_param("s", $username);
             $check_user_stmt->execute();
-            $check_user_result = $check_user_stmt->get_result();
-            
-            if ($check_user_result->num_rows > 0) {
+            if ($check_user_stmt->get_result()->num_rows > 0) {
                 $message = "Username already exists. Please use a different username.";
                 $message_type = "error";
             }
             $check_user_stmt->close();
         }
-        
-        if (empty($message)) {
-            // Determine password: if blank, compute from username; otherwise hash the provided password
-            if (empty($plain_password) && !empty($username)) {
-                // Generate computed password
-                $hashed_password = null; // NULL for computed password accounts
-                $computed_password = computePassword($username);
-                $password_note = " (Computed password: " . $computed_password . ")";
-            } elseif (!empty($plain_password)) {
-                // Hash the provided password
-                $hashed_password = password_hash($plain_password, PASSWORD_DEFAULT);
-                $password_note = "";
-            } else {
-                // No username and no password - error
-                $message = "Either password or username is required to generate credentials.";
-                $message_type = "error";
-            }
-            
-            if (empty($message)) {
-                // Insert new user with grade and school fields
-                $insert_stmt = $conn->prepare("INSERT INTO users (name, email, username, password, role, grade, school, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
-                $insert_stmt->bind_param("sssssss", $name, $email, $username, $hashed_password, $role, $grade, $school);
-                
-                if ($insert_stmt->execute()) {
-                    $display_password = isset($computed_password) ? $computed_password : $plain_password;
-                    $message = "User created successfully!" . ($password_note ?? "") . "\nPassword: " . $display_password;
-                    $message_type = "success";
-                } else {
-                    $message = "Error: " . $conn->error;
-                    $message_type = "error";
-                }
-                $insert_stmt->close();
-            }
+    }
+
+    if (empty($message)) {
+        // Hash password
+        $hashed_password = password_hash($plain_password, PASSWORD_DEFAULT);
+
+        // Insert user (including the electives JSON column)
+        $insert_stmt = $conn->prepare("
+            INSERT INTO users (name, email, username, password, role, grade, school, electives, created_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        ");
+        $insert_stmt->bind_param("ssssssss", $name, $email, $username, $hashed_password, $role, $grade, $school, $electives);
+
+        if ($insert_stmt->execute()) {
+            $message = "User created successfully!";
+            $message_type = "success";
+        } else {
+            $message = "Error: " . $conn->error;
+            $message_type = "error";
         }
+        $insert_stmt->close();
     }
 }
 
@@ -228,6 +202,7 @@ $conn->close();
         border-radius: 6px;
         font-size: 16px;
         transition: border-color 0.3s;
+        background: white;
     }
     
     input[type="text"]:focus,
@@ -332,8 +307,63 @@ $conn->close();
     
     .form-row .form-group {
         flex: 1;
+        margin-bottom: 15px;
+    }
+    
+    .electives-group {
+        background: #f0f7ff;
+        padding: 15px;
+        border-radius: 6px;
+        border-left: 4px solid #003366;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .electives-group .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .electives-group .form-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    .electives-group label .required {
+        color: #dc3545;
+        font-size: 1.2em;
+        margin-left: 3px;
+    }
+    
+    #electives_container {
+        display: none;
+    }
+    
+    #electives_container.visible {
+        display: block;
     }
   </style>
+  <script>
+        function toggleElectives() {
+            const roleSelect = document.getElementById('role');
+            const container = document.getElementById('electives_container');
+            if (roleSelect.value === 'student') {
+                container.classList.add('visible');
+                // Make elective dropdowns required
+                document.getElementById('elective_1').required = true;
+                document.getElementById('elective_2').required = true;
+            } else {
+                container.classList.remove('visible');
+                document.getElementById('elective_1').required = false;
+                document.getElementById('elective_2').required = false;
+            }
+        }
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            // Initial toggle
+            toggleElectives();
+            // Listen for role change
+            document.getElementById('role').addEventListener('change', toggleElectives);
+        });
+    </script>
 </head>
 <body>
   <div class="login-container">
@@ -363,14 +393,13 @@ $conn->close();
             </div>
             
             <div class="form-group">
-                <label for="username">Username <span class="optional">(required for computed password)</span></label>
-                <input type="text" id="username" name="username" placeholder="Enter username">
-                <div class="note">If password is left blank, a computed password will be generated from this username.</div>
+                <label for="username">Username <span class="optional">(optional)</span></label>
+                <input type="text" id="username" name="username" placeholder="Leave blank for email login only">
             </div>
             
             <div class="form-group">
-                <label for="password">Password <span class="optional">(leave blank for computed password)</span></label>
-                <input type="password" id="password" name="password" placeholder="Enter password or leave blank for computed">
+                <label for="password">Password *</label>
+                <input type="password" id="password" name="password" required placeholder="Enter password">
             </div>
             
             <div class="form-group">
@@ -380,6 +409,29 @@ $conn->close();
                     <option value="teacher">Teacher</option>
                     <option value="admin">Admin</option>
                 </select>
+            </div>
+            
+            <!-- Electives section – shown only for students -->
+            <div id="electives_container" class="electives-group">
+                <div class="form-group">
+                    <label for="elective_1">Elective 1 <span class="required">*</span></label>
+                    <select id="elective_1" name="elective_1">
+                        <option value="">-- Select an elective --</option>
+                        <?php foreach ($valid_electives as $elective): ?>
+                            <option value="<?= htmlspecialchars($elective) ?>"><?= htmlspecialchars($elective) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="elective_2">Elective 2 <span class="required">*</span></label>
+                    <select id="elective_2" name="elective_2">
+                        <option value="">-- Select an elective --</option>
+                        <?php foreach ($valid_electives as $elective): ?>
+                            <option value="<?= htmlspecialchars($elective) ?>"><?= htmlspecialchars($elective) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="note">Please select two different electives.</div>
             </div>
             
             <div class="form-row">
@@ -395,6 +447,7 @@ $conn->close();
                 <div class="form-group">
                     <label for="school">School <span class="optional">(optional)</span></label>
                     <input type="text" id="school" name="school" placeholder="Enter school name">
+                    <div class="note">Leave blank for out-of-school or teachers</div>
                 </div>
             </div>
             
