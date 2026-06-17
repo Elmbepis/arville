@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat with Teacher Glenda</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,6 +35,7 @@
         #status.connected { background: #4caf50; color: #fff; }
         #status.connecting { background: #ffc107; color: #333; }
         #status.error { background: #f44336; color: #fff; }
+        #status.disconnected { background: #555; color: #ccc; }
         #messages {
             height: 400px;
             overflow-y: auto;
@@ -72,6 +72,7 @@
             outline: none;
         }
         #message-input:focus { border-color: #4fc3f7; }
+        #message-input:disabled { opacity: 0.5; cursor: not-allowed; }
         #send-btn {
             padding: 12px 28px;
             border-radius: 24px;
@@ -83,7 +84,7 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        #send-btn:hover { background: #81d4fa; }
+        #send-btn:hover:not(:disabled) { background: #81d4fa; }
         #send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         #clear-btn {
             padding: 8px 16px;
@@ -95,29 +96,12 @@
             margin-top: 10px;
         }
         #clear-btn:hover { background: #444; }
-        #iframe-container {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-        }
-        #iframe-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
     </style>
 </head>
 <body>
-    <div id="iframe-container">
-        <iframe id="xiaozhi-iframe" src="http://172.104.74.194:5173/"></iframe>
-    </div>
-
     <div class="container">
         <h1>&#129302; Teacher Glenda</h1>
-        <div class="subtitle">Custom Chat (via Xiaozhi WebUI)</div>
+        <div class="subtitle">Direct Xiaozhi Backend</div>
         <div id="status" class="connecting">&#9203; Connecting...</div>
         <div id="messages"></div>
         <div class="input-area">
@@ -128,23 +112,17 @@
     </div>
 
     <script>
-        // ============================================================
-        // Wait for iframe to load, then set up message relay
-        // ============================================================
-        const iframe = document.getElementById('xiaozhi-iframe');
+        const WS_URL = 'ws://172.104.74.194:5000';
+
         const statusEl = document.getElementById('status');
         const messagesEl = document.getElementById('messages');
         const inputEl = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
         const clearBtn = document.getElementById('clear-btn');
 
-        let iframeReady = false;
-        let lastMessageCount = 0;
-        let isProcessing = false;
+        let ws, sessionId, isConnected = false, isWaiting = false, reconnectAttempts = 0;
+        const MAX_RECONNECT = 5;
 
-        // ============================================================
-        // Helpers
-        // ============================================================
         function addMessage(role, text) {
             const div = document.createElement('div');
             div.className = 'message ' + role;
@@ -172,152 +150,113 @@
             if (enabled) inputEl.focus();
         }
 
-        // ============================================================
-        // Poll iframe for new messages
-        // ============================================================
-        function pollMessages() {
-            if (!iframeReady) return;
-            try {
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-                // Find message elements – adjust selectors based on WebUI structure
-                // The WebUI likely uses classes like .message, .text, etc.
-                // We'll look for any element that contains "&#129302;" or "&#129489;" or by role.
-                // Simpler: find all elements with class 'message' or 'msg' and compare.
-                const messageElements = doc.querySelectorAll('.message, .msg, [class*="message"], [class*="msg"]');
-                // Also look for chat messages specifically – we can search for text nodes.
-                // Since the WebUI is Vue, it might use dynamic classes. We can use a more generic approach:
-                // Find the chat container and look for children.
-                // Let's try to find the chat container by ID or class.
-                const chatContainer = doc.querySelector('.chat-container, #chat, .messages, #messages');
-                if (chatContainer) {
-                    const children = chatContainer.children;
-                    if (children.length > lastMessageCount) {
-                        // New messages added – get the last one
-                        const lastChild = children[children.length - 1];
-                        const text = lastChild.textContent || lastChild.innerText;
-                        // Determine if it's user or AI (maybe by class or by sender)
-                        // For simplicity, we'll assume if it's not from user, it's AI.
-                        // We can check for a class like 'user' or 'ai'.
-                        const isUser = lastChild.classList.contains('user') || lastChild.classList.contains('mine');
-                        if (isUser) {
-                            // User message – we already display it when sent, so skip
-                        } else {
-                            // AI message
-                            addMessage('ai', text);
-                        }
-                        lastMessageCount = children.length;
-                    }
-                }
-            } catch (e) {
-                // Cross-origin or other errors – silently ignore
-                console.warn('Poll error:', e);
-            }
-        }
+        function connect() {
+            if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+            setStatus('&#9203; Connecting...', 'connecting');
+            ws = new WebSocket(WS_URL);
 
-        // ============================================================
-        // Send message to iframe
-        // ============================================================
-        function sendMessageToIframe(text) {
-            if (!iframeReady) return;
-            try {
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-                // Find input field and send button
-                const inputField = doc.querySelector('input[type="text"], textarea');
-                const sendButton = doc.querySelector('button[type="submit"], .send-btn, #send-btn');
-                if (inputField && sendButton) {
-                    inputField.value = text;
-                    // Trigger input event (Vue might need it)
-                    const inputEvent = new Event('input', { bubbles: true });
-                    inputField.dispatchEvent(inputEvent);
-                    // Click send button
-                    sendButton.click();
-                    // Update last message count after a short delay
-                    setTimeout(() => {
-                        // We'll poll for new messages in the next cycle
-                    }, 500);
-                } else {
-                    console.error('Could not find input or send button in iframe');
-                    addSystemMessage('&#10060; Could not interact with chat interface');
-                }
-            } catch (e) {
-                console.error('Send error:', e);
-                addSystemMessage('&#10060; Error sending message');
-            }
-        }
+            ws.onopen = () => {
+                console.log('&#9989; WebSocket opened, sending hello...');
+                ws.send(JSON.stringify({
+                    type: "hello",
+                    version: 1,
+                    transport: "websocket",
+                    audio_params: { format: "opus", sample_rate: 16000, channels: 1, frame_duration: 60 }
+                }));
+            };
 
-        // ============================================================
-        // Send message from custom UI
-        // ============================================================
-        function sendMessage() {
-            const text = inputEl.value.trim();
-            if (!text || isProcessing) return;
-
-            addMessage('user', text);
-            inputEl.value = '';
-            setUIEnabled(false);
-            isProcessing = true;
-            setStatus('&#9203; Sending...', 'connecting');
-
-            sendMessageToIframe(text);
-
-            // Enable UI after a delay (or we can wait for the response)
-            setTimeout(() => {
-                isProcessing = false;
-                setUIEnabled(true);
-                setStatus('&#9989; Connected', 'connected');
-            }, 3000);
-        }
-
-        // ============================================================
-        // Polling interval
-        // ============================================================
-        setInterval(pollMessages, 1000);
-
-        // ============================================================
-        // Wait for iframe to load
-        // ============================================================
-        iframe.addEventListener('load', () => {
-            console.log('Iframe loaded');
-            // Try to detect if the WebUI is ready (maybe after some time)
-            setTimeout(() => {
+            ws.onmessage = (event) => {
                 try {
-                    const doc = iframe.contentDocument || iframe.contentWindow.document;
-                    // Check if we can find the input
-                    const inputField = doc.querySelector('input[type="text"], textarea');
-                    if (inputField) {
-                        iframeReady = true;
+                    const data = JSON.parse(event.data);
+                    console.log('&#128232; Received:', data);
+
+                    if (data.type === 'hello') {
+                        sessionId = data.session_id;
+                        console.log('&#128203; Session ID:', sessionId);
+                        isConnected = true;
+                        reconnectAttempts = 0;
                         setStatus('&#9989; Connected', 'connected');
                         setUIEnabled(true);
                         addSystemMessage('Connected to Teacher Glenda');
-                        // Initial poll to get existing messages?
-                    } else {
-                        addSystemMessage('&#9888;&#65039; Could not detect chat interface. Make sure the WebUI is loaded.');
-                        setStatus('&#9888;&#65039; Waiting for UI', 'connecting');
+                        inputEl.focus();
+                        return;
                     }
+
+                    if (data.type === 'llm' && data.text) {
+                        const reply = data.text;
+                        console.log('&#128232; AI Response:', reply);
+                        if (isWaiting) isWaiting = false;
+                        addMessage('ai', reply);
+                        setUIEnabled(true);
+                        return;
+                    }
+
+                    if (data.type === 'error') {
+                        console.error('&#10060; Error:', data.message);
+                        addSystemMessage('&#10060; Error: ' + data.message);
+                        if (isWaiting) { isWaiting = false; setUIEnabled(true); }
+                        return;
+                    }
+
+                    if (data.jsonrpc && data.method === 'ping') {
+                        ws.send(JSON.stringify({ jsonrpc: "2.0", id: data.id, result: {} }));
+                        return;
+                    }
+
+                    console.warn('Unhandled:', data);
                 } catch (e) {
-                    console.warn('Iframe access error:', e);
-                    addSystemMessage('&#10060; Cross-origin error. Please open this page from the same domain as the WebUI.');
-                    setStatus('&#10060; Error', 'error');
+                    console.error('Parse error:', e);
+                    if (isWaiting) { isWaiting = false; setUIEnabled(true); }
                 }
-            }, 3000);
-        });
+            };
 
-        // ============================================================
-        // Event listeners
-        // ============================================================
+            ws.onerror = (error) => {
+                console.error('&#10060; WebSocket error:', error);
+                setStatus('&#10060; Error', 'error');
+                setUIEnabled(false);
+            };
+
+            ws.onclose = () => {
+                console.warn('&#9888;&#65039; WebSocket closed');
+                isConnected = false;
+                sessionId = null;
+                setUIEnabled(false);
+                setStatus('&#9203; Disconnected', 'disconnected');
+                if (reconnectAttempts < MAX_RECONNECT) {
+                    reconnectAttempts++;
+                    const delay = Math.min(3000 * reconnectAttempts, 15000);
+                    addSystemMessage(`Reconnecting in ${delay/1000}s...`);
+                    setTimeout(connect, delay);
+                } else {
+                    addSystemMessage('&#10060; Could not reconnect.');
+                }
+            };
+        }
+
+        function sendMessage() {
+            const text = inputEl.value.trim();
+            if (!text || !isConnected || !sessionId || isWaiting) return;
+            addMessage('user', text);
+            inputEl.value = '';
+            setUIEnabled(false);
+            isWaiting = true;
+            ws.send(JSON.stringify({ type: "llm", text: text, session_id: sessionId }));
+            console.log('&#128228; Sent:', text);
+            setTimeout(() => {
+                if (isWaiting) {
+                    isWaiting = false;
+                    addSystemMessage('&#9200; Timeout. Try again.');
+                    setUIEnabled(true);
+                }
+            }, 20000);
+        }
+
         sendBtn.addEventListener('click', sendMessage);
-        inputEl.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-        clearBtn.addEventListener('click', () => {
-            messagesEl.innerHTML = '';
-        });
+        inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+        clearBtn.addEventListener('click', () => { messagesEl.innerHTML = ''; });
 
-        // ============================================================
-        // Start
-        // ============================================================
-        addSystemMessage('Loading Xiaozhi WebUI...');
-        // The iframe will load asynchronously.
+        connect();
+        addSystemMessage('Connecting...');
     </script>
 </body>
 </html>
