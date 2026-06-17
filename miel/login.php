@@ -1,5 +1,5 @@
 <?php
-// login.php – MIEL login with computed password support (KPluz style)
+// login.php – MIEL login with grade&#8209;specific computed password support
 session_name('MIEL_SESSION');
 session_start();
 
@@ -9,18 +9,13 @@ $dbname = 'miel';
 $username_db = 'root';
 $password_db = 'AcadeV25!';
 
-// Offset for computed password (must match the algorithm)
-define('PASSWORD_OFFSET', 1234); // Adjust if you have a specific offset file
-
 $error = '';
 $success = '';
 
 // --------------------------------------------------------------------
-// COMPUTED PASSWORD FUNCTION (copied from KPluz)
+// COMPUTED PASSWORD FUNCTION (grades 0&#8209;10 + fallback to 11)
 // --------------------------------------------------------------------
-function computePassword($username) {
-    $offset = PASSWORD_OFFSET;
-    
+function computePassword($username, $grade = null) {
     // Ensure username has at least 8 characters
     $username = (string)$username;
     while (strlen($username) < 8) {
@@ -41,7 +36,8 @@ function computePassword($username) {
     $sub6 = is_numeric($username[6]) ? intval($username[6]) : $ord6;
     $sub7 = is_numeric($username[7]) ? intval($username[7]) : $ord7;
     
-    $kpluzbase = $offset + 9876 + 
+    // Base calculation (without offset) – used for grades 0&#8209;10
+    $kpluzbase = 9876 + 
                  $ord0 * $ord2 * 318 + 
                  $ord1 * $ord3 * 1113 + 
                  $sub4 * $sub5 * 825 + 
@@ -49,8 +45,46 @@ function computePassword($username) {
                  $ord0 * $sub6 * 712 + 
                  $sub7 * $sub7 * 16 * 1989;
     
-    $validpass11 = $kpluzbase + $ord0 * $ord4 * ($sub5 + 1) * 1989 + 416;
+    // If a valid grade (0–10) is given, return the corresponding computed password
+    if ($grade !== null && is_numeric($grade) && $grade >= 0 && $grade <= 10) {
+        $g = (int)$grade;
+        switch ($g) {
+            case 0:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 1234 + 234);
+            case 1:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 1345 + 345);
+            case 2:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 1456 + 456);
+            case 3:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 1567 + 567);
+            case 4:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 1678 + 678);
+            case 5:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 1789 + 789);
+            case 6:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 2123 + 987);
+            case 7:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 2234 + 876);
+            case 8:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 2345 + 765);
+            case 9:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 2456 + 654);
+            case 10:
+                // Grade 10 uses ord($sub4) instead of ($sub4+1)
+                return (string)($kpluzbase + $ord0 * $ord4 * ($sub5 + 1) * 2567 + 543);
+        }
+    }
     
+    // Fallback: original Grade&#8209;11 formula (with offset 1234)
+    $offset = 1234;
+    $kpluzbase_with_offset = $offset + 9876 + 
+                 $ord0 * $ord2 * 318 + 
+                 $ord1 * $ord3 * 1113 + 
+                 $sub4 * $sub5 * 825 + 
+                 $sub6 * $sub7 * 115 + 
+                 $ord0 * $sub6 * 712 + 
+                 $sub7 * $sub7 * 16 * 1989;
+    $validpass11 = $kpluzbase_with_offset + $ord0 * $ord4 * ($sub5 + 1) * 1989 + 416;
     return (string)$validpass11;
 }
 
@@ -94,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                     $_SESSION['user_name'] = $user['full_name'];
                     $_SESSION['user_role'] = $user['role'];
                     $_SESSION['grade_level'] = $user['grade_level'];
-                    $_SESSION['school'] = $user['school']; // if needed
+                    $_SESSION['school'] = $user['school'];
                     
                     redirectToDashboard($user['role']);
                 } else {
@@ -113,11 +147,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
                 
                 if ($user) {
-                    // User exists – try hashed password first, then computed
+                    // User exists – try hashed password first, then computed with grade
                     $login_success = false;
                     if (!is_null($user['password_hash']) && password_verify($password, $user['password_hash'])) {
                         $login_success = true;
-                    } elseif (is_null($user['password_hash']) && $password == computePassword($username)) {
+                    } elseif (is_null($user['password_hash']) && 
+                              $password == computePassword($username, $user['grade_level'])) {
                         $login_success = true;
                     }
                     
@@ -134,14 +169,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                         $error = 'Invalid username or password.';
                     }
                 } else {
-                    // User does not exist – try computed password for auto-creation
-                    $computed = computePassword($username);
+                    // User does not exist – try computed password for auto-creation (default to grade 11)
+                    $computed = computePassword($username, 11); // fallback to grade 11
                     if ($password == $computed) {
                         // Auto-create account (student by default)
                         $full_name = $username;
                         $email = $username . '@miel.edu.ph';
                         $role = 'student';
-                        $grade_level = NULL;
+                        $grade_level = NULL; // We don't know grade – will be set later
                         $school = NULL;
                         $password_hash = NULL; // No hash, rely on computed password
                         
@@ -189,7 +224,7 @@ if (isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="mobile.css" media="screen">
     <style>
-        /* ===== KID-FRIENDLY THEME (unchanged) ===== */
+        /* ===== KID-FRIENDLY THEME ===== */
         :root {
             --primary-blue: #4A90E2;
             --secondary-green: #50C878;
@@ -244,7 +279,6 @@ if (isset($_SESSION['user_id'])) {
         .navbar .container { width: 100%; max-width: 100%; padding-left: 300px; padding-right: 300px; display: flex; justify-content: space-between; align-items: center; }
         .navbar .navbar-collapse { flex-grow: 0; }
         
-        /* MIEL BANNER */
         .miel-banner-container {
             text-align: center;
             margin-bottom: 30px;
@@ -263,7 +297,6 @@ if (isset($_SESSION['user_id'])) {
             border-radius: var(--border-radius);
         }
         
-        /* MAIN CARD – only login form now */
         .main-card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: var(--border-radius);
@@ -294,7 +327,6 @@ if (isset($_SESSION['user_id'])) {
             box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
         }
         
-        /* BUTTONS */
         .btn {
             padding: 15px 30px;
             border: none;
@@ -361,12 +393,10 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </nav>
 
-    <!-- MIEL BANNER -->
     <div class="miel-banner-container fade-in">
         <img src="miel-banner.png" alt="MIEL - Multiple Intelligence Experiential Learning System" class="miel-banner">
     </div>
 
-    <!-- LOGIN FORM ONLY – NO REGISTRATION -->
     <div class="narrow-form-container">
         <div class="main-card">
             <?php if ($error): ?>

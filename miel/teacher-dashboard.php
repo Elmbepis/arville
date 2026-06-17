@@ -282,7 +282,7 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="mobile.css" media="screen">
     <style>
-        /* ===== KID-FRIENDLY THEME ===== */
+        /* ===== KID-FRIENDLY THEME (unchanged) ===== */
         :root {
             --primary-blue: #4A90E2;
             --secondary-green: #50C878;
@@ -1244,7 +1244,7 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
                 </div>
             </div>
             <div class="welcome-message">
-                Welcome back, Teacher <strong><?php echo htmlspecialchars($teacher['full_name']); ?></strong>!
+                Welcome back, Teacher <strong><?php echo htmlspecialchars($teacher['full_name'] ?? ''); ?></strong>!
             </div>
         </header>
 
@@ -1257,7 +1257,7 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
                 
                 <div class="profile-section">
                     <div class="profile-avatar">
-                        <?php echo strtoupper(substr($teacher['full_name'], 0, 1)); ?>
+                        <?php echo strtoupper(substr($teacher['full_name'] ?? '', 0, 1)); ?>
                     </div>
                     
                     <div class="profile-info-grid">
@@ -1267,7 +1267,7 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
                             </div>
                             <div class="profile-details">
                                 <div class="profile-label">Email</div>
-                                <div class="profile-value"><?php echo htmlspecialchars($teacher['email']); ?></div>
+                                <div class="profile-value"><?php echo htmlspecialchars($teacher['email'] ?? ''); ?></div>
                             </div>
                         </div>
                         
@@ -1287,7 +1287,7 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
                             </div>
                             <div class="profile-details">
                                 <div class="profile-label">Member Since</div>
-                                <div class="profile-value"><?php echo formatDate($teacher['created_at']); ?></div>
+                                <div class="profile-value"><?php echo formatDate($teacher['created_at'] ?? ''); ?></div>
                             </div>
                         </div>
                         
@@ -1356,7 +1356,7 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
                                         </div>
                                     </div>
                                     <div class="icon-title">
-                                        <?php echo htmlspecialchars($quiz['title']); ?>
+                                        <?php echo htmlspecialchars($quiz['title'] ?? ''); ?>
                                     </div>
                                     <div class="grade-level-display">
                                         <?php echo $gradeDisplay; ?>
@@ -1411,7 +1411,7 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
                             </div>
                         </div>
                         <div class="icon-title">
-                            <?php echo htmlspecialchars($activity['title']); ?>
+                            <?php echo htmlspecialchars($activity['title'] ?? ''); ?>
                         </div>
                         <div class="grade-level-display">
                             <?php echo $gradeDisplay; ?>
@@ -1464,7 +1464,7 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
                                         </div>
                                     </div>
                                     <div class="icon-title">
-                                        <?php echo htmlspecialchars($quiz['title']); ?>
+                                        <?php echo htmlspecialchars($quiz['title'] ?? ''); ?>
                                     </div>
                                     <div class="grade-level-display">
                                         <?php echo $gradeDisplay; ?>
@@ -1525,7 +1525,7 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
                             </div>
                         </div>
                         <div class="icon-title">
-                            <?php echo htmlspecialchars($activity['title']); ?>
+                            <?php echo htmlspecialchars($activity['title'] ?? ''); ?>
                         </div>
                         <div class="grade-level-display">
                             <?php echo $gradeDisplay; ?>
@@ -1629,7 +1629,7 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
                 this.style.transform = 'translateY(-3px)';
             });
             item.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
+                this.style.transform = 'translateY(0)');
             });
         });
         
@@ -1638,7 +1638,7 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
                 this.style.transform = 'translateY(-5px)';
             });
             icon.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
+                this.style.transform = 'translateY(0)');
             });
         });
         

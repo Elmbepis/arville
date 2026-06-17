@@ -55,7 +55,6 @@ if (!$allowed) {
 // ============================================================
 // CONTINUE WITH THE ADD USER LOGIC (MIEL version)
 // ============================================================
-define('PASSWORD_OFFSET', 1234); // Same as in login.php
 
 // Re-establish connection for the rest of the script
 $conn = new mysqli($host, $username_db, $password_db, $dbname);
@@ -63,13 +62,18 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Function to compute password from username (copied from KPluz)
-function computePassword($username) {
-    $offset = PASSWORD_OFFSET;
+/**
+ * Compute password based on username and grade level.
+ * For grades 0–10, uses the corresponding formula from KPluz.
+ * For grades 11+ or if grade is not provided, falls back to the original Grade&#8209;11 formula.
+ */
+function computePassword($username, $grade = null) {
+    // Ensure username has at least 8 characters
     $username = (string)$username;
     while (strlen($username) < 8) {
         $username .= ' ';
     }
+    
     $ord0 = ord($username[0]);
     $ord1 = ord($username[1]);
     $ord2 = ord($username[2]);
@@ -84,7 +88,8 @@ function computePassword($username) {
     $sub6 = is_numeric($username[6]) ? intval($username[6]) : $ord6;
     $sub7 = is_numeric($username[7]) ? intval($username[7]) : $ord7;
     
-    $kpluzbase = $offset + 9876 + 
+    // Base calculation (without offset, as per KPluz formulas for grades 0–10)
+    $kpluzbase = 9876 + 
                  $ord0 * $ord2 * 318 + 
                  $ord1 * $ord3 * 1113 + 
                  $sub4 * $sub5 * 825 + 
@@ -92,7 +97,45 @@ function computePassword($username) {
                  $ord0 * $sub6 * 712 + 
                  $sub7 * $sub7 * 16 * 1989;
     
-    $validpass11 = $kpluzbase + $ord0 * $ord4 * ($sub5 + 1) * 1989 + 416;
+    // If a valid grade (0–10) is given, return the corresponding computed password
+    if ($grade !== null && is_numeric($grade) && $grade >= 0 && $grade <= 10) {
+        $g = (int)$grade;
+        switch ($g) {
+            case 0:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 1234 + 234);
+            case 1:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 1345 + 345);
+            case 2:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 1456 + 456);
+            case 3:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 1567 + 567);
+            case 4:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 1678 + 678);
+            case 5:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 1789 + 789);
+            case 6:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 2123 + 987);
+            case 7:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 2234 + 876);
+            case 8:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 2345 + 765);
+            case 9:
+                return (string)($kpluzbase + $ord0 * ($sub4 + 1) * ($sub5 + 1) * 2456 + 654);
+            case 10:
+                return (string)($kpluzbase + $ord0 * $ord4 * ($sub5 + 1) * 2567 + 543);
+        }
+    }
+    
+    // Fallback: original Grade&#8209;11 formula (with offset)
+    $offset = 1234; // Same as used in login.php
+    $kpluzbase_with_offset = $offset + 9876 + 
+                 $ord0 * $ord2 * 318 + 
+                 $ord1 * $ord3 * 1113 + 
+                 $sub4 * $sub5 * 825 + 
+                 $sub6 * $sub7 * 115 + 
+                 $ord0 * $sub6 * 712 + 
+                 $sub7 * $sub7 * 16 * 1989;
+    $validpass11 = $kpluzbase_with_offset + $ord0 * $ord4 * ($sub5 + 1) * 1989 + 416;
     return (string)$validpass11;
 }
 
@@ -152,7 +195,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $hashed_password = null;
         $computed_password = null;
         if (empty($plain_password) && !empty($username)) {
-            $computed_password = computePassword($username);
+            // Compute password using the grade level (if provided)
+            $computed_password = computePassword($username, $grade);
             $hashed_password = null;
             $password_note = " (Computed password: " . $computed_password . ")";
         } elseif (!empty($plain_password)) {
@@ -166,7 +210,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if (empty($message)) {
             // Insert user (no class_name, no electives)
             $insert_stmt = $conn->prepare("
-                INSERT INTO users (name, email, username, password_hash, role, grade_level, school, app, created_at)
+                INSERT INTO users (full_name, email, username, password_hash, role, grade_level, school, app, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, 'miel', NOW())
             ");
             $insert_stmt->bind_param("sssssss", $name, $email, $username, $hashed_password, $role, $grade, $school);
@@ -193,6 +237,7 @@ $conn->close();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* (All CSS unchanged – same as before) */
         * {
             box-sizing: border-box;
         }
@@ -453,7 +498,7 @@ $conn->close();
                 <div class="form-group">
                     <label for="username">Username <span class="optional">(required for computed password)</span></label>
                     <input type="text" id="username" name="username" placeholder="Enter username">
-                    <div class="note">If password is left blank, a computed password will be generated from this username.</div>
+                    <div class="note">If password is left blank, a computed password will be generated from this username based on grade level.</div>
                 </div>
                 
                 <div class="form-group">
@@ -472,7 +517,7 @@ $conn->close();
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="grade">Grade Level <span class="optional">(optional)</span></label>
+                        <label for="grade">Grade Level <span class="optional">(required for students with computed password)</span></label>
                         <select id="grade" name="grade">
                             <option value="">-- Select grade --</option>
                             <?php for ($g = 1; $g <= 12; $g++): ?>

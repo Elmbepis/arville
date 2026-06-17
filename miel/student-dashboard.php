@@ -1020,10 +1020,10 @@ function getQuizWorldImage($worldName, &$debug = null) {
                 </div>
             </div>
             <div class="welcome-message">
-                Hello, <strong><?php echo htmlspecialchars($student['full_name']); ?></strong>!
+                Hello, <strong><?php echo htmlspecialchars($student['full_name'] ?? ''); ?></strong>!
             </div>
             <div class="grade-badge">
-                <i class="fas fa-graduation-cap"></i> Your Grade Level: <?php echo $student['grade_level']; ?>
+                <i class="fas fa-graduation-cap"></i> Your Grade Level: <?php echo $student['grade_level'] ?? ''; ?>
             </div>
         </header>
 
@@ -1036,7 +1036,7 @@ function getQuizWorldImage($worldName, &$debug = null) {
                 
                 <div class="profile-section">
                     <div class="profile-avatar">
-                        <?php echo strtoupper(substr($student['full_name'], 0, 1)); ?>
+                        <?php echo strtoupper(substr($student['full_name'] ?? '', 0, 1)); ?>
                     </div>
                     
                     <div class="profile-info-grid">
@@ -1046,7 +1046,7 @@ function getQuizWorldImage($worldName, &$debug = null) {
                             </div>
                             <div class="profile-details">
                                 <div class="profile-label">Email</div>
-                                <div class="profile-value"><?php echo htmlspecialchars($student['email']); ?></div>
+                                <div class="profile-value"><?php echo htmlspecialchars($student['email'] ?? ''); ?></div>
                             </div>
                         </div>
                         
@@ -1066,7 +1066,7 @@ function getQuizWorldImage($worldName, &$debug = null) {
                             </div>
                             <div class="profile-details">
                                 <div class="profile-label">Grade Level</div>
-                                <div class="profile-value">Grade <?php echo htmlspecialchars($student['grade_level']); ?></div>
+                                <div class="profile-value">Grade <?php echo htmlspecialchars($student['grade_level'] ?? ''); ?></div>
                             </div>
                         </div>
                         
@@ -1076,7 +1076,7 @@ function getQuizWorldImage($worldName, &$debug = null) {
                             </div>
                             <div class="profile-details">
                                 <div class="profile-label">Member Since</div>
-                                <div class="profile-value"><?php echo formatDate($student['created_at']); ?></div>
+                                <div class="profile-value"><?php echo formatDate($student['created_at'] ?? ''); ?></div>
                             </div>
                         </div>
                     </div>
@@ -1086,7 +1086,7 @@ function getQuizWorldImage($worldName, &$debug = null) {
             <!-- ==================== MY QUIZZES SECTION ==================== -->
             <div class="card fade-in">
                 <h2 class="card-title">
-                    <i class="fas fa-gamepad"></i> My Quizzes (Grade <?php echo $student['grade_level']; ?>)
+                    <i class="fas fa-gamepad"></i> My Quizzes (Grade <?php echo $student['grade_level'] ?? ''; ?>)
                     <span class="badge badge-primary"><?php echo count($availableQuizzes); ?></span>
                 </h2>
                 
@@ -1124,14 +1124,14 @@ function getQuizWorldImage($worldName, &$debug = null) {
                                 <div class="icon-badge <?php echo !$quizTaken ? 'not-taken' : ''; ?>"><?php echo $quizCount; ?></div>
                                 
                                 <div class="quiz-combined-icon-container">
-                                    <img src="<?php echo $worldImage; ?>" alt="<?php echo htmlspecialchars($virtualWorldName); ?>" class="quiz-virtual-world-icon" onerror="this.onerror=null; this.src='images/default-world.jpg'; console.error('Quiz image failed: <?php echo $worldImage; ?>');">
+                                    <img src="<?php echo $worldImage; ?>" alt="<?php echo htmlspecialchars($virtualWorldName ?? ''); ?>" class="quiz-virtual-world-icon" onerror="this.onerror=null; this.src='images/default-world.jpg'; console.error('Quiz image failed: <?php echo $worldImage; ?>');">
                                     <div class="quiz-mi-badge-overlay">
                                         <img src="<?php echo $intelligenceImage; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>" onerror="this.onerror=null; this.src='images/default.jpg';">
                                     </div>
                                 </div>
                                 
                                 <div class="icon-title">
-                                    <?php echo htmlspecialchars($quiz['title']); ?>
+                                    <?php echo htmlspecialchars($quiz['title'] ?? ''); ?>
                                 </div>
                                 <?php if ($quizTaken && $quizScore !== null): ?>
                                 <div class="icon-score" style="color: <?php echo $quizScore >= 80 ? '#50C878' : ($quizScore >= 60 ? '#FF9800' : '#FF6B6B'); ?>;">
@@ -1150,7 +1150,7 @@ function getQuizWorldImage($worldName, &$debug = null) {
             <!-- ==================== MY ACTIVITIES SECTION ==================== -->
             <div class="card fade-in">
                 <h2 class="card-title">
-                    <i class="fas fa-tasks"></i> My Activities (Grade <?php echo $student['grade_level']; ?>)
+                    <i class="fas fa-tasks"></i> My Activities (Grade <?php echo $student['grade_level'] ?? ''; ?>)
                     <span class="badge badge-primary"><?php echo count($availableActivities); ?></span>
                 </h2>
                 
@@ -1185,19 +1185,19 @@ function getQuizWorldImage($worldName, &$debug = null) {
                             ?>
                             <div class="quiz-icon" onclick="viewActivity(<?php echo $activity['id']; ?>)"
                                  data-activity-id="<?php echo $activity['id']; ?>"
-                                 data-virtual-world="<?php echo htmlspecialchars($virtualWorld); ?>"
+                                 data-virtual-world="<?php echo htmlspecialchars($virtualWorld ?? ''); ?>"
                                  data-world-image="<?php echo $worldImage; ?>">
                                 <div class="icon-badge"><?php echo $activityCount; ?></div>
                                 
                                 <div class="combined-icon-container">
-                                    <img src="<?php echo $worldImage; ?>" alt="<?php echo htmlspecialchars($virtualWorld); ?>" class="virtual-world-icon" onerror="this.onerror=null; this.src='images/default-world.jpg'; console.error('Activity image failed for world: <?php echo htmlspecialchars($virtualWorld); ?> -> <?php echo $worldImage; ?>');">
+                                    <img src="<?php echo $worldImage; ?>" alt="<?php echo htmlspecialchars($virtualWorld ?? ''); ?>" class="virtual-world-icon" onerror="this.onerror=null; this.src='images/default-world.jpg'; console.error('Activity image failed for world: <?php echo htmlspecialchars($virtualWorld ?? ''); ?> -> <?php echo $worldImage; ?>');">
                                     <div class="mi-badge-overlay">
                                         <img src="<?php echo $intelligenceImage; ?>" alt="<?php echo getIntelligenceName($intelligenceType); ?>" onerror="this.onerror=null; this.src='images/default.jpg';">
                                     </div>
                                 </div>
                                 
                                 <div class="icon-title">
-                                    <?php echo htmlspecialchars($activity['title']); ?>
+                                    <?php echo htmlspecialchars($activity['title'] ?? ''); ?>
                                 </div>
                                 <?php if ($activityGraded && $activityPoints !== null): ?>
                                 <?php 
