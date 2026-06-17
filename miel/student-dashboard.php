@@ -26,8 +26,8 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    // Get student profile
-    $studentStmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+    // Get student profile – explicitly list columns (class_name removed)
+    $studentStmt = $pdo->prepare("SELECT id, email, full_name, role, grade_level, created_at FROM users WHERE id = ?");
     $studentStmt->execute([$_SESSION['user_id']]);
     $student = $studentStmt->fetch(PDO::FETCH_ASSOC);
     
@@ -1021,9 +1021,6 @@ function getQuizWorldImage($worldName, &$debug = null) {
             </div>
             <div class="welcome-message">
                 Hello, <strong><?php echo htmlspecialchars($student['full_name']); ?></strong>!
-                <?php if ($student['class_name']): ?>
-                <br><small>Class: <?php echo htmlspecialchars($student['class_name']); ?></small>
-                <?php endif; ?>
             </div>
             <div class="grade-badge">
                 <i class="fas fa-graduation-cap"></i> Your Grade Level: <?php echo $student['grade_level']; ?>

@@ -104,7 +104,7 @@ echo "    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.
 echo "</head>";
 echo "<body>";
 
-// Navbar Section (dynamic login/logout link)
+// Navbar Section (Home &#8594; Login/Logout &#8594; MIEL &#8594; Plans &#8594; About Us &#8594; Contact)
 echo "<nav class='navbar navbar-expand-lg navbar-light bg-light'>";
 echo "    <div class='container'>";
 echo "        <a class='navbar-brand' href='index.php'>";
@@ -118,6 +118,7 @@ echo "        <div class='collapse navbar-collapse' id='navbarNav'>";
 echo "            <ul class='navbar-nav ms-auto'>";
 echo "                <li class='nav-item'><a class='nav-link' href='index.php'>Home</a></li>";
 echo "                <li class='nav-item'><a class='nav-link' href='$login_link'>$login_text</a></li>";
+echo "                <li class='nav-item'><a class='nav-link' href='miel/login.php'>MIEL</a></li>"; // MIEL before Plans
 echo "                <li class='nav-item'><a class='nav-link' href='plans.php'>Plans</a></li>";
 echo "                <li class='nav-item'><a class='nav-link' href='about-us.php'>About Us</a></li>";
 echo "                <li class='nav-item'><a class='nav-link' href='contact.php'>Contact</a></li>";
@@ -181,12 +182,12 @@ echo "        transition: background-color 0.3s, color 0.3s;";
 echo "    }";
 echo "</style>";
 
-// LARGE IMAGES SECTION - 2 columns, 2 rows (4 total) - SMALLER HORIZONTAL SPACING, LARGER VERTICAL SPACING
+// LARGE IMAGES SECTION - 2 columns, 2 rows (4 total)
 echo "<section class='large-images py-5' id='large-images'>";
 echo "    <div class='container'>";
 echo "        <h2 class='text-center mb-4'>Featured Web XR Experiences by ARville</h2>";
-echo "        <div style='height: 20px;'></div>"; // Spacer element
-echo "        <div class='row gx-2 gy-5'>"; // CHANGED: gx-2 (small horizontal gap), gy-4 (large vertical gap)
+echo "        <div style='height: 20px;'></div>";
+echo "        <div class='row gx-2 gy-5'>";
 
 $largeCategories = [
     ["title" => "Candy Land", "tagline" => "A sweet paradise of sugary delights and colorful confections", "icon" => "candyland.jpg", "hoverIcon" => "candyland2.jpg", "link" => "village.htm?id=1"],
@@ -195,10 +196,9 @@ $largeCategories = [
     ["title" => "Robot City", "tagline" => "A futuristic community of intelligent machines and robots", "icon" => "robotcity.jpg", "hoverIcon" => "robotcity2.jpg", "link" => "village.htm?id=4"],
 ];
 
-// Display only first 4 as large landscape images
 for ($i = 0; $i < 4; $i++) {
     $category = $largeCategories[$i];
-    echo "<div class='col-lg-6 col-md-6 col-12'>"; // 2 columns on large, 1 column on mobile (col-12)
+    echo "<div class='col-lg-6 col-md-6 col-12'>";
     echo "    <div class='large-category text-center'>";
     echo "        <a href='{$category['link']}'>";
     echo "            <img src='images/{$category['icon']}' class='large-category-icon img-fluid mb-1' alt='{$category['title']}' style='width: 92%; max-width: 480px; height: 280px; object-fit: cover; border-radius: 10px;' data-original-src='images/{$category['icon']}' data-hover-src='images/{$category['hoverIcon']}'>";
@@ -217,9 +217,8 @@ echo "<section class='small-images py-5' id='small-images' style='background-col
 echo "    <div class='container'>";
 echo "        <h2 class='text-center mb-4'>More ARville XR Experiences for You to Explore</h2>";
 echo "        <div style='height: 30px;'></div>";
-echo "        <div class='row g-4'>"; // Keep g-4 for small images
+echo "        <div class='row g-4'>";
 
-// SEPARATE ARRAY FOR SMALL IMAGES - Fantasy/XR experience themes
 $smallCategories = [
     ["title" => "ARville Zoo", "tagline" => "A wildlife wonderland where every creature captivates imagination", "icon" => "zoo1a.jpg", "hoverIcon" => "zoo1b.jpg", "link" => "zoo1.htm"],
     ["title" => "ARville Forest Park", "tagline" => "A serene sanctuary where wilderness meets curated beauty", "icon" => "park1a.jpg", "hoverIcon" => "park1b.jpg", "link" => "park1.htm"],
@@ -256,7 +255,7 @@ $smallCategories = [
 
 for ($i = 0; $i < 31; $i++) {
     $category = $smallCategories[$i];
-    echo "<div class='col-lg-3 col-md-6 col-6'>"; // 4 columns on large, 2 columns on mobile (col-6)
+    echo "<div class='col-lg-3 col-md-6 col-6'>";
     echo "    <div class='small-category text-center'>";
     echo "        <a href='{$category['link']}'>";
     echo "            <img src='images/{$category['icon']}' class='small-category-icon img-fluid mb-2' alt='{$category['title']}' style='width: 220px; height: 220px; object-fit: cover; border-radius: 10px;' data-original-src='images/{$category['icon']}' data-hover-src='images/{$category['hoverIcon']}'>";
@@ -271,7 +270,7 @@ echo "        </div>";
 echo "    </div>";
 echo "</section>";
 
-// MINI XR EXPERIENCES SECTION - New third section with 5 columns and 3 columns on mobile
+// MINI XR EXPERIENCES SECTION
 echo "<section class='mini-xr-experiences py-5' id='mini-xr-experiences' style='background-color: #ffffff;'>";
 echo "    <div class='container'>";
 echo "        <h2 class='text-center mb-4'>Mini XR Experiences for Bite-Size Fun</h2>";
@@ -289,7 +288,7 @@ $miniExperiences = [
 
 for ($i = 0; $i < 6; $i++) {
     $experience = $miniExperiences[$i];
-    echo "<div class='col-lg-15 col-md-4 col-4'>"; // 5 columns on large, 3 columns on mobile (col-4)
+    echo "<div class='col-lg-15 col-md-4 col-4'>";
     echo "    <div class='mini-experience text-center'>";
     echo "        <a href='{$experience['link']}'>";
     echo "            <img src='images/{$experience['icon']}' class='mini-experience-icon img-fluid mb-2' alt='{$experience['title']}' style='width: 180px; height: 180px; object-fit: cover; border-radius: 10px;' data-original-src='images/{$experience['icon']}' data-hover-src='images/{$experience['hoverIcon']}'>";

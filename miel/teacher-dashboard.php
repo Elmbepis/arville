@@ -50,9 +50,9 @@ try {
     $activityStmt->execute([$_SESSION['user_id']]);
     $teacherActivities = $activityStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get ALL student scores for teacher's quizzes (no limit)
+    // Get ALL student scores for teacher's quizzes (no limit) - removed class_name
     $scoreStmt = $pdo->prepare("
-        SELECT s.*, q.title as quiz_title, u.full_name as student_name, u.grade_level, u.class_name
+        SELECT s.*, q.title as quiz_title, u.full_name as student_name, u.grade_level
         FROM scores s 
         JOIN quizzes q ON s.quiz_id = q.id 
         JOIN users u ON s.student_id = u.id
