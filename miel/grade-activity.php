@@ -49,9 +49,9 @@ try {
         exit();
     }
     
-    // Get all students enrolled in this teacher's class (or all students if needed)
+    // Get all students – removed class_name from SELECT
     $studentsStmt = $pdo->prepare("
-        SELECT u.id, u.full_name, u.grade_level, u.class_name,
+        SELECT u.id, u.full_name, u.grade_level,
                ag.points_earned, ag.feedback, ag.submission_data, ag.created_at as submission_date
         FROM users u
         LEFT JOIN activity_grades ag ON u.id = ag.student_id AND ag.activity_id = ?
@@ -929,7 +929,6 @@ function getGradeBadge($points, $max_points) {
                         <tr>
                             <th>Student Name</th>
                             <th>Grade Level</th>
-                            <th>Class</th>
                             <th>Status</th>
                             <th>Grade</th>
                             <th>Action</th>
@@ -942,20 +941,20 @@ function getGradeBadge($points, $max_points) {
                             $is_graded = !empty($student['points_earned']);
                             $is_selected = $selected_student_id == $student['id'];
                             
-// Determine grade display
-if ($is_graded) {
-    $grade_display = $student['points_earned'] . '/' . $activity['max_points'];
-    $grade_class = 'graded';
-    $status_text = 'Graded';
-} elseif ($has_submission) {
-    $grade_display = 'N/A';
-    $grade_class = 'not-graded';
-    $status_text = 'Submitted';
-} else {
-    $grade_display = 'N/A';
-    $grade_class = 'not-submitted';
-    $status_text = 'Not Submitted';
-}
+                            // Determine grade display
+                            if ($is_graded) {
+                                $grade_display = $student['points_earned'] . '/' . $activity['max_points'];
+                                $grade_class = 'graded';
+                                $status_text = 'Graded';
+                            } elseif ($has_submission) {
+                                $grade_display = 'N/A';
+                                $grade_class = 'not-graded';
+                                $status_text = 'Submitted';
+                            } else {
+                                $grade_display = 'N/A';
+                                $grade_class = 'not-submitted';
+                                $status_text = 'Not Submitted';
+                            }
                             ?>
                             
                             <tr class="<?php echo $is_selected ? 'selected' : ''; ?>">
@@ -964,9 +963,6 @@ if ($is_graded) {
                                 </td>
                                 <td class="student-info-cell">
                                     <?php echo $student['grade_level']; ?>
-                                </td>
-                                <td class="student-info-cell">
-                                    <?php echo htmlspecialchars($student['class_name'] ?: 'N/A'); ?>
                                 </td>
                                 <td class="student-info-cell">
                                     <?php echo $status_text; ?>

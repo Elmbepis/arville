@@ -48,9 +48,9 @@ try {
         exit();
     }
     
-    // Get student scores for this specific quiz
+    // Get student scores for this specific quiz – removed class_name
     $scoresStmt = $pdo->prepare("
-        SELECT s.*, u.full_name as student_name, u.grade_level, u.class_name
+        SELECT s.*, u.full_name as student_name, u.grade_level
         FROM scores s 
         JOIN users u ON s.student_id = u.id
         WHERE s.quiz_id = ?
@@ -640,7 +640,6 @@ function getGradeBadge($score) {
                         <tr>
                             <th>Student Name</th>
                             <th>Grade Level</th>
-                            <th>Class</th>
                             <th>Score</th>
                             <th>Grade</th>
                             <th>Completed</th>
@@ -654,9 +653,6 @@ function getGradeBadge($score) {
                                 </td>
                                 <td class="student-info-cell">
                                     <?php echo $score['grade_level']; ?>
-                                </td>
-                                <td class="student-info-cell">
-                                    <?php echo htmlspecialchars($score['class_name'] ?: 'N/A'); ?>
                                 </td>
                                 <td class="score-cell">
                                     <div class="score-percentage <?php echo getGradeColor($score['score']); ?>">

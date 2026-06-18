@@ -2,261 +2,207 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Chat with Teacher Glenda</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Chat – Teacher Glenda</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
+            margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #1a1a2e;
             color: #eee;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
         }
-        .container {
+        #chat-container {
             width: 100%;
             max-width: 700px;
-            background: #16213e;
+            height: 70vh;
             border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #0f0f23;
         }
-        h1 { font-size: 24px; margin-bottom: 4px; color: #4fc3f7; }
-        .subtitle { color: #888; font-size: 14px; margin-bottom: 20px; }
+        #chat-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
         #status {
-            padding: 10px 16px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            font-weight: 500;
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
             font-size: 14px;
+            color: #aaa;
+            min-height: 24px;
         }
-        #status.connected { background: #4caf50; color: #fff; }
-        #status.connecting { background: #ffc107; color: #333; }
-        #status.error { background: #f44336; color: #fff; }
-        #status.disconnected { background: #555; color: #ccc; }
-        #messages {
-            height: 400px;
-            overflow-y: auto;
-            background: #0f0f23;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            border: 1px solid #2a2a4a;
+        .mic-btn {
+            margin-top: 12px;
+            padding: 12px 30px;
+            border-radius: 30px;
+            border: none;
+            background: #e91e63;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(233,30,99,0.4);
+            transition: background 0.2s;
         }
-        .message {
-            margin-bottom: 12px;
-            padding: 10px 14px;
-            border-radius: 12px;
-            max-width: 85%;
-            word-wrap: break-word;
-            line-height: 1.5;
+        .mic-btn.recording {
+            background: #f44336;
+            animation: pulse 1s infinite;
         }
-        .message.user { background: #0d47a1; margin-left: auto; text-align: right; }
-        .message.ai { background: #1a1a3e; border: 1px solid #2a2a5a; }
-        .message.system { background: #2a2a3a; color: #aaa; text-align: center; font-size: 13px; max-width: 100%; }
-        .input-area {
-            display: flex;
-            gap: 12px;
-            margin-top: 10px;
+        .mic-btn:hover { background: #c2185b; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
-        #message-input {
-            flex: 1;
-            padding: 12px 16px;
-            border-radius: 24px;
-            border: 1px solid #333;
-            background: #0f0f23;
-            color: #eee;
-            font-size: 16px;
-            outline: none;
-        }
-        #message-input:focus { border-color: #4fc3f7; }
-        #message-input:disabled { opacity: 0.5; cursor: not-allowed; }
-        #send-btn {
-            padding: 12px 28px;
-            border-radius: 24px;
+        .test-btn {
+            margin-top: 8px;
+            padding: 8px 20px;
+            border-radius: 20px;
             border: none;
             background: #4fc3f7;
             color: #1a1a2e;
-            font-weight: 600;
-            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
         }
-        #send-btn:hover:not(:disabled) { background: #81d4fa; }
-        #send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        #clear-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 16px;
-            background: #333;
-            color: #aaa;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        #clear-btn:hover { background: #444; }
+        .test-btn:hover { background: #81d4fa; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>&#129302; Teacher Glenda</h1>
-        <div class="subtitle">Direct Xiaozhi Backend</div>
-        <div id="status" class="connecting">&#9203; Connecting...</div>
-        <div id="messages"></div>
-        <div class="input-area">
-            <input type="text" id="message-input" placeholder="Type your question..." disabled>
-            <button id="send-btn" disabled>Send</button>
-        </div>
-        <button id="clear-btn">Clear Chat</button>
+    <div id="chat-container">
+        <iframe id="xiaozhi-iframe" src="http://172.104.74.194:5173/" allow="microphone"></iframe>
     </div>
+    <div id="status">&#127908; Press the button and speak, or click "Test" to send a hardcoded message.</div>
+    <button class="test-btn" id="test-btn">Send "Who is Jose Rizal?"</button>
+    <button id="mic-btn" class="mic-btn">&#127908; Start Speaking</button>
 
     <script>
-        const WS_URL = 'ws://172.104.74.194:5000';
-
+        const iframe = document.getElementById('xiaozhi-iframe');
         const statusEl = document.getElementById('status');
-        const messagesEl = document.getElementById('messages');
-        const inputEl = document.getElementById('message-input');
-        const sendBtn = document.getElementById('send-btn');
-        const clearBtn = document.getElementById('clear-btn');
+        const micBtn = document.getElementById('mic-btn');
+        const testBtn = document.getElementById('test-btn');
 
-        let ws, sessionId, isConnected = false, isWaiting = false, reconnectAttempts = 0;
-        const MAX_RECONNECT = 5;
+        let isRecording = false;
+        let recognition = null;
 
-        function addMessage(role, text) {
-            const div = document.createElement('div');
-            div.className = 'message ' + role;
-            div.textContent = (role === 'user' ? '&#129489; ' : '&#129302; ') + text;
-            messagesEl.appendChild(div);
-            messagesEl.scrollTop = messagesEl.scrollHeight;
+        // ============================================================
+        // Listen for AI responses from the iframe
+        // ============================================================
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'xiaozhi-ai-response') {
+                const text = event.data.text;
+                console.log('&#129302; AI Response:', text);
+                statusEl.textContent = '&#129302; ' + text;
+                speakText(text);
+            }
+        });
+
+        // ============================================================
+        // Send a message to the iframe
+        // ============================================================
+        function sendMessageToIframe(text) {
+            console.log('&#128228; Sending to iframe:', text);
+            iframe.contentWindow.postMessage({
+                type: 'xiaozhi-user-message',
+                text: text
+            }, '*');
         }
 
-        function addSystemMessage(text) {
-            const div = document.createElement('div');
-            div.className = 'message system';
-            div.textContent = '&#128204; ' + text;
-            messagesEl.appendChild(div);
-            messagesEl.scrollTop = messagesEl.scrollHeight;
-        }
+        // ============================================================
+        // Test button: send a hardcoded message
+        // ============================================================
+        testBtn.addEventListener('click', () => {
+            sendMessageToIframe('Who is Jose Rizal?');
+            statusEl.textContent = '&#129489; Sent: Who is Jose Rizal?';
+        });
 
-        function setStatus(text, type) {
-            statusEl.textContent = text;
-            statusEl.className = type;
-        }
+        // ============================================================
+        // Voice input (Web Speech API)
+        // ============================================================
+        function toggleVoice() {
+            if (isRecording) {
+                if (recognition) recognition.stop();
+                isRecording = false;
+                micBtn.textContent = '&#127908; Start Speaking';
+                micBtn.classList.remove('recording');
+                return;
+            }
 
-        function setUIEnabled(enabled) {
-            inputEl.disabled = !enabled;
-            sendBtn.disabled = !enabled;
-            if (enabled) inputEl.focus();
-        }
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('Speech recognition not supported.');
+                return;
+            }
 
-        function connect() {
-            if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
-            setStatus('&#9203; Connecting...', 'connecting');
-            ws = new WebSocket(WS_URL);
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.continuous = false;
 
-            ws.onopen = () => {
-                console.log('&#9989; WebSocket opened, sending hello...');
-                ws.send(JSON.stringify({
-                    type: "hello",
-                    version: 1,
-                    transport: "websocket",
-                    audio_params: { format: "opus", sample_rate: 16000, channels: 1, frame_duration: 60 }
-                }));
+            recognition.onstart = () => {
+                isRecording = true;
+                micBtn.textContent = '&#9209;&#65039; Listening...';
+                micBtn.classList.add('recording');
+                statusEl.textContent = '&#127908; Listening...';
             };
 
-            ws.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    console.log('&#128232; Received:', data);
-
-                    if (data.type === 'hello') {
-                        sessionId = data.session_id;
-                        console.log('&#128203; Session ID:', sessionId);
-                        isConnected = true;
-                        reconnectAttempts = 0;
-                        setStatus('&#9989; Connected', 'connected');
-                        setUIEnabled(true);
-                        addSystemMessage('Connected to Teacher Glenda');
-                        inputEl.focus();
-                        return;
-                    }
-
-                    if (data.type === 'llm' && data.text) {
-                        const reply = data.text;
-                        console.log('&#128232; AI Response:', reply);
-                        if (isWaiting) isWaiting = false;
-                        addMessage('ai', reply);
-                        setUIEnabled(true);
-                        return;
-                    }
-
-                    if (data.type === 'error') {
-                        console.error('&#10060; Error:', data.message);
-                        addSystemMessage('&#10060; Error: ' + data.message);
-                        if (isWaiting) { isWaiting = false; setUIEnabled(true); }
-                        return;
-                    }
-
-                    if (data.jsonrpc && data.method === 'ping') {
-                        ws.send(JSON.stringify({ jsonrpc: "2.0", id: data.id, result: {} }));
-                        return;
-                    }
-
-                    console.warn('Unhandled:', data);
-                } catch (e) {
-                    console.error('Parse error:', e);
-                    if (isWaiting) { isWaiting = false; setUIEnabled(true); }
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                console.log('&#127908; Transcript:', transcript);
+                if (transcript && transcript.trim()) {
+                    statusEl.textContent = '&#129489; You: ' + transcript;
+                    sendMessageToIframe(transcript);
                 }
             };
 
-            ws.onerror = (error) => {
-                console.error('&#10060; WebSocket error:', error);
-                setStatus('&#10060; Error', 'error');
-                setUIEnabled(false);
+            recognition.onerror = (event) => {
+                console.error('&#127908; Recognition error:', event.error);
+                if (event.error !== 'aborted') {
+                    statusEl.textContent = '&#10060; Error: ' + event.error;
+                }
+                isRecording = false;
+                micBtn.textContent = '&#127908; Start Speaking';
+                micBtn.classList.remove('recording');
             };
 
-            ws.onclose = () => {
-                console.warn('&#9888;&#65039; WebSocket closed');
-                isConnected = false;
-                sessionId = null;
-                setUIEnabled(false);
-                setStatus('&#9203; Disconnected', 'disconnected');
-                if (reconnectAttempts < MAX_RECONNECT) {
-                    reconnectAttempts++;
-                    const delay = Math.min(3000 * reconnectAttempts, 15000);
-                    addSystemMessage(`Reconnecting in ${delay/1000}s...`);
-                    setTimeout(connect, delay);
-                } else {
-                    addSystemMessage('&#10060; Could not reconnect.');
-                }
+            recognition.onend = () => {
+                isRecording = false;
+                micBtn.textContent = '&#127908; Start Speaking';
+                micBtn.classList.remove('recording');
             };
+
+            try {
+                recognition.start();
+            } catch (e) {
+                console.error('Failed to start recognition:', e);
+                statusEl.textContent = '&#10060; Could not start microphone.';
+            }
         }
 
-        function sendMessage() {
-            const text = inputEl.value.trim();
-            if (!text || !isConnected || !sessionId || isWaiting) return;
-            addMessage('user', text);
-            inputEl.value = '';
-            setUIEnabled(false);
-            isWaiting = true;
-            ws.send(JSON.stringify({ type: "llm", text: text, session_id: sessionId }));
-            console.log('&#128228; Sent:', text);
-            setTimeout(() => {
-                if (isWaiting) {
-                    isWaiting = false;
-                    addSystemMessage('&#9200; Timeout. Try again.');
-                    setUIEnabled(true);
-                }
-            }, 20000);
+        micBtn.addEventListener('click', toggleVoice);
+
+        // ============================================================
+        // Text&#8209;to&#8209;Speech (for AI responses)
+        // ============================================================
+        function speakText(text) {
+            if (!window.speechSynthesis) {
+                console.warn('Speech synthesis not supported');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.pitch = 1.1;
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
         }
-
-        sendBtn.addEventListener('click', sendMessage);
-        inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
-        clearBtn.addEventListener('click', () => { messagesEl.innerHTML = ''; });
-
-        connect();
-        addSystemMessage('Connecting...');
     </script>
 </body>
 </html>
