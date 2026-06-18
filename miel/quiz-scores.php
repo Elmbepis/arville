@@ -28,38 +28,74 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    // Get teacher profile
-    $teacherStmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+    // Get teacher profile (including school)
+    $teacherStmt = $pdo->prepare("SELECT id, email, full_name, role, school FROM users WHERE id = ?");
     $teacherStmt->execute([$teacher_id]);
     $teacher = $teacherStmt->fetch(PDO::FETCH_ASSOC);
     
-    // Get quiz details (simpler query without counts)
+    if (!$teacher) {
+        die("Teacher not found.");
+    }
+    
+    // Find the master teacher (acadev@gmail.com)
+    $masterTeacherStmt = $pdo->prepare("SELECT id FROM users WHERE email = 'acadev@gmail.com' AND role = 'teacher'");
+    $masterTeacherStmt->execute();
+    $masterTeacher = $masterTeacherStmt->fetch(PDO::FETCH_ASSOC);
+    $masterTeacherId = $masterTeacher ? $masterTeacher['id'] : null;
+    
+    // Fetch quiz details (no teacher filter yet)
     $quizStmt = $pdo->prepare("
         SELECT q.*
         FROM quizzes q 
-        WHERE q.id = ? AND q.teacher_id = ?
+        WHERE q.id = ?
     ");
-    $quizStmt->execute([$quiz_id, $teacher_id]);
+    $quizStmt->execute([$quiz_id]);
     $quiz = $quizStmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$quiz) {
-        // Quiz not found or teacher doesn't own this quiz
         header('Location: teacher-dashboard.php');
         exit();
     }
     
-    // Get student scores for this specific quiz – removed class_name
-    $scoresStmt = $pdo->prepare("
-        SELECT s.*, u.full_name as student_name, u.grade_level
+    // Determine access and filter
+    $isOwner = ($quiz['teacher_id'] == $teacher_id);
+    $isMasterQuiz = ($masterTeacherId !== null && $quiz['teacher_id'] == $masterTeacherId);
+    $teacherSchool = $teacher['school'] ?? null;
+    
+    // If not owner and not master quiz, deny access
+    if (!$isOwner && !$isMasterQuiz) {
+        // You may want to show a friendly error message instead of redirect
+        die("You do not have permission to view scores for this quiz.");
+    }
+    
+    // If it's a master quiz but teacher has no school, deny access (or show empty)
+    if ($isMasterQuiz && !$isOwner && empty($teacherSchool)) {
+        // Redirect or show message that no school is set
+        die("Your school is not set. You cannot view scores for this shared quiz.");
+    }
+    
+    // Build the scores query
+    $scoresSql = "
+        SELECT s.*, u.full_name as student_name, u.grade_level, u.school
         FROM scores s 
         JOIN users u ON s.student_id = u.id
         WHERE s.quiz_id = ?
-        ORDER BY s.score DESC, s.completed_at DESC
-    ");
-    $scoresStmt->execute([$quiz_id]);
+    ";
+    $params = [$quiz_id];
+    
+    // If it's a master quiz and not owned by this teacher, filter by school
+    if ($isMasterQuiz && !$isOwner) {
+        $scoresSql .= " AND u.school = ?";
+        $params[] = $teacherSchool;
+    }
+    
+    $scoresSql .= " ORDER BY s.score DESC, s.completed_at DESC";
+    
+    $scoresStmt = $pdo->prepare($scoresSql);
+    $scoresStmt->execute($params);
     $studentScores = $scoresStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Calculate statistics
+    // Calculate statistics on the filtered set
     $total_students = count($studentScores);
     $average_score = 0;
     $highest_score = 0;
@@ -82,7 +118,7 @@ try {
     die("Database error: " . $e->getMessage());
 }
 
-// Helper functions
+// Helper functions (unchanged)
 function formatDate($date) {
     return date('M j, Y g:i A', strtotime($date));
 }
@@ -167,7 +203,7 @@ function getGradeBadge($score) {
     <title>Quiz Scores | MIEL</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-	<link rel="stylesheet" href="mobile.css" media="screen">
+    <link rel="stylesheet" href="mobile.css" media="screen">
     <style>
         /* ===== KID-FRIENDLY THEME (SAME AS create-quiz.php) ===== */
         :root {
@@ -563,10 +599,16 @@ function getGradeBadge($score) {
         <!-- HEADER -->
         <header class="dashboard-header fade-in">
             <div class="logo">
- 
                 <div>
-<img src="images/quiz-scores.jpg" alt="Create Quiz for Arville Metaverse" style="max-width: 450px; height: auto; margin-bottom: 10px;">
-                    <p class="subtitle">View Your Students' Scores for this Quiz:<br/><span style="color: #3628C3; font-weight: bold; font-size: 1.1em;"><?php echo htmlspecialchars($quiz['title']); ?></span></p>
+                    <img src="images/quiz-scores.jpg" alt="Create Quiz for Arville Metaverse" style="max-width: 450px; height: auto; margin-bottom: 10px;">
+                    <p class="subtitle">View Your Students' Scores for this Quiz:<br/>
+                        <span style="color: #3628C3; font-weight: bold; font-size: 1.1em;">
+                            <?php echo htmlspecialchars($quiz['title']); ?>
+                        </span>
+                        <?php if ($isMasterQuiz && !$isOwner && !empty($teacherSchool)): ?>
+                            <br><small style="color: #FF9800;">(Shared quiz – showing students from <strong><?php echo htmlspecialchars($teacherSchool); ?></strong> school only)</small>
+                        <?php endif; ?>
+                    </p>
                 </div>
             </div>
         </header>
@@ -721,6 +763,9 @@ function getGradeBadge($score) {
                 <i class="fas fa-chart-bar" style="font-size: 4rem; color: #FFD166; margin-bottom: 20px;"></i>
                 <h4 style="color: #FF9800;">No Students Have Taken This Quiz Yet</h4>
                 <p>Share the quiz with your students to see their scores here.</p>
+                <?php if ($isMasterQuiz && !$isOwner && !empty($teacherSchool)): ?>
+                    <p style="font-size: 0.9rem; color: #888;">(Only students from your school – <strong><?php echo htmlspecialchars($teacherSchool); ?></strong> – are shown)</p>
+                <?php endif; ?>
             </div>
             <?php endif; ?>
         </div>
