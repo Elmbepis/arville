@@ -24,7 +24,22 @@ try {
     $teacherStmt->execute([$_SESSION['user_id']]);
     $teacher = $teacherStmt->fetch(PDO::FETCH_ASSOC);
     
-    // Get ALL quizzes created by this teacher (no limit)
+    // Find the master teacher (acadev@gmail.com)
+    $masterTeacherStmt = $pdo->prepare("SELECT id FROM users WHERE email = 'acadev@gmail.com' AND role = 'teacher'");
+    $masterTeacherStmt->execute();
+    $masterTeacher = $masterTeacherStmt->fetch(PDO::FETCH_ASSOC);
+    $masterTeacherId = $masterTeacher ? $masterTeacher['id'] : null;
+    
+    // Build array of teacher IDs: current teacher + master teacher (if different and not null)
+    $teacherIds = [$_SESSION['user_id']];
+    // **FIX:** use strict null check so that 0 is accepted
+    if ($masterTeacherId !== null && $masterTeacherId != $_SESSION['user_id']) {
+        $teacherIds[] = $masterTeacherId;
+    }
+    // Create placeholders for IN clause
+    $placeholders = implode(',', array_fill(0, count($teacherIds), '?'));
+    
+    // Get ALL quizzes created by this teacher OR the master teacher
     $quizStmt = $pdo->prepare("
         SELECT q.*, 
                COUNT(DISTINCT qn.id) as question_count,
@@ -33,36 +48,36 @@ try {
         FROM quizzes q 
         LEFT JOIN questions qn ON q.id = qn.quiz_id
         LEFT JOIN scores s ON q.id = s.quiz_id
-        WHERE q.teacher_id = ?
+        WHERE q.teacher_id IN ($placeholders)
         GROUP BY q.id
         ORDER BY q.created_at DESC
     ");
-    $quizStmt->execute([$_SESSION['user_id']]);
+    $quizStmt->execute($teacherIds);
     $teacherQuizzes = $quizStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get ALL activities created by this teacher (no limit)
+    // Get ALL activities created by this teacher OR the master teacher
     $activityStmt = $pdo->prepare("
         SELECT a.*
         FROM activities a 
-        WHERE a.teacher_id = ?
+        WHERE a.teacher_id IN ($placeholders)
         ORDER BY a.created_at DESC
     ");
-    $activityStmt->execute([$_SESSION['user_id']]);
+    $activityStmt->execute($teacherIds);
     $teacherActivities = $activityStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get ALL student scores for teacher's quizzes (no limit) - removed class_name
+    // Get ALL student scores for quizzes from this teacher OR master teacher
     $scoreStmt = $pdo->prepare("
         SELECT s.*, q.title as quiz_title, u.full_name as student_name, u.grade_level
         FROM scores s 
         JOIN quizzes q ON s.quiz_id = q.id 
         JOIN users u ON s.student_id = u.id
-        WHERE q.teacher_id = ?
+        WHERE q.teacher_id IN ($placeholders)
         ORDER BY s.completed_at DESC
     ");
-    $scoreStmt->execute([$_SESSION['user_id']]);
+    $scoreStmt->execute($teacherIds);
     $studentScores = $scoreStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get ALL activities that need grading (with submission counts) - no limit
+    // Get ALL activities that need grading (from this teacher OR master teacher)
     $gradingStmt = $pdo->prepare("
         SELECT 
             a.*,
@@ -72,28 +87,40 @@ try {
             MAX(ag.created_at) as last_submission_date
         FROM activities a
         LEFT JOIN activity_grades ag ON a.id = ag.activity_id
-        WHERE a.teacher_id = ?
+        WHERE a.teacher_id IN ($placeholders)
         GROUP BY a.id
         ORDER BY last_submission_date DESC, a.created_at DESC
     ");
-    $gradingStmt->execute([$_SESSION['user_id']]);
+    $gradingStmt->execute($teacherIds);
     $activitiesToGrade = $gradingStmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Get summary statistics
-    $statsStmt = $pdo->prepare("
-        SELECT 
-            COUNT(DISTINCT q.id) as total_quizzes,
-            COUNT(DISTINCT a.id) as total_activities,
-            COUNT(DISTINCT s.student_id) as total_students,
-            COUNT(DISTINCT s.id) as total_attempts,
-            COALESCE(AVG(s.score), 0) as overall_avg_score
-        FROM quizzes q 
-        LEFT JOIN activities a ON q.teacher_id = a.teacher_id
-        LEFT JOIN scores s ON q.id = s.quiz_id
-        WHERE q.teacher_id = ?
+    $statsQuizzes = $pdo->prepare("SELECT COUNT(DISTINCT id) as cnt FROM quizzes WHERE teacher_id IN ($placeholders)");
+    $statsQuizzes->execute($teacherIds);
+    $totalQuizzes = $statsQuizzes->fetchColumn();
+    
+    $statsActivities = $pdo->prepare("SELECT COUNT(DISTINCT id) as cnt FROM activities WHERE teacher_id IN ($placeholders)");
+    $statsActivities->execute($teacherIds);
+    $totalActivities = $statsActivities->fetchColumn();
+    
+    $statsScores = $pdo->prepare("
+        SELECT COUNT(DISTINCT s.id) as total_attempts, 
+               COUNT(DISTINCT s.student_id) as total_students,
+               COALESCE(AVG(s.score), 0) as avg_score
+        FROM scores s
+        JOIN quizzes q ON s.quiz_id = q.id
+        WHERE q.teacher_id IN ($placeholders)
     ");
-    $statsStmt->execute([$_SESSION['user_id']]);
-    $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
+    $statsScores->execute($teacherIds);
+    $scoreStats = $statsScores->fetch(PDO::FETCH_ASSOC);
+    
+    $stats = [
+        'total_quizzes' => $totalQuizzes,
+        'total_activities' => $totalActivities,
+        'total_students' => $scoreStats['total_students'] ?? 0,
+        'total_attempts' => $scoreStats['total_attempts'] ?? 0,
+        'overall_avg_score' => $scoreStats['avg_score'] ?? 0,
+    ];
     
 } catch(PDOException $e) {
     die("Database error: " . $e->getMessage());
@@ -106,7 +133,7 @@ if (isset($_POST['logout'])) {
     exit();
 }
 
-// Get intelligence type name
+// ==================== HELPER FUNCTIONS (unchanged) ====================
 function getIntelligenceName($type) {
     $names = [
         'linguistic' => 'Linguistic',
@@ -121,7 +148,6 @@ function getIntelligenceName($type) {
     return $names[$type] ?? $type;
 }
 
-// Get intelligence icon
 function getIntelligenceIcon($type) {
     $icons = [
         'linguistic' => 'book',
@@ -136,7 +162,6 @@ function getIntelligenceIcon($type) {
     return $icons[$type] ?? 'question-circle';
 }
 
-// Get virtual world icon (for combined display)
 function getVirtualWorldIcon($world) {
     $icons = [
         'zoo' => 'paw',
@@ -151,7 +176,6 @@ function getVirtualWorldIcon($world) {
     return $icons[$world] ?? 'globe';
 }
 
-// Get virtual world display name
 function getVirtualWorldName($world) {
     $names = [
         'zoo' => 'Zoo',
@@ -166,7 +190,6 @@ function getVirtualWorldName($world) {
     return $names[$world] ?? ucfirst($world);
 }
 
-// Get intelligence icon image for quizzes
 function getQuizIntelligenceImage($type) {
     $imagePath = "images/mi-{$type}.png";
     if (!file_exists($imagePath)) {
@@ -175,7 +198,6 @@ function getQuizIntelligenceImage($type) {
     return $imagePath;
 }
 
-// Get intelligence icon image for activities
 function getActivityIntelligenceImage($type) {
     $imagePath = "images/mi-{$type}.png";
     if (!file_exists($imagePath)) {
@@ -184,7 +206,6 @@ function getActivityIntelligenceImage($type) {
     return $imagePath;
 }
 
-// Get virtual world image path by reading virtual-world-selector.js
 function getVirtualWorldImage($worldName) {
     $jsFile = 'virtual-world-selector.js';
     if (!file_exists($jsFile)) {
@@ -209,7 +230,6 @@ function getVirtualWorldImage($worldName) {
     return "images/default-world.jpg";
 }
 
-// Get activity type name
 function getActivityTypeName($type) {
     $names = [
         'essay' => 'Essay',
@@ -223,7 +243,6 @@ function getActivityTypeName($type) {
     return $names[$type] ?? $type;
 }
 
-// Get activity type icon
 function getActivityTypeIcon($type) {
     $icons = [
         'essay' => 'file-alt',
@@ -237,7 +256,6 @@ function getActivityTypeIcon($type) {
     return $icons[$type] ?? 'tasks';
 }
 
-// Get world name
 function getWorldName($world) {
     $names = [
         'zoo' => 'Zoo',
@@ -252,17 +270,14 @@ function getWorldName($world) {
     return $names[$world] ?? $world;
 }
 
-// Format date
 function formatDate($date) {
     return date('M j, Y', strtotime($date));
 }
 
-// Format date with time
 function formatDateTime($date) {
     return date('M j, Y g:i A', strtotime($date));
 }
 
-// Helper function to format grade display
 function formatGradeDisplay($gradeStart, $gradeEnd) {
     if ($gradeStart == $gradeEnd) {
         return "Grade " . $gradeStart;
@@ -374,7 +389,7 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
         }        
         
         .bottom-buttons-container {
-        	margin-top: 3px !important;
+            margin-top: 3px !important;
             margin-bottom: 30px !important;
         }
 
@@ -611,7 +626,6 @@ function formatGradeDisplay($gradeStart, $gradeEnd) {
             font-weight: bold;
         }
         
-        /* Combined icon container - Virtual World with MI badge overlay */
         .combined-icon-container {
             position: relative;
             display: inline-block;

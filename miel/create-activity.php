@@ -23,9 +23,27 @@ $formSubmitted = false;
 $isEditMode = false;
 $editActivityId = null;
 $activityData = null;
+$isReadOnly = false; // true for shared (acadev) activities viewed by other teachers
 
 // Get the actual teacher ID from session
 $teacher_id = $_SESSION['user_id'];
+
+// Connect to database for master teacher lookup and later queries
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // Find the master teacher (acadev@gmail.com)
+    $masterTeacherStmt = $pdo->prepare("SELECT id FROM users WHERE email = 'acadev@gmail.com' AND role = 'teacher'");
+    $masterTeacherStmt->execute();
+    $masterTeacher = $masterTeacherStmt->fetch(PDO::FETCH_ASSOC);
+    $masterTeacherId = $masterTeacher ? $masterTeacher['id'] : null;
+    
+} catch(Exception $e) {
+    $statusMessage = 'Database error: ' . $e->getMessage();
+    $statusType = 'error';
+    // Continue but with limited functionality
+}
 
 // Check if we're in edit mode
 if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
@@ -33,23 +51,40 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
     $editActivityId = intval($_GET['edit']);
     
     try {
-        $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
-        // Get activity details - teacher can only edit their own activities
+        // Get activity details – we need to know the owner
         $activityStmt = $pdo->prepare("
-            SELECT a.* 
+            SELECT a.*, u.email as teacher_email
             FROM activities a 
-            WHERE a.id = ? AND a.teacher_id = ?
+            JOIN users u ON a.teacher_id = u.id
+            WHERE a.id = ?
         ");
-        $activityStmt->execute([$editActivityId, $teacher_id]);
+        $activityStmt->execute([$editActivityId]);
         $activityData = $activityStmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$activityData) {
-            // Activity not found or teacher doesn't own it
-            $statusMessage = "Activity not found or you don't have permission to edit it.";
+            $statusMessage = "Activity not found.";
             $statusType = 'error';
             $isEditMode = false;
+        } else {
+            // Check ownership
+            $isOwner = ($activityData['teacher_id'] == $teacher_id);
+            $isMaster = ($masterTeacherId !== null && $activityData['teacher_id'] == $masterTeacherId);
+            
+            if ($isOwner) {
+                // Full edit mode
+                $isReadOnly = false;
+            } elseif ($isMaster && $masterTeacherId != $teacher_id) {
+                // Shared activity from acadev – read-only
+                $isReadOnly = true;
+                $statusMessage = "This activity is shared by the master teacher. You can view it but cannot edit.";
+                $statusType = 'info';
+            } else {
+                // Activity belongs to another teacher (not master) – no access
+                $statusMessage = "You don't have permission to view this activity.";
+                $statusType = 'error';
+                $isEditMode = false;
+                $activityData = null;
+            }
         }
         
     } catch(Exception $e) {
@@ -68,7 +103,7 @@ if (isset($_SESSION['activity_created']) && !$isEditMode) {
 }
 
 // Check if form was just submitted for editing
-if (isset($_SESSION['activity_updated']) && $isEditMode) {
+if (isset($_SESSION['activity_updated']) && $isEditMode && !$isReadOnly) {
     $formSubmitted = true;
     $savedActivityId = $editActivityId;
     $statusMessage = "Activity updated successfully!";
@@ -106,8 +141,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
     }
 }
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
+// Handle form submission – only if not read-only
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted && !$isReadOnly) {
     try {
         $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -121,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
         $grade_end = intval($_POST['grade_end']);
         
         if ($isEditMode && $editActivityId) {
-            // EDIT MODE: Update existing activity
+            // EDIT MODE: Update existing activity (only if owner)
             
             // Check for duplicate title (excluding current activity)
             $checkSql = "SELECT COUNT(*) as count FROM activities WHERE title = :title AND id != :activity_id";
@@ -134,7 +169,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
                 $statusType = 'error';
             } else {
                 // Update existing activity with grade range
-                // FIXED: Use virtual_world_name instead of virtual_world to save the display name
                 $virtualWorld = isset($_POST['virtual_world_name']) ? $_POST['virtual_world_name'] : 'Meadowbrooke';
                 
                 $activitySql = "UPDATE activities 
@@ -189,7 +223,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$formSubmitted) {
                 $statusMessage = "Error: An activity with this title already exists. Please choose a different title.";
                 $statusType = 'error';
             } else {
-                // FIXED: Use virtual_world_name instead of virtual_world to save the display name
                 $virtualWorld = isset($_POST['virtual_world_name']) ? $_POST['virtual_world_name'] : 'Meadowbrooke';
                 
                 // Insert new activity with grade range
@@ -284,7 +317,7 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $isEditMode ? 'Edit' : 'Create'; ?> Activity | MIEL - Multiple Intelligence E-Learning</title>
+    <title><?php echo $isEditMode ? ($isReadOnly ? 'View' : 'Edit') : 'Create'; ?> Activity | MIEL - Multiple Intelligence E-Learning</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="mobile.css" media="screen">
@@ -385,7 +418,7 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
         }
 
         .navbar .navbar-collapse {
-            flex-grow: 0; /* Prevents it from taking up extra space */
+            flex-grow: 0;
         }        
         
         /* ===== MIEL BANNER ===== */
@@ -1122,6 +1155,12 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
             border-left: 5px solid #FF6B6B;
         }
         
+        .status-info {
+            background: #E3F2FD;
+            color: var(--primary-blue);
+            border-left: 5px solid var(--primary-blue);
+        }
+        
         .activity-id-display {
             background: #E3F2FD;
             padding: 15px;
@@ -1165,6 +1204,57 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
             justify-content: center;
             gap: 10px;
         }
+        
+        /* Read-only styles */
+        .readonly-message {
+            background: #FFF3E0;
+            border: 3px solid #FF9800;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+        .readonly-message i {
+            font-size: 1.5rem;
+            color: #FF9800;
+        }
+        
+        .readonly-mode .input-with-icon input,
+        .readonly-mode .input-with-icon textarea,
+        .readonly-mode select,
+        .readonly-mode .intelligence-option,
+        .readonly-mode .activity-type-option,
+        .readonly-mode .world-option {
+            cursor: default;
+            pointer-events: none;
+        }
+        .readonly-mode .intelligence-option.selected,
+        .readonly-mode .activity-type-option.selected,
+        .readonly-mode .world-option.selected {
+            background: #f0f0f0;
+            border-color: #ccc;
+        }
+        .readonly-mode .intelligence-option:hover,
+        .readonly-mode .activity-type-option:hover,
+        .readonly-mode .world-option:hover {
+            transform: none;
+            border-color: #ccc;
+        }
+        .readonly-mode .btn {
+            display: none;
+        }
+        .readonly-mode .button-group .btn {
+            display: none;
+        }
+        /* Allow textarea scrolling in readonly mode */
+        .readonly-mode textarea {
+            overflow-y: auto !important;
+            pointer-events: auto !important;
+            cursor: default;
+        }
     </style>
 </head>
 <body>
@@ -1199,14 +1289,23 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
             <div class="logo">
                 <div>
                     <?php if ($isEditMode && $activityData): ?>
-                        <img src="images/update-activity.jpg" alt="Update Activity for Arville Metaverse" style="max-width: 500px; height: auto; margin-bottom: 10px;">
+                        <?php if ($isReadOnly): ?>
+                            <img src="images/view-activity.jpg" alt="View Activity" style="max-width: 500px; height: auto; margin-bottom: 10px;">
+                        <?php else: ?>
+                            <img src="images/update-activity.jpg" alt="Update Activity" style="max-width: 500px; height: auto; margin-bottom: 10px;">
+                        <?php endif; ?>
                     <?php else: ?>
-                        <img src="images/create-activity.jpg" alt="Create Activity for Arville Metaverse" style="max-width: 500px; height: auto; margin-bottom: 10px;">
+                        <img src="images/create-activity.jpg" alt="Create Activity" style="max-width: 500px; height: auto; margin-bottom: 10px;">
                     <?php endif; ?>
                     <p class="subtitle">
                         <?php if ($isEditMode && $activityData): ?>
-                            Update the details of this activity:<br/>
-                            <span style="color: #3628C3; font-weight: bold; font-size: 1.1em;"><?php echo htmlspecialchars($activityData['title']); ?></span>
+                            <?php if ($isReadOnly): ?>
+                                Viewing activity:<br/>
+                                <span style="color: #3628C3; font-weight: bold; font-size: 1.1em;"><?php echo htmlspecialchars($activityData['title']); ?></span>
+                            <?php else: ?>
+                                Update the details of this activity:<br/>
+                                <span style="color: #3628C3; font-weight: bold; font-size: 1.1em;"><?php echo htmlspecialchars($activityData['title']); ?></span>
+                            <?php endif; ?>
                         <?php else: ?>
                             Create a new activity for your students based on ARville worlds!
                         <?php endif; ?>
@@ -1216,7 +1315,7 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
         </header>
 
         <!-- MAIN CARD -->
-        <div class="main-card">
+        <div class="main-card <?php echo $isReadOnly ? 'readonly-mode' : ''; ?>">
             <!-- STATUS MESSAGE -->
             <?php if ($statusMessage): ?>
             <div class="status-message status-<?php echo $statusType; ?>">
@@ -1224,7 +1323,7 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
             </div>
             <?php endif; ?>
             
-            <?php if ($savedActivityId && $formSubmitted): ?>
+            <?php if ($savedActivityId && $formSubmitted && !$isReadOnly): ?>
             <div class="activity-id-display">
                 <p>Your activity has been <?php echo $isEditMode ? 'updated' : 'created'; ?> <?php if (!$isEditMode): ?>with ID: <strong><?php echo $savedActivityId; ?></strong><?php endif; ?></p>
                 <div class="button-group" style="margin-top: 15px;">
@@ -1241,7 +1340,15 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
             </div>
             <?php endif; ?>
             
-            <form method="POST" action="create-activity.php<?php echo $isEditMode ? "?edit=$editActivityId" : ''; ?>" id="activityForm" class="<?php echo $formSubmitted ? 'form-disabled' : ''; ?>">
+            <!-- READ-ONLY MESSAGE -->
+            <?php if ($isReadOnly): ?>
+            <div class="readonly-message">
+                <i class="fas fa-eye"></i>
+                <span>This activity is shared by the master teacher. You can view all details but cannot edit or delete it.</span>
+            </div>
+            <?php endif; ?>
+            
+            <form method="POST" action="create-activity.php<?php echo $isEditMode ? "?edit=$editActivityId" : ''; ?>" id="activityForm" class="<?php echo $formSubmitted && !$isReadOnly ? 'form-disabled' : ''; ?>">
                 <!-- ACTIVITY TITLE SECTION -->
                 <div class="form-group">
                     <label class="form-label">
@@ -1250,7 +1357,8 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                     <div class="input-with-icon">
                         <i class="fas fa-pencil-alt input-icon"></i>
                         <input type="text" name="activity_title" id="activityTitle" placeholder="Enter activity title (e.g., 'Creative Essay Writing')" maxlength="200" required
-                               value="<?php echo $activity_title; ?>">
+                               value="<?php echo $activity_title; ?>"
+                               <?php echo $isReadOnly ? 'readonly disabled' : ''; ?>>
                     </div>
                     <div id="titleError" class="error-message"></div>
                 </div>
@@ -1263,7 +1371,7 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                     <div class="grade-range-container">
                         <div style="flex: 1; position: relative;">
                             <i class="fas fa-sort-numeric-up" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-blue); z-index: 1;"></i>
-                            <select name="grade_start" id="gradeStart" required style="padding-left: 45px;">
+                            <select name="grade_start" id="gradeStart" required style="padding-left: 45px;" <?php echo $isReadOnly ? 'disabled' : ''; ?>>
                                 <option value="" disabled <?php echo $grade_start_val === '' ? 'selected' : ''; ?>>From Grade</option>
                                 <?php for($i = 1; $i <= 12; $i++): ?>
                                 <option value="<?php echo $i; ?>" <?php echo ($grade_start_val == $i) ? 'selected' : ''; ?>>
@@ -1277,7 +1385,7 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                         
                         <div style="flex: 1; position: relative;">
                             <i class="fas fa-sort-numeric-down" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-blue); z-index: 1;"></i>
-                            <select name="grade_end" id="gradeEnd" required style="padding-left: 45px;">
+                            <select name="grade_end" id="gradeEnd" required style="padding-left: 45px;" <?php echo $isReadOnly ? 'disabled' : ''; ?>>
                                 <option value="" disabled <?php echo $grade_end_val === '' ? 'selected' : ''; ?>>To Grade</option>
                                 <?php for($i = 1; $i <= 12; $i++): ?>
                                 <option value="<?php echo $i; ?>" <?php echo ($grade_end_val == $i) ? 'selected' : ''; ?>>
@@ -1311,7 +1419,8 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                             $isSelected = $selected_activity_type === $key;
                         ?>
                         <div class="activity-type-option <?php echo $isSelected ? 'selected' : ''; ?>" 
-                             data-activity-type="<?php echo $key; ?>">
+                             data-activity-type="<?php echo $key; ?>"
+                             <?php echo $isReadOnly ? 'style="cursor:default;"' : ''; ?>>
                             <div class="activity-type-icon <?php echo $key; ?>-icon">
                                 <i class="fas fa-<?php echo $type['icon']; ?>"></i>
                             </div>
@@ -1347,7 +1456,8 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                             $isSelected = $selected_intelligence === $key;
                         ?>
                         <div class="intelligence-option <?php echo $isSelected ? 'selected' : ''; ?>" 
-                             data-intelligence="<?php echo $key; ?>">
+                             data-intelligence="<?php echo $key; ?>"
+                             <?php echo $isReadOnly ? 'style="cursor:default;"' : ''; ?>>
                             <div class="intelligence-icon-small <?php echo $key; ?>-icon">
                                 <i class="fas fa-<?php echo $type['icon']; ?>"></i>
                             </div>
@@ -1368,11 +1478,16 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                     </label>
                     <div class="input-with-icon">
                         <i class="fas fa-align-left input-icon"></i>
-                        <textarea name="activity_description" id="activityDescription" placeholder="Describe the activity and learning objectives..."><?php echo $activity_description; ?></textarea>
+                        <textarea name="activity_description" id="activityDescription" 
+                                  placeholder="Describe the activity and learning objectives..." 
+                                  <?php echo $isReadOnly ? 'readonly' : ''; ?>><?php echo $activity_description; ?></textarea>
                     </div>
                 </div>
 
-                <!-- VIRTUAL WORLD SELECTOR - USING THE REUSABLE COMPONENT -->
+                <!-- ========================================================= -->
+                <!-- VIRTUAL WORLD SECTION – HIDDEN IN READ-ONLY MODE          -->
+                <!-- ========================================================= -->
+                <?php if (!$isReadOnly): ?>
                 <div class="form-group">
                     <label class="form-label">
                         <i class="fas fa-globe-americas"></i> Choose Virtual World
@@ -1381,6 +1496,7 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                     <!-- Hidden input to store the selected world name -->
                     <input type="hidden" name="virtual_world_name" id="virtualWorldInput" value="<?php echo htmlspecialchars($selected_world); ?>">
                 </div>
+                <?php endif; ?>
 
                 <!-- INSTRUCTIONS -->
                 <div class="form-group">
@@ -1389,7 +1505,9 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                     </label>
                     <div class="input-with-icon">
                         <i class="fas fa-clipboard-list input-icon"></i>
-                        <textarea name="activity_instructions" id="activityInstructions" placeholder="Provide step-by-step instructions for students..." rows="5"><?php echo $activity_instructions; ?></textarea>
+                        <textarea name="activity_instructions" id="activityInstructions" 
+                                  placeholder="Provide step-by-step instructions for students..." 
+                                  rows="5" <?php echo $isReadOnly ? 'readonly' : ''; ?>><?php echo $activity_instructions; ?></textarea>
                     </div>
                 </div>
 
@@ -1406,7 +1524,8 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                             <div class="input-with-icon">
                                 <i class="fas fa-star input-icon"></i>
                                 <input type="number" name="max_points" id="maxPoints" placeholder="100" min="1" max="1000" 
-                                       value="<?php echo $max_points_val; ?>">
+                                       value="<?php echo $max_points_val; ?>"
+                                       <?php echo $isReadOnly ? 'readonly disabled' : ''; ?>>
                             </div>
                         </div>
                         <div>
@@ -1416,7 +1535,8 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                             <div class="input-with-icon">
                                 <i class="fas fa-calendar-alt input-icon"></i>
                                 <input type="date" name="due_date" id="dueDate" 
-                                       value="<?php echo $due_date_val; ?>">
+                                       value="<?php echo $due_date_val; ?>"
+                                       <?php echo $isReadOnly ? 'readonly disabled' : ''; ?>>
                             </div>
                         </div>
                     </div>
@@ -1424,7 +1544,7 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
 
                 <!-- ACTION BUTTONS -->
                 <div class="button-group" style="margin-top: 30px;">
-                    <?php if (!$formSubmitted): ?>
+                    <?php if (!$formSubmitted && !$isReadOnly): ?>
                     <button type="submit" class="btn btn-success" id="submitBtn">
                         <i class="fas <?php echo $isEditMode ? 'fa-save' : 'fa-plus-circle'; ?>"></i> 
                         <?php echo $isEditMode ? 'Update Activity' : 'Create Activity'; ?>
@@ -1432,7 +1552,7 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
                     <button type="reset" class="btn btn-secondary">
                         <i class="fas fa-redo"></i> Reset Form
                     </button>
-                    <?php else: ?>
+                    <?php elseif ($formSubmitted && !$isReadOnly): ?>
                     <a href="create-activity.php<?php echo $isEditMode ? "?edit=$editActivityId" : ''; ?>" class="btn btn-success">
                         <i class="fas <?php echo $isEditMode ? 'fa-edit' : 'fa-plus'; ?>"></i> 
                         <?php echo $isEditMode ? 'Continue Editing' : 'Create Another Activity'; ?>
@@ -1475,17 +1595,27 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
         const virtualWorldInput = document.getElementById('virtualWorldInput');
         const isEditMode = <?php echo $isEditMode ? 'true' : 'false'; ?>;
         const editActivityId = <?php echo $editActivityId ? "'$editActivityId'" : 'null'; ?>;
+        const isReadOnly = <?php echo $isReadOnly ? 'true' : 'false'; ?>;
 
-        // Initialize Virtual World Selector
+        // If read-only, disable all interactions on selectors
+        if (isReadOnly) {
+            // Just prevent any click events on selectors
+            document.querySelectorAll('.intelligence-option, .activity-type-option, .world-option').forEach(el => {
+                el.style.pointerEvents = 'none';
+            });
+        }
+
+        // Initialize Virtual World Selector (only if not read-only)
+        <?php if (!$isReadOnly): ?>
         const worldSelector = new VirtualWorldSelector({
             containerId: 'virtual-world-selector-container',
             selectedWorld: '<?php echo strtolower($selected_world); ?>',
             onWorldChange: function(worldKey, worldData) {
                 console.log('World changed - Key:', worldKey, 'Name:', worldData.name);
-                // Save the display name (e.g., "Rainbow Reef") not the key (e.g., "coral reef")
                 virtualWorldInput.value = worldData.name;
             }
         });
+        <?php endif; ?>
 
         // Set minimum due date to today
         const today = new Date().toISOString().split('T')[0];
@@ -1493,23 +1623,27 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
             dueDateInput.min = today;
         }
 
-        // Activity Type Selector
-        activityTypeOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                activityTypeOptions.forEach(o => o.classList.remove('selected'));
-                option.classList.add('selected');
-                activityTypeInput.value = option.dataset.activityType;
+        // Activity Type Selector (only if not read-only)
+        if (!isReadOnly) {
+            activityTypeOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    activityTypeOptions.forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    activityTypeInput.value = option.dataset.activityType;
+                });
             });
-        });
+        }
 
-        // Intelligence Type Selector
-        intelligenceOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                intelligenceOptions.forEach(o => o.classList.remove('selected'));
-                option.classList.add('selected');
-                intelligenceInput.value = option.dataset.intelligence;
+        // Intelligence Type Selector (only if not read-only)
+        if (!isReadOnly) {
+            intelligenceOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    intelligenceOptions.forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    intelligenceInput.value = option.dataset.intelligence;
+                });
             });
-        });
+        }
 
         // Grade range validation
         function validateGradeRange() {
@@ -1560,74 +1694,78 @@ $selected_activity_type = $activityData ? $activityData['activity_type'] : (isse
             }
         }
 
-        // Form validation
-        activityForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const title = titleInput.value.trim();
-            if (!title) {
-                titleError.textContent = 'Please enter an activity title!';
-                titleError.style.display = 'block';
-                titleInput.focus();
-                return false;
-            }
-            
-            // Validate grade range
-            if (!validateGradeRange()) {
-                return false;
-            }
-            
-            const pointsInput = document.getElementById('maxPoints');
-            if (pointsInput) {
-                const points = parseInt(pointsInput.value);
-                if (isNaN(points) || points < 1 || points > 1000) {
-                    alert('Please enter valid points between 1 and 1000');
-                    pointsInput.focus();
+        // Form validation (only if not read-only)
+        if (!isReadOnly) {
+            activityForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const title = titleInput.value.trim();
+                if (!title) {
+                    titleError.textContent = 'Please enter an activity title!';
+                    titleError.style.display = 'block';
+                    titleInput.focus();
                     return false;
                 }
-            }
-            
-            // Check if virtual world is selected
-            if (!virtualWorldInput.value) {
-                alert('Please select a virtual world!');
-                return false;
-            }
-            
-            // Check for duplicate title
-            if (submitBtn) {
-                submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEditMode ? 'Checking...' : 'Checking...'}`;
-                submitBtn.disabled = true;
-            }
-            
-            const isDuplicate = await checkDuplicateTitle(title);
-            
-            if (isDuplicate) {
-                titleError.textContent = 'Another activity with this title already exists. Please choose a different title.';
-                titleError.style.display = 'block';
-                titleInput.focus();
-                if (submitBtn) {
-                    submitBtn.innerHTML = `<i class="fas ${isEditMode ? 'fa-save' : 'fa-plus-circle'}"></i> ${isEditMode ? 'Update Activity' : 'Create Activity'}`;
-                    submitBtn.disabled = false;
+                
+                // Validate grade range
+                if (!validateGradeRange()) {
+                    return false;
                 }
-                return false;
-            }
-            
-            // If no duplicate, submit the form
-            titleError.style.display = 'none';
-            this.submit();
-        });
+                
+                const pointsInput = document.getElementById('maxPoints');
+                if (pointsInput) {
+                    const points = parseInt(pointsInput.value);
+                    if (isNaN(points) || points < 1 || points > 1000) {
+                        alert('Please enter valid points between 1 and 1000');
+                        pointsInput.focus();
+                        return false;
+                    }
+                }
+                
+                // Check if virtual world is selected (only if not read-only)
+                if (!isReadOnly && !virtualWorldInput.value) {
+                    alert('Please select a virtual world!');
+                    return false;
+                }
+                
+                // Check for duplicate title
+                if (submitBtn) {
+                    submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${isEditMode ? 'Checking...' : 'Checking...'}`;
+                    submitBtn.disabled = true;
+                }
+                
+                const isDuplicate = await checkDuplicateTitle(title);
+                
+                if (isDuplicate) {
+                    titleError.textContent = 'Another activity with this title already exists. Please choose a different title.';
+                    titleError.style.display = 'block';
+                    titleInput.focus();
+                    if (submitBtn) {
+                        submitBtn.innerHTML = `<i class="fas ${isEditMode ? 'fa-save' : 'fa-plus-circle'}"></i> ${isEditMode ? 'Update Activity' : 'Create Activity'}`;
+                        submitBtn.disabled = false;
+                    }
+                    return false;
+                }
+                
+                // If no duplicate, submit the form
+                titleError.style.display = 'none';
+                this.submit();
+            });
+        }
 
         // Real-time title validation
         titleInput.addEventListener('input', function() {
             titleError.style.display = 'none';
         });
 
-        // Add keyboard shortcut: Ctrl+Enter to submit
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter' && !<?php echo $formSubmitted ? 'true' : 'false'; ?>) {
-                activityForm.submit();
-            }
-        });
+        // Add keyboard shortcut: Ctrl+Enter to submit (only if not read-only)
+        if (!isReadOnly) {
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter' && !<?php echo $formSubmitted ? 'true' : 'false'; ?>) {
+                    activityForm.submit();
+                }
+            });
+        }
 
         // Make MIEL banner image interactive
         const mielBanner = document.querySelector('.miel-banner');

@@ -23,6 +23,7 @@ $questions = [];
 $statusMessage = '';
 $statusType = '';
 $teacherQuizzes = [];
+$isShared = false; // true if selected quiz belongs to acadev and not current user
 
 // For editing a question
 $edit_question_id = isset($_GET['edit']) ? intval($_GET['edit']) : 0;
@@ -32,44 +33,67 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    // Get all quizzes created by this teacher for the dropdown
+    // Find the master teacher (acadev@gmail.com)
+    $masterTeacherStmt = $pdo->prepare("SELECT id FROM users WHERE email = 'acadev@gmail.com' AND role = 'teacher'");
+    $masterTeacherStmt->execute();
+    $masterTeacher = $masterTeacherStmt->fetch(PDO::FETCH_ASSOC);
+    $masterTeacherId = $masterTeacher ? $masterTeacher['id'] : null;
+    
+    // Build array of teacher IDs: current teacher + master teacher (if different)
+    $teacherIds = [$_SESSION['user_id']];
+    if ($masterTeacherId !== null && $masterTeacherId != $_SESSION['user_id']) {
+        $teacherIds[] = $masterTeacherId;
+    }
+    $placeholders = implode(',', array_fill(0, count($teacherIds), '?'));
+    
+    // Get all quizzes created by this teacher OR the master teacher
+    // Add ownership flag: 'own' if teacher_id == current user, else 'shared'
     $quizzesStmt = $pdo->prepare("
         SELECT q.*, 
-               COUNT(qn.id) as question_count
+               COUNT(qn.id) as question_count,
+               CASE WHEN q.teacher_id = ? THEN 'own' ELSE 'shared' END as ownership
         FROM quizzes q 
         LEFT JOIN questions qn ON q.id = qn.quiz_id
-        WHERE q.teacher_id = ?
+        WHERE q.teacher_id IN ($placeholders)
         GROUP BY q.id
         ORDER BY q.created_at DESC
     ");
-    $quizzesStmt->execute([$_SESSION['user_id']]);
+    // Bind parameters: first the current user ID, then the teacher IDs
+    $params = array_merge([$_SESSION['user_id']], $teacherIds);
+    $quizzesStmt->execute($params);
     $teacherQuizzes = $quizzesStmt->fetchAll(PDO::FETCH_ASSOC);
     
     // If no quizzes exist, show message
     if (empty($teacherQuizzes)) {
-        $statusMessage = "You haven't created any quizzes yet. Please create a quiz first!";
+        $statusMessage = "You haven't created any quizzes yet, and there are no shared quizzes available.";
         $statusType = 'error';
     }
     
     // Get selected quiz information if a quiz is selected
     if ($quiz_id > 0) {
+        // Also fetch ownership for the selected quiz
         $quizStmt = $pdo->prepare("
             SELECT q.*, 
                    COUNT(qn.id) as question_count,
-                   u.full_name as teacher_name
+                   u.full_name as teacher_name,
+                   CASE WHEN q.teacher_id = ? THEN 'own' ELSE 'shared' END as ownership
             FROM quizzes q 
             LEFT JOIN questions qn ON q.id = qn.quiz_id
             LEFT JOIN users u ON q.teacher_id = u.id
-            WHERE q.id = ? AND q.teacher_id = ?
+            WHERE q.id = ? AND q.teacher_id IN ($placeholders)
             GROUP BY q.id
         ");
-        $quizStmt->execute([$quiz_id, $_SESSION['user_id']]);
+        $params2 = array_merge([$_SESSION['user_id'], $quiz_id], $teacherIds);
+        $quizStmt->execute($params2);
         $quiz_info = $quizStmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$quiz_info) {
             $statusMessage = "Quiz not found or you don't have permission to access it.";
             $statusType = 'error';
         } else {
+            // Determine if this is a shared quiz (owned by acadev, not current user)
+            $isShared = ($quiz_info['ownership'] === 'shared');
+            
             // Get existing questions for this quiz
             $questionStmt = $pdo->prepare("SELECT * FROM questions WHERE quiz_id = ? ORDER BY id");
             $questionStmt->execute([$quiz_id]);
@@ -77,8 +101,8 @@ try {
         }
     }
     
-    // If editing a question, fetch its data
-    if ($edit_question_id > 0 && $quiz_id > 0) {
+    // If editing a question, only allow if quiz is not shared
+    if ($edit_question_id > 0 && $quiz_id > 0 && !$isShared) {
         $editStmt = $pdo->prepare("SELECT * FROM questions WHERE id = ? AND quiz_id = ?");
         $editStmt->execute([$edit_question_id, $quiz_id]);
         $edit_question_data = $editStmt->fetch(PDO::FETCH_ASSOC);
@@ -88,6 +112,10 @@ try {
             $statusType = 'error';
             $edit_question_id = 0;
         }
+    } elseif ($edit_question_id > 0 && $isShared) {
+        $statusMessage = "You cannot edit questions in a shared quiz.";
+        $statusType = 'error';
+        $edit_question_id = 0;
     }
     
 } catch(PDOException $e) {
@@ -95,49 +123,113 @@ try {
     $statusType = 'error';
 }
 
-// Handle form submission
+// Handle form submission – only allow if quiz is not shared OR if user is acadev
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    try {
-        if ($_POST['action'] === 'add_question' || $_POST['action'] === 'update_question') {
-            $question_type = $_POST['question_type'] ?? 'multiple_choice';
-            $isUpdate = ($_POST['action'] === 'update_question');
-            $question_id = $isUpdate ? intval($_POST['question_id']) : 0;
-            
-            // Check if quiz is inworld when adding click_on questions
-            if ($question_type === 'click_on' && $quiz_info && $quiz_info['type'] !== 'inworld') {
-                $statusMessage = "Click-on questions can only be added to in-world quizzes!";
-                $statusType = 'error';
-            } else {
-            
-            // Validate required fields based on question type
-            if (empty($_POST['question_text'])) {
-                $statusMessage = "Please enter the question text!";
-                $statusType = 'error';
-            } else {
-                // Get the correct answer from form
-                $correct_answer = $_POST['correct_answer'] ?? 'A';
+    // Check if the target quiz is shared and the user is not acadev
+    $targetQuizId = isset($_POST['selected_quiz_id']) ? intval($_POST['selected_quiz_id']) : $quiz_id;
+    if ($targetQuizId > 0) {
+        // Fetch ownership of the target quiz
+        $checkStmt = $pdo->prepare("
+            SELECT CASE WHEN teacher_id = ? THEN 'own' ELSE 'shared' END as ownership 
+            FROM quizzes WHERE id = ?
+        ");
+        $checkStmt->execute([$_SESSION['user_id'], $targetQuizId]);
+        $ownership = $checkStmt->fetchColumn();
+        if ($ownership === 'shared') {
+            $statusMessage = "You cannot add, edit, or delete questions in a shared quiz.";
+            $statusType = 'error';
+            // Do not process any further
+            $_POST = []; // clear to avoid processing
+        }
+    }
+    
+    // Proceed only if no error
+    if (empty($statusMessage)) {
+        try {
+            if ($_POST['action'] === 'add_question' || $_POST['action'] === 'update_question') {
+                $question_type = $_POST['question_type'] ?? 'multiple_choice';
+                $isUpdate = ($_POST['action'] === 'update_question');
+                $question_id = $isUpdate ? intval($_POST['question_id']) : 0;
                 
-                // Prepare options array based on question type
-                if ($question_type === 'multiple_choice') {
-                    // Validate MC options
-                    if (empty($_POST['option_a']) || empty($_POST['option_b']) || 
-                        empty($_POST['option_c']) || empty($_POST['option_d'])) {
-                        $statusMessage = "Please fill in all multiple choice options!";
-                        $statusType = 'error';
-                    } else {
-                        // For MC: Store all options
+                // Check if quiz is inworld when adding click_on questions
+                if ($question_type === 'click_on' && $quiz_info && $quiz_info['type'] !== 'inworld') {
+                    $statusMessage = "Click-on questions can only be added to in-world quizzes!";
+                    $statusType = 'error';
+                } else {
+                
+                // Validate required fields based on question type
+                if (empty($_POST['question_text'])) {
+                    $statusMessage = "Please enter the question text!";
+                    $statusType = 'error';
+                } else {
+                    // Get the correct answer from form
+                    $correct_answer = $_POST['correct_answer'] ?? 'A';
+                    
+                    // Prepare options array based on question type
+                    if ($question_type === 'multiple_choice') {
+                        // Validate MC options
+                        if (empty($_POST['option_a']) || empty($_POST['option_b']) || 
+                            empty($_POST['option_c']) || empty($_POST['option_d'])) {
+                            $statusMessage = "Please fill in all multiple choice options!";
+                            $statusType = 'error';
+                        } else {
+                            // For MC: Store all options
+                            $options = [
+                                'A' => $_POST['option_a'] ?? '',
+                                'B' => $_POST['option_b'] ?? '',
+                                'C' => $_POST['option_c'] ?? '',
+                                'D' => $_POST['option_d'] ?? ''
+                            ];
+                            
+                            // Store question type in options array
+                            $options['question_type'] = $question_type;
+                            
+                            // Set qtype value
+                            $qtype = 'MC';
+                            
+                            if ($isUpdate) {
+                                $updateStmt = $pdo->prepare("
+                                    UPDATE questions 
+                                    SET qtype = ?, question_text = ?, options = ?, correct_answer = ? 
+                                    WHERE id = ? AND quiz_id = ?
+                                ");
+                                $updateStmt->execute([
+                                    $qtype,
+                                    $_POST['question_text'],
+                                    json_encode($options),
+                                    $correct_answer,
+                                    $question_id,
+                                    $quiz_id
+                                ]);
+                                $statusMessage = "Multiple choice question updated successfully!";
+                            } else {
+                                $insertStmt = $pdo->prepare("
+                                    INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
+                                    VALUES (?, ?, ?, ?, ?)
+                                ");
+                                $insertStmt->execute([
+                                    $quiz_id,
+                                    $qtype,
+                                    $_POST['question_text'],
+                                    json_encode($options),
+                                    $correct_answer
+                                ]);
+                                $statusMessage = "Multiple choice question added successfully!";
+                            }
+                            $statusType = 'success';
+                        }
+                    } elseif ($question_type === 'true_false') {
+                        // For T/F: Store both options
                         $options = [
-                            'A' => $_POST['option_a'] ?? '',
-                            'B' => $_POST['option_b'] ?? '',
-                            'C' => $_POST['option_c'] ?? '',
-                            'D' => $_POST['option_d'] ?? ''
+                            'A' => 'True',
+                            'B' => 'False'
                         ];
                         
                         // Store question type in options array
                         $options['question_type'] = $question_type;
                         
                         // Set qtype value
-                        $qtype = 'MC';
+                        $qtype = 'TF';
                         
                         if ($isUpdate) {
                             $updateStmt = $pdo->prepare("
@@ -153,7 +245,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                 $question_id,
                                 $quiz_id
                             ]);
-                            $statusMessage = "Multiple choice question updated successfully!";
+                            $statusMessage = "True/False question updated successfully!";
                         } else {
                             $insertStmt = $pdo->prepare("
                                 INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
@@ -166,209 +258,166 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                 json_encode($options),
                                 $correct_answer
                             ]);
-                            $statusMessage = "Multiple choice question added successfully!";
+                            $statusMessage = "True/False question added successfully!";
                         }
                         $statusType = 'success';
-                    }
-                } elseif ($question_type === 'true_false') {
-                    // For T/F: Store both options
-                    $options = [
-                        'A' => 'True',
-                        'B' => 'False'
-                    ];
-                    
-                    // Store question type in options array
-                    $options['question_type'] = $question_type;
-                    
-                    // Set qtype value
-                    $qtype = 'TF';
-                    
-                    if ($isUpdate) {
-                        $updateStmt = $pdo->prepare("
-                            UPDATE questions 
-                            SET qtype = ?, question_text = ?, options = ?, correct_answer = ? 
-                            WHERE id = ? AND quiz_id = ?
-                        ");
-                        $updateStmt->execute([
-                            $qtype,
-                            $_POST['question_text'],
-                            json_encode($options),
-                            $correct_answer,
-                            $question_id,
-                            $quiz_id
-                        ]);
-                        $statusMessage = "True/False question updated successfully!";
-                    } else {
-                        $insertStmt = $pdo->prepare("
-                            INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
-                            VALUES (?, ?, ?, ?, ?)
-                        ");
-                        $insertStmt->execute([
-                            $quiz_id,
-                            $qtype,
-                            $_POST['question_text'],
-                            json_encode($options),
-                            $correct_answer
-                        ]);
-                        $statusMessage = "True/False question added successfully!";
-                    }
-                    $statusType = 'success';
-                    
-                } elseif ($question_type === 'fill_blank') {
-                    // Validate fill in the blank answer
-                    if (empty($_POST['fill_answer'])) {
-                        $statusMessage = "Please enter the correct answer for fill in the blank!";
-                        $statusType = 'error';
-                    } else {
-                        // For Fill in the blank: Store correct answer in option A
-                        $options = [
-                            'A' => $_POST['fill_answer'] ?? ''
-                        ];
-                        $correct_answer = 'A'; // Always A for fill in blank
                         
-                        // Store question type in options array
-                        $options['question_type'] = $question_type;
-                        
-                        // Set qtype value
-                        $qtype = 'FB';
-                        
-                        if ($isUpdate) {
-                            $updateStmt = $pdo->prepare("
-                                UPDATE questions 
-                                SET qtype = ?, question_text = ?, options = ?, correct_answer = ? 
-                                WHERE id = ? AND quiz_id = ?
-                            ");
-                            $updateStmt->execute([
-                                $qtype,
-                                $_POST['question_text'],
-                                json_encode($options),
-                                $correct_answer,
-                                $question_id,
-                                $quiz_id
-                            ]);
-                            $statusMessage = "Fill in the blank question updated successfully!";
+                    } elseif ($question_type === 'fill_blank') {
+                        // Validate fill in the blank answer
+                        if (empty($_POST['fill_answer'])) {
+                            $statusMessage = "Please enter the correct answer for fill in the blank!";
+                            $statusType = 'error';
                         } else {
-                            $insertStmt = $pdo->prepare("
-                                INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
-                                VALUES (?, ?, ?, ?, ?)
-                            ");
-                            $insertStmt->execute([
-                                $quiz_id,
-                                $qtype,
-                                $_POST['question_text'],
-                                json_encode($options),
-                                $correct_answer
-                            ]);
-                            $statusMessage = "Fill in the blank question added successfully!";
+                            // For Fill in the blank: Store correct answer in option A
+                            $options = [
+                                'A' => $_POST['fill_answer'] ?? ''
+                            ];
+                            $correct_answer = 'A'; // Always A for fill in blank
+                            
+                            // Store question type in options array
+                            $options['question_type'] = $question_type;
+                            
+                            // Set qtype value
+                            $qtype = 'FB';
+                            
+                            if ($isUpdate) {
+                                $updateStmt = $pdo->prepare("
+                                    UPDATE questions 
+                                    SET qtype = ?, question_text = ?, options = ?, correct_answer = ? 
+                                    WHERE id = ? AND quiz_id = ?
+                                ");
+                                $updateStmt->execute([
+                                    $qtype,
+                                    $_POST['question_text'],
+                                    json_encode($options),
+                                    $correct_answer,
+                                    $question_id,
+                                    $quiz_id
+                                ]);
+                                $statusMessage = "Fill in the blank question updated successfully!";
+                            } else {
+                                $insertStmt = $pdo->prepare("
+                                    INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
+                                    VALUES (?, ?, ?, ?, ?)
+                                ");
+                                $insertStmt->execute([
+                                    $quiz_id,
+                                    $qtype,
+                                    $_POST['question_text'],
+                                    json_encode($options),
+                                    $correct_answer
+                                ]);
+                                $statusMessage = "Fill in the blank question added successfully!";
+                            }
+                            $statusType = 'success';
                         }
-                        $statusType = 'success';
-                    }
-                } elseif ($question_type === 'click_on') {
-                    // Validate click_on answer
-                    if (empty($_POST['model_name'])) {
-                        $statusMessage = "Please enter the model name to click on!";
-                        $statusType = 'error';
-                    } else {
-                        // For Click on: Store model name in option A
-                        $options = [
-                            'A' => $_POST['model_name'] ?? '',
-                            'world_key' => $_POST['world_key'] ?? ($quiz_info['virtual_world'] ?? '')
-                        ];
-                        $correct_answer = 'A'; // Always A for click_on
-                        
-                        // Store question type in options array
-                        $options['question_type'] = $question_type;
-                        
-                        // Set qtype value (CK for Click)
-                        $qtype = 'CK';
-                        
-                        if ($isUpdate) {
-                            $updateStmt = $pdo->prepare("
-                                UPDATE questions 
-                                SET qtype = ?, question_text = ?, options = ?, correct_answer = ? 
-                                WHERE id = ? AND quiz_id = ?
-                            ");
-                            $updateStmt->execute([
-                                $qtype,
-                                $_POST['question_text'],
-                                json_encode($options),
-                                $correct_answer,
-                                $question_id,
-                                $quiz_id
-                            ]);
-                            $statusMessage = "Click-on question updated successfully!";
+                    } elseif ($question_type === 'click_on') {
+                        // Validate click_on answer
+                        if (empty($_POST['model_name'])) {
+                            $statusMessage = "Please enter the model name to click on!";
+                            $statusType = 'error';
                         } else {
-                            $insertStmt = $pdo->prepare("
-                                INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
-                                VALUES (?, ?, ?, ?, ?)
-                            ");
-                            $insertStmt->execute([
-                                $quiz_id,
-                                $qtype,
-                                $_POST['question_text'],
-                                json_encode($options),
-                                $correct_answer
-                            ]);
-                            $statusMessage = "Click-on question added successfully!";
+                            // For Click on: Store model name in option A
+                            $options = [
+                                'A' => $_POST['model_name'] ?? '',
+                                'world_key' => $_POST['world_key'] ?? ($quiz_info['virtual_world'] ?? '')
+                            ];
+                            $correct_answer = 'A'; // Always A for click_on
+                            
+                            // Store question type in options array
+                            $options['question_type'] = $question_type;
+                            
+                            // Set qtype value (CK for Click)
+                            $qtype = 'CK';
+                            
+                            if ($isUpdate) {
+                                $updateStmt = $pdo->prepare("
+                                    UPDATE questions 
+                                    SET qtype = ?, question_text = ?, options = ?, correct_answer = ? 
+                                    WHERE id = ? AND quiz_id = ?
+                                ");
+                                $updateStmt->execute([
+                                    $qtype,
+                                    $_POST['question_text'],
+                                    json_encode($options),
+                                    $correct_answer,
+                                    $question_id,
+                                    $quiz_id
+                                ]);
+                                $statusMessage = "Click-on question updated successfully!";
+                            } else {
+                                $insertStmt = $pdo->prepare("
+                                    INSERT INTO questions (quiz_id, qtype, question_text, options, correct_answer) 
+                                    VALUES (?, ?, ?, ?, ?)
+                                ");
+                                $insertStmt->execute([
+                                    $quiz_id,
+                                    $qtype,
+                                    $_POST['question_text'],
+                                    json_encode($options),
+                                    $correct_answer
+                                ]);
+                                $statusMessage = "Click-on question added successfully!";
+                            }
+                            $statusType = 'success';
                         }
-                        $statusType = 'success';
+                    }
+                    
+                    if ($statusType === 'success') {
+                        // Clear edit mode and form data
+                        $edit_question_id = 0;
+                        $edit_question_data = null;
+                        
+                        // Refresh questions list
+                        $questionStmt = $pdo->prepare("SELECT * FROM questions WHERE quiz_id = ? ORDER BY id");
+                        $questionStmt->execute([$quiz_id]);
+                        $questions = $questionStmt->fetchAll(PDO::FETCH_ASSOC);
+                        
+                        // Update quiz info question count
+                        $quiz_info['question_count'] = count($questions);
+                        
+                        // Redirect to remove edit parameter from URL
+                        header("Location: add-questions.php?quiz_id=$quiz_id");
+                        exit();
                     }
                 }
+                }
                 
-                if ($statusType === 'success') {
-                    // Clear edit mode and form data
+            } elseif ($_POST['action'] === 'delete_question' && isset($_POST['question_id'])) {
+                $deleteStmt = $pdo->prepare("DELETE FROM questions WHERE id = ? AND quiz_id = ?");
+                $deleteStmt->execute([$_POST['question_id'], $quiz_id]);
+                
+                $statusMessage = "Question deleted successfully!";
+                $statusType = 'success';
+                
+                // Refresh questions list
+                $questionStmt = $pdo->prepare("SELECT * FROM questions WHERE quiz_id = ? ORDER BY id");
+                $questionStmt->execute([$quiz_id]);
+                $questions = $questionStmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                // Update quiz info question count
+                $quiz_info['question_count'] = count($questions);
+                
+                // Clear edit mode if editing the deleted question
+                if ($edit_question_id == $_POST['question_id']) {
                     $edit_question_id = 0;
                     $edit_question_data = null;
-                    
-                    // Refresh questions list
-                    $questionStmt = $pdo->prepare("SELECT * FROM questions WHERE quiz_id = ? ORDER BY id");
-                    $questionStmt->execute([$quiz_id]);
-                    $questions = $questionStmt->fetchAll(PDO::FETCH_ASSOC);
-                    
-                    // Update quiz info question count
-                    $quiz_info['question_count'] = count($questions);
-                    
-                    // Redirect to remove edit parameter from URL
                     header("Location: add-questions.php?quiz_id=$quiz_id");
                     exit();
                 }
-            }
-            }
-            
-        } elseif ($_POST['action'] === 'delete_question' && isset($_POST['question_id'])) {
-            $deleteStmt = $pdo->prepare("DELETE FROM questions WHERE id = ? AND quiz_id = ?");
-            $deleteStmt->execute([$_POST['question_id'], $quiz_id]);
-            
-            $statusMessage = "Question deleted successfully!";
-            $statusType = 'success';
-            
-            // Refresh questions list
-            $questionStmt = $pdo->prepare("SELECT * FROM questions WHERE quiz_id = ? ORDER BY id");
-            $questionStmt->execute([$quiz_id]);
-            $questions = $questionStmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            // Update quiz info question count
-            $quiz_info['question_count'] = count($questions);
-            
-            // Clear edit mode if editing the deleted question
-            if ($edit_question_id == $_POST['question_id']) {
-                $edit_question_id = 0;
-                $edit_question_data = null;
+                
+            } elseif ($_POST['action'] === 'select_quiz') {
+                // Just update the selected quiz
+                $quiz_id = intval($_POST['selected_quiz_id']);
+                // Refresh page with selected quiz
                 header("Location: add-questions.php?quiz_id=$quiz_id");
                 exit();
             }
             
-        } elseif ($_POST['action'] === 'select_quiz') {
-            // Just update the selected quiz
-            $quiz_id = intval($_POST['selected_quiz_id']);
-            // Refresh page with selected quiz
-            header("Location: add-questions.php?quiz_id=$quiz_id");
-            exit();
+        } catch(PDOException $e) {
+            $statusMessage = "Error: " . $e->getMessage();
+            $statusType = 'error';
         }
-        
-    } catch(PDOException $e) {
-        $statusMessage = "Error: " . $e->getMessage();
-        $statusType = 'error';
     }
 }
 
@@ -543,8 +592,8 @@ function getEditValue($editData, $key, $default = '') {
             background-image: url('background-tile.jpg');
             background-repeat: repeat;
             background-size: 1980px 1080px;
-            opacity: 0.9; /* Full opacity for the image */
-            z-index: -1; /* Lower z-index than the overlay */
+            opacity: 0.9;
+            z-index: -1;
         }
 
         body::after {
@@ -554,8 +603,8 @@ function getEditValue($editData, $key, $default = '') {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(248, 249, 255, 0.3); /* Reduced from 0.85 to 0.3 */
-            z-index: -3; /* Higher z-index than the image */
+            background: rgba(248, 249, 255, 0.3);
+            z-index: -3;
         }
         
         .container {
@@ -601,7 +650,7 @@ function getEditValue($editData, $key, $default = '') {
 		}
 
 		.navbar .navbar-collapse {
-		    flex-grow: 0; /* Prevents it from taking up extra space */
+		    flex-grow: 0;
 		}        
         
         /* ===== MIEL BANNER ===== */
@@ -1364,7 +1413,7 @@ function getEditValue($editData, $key, $default = '') {
             border-left: 5px solid #FF6B6B;
         }
         
-        /* ===== ANIMATIONS (SAME AS teacher-dashboard.php) ===== */
+        /* ===== ANIMATIONS ===== */
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
@@ -1395,7 +1444,7 @@ function getEditValue($editData, $key, $default = '') {
             animation: rainbow 3s ease infinite;
         }
         
-        /* ===== MOBILE RESPONSIVE (SAME AS teacher-dashboard.php) ===== */
+        /* ===== MOBILE RESPONSIVE ===== */
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -1441,7 +1490,6 @@ function getEditValue($editData, $key, $default = '') {
                 width: 100%;
             }
             
-            /* Bottom buttons on mobile */
             .bottom-buttons-container {
                 flex-direction: column;
                 gap: 10px;
@@ -1534,10 +1582,12 @@ function getEditValue($editData, $key, $default = '') {
             <?php 
                 // Truncate title to 50 chars max to keep dropdown clean
                 $displayTitle = (strlen($quiz['title']) > 100) ? substr($quiz['title'], 0, 97) . '...' : $quiz['title'];
+                // Add ownership label
+                $ownershipLabel = ($quiz['ownership'] === 'shared') ? ' (Shared)' : '';
             ?>
             <option value="<?php echo $quiz['id']; ?>" 
                     <?php echo ($quiz_id == $quiz['id']) ? 'selected' : ''; ?>>
-                <?php echo htmlspecialchars($displayTitle); ?>
+                <?php echo htmlspecialchars($displayTitle) . $ownershipLabel; ?>
             </option>
             <?php endforeach; ?>
         </select>
@@ -1564,6 +1614,9 @@ function getEditValue($editData, $key, $default = '') {
                         <span class="quiz-type-badge <?php echo $quiz_info['type']; ?>">
                             <?php echo $quiz_info['type'] == 'inworld' ? '&#127757; In-World' : '&#128196; Off-World'; ?>
                         </span>
+                        <?php if ($isShared): ?>
+                        <span class="badge bg-info" style="margin-left: 10px;">Shared</span>
+                        <?php endif; ?>
                     </div>
                     <div><?php echo htmlspecialchars($quiz_info['description']); ?></div>
                     <div class="quiz-meta">
@@ -1587,6 +1640,11 @@ function getEditValue($editData, $key, $default = '') {
                 </div>
             </div>
             
+            <!-- ========================================================= -->
+            <!-- ADD/EDIT QUESTION FORM – only shown for own quizzes        -->
+            <!-- ========================================================= -->
+            <?php if (!$isShared): ?>
+            
             <!-- Edit Mode Indicator -->
             <?php if ($edit_question_data): ?>
             <div class="edit-mode-badge">
@@ -1597,7 +1655,6 @@ function getEditValue($editData, $key, $default = '') {
             </div>
             <?php endif; ?>
             
-            <!-- ADD/EDIT QUESTION FORM -->
             <form method="POST" action="add-questions.php?quiz_id=<?php echo $quiz_id; ?>" id="questionForm">
                 <input type="hidden" name="action" value="<?php echo $edit_question_data ? 'update_question' : 'add_question'; ?>">
                 <?php if ($edit_question_data): ?>
@@ -1801,22 +1858,29 @@ function getEditValue($editData, $key, $default = '') {
                 </div>
                 
                 <!-- BUTTONS -->
-<!-- BUTTONS -->
-<div class="button-group">
-    <button type="submit" class="btn <?php echo $edit_question_data ? 'btn-warning' : 'btn-primary'; ?>" style="padding: 10px 20px; font-size: 1.1rem; width: 220px;">
-        <i class="fas <?php echo $edit_question_data ? 'fa-save' : 'fa-plus-circle'; ?>"></i> 
-        <?php echo $edit_question_data ? 'Update Question' : 'Add Question'; ?>
-    </button>
-    <?php if ($edit_question_data): ?>
-    <a href="add-questions.php?quiz_id=<?php echo $quiz_id; ?>" class="btn btn-primary" style="padding: 10px 20px; font-size: 1.1rem; width: 230px; text-align: center;">
-        <i class="fas fa-plus-circle"></i> Add New Question
-    </a>
-    <?php endif; ?>
-    <button type="reset" class="btn btn-primary" style="padding: 10px 20px; font-size: 1.1rem; width: 220px;">
-        <i class="fas fa-redo"></i> Clear Form
-    </button>
-</div>            
-</form>
+                <div class="button-group">
+                    <button type="submit" class="btn <?php echo $edit_question_data ? 'btn-warning' : 'btn-primary'; ?>" style="padding: 10px 20px; font-size: 1.1rem; width: 220px;">
+                        <i class="fas <?php echo $edit_question_data ? 'fa-save' : 'fa-plus-circle'; ?>"></i> 
+                        <?php echo $edit_question_data ? 'Update Question' : 'Add Question'; ?>
+                    </button>
+                    <?php if ($edit_question_data): ?>
+                    <a href="add-questions.php?quiz_id=<?php echo $quiz_id; ?>" class="btn btn-primary" style="padding: 10px 20px; font-size: 1.1rem; width: 230px; text-align: center;">
+                        <i class="fas fa-plus-circle"></i> Add New Question
+                    </a>
+                    <?php endif; ?>
+                    <button type="reset" class="btn btn-primary" style="padding: 10px 20px; font-size: 1.1rem; width: 220px;">
+                        <i class="fas fa-redo"></i> Clear Form
+                    </button>
+                </div>            
+            </form>
+            
+            <?php else: ?>
+            <!-- SHARED QUIZ: VIEW-ONLY MODE -->
+            <div class="status-message" style="background: #E3F2FD; color: var(--primary-blue); border-left: 5px solid var(--primary-blue);">
+                <i class="fas fa-eye" style="font-size: 2rem; margin-right: 10px;"></i>
+                <strong>View-Only Mode:</strong> This quiz is shared by another teacher. You can view all questions, but you cannot add, edit, or delete questions.
+            </div>
+            <?php endif; ?>
             
             <!-- EXISTING QUESTIONS LIST -->
             <?php if (!empty($questions)): ?>
@@ -1825,10 +1889,12 @@ function getEditValue($editData, $key, $default = '') {
                     <h3 style="color: var(--primary-blue);">
                         <i class="fas fa-list"></i> Existing Questions (<?php echo count($questions); ?>)
                     </h3>
+                    <?php if (!$isShared): ?>
                     <div style="color: #666; font-size: 0.9rem;">
                         <i class="fas fa-edit" style="color: #FFD166;"></i> Edit | 
                         <i class="fas fa-trash-alt" style="color: #FF6B6B;"></i> Delete
                     </div>
+                    <?php endif; ?>
                 </div>
                 
                 <?php foreach ($questions as $index => $question): 
@@ -1918,6 +1984,8 @@ function getEditValue($editData, $key, $default = '') {
                     </div>
                     <?php endif; ?>
                     
+                    <!-- Question actions: only show if not shared -->
+                    <?php if (!$isShared): ?>
                     <div class="question-actions">
                         <a href="add-questions.php?quiz_id=<?php echo $quiz_id; ?>&edit=<?php echo $question['id']; ?>" class="action-btn edit-btn" title="Edit Question">
                             <i class="fas fa-edit"></i>
@@ -1932,13 +2000,11 @@ function getEditValue($editData, $key, $default = '') {
                             </button>
                         </form>
                     </div>
+                    <?php endif; ?>
                 </div>
                 <?php endforeach; ?>
                 
                 <div class="button-group">
-                    <a href="quiz-preview.php?quiz_id=<?php echo $quiz_id; ?>" class="btn btn-primary">
-                        <i class="fas fa-eye"></i> Preview Quiz
-                    </a>
                     <a href="teacher-dashboard.php" class="btn btn-secondary">
                         <i class="fas fa-check-circle"></i> Finish & Return
                     </a>
@@ -1947,10 +2013,12 @@ function getEditValue($editData, $key, $default = '') {
             <?php else: ?>
             <div class="status-message" style="background: #FFF3CD; color: #856404; border-left: 5px solid #FFC107;">
                 <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                <p>No questions added yet. Start by adding your first question above!</p>
+                <p>No questions added yet. <?php echo $isShared ? 'This shared quiz currently has no questions.' : 'Start by adding your first question above!'; ?></p>
+                <?php if (!$isShared): ?>
                 <p style="font-size: 0.9rem; margin-top: 10px; color: #856404;">
                     A quiz needs at least 1 question. Recommended: 5-10 questions per quiz.
                 </p>
+                <?php endif; ?>
             </div>
             <?php endif; ?>
             
