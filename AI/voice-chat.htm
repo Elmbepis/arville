@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Chat – Teacher Glenda</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 700px;
+        }
+        #chat-container {
+            width: 100%;
+            height: 50vh;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #0f0f23;
+        }
+        #chat-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        #status {
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            font-size: 14px;
+            color: #aaa;
+            min-height: 24px;
+            text-align: center;
+        }
+        #transcript-area {
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 12px;
+            border: 1px solid #333;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        #transcript-area .label {
+            color: #888;
+            font-weight: bold;
+        }
+        #transcript-area .text {
+            flex: 1;
+            color: #4fc3f7;
+            word-wrap: break-word;
+            min-height: 20px;
+        }
+        .controls {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+        .input-row input {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 24px;
+            border: 1px solid #333;
+            background: #0f0f23;
+            color: #eee;
+            font-size: 16px;
+            outline: none;
+        }
+        .input-row input:focus { border-color: #4fc3f7; }
+        .input-row button {
+            padding: 10px 24px;
+            border-radius: 24px;
+            border: none;
+            background: #4fc3f7;
+            color: #1a1a2e;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .input-row button:hover { background: #81d4fa; }
+        .button-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        .button-row button {
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            background: #4fc3f7;
+            color: #1a1a2e;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .button-row button:hover { background: #81d4fa; }
+        .mic-btn {
+            padding: 10px 24px;
+            border-radius: 30px;
+            border: none;
+            background: #e91e63;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(233,30,99,0.4);
+            transition: background 0.2s;
+        }
+        .mic-btn.recording {
+            background: #f44336;
+            animation: pulse 1s infinite;
+        }
+        .mic-btn:hover { background: #c2185b; }
+        .mic-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        #voice-send-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        #voice-send-btn:hover:not(:disabled) { background: #45a049; }
+        #voice-send-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .flex-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color:#4fc3f7; margin-bottom:8px;">&#129302; Teacher Glenda</h1>
+        <div id="chat-container">
+            <iframe id="xiaozhi-iframe" src="http://172.104.74.194:5173/" allow="microphone"></iframe>
+        </div>
+
+        <div id="status">&#128172; Type, use test buttons, or speak.</div>
+
+        <!-- Transcript area -->
+        <div id="transcript-area">
+            <span class="label">&#127908; Transcript:</span>
+            <span class="text" id="transcript-text">(waiting for speech)</span>
+        </div>
+
+        <div class="controls">
+            <div class="input-row">
+                <input type="text" id="question-input" placeholder="Type your question..." />
+                <button id="send-btn">Send</button>
+            </div>
+            <div class="button-row">
+                <button class="test-btn" id="test-btn">&#128204; Test: Jose Rizal</button>
+                <button class="test-btn" id="test-photosynthesis">&#128204; Test: Photosynthesis</button>
+                <button class="mic-btn" id="mic-btn">&#127908; Start Speaking</button>
+                <button id="voice-send-btn" disabled>&#128228; Send Voice</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // DOM refs
+        // ============================================================
+        const iframe = document.getElementById('xiaozhi-iframe');
+        const statusEl = document.getElementById('status');
+        const transcriptText = document.getElementById('transcript-text');
+        const micBtn = document.getElementById('mic-btn');
+        const voiceSendBtn = document.getElementById('voice-send-btn');
+        const testBtn = document.getElementById('test-btn');
+        const testPhotosynthesis = document.getElementById('test-photosynthesis');
+        const sendBtn = document.getElementById('send-btn');
+        const questionInput = document.getElementById('question-input');
+
+        let isRecording = false;
+        let recognition = null;
+        let lastTranscript = '';
+        let iframeReady = false;
+        let messageQueue = [];
+        let silenceTimer = null;
+
+        // ============================================================
+        // Helper: remove emojis from text before TTS
+        // ============================================================
+        function removeEmojis(text) {
+            // Matches common emoji ranges (including emoticons, symbols, dingbats, etc.)
+            return text.replace(
+                /[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FEFF}]/gu,
+                ''
+            ).trim();
+        }
+
+        // ------------------------------------------------------------------
+        // Iframe ready check
+        // ------------------------------------------------------------------
+        iframe.addEventListener('load', () => {
+            console.log('&#9989; Iframe loaded');
+            iframeReady = true;
+            while (messageQueue.length > 0) {
+                const text = messageQueue.shift();
+                sendMessageToIframe(text);
+            }
+        });
+
+        // ------------------------------------------------------------------
+        // Send message to iframe
+        // ------------------------------------------------------------------
+        function sendMessageToIframe(text) {
+            if (!text || !text.trim()) return;
+            if (!iframeReady) {
+                messageQueue.push(text);
+                statusEl.textContent = '&#9203; Waiting for Xiaozhi to load...';
+                return;
+            }
+            console.log('&#128228; Sending:', text);
+            statusEl.textContent = '&#129489; Sending: "' + text + '"';
+            iframe.contentWindow.postMessage({
+                type: 'xiaozhi-user-message',
+                text: text
+            }, '*');
+            // Also after a short delay
+            setTimeout(() => {
+                iframe.contentWindow.postMessage({
+                    type: 'xiaozhi-user-message',
+                    text: text
+                }, '*');
+            }, 300);
+        }
+
+        // ------------------------------------------------------------------
+        // Listen for AI responses – strip emojis before TTS
+        // ------------------------------------------------------------------
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'xiaozhi-ai-response') {
+                const rawText = event.data.text;
+                console.log('&#129302; Raw AI Response:', rawText);
+                // Remove emojis for TTS
+                const cleanText = removeEmojis(rawText);
+                console.log('&#129529; Cleaned for TTS:', cleanText);
+                statusEl.textContent = '&#129302; ' + cleanText;
+                speakText(cleanText);
+            }
+        });
+
+        // ------------------------------------------------------------------
+        // TTS (fallback) – also apply emoji removal if called directly
+        // ------------------------------------------------------------------
+        function speakText(text) {
+            if (!window.speechSynthesis) return;
+            const clean = removeEmojis(text);
+            if (!clean) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(clean);
+            utterance.lang = 'en-US';
+            utterance.pitch = 1.1;
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // ------------------------------------------------------------------
+        // Auto-send the final transcript (unchanged)
+        // ------------------------------------------------------------------
+        function autoSendTranscript() {
+            const text = lastTranscript.trim();
+            if (text) {
+                sendMessageToIframe(text);
+                lastTranscript = '';
+                transcriptText.textContent = '(auto&#8209;sent)';
+                voiceSendBtn.disabled = true;
+                if (silenceTimer) {
+                    clearTimeout(silenceTimer);
+                    silenceTimer = null;
+                }
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // Voice input with auto-send on silence (3 seconds)
+        // ------------------------------------------------------------------
+        function toggleVoice() {
+            if (isRecording) {
+                if (recognition) recognition.stop();
+                isRecording = false;
+                micBtn.textContent = '&#127908; Start Speaking';
+                micBtn.classList.remove('recording');
+                voiceSendBtn.disabled = true;
+                if (silenceTimer) {
+                    clearTimeout(silenceTimer);
+                    silenceTimer = null;
+                }
+                return;
+            }
+
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('Speech recognition not supported.');
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = true;
+            recognition.continuous = true;
+
+            recognition.onstart = () => {
+                isRecording = true;
+                micBtn.textContent = '&#9209;&#65039; Stop';
+                micBtn.classList.add('recording');
+                statusEl.textContent = '&#127908; Listening... (auto&#8209;send after 3s silence)';
+                transcriptText.textContent = '(listening...)';
+                voiceSendBtn.disabled = true;
+                lastTranscript = '';
+                if (silenceTimer) {
+                    clearTimeout(silenceTimer);
+                    silenceTimer = null;
+                }
+            };
+
+            recognition.onresult = (event) => {
+                let final = '';
+                let interim = '';
+                for (let i = 0; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        final += event.results[i][0].transcript;
+                    } else {
+                        interim += event.results[i][0].transcript;
+                    }
+                }
+                const transcript = final || interim;
+                if (transcript.trim()) {
+                    transcriptText.textContent = transcript;
+                    lastTranscript = transcript;
+                    if (final) {
+                        voiceSendBtn.disabled = false;
+                        statusEl.textContent = '&#128221; You said: "' + final + '" – auto&#8209;send in 3s...';
+                        if (silenceTimer) clearTimeout(silenceTimer);
+                        silenceTimer = setTimeout(() => {
+                            if (lastTranscript.trim()) {
+                                autoSendTranscript();
+                            }
+                        }, 3000);
+                    } else {
+                        if (silenceTimer) {
+                            clearTimeout(silenceTimer);
+                            silenceTimer = null;
+                        }
+                        statusEl.textContent = '&#127908; Partial: "' + interim + '" – keep speaking...';
+                    }
+                } else {
+                    transcriptText.textContent = '(no speech detected)';
+                    voiceSendBtn.disabled = true;
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('&#127908; Recognition error:', event.error);
+                let msg = '&#127908; Error: ' + event.error;
+                if (event.error === 'not-allowed') {
+                    msg = '&#10060; Microphone access denied. Please allow and refresh.';
+                }
+                statusEl.textContent = msg;
+                transcriptText.textContent = '&#10060; ' + msg;
+                isRecording = false;
+                micBtn.textContent = '&#127908; Start Speaking';
+                micBtn.classList.remove('recording');
+                voiceSendBtn.disabled = true;
+                if (silenceTimer) {
+                    clearTimeout(silenceTimer);
+                    silenceTimer = null;
+                }
+            };
+
+            recognition.onend = () => {
+                if (isRecording) {
+                    isRecording = false;
+                    micBtn.textContent = '&#127908; Start Speaking';
+                    micBtn.classList.remove('recording');
+                    voiceSendBtn.disabled = true;
+                    if (silenceTimer) {
+                        clearTimeout(silenceTimer);
+                        silenceTimer = null;
+                    }
+                }
+            };
+
+            try {
+                recognition.start();
+            } catch (e) {
+                console.error('Failed to start recognition:', e);
+                statusEl.textContent = '&#10060; Could not start microphone.';
+            }
+        }
+
+        micBtn.addEventListener('click', toggleVoice);
+
+        // ------------------------------------------------------------------
+        // Manual send (kept for reference)
+        // ------------------------------------------------------------------
+        voiceSendBtn.addEventListener('click', () => {
+            const text = lastTranscript.trim();
+            if (text) {
+                sendMessageToIframe(text);
+                voiceSendBtn.disabled = true;
+                lastTranscript = '';
+                transcriptText.textContent = '(sent manually)';
+                if (silenceTimer) {
+                    clearTimeout(silenceTimer);
+                    silenceTimer = null;
+                }
+            }
+        });
+
+        // ------------------------------------------------------------------
+        // Text input and test buttons
+        // ------------------------------------------------------------------
+        function sendFromInput() {
+            const text = questionInput.value.trim();
+            if (!text) return;
+            questionInput.value = '';
+            sendMessageToIframe(text);
+        }
+
+        sendBtn.addEventListener('click', sendFromInput);
+        questionInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendFromInput();
+        });
+
+        testBtn.addEventListener('click', () => {
+            sendMessageToIframe('Who is Jose Rizal?');
+        });
+        testPhotosynthesis.addEventListener('click', () => {
+            sendMessageToIframe('Explain photosynthesis simply');
+        });
+    </script>
+</body>
+</html>

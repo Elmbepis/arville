@@ -19,7 +19,7 @@
         #chat-container {
             width: 100%;
             max-width: 700px;
-            height: 70vh;
+            height: 60vh;
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 8px 32px rgba(0,0,0,0.6);
@@ -39,15 +39,72 @@
             font-size: 14px;
             color: #aaa;
             min-height: 24px;
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+        }
+        .controls {
+            margin-top: 12px;
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+        .input-row input {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 24px;
+            border: 1px solid #333;
+            background: #0f0f23;
+            color: #eee;
+            font-size: 16px;
+            outline: none;
+        }
+        .input-row input:focus {
+            border-color: #4fc3f7;
+        }
+        .input-row button {
+            padding: 10px 24px;
+            border-radius: 24px;
+            border: none;
+            background: #4fc3f7;
+            color: #1a1a2e;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .input-row button:hover {
+            background: #81d4fa;
+        }
+        .button-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .button-row button {
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            background: #4fc3f7;
+            color: #1a1a2e;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .button-row button:hover {
+            background: #81d4fa;
         }
         .mic-btn {
-            margin-top: 12px;
-            padding: 12px 30px;
+            padding: 10px 24px;
             border-radius: 30px;
             border: none;
             background: #e91e63;
             color: white;
-            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 16px rgba(233,30,99,0.4);
@@ -62,32 +119,34 @@
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
-        .test-btn {
-            margin-top: 8px;
-            padding: 8px 20px;
-            border-radius: 20px;
-            border: none;
-            background: #4fc3f7;
-            color: #1a1a2e;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .test-btn:hover { background: #81d4fa; }
     </style>
 </head>
 <body>
     <div id="chat-container">
         <iframe id="xiaozhi-iframe" src="http://172.104.74.194:5173/" allow="microphone"></iframe>
     </div>
-    <div id="status">&#127908; Press the button and speak, or click "Test" to send a hardcoded message.</div>
-    <button class="test-btn" id="test-btn">Send "Who is Jose Rizal?"</button>
-    <button id="mic-btn" class="mic-btn">&#127908; Start Speaking</button>
+    <div id="status">&#128172; Type a question or use voice.</div>
+
+    <div class="controls">
+        <div class="input-row">
+            <input type="text" id="question-input" placeholder="Type your question..." />
+            <button id="send-btn">Send</button>
+        </div>
+        <div class="button-row">
+            <button class="test-btn" id="test-btn">&#128204; Test: Who is Jose Rizal?</button>
+            <button class="test-btn" id="test-photosynthesis">&#128204; Test: Explain photosynthesis</button>
+            <button id="mic-btn" class="mic-btn">&#127908; Start Speaking</button>
+        </div>
+    </div>
 
     <script>
         const iframe = document.getElementById('xiaozhi-iframe');
         const statusEl = document.getElementById('status');
         const micBtn = document.getElementById('mic-btn');
         const testBtn = document.getElementById('test-btn');
+        const testPhotosynthesis = document.getElementById('test-photosynthesis');
+        const sendBtn = document.getElementById('send-btn');
+        const questionInput = document.getElementById('question-input');
 
         let isRecording = false;
         let recognition = null;
@@ -108,23 +167,49 @@
         // Send a message to the iframe
         // ============================================================
         function sendMessageToIframe(text) {
+            if (!text || !text.trim()) return;
             console.log('&#128228; Sending to iframe:', text);
+            statusEl.textContent = '&#129489; Sending: ' + text;
             iframe.contentWindow.postMessage({
                 type: 'xiaozhi-user-message',
                 text: text
             }, '*');
+            // Also try after a short delay (for safety)
+            setTimeout(() => {
+                iframe.contentWindow.postMessage({
+                    type: 'xiaozhi-user-message',
+                    text: text
+                }, '*');
+            }, 300);
         }
 
         // ============================================================
-        // Test button: send a hardcoded message
+        // Send from input field
         // ============================================================
-        testBtn.addEventListener('click', () => {
-            sendMessageToIframe('Who is Jose Rizal?');
-            statusEl.textContent = '&#129489; Sent: Who is Jose Rizal?';
+        function sendFromInput() {
+            const text = questionInput.value.trim();
+            if (!text) return;
+            questionInput.value = '';
+            sendMessageToIframe(text);
+        }
+
+        sendBtn.addEventListener('click', sendFromInput);
+        questionInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendFromInput();
         });
 
         // ============================================================
-        // Voice input (Web Speech API)
+        // Test buttons
+        // ============================================================
+        testBtn.addEventListener('click', () => {
+            sendMessageToIframe('Who is Jose Rizal?');
+        });
+        testPhotosynthesis.addEventListener('click', () => {
+            sendMessageToIframe('Explain photosynthesis simply');
+        });
+
+        // ============================================================
+        // Voice input
         // ============================================================
         function toggleVoice() {
             if (isRecording) {
@@ -189,7 +274,7 @@
         micBtn.addEventListener('click', toggleVoice);
 
         // ============================================================
-        // Text&#8209;to&#8209;Speech (for AI responses)
+        // TTS
         // ============================================================
         function speakText(text) {
             if (!window.speechSynthesis) {
@@ -203,6 +288,13 @@
             utterance.rate = 0.9;
             window.speechSynthesis.speak(utterance);
         }
+
+        // ============================================================
+        // Ensure iframe is loaded (optional)
+        // ============================================================
+        iframe.addEventListener('load', () => {
+            console.log('&#9989; Iframe loaded');
+        });
     </script>
 </body>
 </html>
