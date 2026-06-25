@@ -1,0 +1,464 @@
+<?php
+// Unified English menu for grades 0-10 – built from database
+session_name('KPLUZ_SESSION');
+session_start();
+
+// Check login
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: /arville/kpluz0/login.php");
+    exit();
+}
+
+$grade = (int)($_SESSION['user_grade'] ?? 0);
+if ($grade < 0 || $grade > 10) $grade = 0;
+
+// Database connection
+$db = new mysqli("localhost", "root", "AcadeV25!", "kpluz0");
+if ($db->connect_error) {
+    die("Database connection failed: " . $db->connect_error);
+}
+
+// Fetch modules for this grade and subject (English)
+$subject = 'english';
+$sql = "SELECT * FROM modules 
+        WHERE subject = ? AND grade = ? AND is_active = 1 
+        ORDER BY section_order ASC, module_order ASC";
+$stmt = $db->prepare($sql);
+$stmt->bind_param("si", $subject, $grade);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Group modules by section
+$sections = [];
+while ($row = $result->fetch_assoc()) {
+    $sectionName = $row['section'];
+    if (!isset($sections[$sectionName])) {
+        $sections[$sectionName] = [
+            'section_order' => $row['section_order'],
+            'modules' => []
+        ];
+    }
+    $sections[$sectionName]['modules'][] = $row;
+}
+$db->close();
+
+// Map section names to their header images (relative to this file's location)
+$sectionHeaders = [
+    'phonics'            => '../images/topics-phonics.jpg',
+    'vocabulary'         => '../images/topics-vocabulary.jpg',
+    'parts-of-speech'    => '../images/topics-parts-speech.jpg', // main
+    'nouns'              => '../images/subtopics-nouns.jpg',
+    'adjectives'         => '../images/subtopics-adjectives.jpg',
+    'verbs'              => '../images/subtopics-verbs.jpg',
+    'pronouns'           => '../images/subtopics-pronouns.jpg',
+    'adverbs'            => '../images/subtopics-adverbs.jpg',
+    'others-pos'         => '../images/subtopics-others.jpg',
+    'phrases-sentences'  => '../images/topics-phrases-sentences.jpg',
+    'grammar'            => '../images/topics-grammar.jpg',
+    'comprehension'      => '../images/topics-comprehension.jpg',
+    'literature' 		 => '../images/topics-literature.jpg',
+    'others'             => '../images/topics-others.jpg'
+];
+
+// Define which sections are subsections of Parts of Speech
+$partOfSpeechSubs = ['nouns', 'adjectives', 'verbs', 'pronouns', 'adverbs', 'others-pos'];
+
+// Top banner (grade-specific)
+$topBanner = '/arville/kpluz0/English/images/grd' . $grade . '-top.jpg';
+if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
+    $topBanner = '/arville/kpluz0/English/images/grd-top.jpg';
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <title>Grade <?= $grade ?> English Skills Enhancement Program</title>
+    <link rel="stylesheet" href="/arville/kpluz0/app/css/style.css">
+    <link rel="stylesheet" href="/arville/kpluz0/app/css/app.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { margin: 0; padding: 0; line-height: 1; }
+        table, tr, td, div { margin: 0; padding: 0; line-height: 0; border-spacing: 0; border-collapse: collapse; }
+        img { display: block; border: 0; }
+        
+        /* Allow spacing inside content area */
+        .content-table td { line-height: normal; padding: 0 5px; }
+        .content-table p { line-height: normal; margin: 0; padding: 0; }
+        .content-table img { display: inline-block; }
+    </style>
+    
+    <script>
+        // FP_* functions for rollover images
+        function FP_swapImg() {
+            var doc = document, args = arguments, elm, n;
+            doc.$imgSwaps = new Array();
+            for (n = 2; n < args.length; n += 2) {
+                elm = FP_getObjectByID(args[n]);
+                if (elm) {
+                    doc.$imgSwaps[doc.$imgSwaps.length] = elm;
+                    elm.$src = elm.src;
+                    elm.src = args[n + 1];
+                }
+            }
+        }
+        function FP_preloadImgs() {
+            var d = document, a = arguments;
+            if (!d.FP_imgs) d.FP_imgs = new Array();
+            for (var i = 0; i < a.length; i++) {
+                d.FP_imgs[i] = new Image;
+                d.FP_imgs[i].src = a[i];
+            }
+        }
+        function FP_getObjectByID(id, o) {
+            var c, el, els, f, m, n;
+            if (!o) o = document;
+            if (o.getElementById) el = o.getElementById(id);
+            else if (o.layers) c = o.layers;
+            else if (o.all) el = o.all[id];
+            if (el) return el;
+            if (o.id == id || o.name == id) return o;
+            if (o.childNodes) c = o.childNodes;
+            if (c)
+                for (n = 0; n < c.length; n++) {
+                    el = FP_getObjectByID(id, c[n]);
+                    if (el) return el;
+                }
+            f = o.forms;
+            if (f)
+                for (n = 0; n < f.length; n++) {
+                    els = f[n].elements;
+                    for (m = 0; m < els.length; m++) {
+                        el = FP_getObjectByID(id, els[n]);
+                        if (el) return el;
+                    }
+                }
+            return null;
+        }
+
+        // Preload all hover images
+        window.onload = function() {
+            // Preload header images
+            FP_preloadImgs(
+                '/arville/kpluz0/images/header1c.jpg',
+                '/arville/kpluz0/images/header1b.jpg',
+                '/arville/kpluz0/images/header2c.jpg',
+                '/arville/kpluz0/images/header2b.jpg',
+                '/arville/kpluz0/images/header3c.jpg',
+                '/arville/kpluz0/images/header3b.jpg',
+                '/arville/kpluz0/images/header4c.jpg',
+                '/arville/kpluz0/images/header4b.jpg',
+                '/arville/kpluz0/images/header5c.jpg',
+                '/arville/kpluz0/images/header5b.jpg',
+                '/arville/kpluz0/images/header6c.jpg',
+                '/arville/kpluz0/images/header6b.jpg'
+            );
+            // Preload module hover images
+            <?php
+            $hoverImages = [];
+            foreach ($sections as $section) {
+                foreach ($section['modules'] as $mod) {
+                    $hoverImages[] = $mod['image_hover'];
+                }
+            }
+            if (!empty($hoverImages)) {
+                echo 'FP_preloadImgs(';
+                $first = true;
+                foreach ($hoverImages as $img) {
+                    if (!$first) echo ',';
+                    echo "'" . addslashes($img) . "'";
+                    $first = false;
+                }
+                echo ');';
+            }
+            ?>
+        };
+    </script>
+</head>
+<body background="/arville/kpluz0/images/bluetop-bg.jpg">
+
+<!-- HEADER – with zero spacing -->
+<div align="center" style="margin:0; padding:0; line-height:0;">
+    <table width="900" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
+        <tr>
+            <td style="padding:0; margin:0; line-height:0;">
+                <div align="center" style="margin:0; padding:0; line-height:0;">
+                    <table border="0" width="900" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
+                        <tr>
+                            <!-- Logo -->
+                            <td width="193" valign="top" style="padding:0; margin:0; line-height:0;">
+                                <a href="/arville/kpluz0/app/menu.php">
+                                    <img border="0" src="/arville/kpluz0/images/header-logo.jpg" alt="KPluz Logo" style="display:block;">
+                                </a>
+                            </td>
+                            <!-- Button: How To Use -->
+                            <td width="133" valign="top" style="padding:0; margin:0; line-height:0;">
+                                <a href="/arville/kpluz0/how-to-use-kpluz.php">
+                                    <img border="0" id="img1" src="/arville/kpluz0/images/header1a.jpg" 
+                                         style="display:block;" 
+                                         onmouseover="FP_swapImg(1,0,'img1','/arville/kpluz0/images/header1b.jpg')" 
+                                         onmouseout="FP_swapImg(0,0,'img1','/arville/kpluz0/images/header1a.jpg')" 
+                                         onmousedown="FP_swapImg(1,0,'img1','/arville/kpluz0/images/header1c.jpg')" 
+                                         onmouseup="FP_swapImg(0,0,'img1','/arville/kpluz0/images/header1b.jpg')">
+                                </a>
+                            </td>
+                            <!-- Button: Blue Bars -->
+                            <td width="133" valign="top" style="padding:0; margin:0; line-height:0;">
+                                <a href="/arville/kpluz0/bluebars_student.php">
+                                    <img border="0" id="img2" src="/arville/kpluz0/images/header2a.jpg" 
+                                         style="display:block;" 
+                                         onmouseover="FP_swapImg(1,0,'img2','/arville/kpluz0/images/header2b.jpg')" 
+                                         onmouseout="FP_swapImg(0,0,'img2','/arville/kpluz0/images/header2a.jpg')" 
+                                         onmousedown="FP_swapImg(1,0,'img2','/arville/kpluz0/images/header2c.jpg')" 
+                                         onmouseup="FP_swapImg(0,0,'img2','/arville/kpluz0/images/header2b.jpg')">
+                                </a>
+                            </td>
+                            <!-- Button: Programs -->
+                            <td width="133" valign="top" style="padding:0; margin:0; line-height:0;">
+                                <a href="/arville/kpluz0/programs.php">
+                                    <img border="0" id="img3" src="/arville/kpluz0/images/header3a.jpg" 
+                                         style="display:block;" 
+                                         onmouseover="FP_swapImg(1,0,'img3','/arville/kpluz0/images/header3b.jpg')" 
+                                         onmouseout="FP_swapImg(0,0,'img3','/arville/kpluz0/images/header3a.jpg')" 
+                                         onmousedown="FP_swapImg(1,0,'img3','/arville/kpluz0/images/header3c.jpg')" 
+                                         onmouseup="FP_swapImg(0,0,'img3','/arville/kpluz0/images/header3b.jpg')">
+                                </a>
+                            </td>
+                            <!-- Button: Community -->
+                            <td width="134" valign="top" style="padding:0; margin:0; line-height:0;">
+                                <a href="/arville/kpluz0/community.php">
+                                    <img border="0" id="img4" src="/arville/kpluz0/images/header4a.jpg" 
+                                         style="display:block;" 
+                                         onmouseover="FP_swapImg(1,0,'img4','/arville/kpluz0/images/header4b.jpg')" 
+                                         onmouseout="FP_swapImg(0,0,'img4','/arville/kpluz0/images/header4a.jpg')" 
+                                         onmousedown="FP_swapImg(1,0,'img4','/arville/kpluz0/images/header4c.jpg')" 
+                                         onmouseup="FP_swapImg(0,0,'img4','/arville/kpluz0/images/header4b.jpg')">
+                                </a>
+                            </td>
+                            <!-- Button: Contact -->
+                            <td width="134" valign="top" style="padding:0; margin:0; line-height:0;">
+                                <a href="/arville/kpluz0/contact.php">
+                                    <img border="0" id="img5" src="/arville/kpluz0/images/header5a.jpg" 
+                                         style="display:block;" 
+                                         onmouseover="FP_swapImg(1,0,'img5','/arville/kpluz0/images/header5b.jpg')" 
+                                         onmouseout="FP_swapImg(0,0,'img5','/arville/kpluz0/images/header5a.jpg')" 
+                                         onmousedown="FP_swapImg(1,0,'img5','/arville/kpluz0/images/header5c.jpg')" 
+                                         onmouseup="FP_swapImg(0,0,'img5','/arville/kpluz0/images/header5b.jpg')">
+                                </a>
+                            </td>
+                            <!-- Button: Logout -->
+                            <td width="134" valign="top" style="padding:0; margin:0; line-height:0;">
+                                <a href="/arville/kpluz0/logout.php">
+                                    <img border="0" id="img6" src="/arville/kpluz0/images/header6a.jpg" 
+                                         style="display:block;" 
+                                         onmouseover="FP_swapImg(1,0,'img6','/arville/kpluz0/images/header6b.jpg')" 
+                                         onmouseout="FP_swapImg(0,0,'img6','/arville/kpluz0/images/header6a.jpg')" 
+                                         onmousedown="FP_swapImg(1,0,'img6','/arville/kpluz0/images/header6c.jpg')" 
+                                         onmouseup="FP_swapImg(0,0,'img6','/arville/kpluz0/images/header6b.jpg')">
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- MAIN CONTENT -->
+<div align="center" style="margin:0; padding:0; line-height:0;">
+    <table border="0" width="800" cellspacing="0" cellpadding="0" id="table7" style="margin:0; padding:0; border-collapse:collapse;">
+        <tr>
+            <td style="padding:0; margin:0;">
+                <table border="0" width="100%" cellspacing="0" cellpadding="0" id="table61" style="margin:0; padding:0; border-collapse:collapse;">
+                    <!-- Top banner row -->
+                    <tr>
+                        <td valign="top" style="line-height:0; font-size:0; padding-top:10px; padding-left:0; padding-right:0; padding-bottom:0; margin:0;">
+                            <img border="0" src="<?= $topBanner ?>" alt="Grade <?= $grade ?> English" style="display:block; width:100%;">
+                        </td>
+                    </tr>
+                    <!-- Main menu row -->
+                    <tr>
+                        <td style="padding:0; margin:0;">
+                            <table border="0" width="100%" cellspacing="0" cellpadding="0" id="table62" style="margin:0; padding:0; border-collapse:collapse;">
+                                <tr>
+                                    <td width="72" background="../images/grd-left.jpg" rowspan="2" style="padding:0; margin:0; line-height:0;">&nbsp;</td>
+                                    <td background="../images/grd-content.jpg" valign="top" width="656" style="padding:0; margin:0; line-height:normal;" class="content-table">
+                                        <div align="center" style="padding:0; margin:0;">
+                                            <table border="0" width="585" cellspacing="0" cellpadding="0" id="table114" style="margin:0; padding:0; border-collapse:collapse;">
+                                                <!-- Report Card, Tutorials, Videos -->
+                                                <tr>
+                                                    <td width="208" style="padding:0; margin:0;">&nbsp;</td>
+                                                    <td width="208" style="padding:0; margin:0;">&nbsp;</td>
+                                                    <td width="208" style="padding:0; margin:0;">&nbsp;</td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="3" style="padding:0; margin:0;">
+                                                        <div align="center" style="padding:0; margin:0;">
+                                                            <table border="0" width="465" cellspacing="0" cellpadding="0" id="table115" style="margin:0; padding:0; border-collapse:collapse;">
+                                                                <tr>
+                                                                    <td width="150" align="center" style="padding:0; margin:0;">
+                                                                        <p style="margin:0; padding:0; line-height:normal;">
+                                                                            <a href="../EP-report-card.php">
+                                                                                <img border="0" id="reportcard-home1" src="../images/report-carda.jpg" 
+                                                                                     onmouseover="FP_swapImg(1,0,'reportcard-home1','../images/report-cardb.jpg')" 
+                                                                                     onmouseout="FP_swapImg(0,0,'reportcard-home1','../images/report-carda.jpg')" style="display:inline-block;">
+                                                                            </a>
+                                                                        </p>
+                                                                    </td>
+                                                                    <td width="150" align="center" style="padding:0; margin:0;">
+                                                                        <p style="margin:0; padding:0; line-height:normal;">
+                                                                            <a href="../tutorials/tutorials1.php">
+                                                                                <img border="0" id="tutorials-home3" src="../images/tutorialsa.jpg" 
+                                                                                     onmouseover="FP_swapImg(1,0,'tutorials-home3','../images/tutorialsb.jpg')" 
+                                                                                     onmouseout="FP_swapImg(0,0,'tutorials-home3','../images/tutorialsa.jpg')" style="display:inline-block;">
+                                                                            </a>
+                                                                        </p>
+                                                                    </td>
+                                                                    <td width="150" align="center" style="padding:0; margin:0;">
+                                                                        <p style="margin:0; padding:0; line-height:normal;">
+                                                                            <a href="/arville/kpluz0/videos/kpluz-vids-english-0-2.php">
+                                                                                <img border="0" id="videos-home4" src="../images/videosa.jpg" 
+                                                                                     onmouseover="FP_swapImg(1,0,'videos-home4','../images/videosb.jpg')" 
+                                                                                     onmouseout="FP_swapImg(0,0,'videos-home4','../images/videosa.jpg')" style="display:inline-block;">
+                                                                            </a>
+                                                                        </p>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+
+                                                <?php
+                                                // ============================================================
+                                                // DYNAMIC MODULE SECTIONS FROM DATABASE
+                                                // ============================================================
+                                                $shownMainHeaders = []; // track which main headers have been output
+                                                
+                                                foreach ($sections as $sectionName => $sectionData):
+                                                    $modules = $sectionData['modules'];
+                                                    $headerImg = $sectionHeaders[$sectionName] ?? '../images/topics-generic.jpg';
+                                                    
+                                                    // Determine if this section is a subsection of Parts of Speech
+                                                    $isPartOfSpeechSub = in_array($sectionName, $partOfSpeechSubs);
+                                                    
+                                                    // If it's a sub-section, we need to output the main "Parts of Speech" header first
+                                                    if ($isPartOfSpeechSub) {
+                                                        $mainHeader = '../images/topics-parts-speech.jpg';
+                                                        // Output the main header only once
+                                                        if (!in_array('parts-of-speech', $shownMainHeaders)) {
+                                                            $shownMainHeaders[] = 'parts-of-speech';
+                                                            ?>
+                                                            <tr>
+                                                                <td colspan="3" style="padding:0; margin:0;">
+                                                                    <p align="center" style="margin:30px 0 30px 0; padding:0; line-height:normal;">
+                                                                        <img border="0" src="<?= $mainHeader ?>" width="212" height="99" style="display:inline-block;">
+                                                                    </p>
+                                                                </td>
+                                                            </tr>
+                                                            <?php
+                                                        }
+                                                        // Now output the subsection header (subtopics) – no resize
+                                                        ?>
+                                                        <tr>
+                                                            <td colspan="3" style="padding:0; margin:0;">
+                                                                <p align="center" style="margin:0 0 30px 0; padding:0; line-height:normal;">
+                                                                    <img border="0" src="<?= $headerImg ?>" style="display:inline-block;">
+                                                                </p>
+                                                            </td>
+                                                        </tr>
+                                                        <?php
+                                                    } else {
+                                                        // Regular section (not a POS subsection) – output its header directly
+                                                        // Check if it's a subtopic image (should not be resized) – but we don't have subtopics here except maybe others? 
+                                                        // Actually, 'phrases-sentences', 'grammar', 'comprehension', 'others', 'vocabulary', 'phonics' are main sections.
+                                                        // They all have their own header, and we should resize them to 212x99.
+                                                        ?>
+                                                        <tr>
+                                                            <td colspan="3" style="padding:0; margin:0;">
+                                                                <p align="center" style="margin:30px 0 30px 0; padding:0; line-height:normal;">
+                                                                    <img border="0" src="<?= $headerImg ?>" width="212" height="99" style="display:inline-block;">
+                                                                </p>
+                                                            </td>
+                                                        </tr>
+                                                        <?php
+                                                    }
+                                                    ?>
+                                                    
+                                                    <!-- Module rows (3 per row) -->
+                                                    <?php
+                                                    $total = count($modules);
+                                                    for ($i = 0; $i < $total; $i += 3):
+                                                    ?>
+                                                    <tr>
+                                                        <?php for ($j = 0; $j < 3; $j++):
+                                                            $idx = $i + $j;
+                                                            if ($idx < $total):
+                                                                $mod = $modules[$idx];
+                                                                $imgId = 'mod-' . $mod['id'];
+                                                        ?>
+                                                            <td width="208" align="center" valign="top" style="padding:0; margin:0;">
+                                                                <p style="margin:0 0 25px 0; padding:0; line-height:normal;">
+                                                                    <a href="<?= htmlspecialchars($mod['url']) ?>">
+                                                                        <img border="0" id="<?= $imgId ?>" 
+                                                                             src="<?= htmlspecialchars($mod['image_normal']) ?>" 
+                                                                             onmouseover="FP_swapImg(1,0,'<?= $imgId ?>','<?= htmlspecialchars($mod['image_hover']) ?>')" 
+                                                                             onmouseout="FP_swapImg(0,0,'<?= $imgId ?>','<?= htmlspecialchars($mod['image_normal']) ?>')" 
+                                                                             style="display:inline-block;">
+                                                                    </a>
+                                                                </p>
+                                                            </td>
+                                                        <?php else: ?>
+                                                            <td width="208" align="center" valign="top" style="padding:0; margin:0;">&nbsp;</td>
+                                                        <?php endif; ?>
+                                                        <?php endfor; ?>
+                                                    </tr>
+                                                    <?php endfor; ?>
+                                                <?php endforeach; ?>
+
+                                                <!-- Matatag mapping link -->
+                                                <tr>
+                                                    <td colspan="3" align="center" style="padding:15px 0 5px 0; margin:0;">
+                                                        <a href="/arville/kpluz0/matatag-mapping.php?subject=english&grade=<?= $grade ?>">
+                                                            <img border="0" src="/arville/kpluz0/images/matatag.jpg" style="display:inline-block;">
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </td>
+                                    <td width="72" background="../images/grd-right.jpg" rowspan="2" style="padding:0; margin:0; line-height:0;">&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td background="../images/grd-content.jpg" valign="top" width="656" style="padding:0; margin:0; line-height:0;">
+                                        <img border="0" src="../images/grd-bottom.jpg" style="display:block; width:100%;">
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="#0086CE" style="padding:5px 0; margin:0;">
+                <p align="center" style="margin:0; padding:0; line-height:normal;">
+                    <font style="font-size:10pt">
+                        <span style="mso-spacerun:yes">
+                            <font face="Arial" color="#FFFFFF">Copyright&nbsp; 2010</font>
+                            <b><font face="Arial" color="#365669">
+                                <a href="/arville/kpluz0/home-english.php"><font color="#FFFFFF">KPluz.com</font></a>
+                            </font></b>
+                            <font face="Arial" color="#FFFFFF">. All Rights Reserved.</font>
+                        </span>
+                    </font>
+                </p>
+            </td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

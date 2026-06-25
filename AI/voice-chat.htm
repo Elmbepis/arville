@@ -56,16 +56,8 @@
             gap: 10px;
             flex-wrap: wrap;
         }
-        #transcript-area .label {
-            color: #888;
-            font-weight: bold;
-        }
-        #transcript-area .text {
-            flex: 1;
-            color: #4fc3f7;
-            word-wrap: break-word;
-            min-height: 20px;
-        }
+        #transcript-area .label { color: #888; font-weight: bold; }
+        #transcript-area .text { flex: 1; color: #4fc3f7; word-wrap: break-word; min-height: 20px; }
         .controls {
             margin-top: 12px;
             display: flex;
@@ -95,7 +87,6 @@
             color: #1a1a2e;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
         }
         .input-row button:hover { background: #81d4fa; }
         .button-row {
@@ -113,7 +104,6 @@
             color: #1a1a2e;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
         }
         .button-row button:hover { background: #81d4fa; }
         .mic-btn {
@@ -127,15 +117,9 @@
             box-shadow: 0 4px 16px rgba(233,30,99,0.4);
             transition: background 0.2s;
         }
-        .mic-btn.recording {
-            background: #f44336;
-            animation: pulse 1s infinite;
-        }
+        .mic-btn.recording { background: #f44336; animation: pulse 1s infinite; }
         .mic-btn:hover { background: #c2185b; }
-        .mic-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
+        .mic-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         #voice-send-btn {
             background: #4CAF50;
             color: white;
@@ -144,23 +128,14 @@
             border-radius: 20px;
             cursor: pointer;
             font-weight: bold;
-            transition: background 0.2s;
         }
         #voice-send-btn:hover:not(:disabled) { background: #45a049; }
-        #voice-send-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
+        #voice-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
-        .flex-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+        .flex-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     </style>
 </head>
 <body>
@@ -169,15 +144,11 @@
         <div id="chat-container">
             <iframe id="xiaozhi-iframe" src="http://172.104.74.194:5173/" allow="microphone"></iframe>
         </div>
-
-        <div id="status">&#128172; Type, use test buttons, or speak.</div>
-
-        <!-- Transcript area -->
+        <div id="status">&#128172; Click the mic to start speaking</div>
         <div id="transcript-area">
             <span class="label">&#127908; Transcript:</span>
             <span class="text" id="transcript-text">(waiting for speech)</span>
         </div>
-
         <div class="controls">
             <div class="input-row">
                 <input type="text" id="question-input" placeholder="Type your question..." />
@@ -206,29 +177,74 @@
         const sendBtn = document.getElementById('send-btn');
         const questionInput = document.getElementById('question-input');
 
-        let isRecording = false;
+        // ============================================================
+        // State Machine
+        // ============================================================
+        const STATE = {
+            IDLE: 'idle',
+            LISTENING: 'listening',
+            PROCESSING: 'processing',      // waiting for AI response
+            AI_SPEAKING: 'ai-speaking',
+            WAITING: 'waiting'             // after AI speaks, waiting 3s before idle
+        };
+
+        let currentState = STATE.IDLE;
         let recognition = null;
+        let silenceTimer = null;
+        let restartTimer = null;
         let lastTranscript = '';
         let iframeReady = false;
         let messageQueue = [];
-        let silenceTimer = null;
+        let isManualStop = false;
 
         // ============================================================
-        // Helper: remove emojis from text before TTS
+        // Helpers
         // ============================================================
         function removeEmojis(text) {
-            // Matches common emoji ranges (including emoticons, symbols, dingbats, etc.)
-            return text.replace(
-                /[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FEFF}]/gu,
-                ''
-            ).trim();
+            return text.replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FEFF}]/gu, '').trim();
+        }
+
+        function setState(newState, msg) {
+            currentState = newState;
+            console.log(`&#128260; State: ${currentState}`);
+            if (msg) statusEl.textContent = msg;
+            updateUI();
+        }
+
+        function updateUI() {
+            switch (currentState) {
+                case STATE.IDLE:
+                    micBtn.textContent = '&#127908; Start Speaking';
+                    micBtn.classList.remove('recording');
+                    voiceSendBtn.disabled = true;
+                    break;
+                case STATE.LISTENING:
+                    micBtn.textContent = '&#9209;&#65039; Stop';
+                    micBtn.classList.add('recording');
+                    voiceSendBtn.disabled = true;
+                    break;
+                case STATE.PROCESSING:
+                    micBtn.textContent = '&#9203; Processing...';
+                    micBtn.classList.remove('recording');
+                    voiceSendBtn.disabled = true;
+                    break;
+                case STATE.AI_SPEAKING:
+                    micBtn.textContent = '&#128266; AI Speaking...';
+                    micBtn.classList.remove('recording');
+                    voiceSendBtn.disabled = true;
+                    break;
+                case STATE.WAITING:
+                    micBtn.textContent = '&#9203; Waiting...';
+                    micBtn.classList.remove('recording');
+                    voiceSendBtn.disabled = true;
+                    break;
+            }
         }
 
         // ------------------------------------------------------------------
-        // Iframe ready check
+        // Iframe ready
         // ------------------------------------------------------------------
         iframe.addEventListener('load', () => {
-            console.log('&#9989; Iframe loaded');
             iframeReady = true;
             while (messageQueue.length > 0) {
                 const text = messageQueue.shift();
@@ -248,36 +264,29 @@
             }
             console.log('&#128228; Sending:', text);
             statusEl.textContent = '&#129489; Sending: "' + text + '"';
-            iframe.contentWindow.postMessage({
-                type: 'xiaozhi-user-message',
-                text: text
-            }, '*');
-            // Also after a short delay
+            iframe.contentWindow.postMessage({ type: 'xiaozhi-user-message', text: text }, '*');
             setTimeout(() => {
-                iframe.contentWindow.postMessage({
-                    type: 'xiaozhi-user-message',
-                    text: text
-                }, '*');
+                iframe.contentWindow.postMessage({ type: 'xiaozhi-user-message', text: text }, '*');
             }, 300);
         }
 
         // ------------------------------------------------------------------
-        // Listen for AI responses – strip emojis before TTS
+        // Receive AI response
         // ------------------------------------------------------------------
         window.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'xiaozhi-ai-response') {
                 const rawText = event.data.text;
-                console.log('&#129302; Raw AI Response:', rawText);
-                // Remove emojis for TTS
                 const cleanText = removeEmojis(rawText);
-                console.log('&#129529; Cleaned for TTS:', cleanText);
+                console.log('&#129302; AI Response:', cleanText);
                 statusEl.textContent = '&#129302; ' + cleanText;
+                // Move to AI_SPEAKING state
+                setState(STATE.AI_SPEAKING, '&#128266; AI Speaking...');
                 speakText(cleanText);
             }
         });
 
         // ------------------------------------------------------------------
-        // TTS (fallback) – also apply emoji removal if called directly
+        // TTS with callback
         // ------------------------------------------------------------------
         function speakText(text) {
             if (!window.speechSynthesis) return;
@@ -288,62 +297,51 @@
             utterance.lang = 'en-US';
             utterance.pitch = 1.1;
             utterance.rate = 0.9;
+
+            utterance.onstart = () => {
+                // already in AI_SPEAKING
+            };
+
+            utterance.onend = () => {
+                // AI finished speaking &#8594; wait 3 seconds then go to IDLE (or LISTENING if auto-restart)
+                setState(STATE.WAITING, '&#9989; AI finished. Waiting 3s...');
+                restartTimer = setTimeout(() => {
+                    if (!isManualStop) {
+                        // Go back to IDLE; user can click mic again.
+                        setState(STATE.IDLE, '&#127908; Click mic to speak');
+                    }
+                }, 3000);
+            };
+
+            utterance.onerror = (err) => {
+                console.error('TTS error:', err);
+                setState(STATE.IDLE, '&#10060; TTS error. Click mic to try again.');
+            };
+
             window.speechSynthesis.speak(utterance);
         }
 
         // ------------------------------------------------------------------
-        // Auto-send the final transcript (unchanged)
+        // Start listening
         // ------------------------------------------------------------------
-        function autoSendTranscript() {
-            const text = lastTranscript.trim();
-            if (text) {
-                sendMessageToIframe(text);
-                lastTranscript = '';
-                transcriptText.textContent = '(auto&#8209;sent)';
-                voiceSendBtn.disabled = true;
-                if (silenceTimer) {
-                    clearTimeout(silenceTimer);
-                    silenceTimer = null;
-                }
-            }
-        }
-
-        // ------------------------------------------------------------------
-        // Voice input with auto-send on silence (3 seconds)
-        // ------------------------------------------------------------------
-        function toggleVoice() {
-            if (isRecording) {
-                if (recognition) recognition.stop();
-                isRecording = false;
-                micBtn.textContent = '&#127908; Start Speaking';
-                micBtn.classList.remove('recording');
-                voiceSendBtn.disabled = true;
-                if (silenceTimer) {
-                    clearTimeout(silenceTimer);
-                    silenceTimer = null;
-                }
-                return;
-            }
-
+        function startListening() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
                 alert('Speech recognition not supported.');
                 return;
             }
 
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
+            if (currentState === STATE.LISTENING) return;
+
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.lang = 'en-US';
             recognition.interimResults = true;
             recognition.continuous = true;
 
             recognition.onstart = () => {
-                isRecording = true;
-                micBtn.textContent = '&#9209;&#65039; Stop';
-                micBtn.classList.add('recording');
-                statusEl.textContent = '&#127908; Listening... (auto&#8209;send after 3s silence)';
+                setState(STATE.LISTENING, '&#127908; Listening... (auto&#8209;send after 3s silence)');
                 transcriptText.textContent = '(listening...)';
-                voiceSendBtn.disabled = true;
                 lastTranscript = '';
+                voiceSendBtn.disabled = true;
                 if (silenceTimer) {
                     clearTimeout(silenceTimer);
                     silenceTimer = null;
@@ -351,6 +349,12 @@
             };
 
             recognition.onresult = (event) => {
+                // Only process if we are in LISTENING state
+                if (currentState !== STATE.LISTENING) {
+                    console.log('Ignoring result – not in LISTENING state');
+                    return;
+                }
+
                 let final = '';
                 let interim = '';
                 for (let i = 0; i < event.results.length; i++) {
@@ -369,7 +373,7 @@
                         statusEl.textContent = '&#128221; You said: "' + final + '" – auto&#8209;send in 3s...';
                         if (silenceTimer) clearTimeout(silenceTimer);
                         silenceTimer = setTimeout(() => {
-                            if (lastTranscript.trim()) {
+                            if (lastTranscript.trim() && currentState === STATE.LISTENING) {
                                 autoSendTranscript();
                             }
                         }, 3000);
@@ -387,33 +391,30 @@
             };
 
             recognition.onerror = (event) => {
-                console.error('&#127908; Recognition error:', event.error);
+                console.error('Recognition error:', event.error);
                 let msg = '&#127908; Error: ' + event.error;
                 if (event.error === 'not-allowed') {
                     msg = '&#10060; Microphone access denied. Please allow and refresh.';
                 }
                 statusEl.textContent = msg;
                 transcriptText.textContent = '&#10060; ' + msg;
-                isRecording = false;
-                micBtn.textContent = '&#127908; Start Speaking';
-                micBtn.classList.remove('recording');
-                voiceSendBtn.disabled = true;
-                if (silenceTimer) {
-                    clearTimeout(silenceTimer);
-                    silenceTimer = null;
-                }
+                // Go back to IDLE on error
+                setState(STATE.IDLE, '&#10060; Mic error. Click mic to try again.');
             };
 
             recognition.onend = () => {
-                if (isRecording) {
-                    isRecording = false;
-                    micBtn.textContent = '&#127908; Start Speaking';
-                    micBtn.classList.remove('recording');
-                    voiceSendBtn.disabled = true;
-                    if (silenceTimer) {
-                        clearTimeout(silenceTimer);
-                        silenceTimer = null;
-                    }
+                // If we are in LISTENING state and end without manual stop, restart
+                if (currentState === STATE.LISTENING && !isManualStop) {
+                    console.log('Recognition ended unexpectedly, restarting...');
+                    restartTimer = setTimeout(() => {
+                        if (currentState === STATE.LISTENING && !isManualStop) {
+                            try {
+                                recognition.start();
+                            } catch (e) {
+                                console.error('Failed to restart:', e);
+                            }
+                        }
+                    }, 500);
                 }
             };
 
@@ -422,6 +423,86 @@
             } catch (e) {
                 console.error('Failed to start recognition:', e);
                 statusEl.textContent = '&#10060; Could not start microphone.';
+                setState(STATE.IDLE, '&#10060; Could not start mic. Click to try again.');
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // Auto-send transcript (called from silence timer)
+        // ------------------------------------------------------------------
+        function autoSendTranscript() {
+            const text = lastTranscript.trim();
+            if (!text) return;
+            if (currentState !== STATE.LISTENING) {
+                console.log('Not listening – skipping auto-send.');
+                return;
+            }
+            // Stop listening immediately
+            stopListening();
+            // Send the message
+            sendMessageToIframe(text);
+            // Move to PROCESSING state
+            setState(STATE.PROCESSING, '&#9203; Waiting for AI response...');
+            transcriptText.textContent = '(sent)';
+            voiceSendBtn.disabled = true;
+            lastTranscript = '';
+        }
+
+        // ------------------------------------------------------------------
+        // Stop listening (used by auto-send and manual stop)
+        // ------------------------------------------------------------------
+        function stopListening() {
+            if (recognition && (currentState === STATE.LISTENING || currentState === STATE.PROCESSING)) {
+                try {
+                    recognition.stop();
+                } catch (e) {}
+            }
+            // Clear any timers
+            if (silenceTimer) {
+                clearTimeout(silenceTimer);
+                silenceTimer = null;
+            }
+            if (restartTimer) {
+                clearTimeout(restartTimer);
+                restartTimer = null;
+            }
+            // Do not change state here – caller handles it.
+        }
+
+        // ------------------------------------------------------------------
+        // Toggle mic (manual start/stop)
+        // ------------------------------------------------------------------
+        function toggleVoice() {
+            // If we are in IDLE, WAITING, or after error, start listening
+            if (currentState === STATE.IDLE || currentState === STATE.WAITING) {
+                isManualStop = false;
+                if (currentState === STATE.WAITING) {
+                    // Cancel any pending restart timer
+                    if (restartTimer) {
+                        clearTimeout(restartTimer);
+                        restartTimer = null;
+                    }
+                }
+                startListening();
+                return;
+            }
+
+            // If we are in LISTENING, manually stop
+            if (currentState === STATE.LISTENING) {
+                isManualStop = true;
+                stopListening();
+                setState(STATE.IDLE, '&#9209;&#65039; Stopped by user. Click mic to restart.');
+                transcriptText.textContent = '(manual stop)';
+                return;
+            }
+
+            // In other states (PROCESSING, AI_SPEAKING), ignore clicks or show message
+            if (currentState === STATE.PROCESSING) {
+                statusEl.textContent = '&#9203; Processing, please wait...';
+            } else if (currentState === STATE.AI_SPEAKING) {
+                statusEl.textContent = '&#128266; AI is speaking, please wait...';
+            } else {
+                statusEl.textContent = '&#9203; Please wait...';
             }
         }
 
@@ -432,15 +513,13 @@
         // ------------------------------------------------------------------
         voiceSendBtn.addEventListener('click', () => {
             const text = lastTranscript.trim();
-            if (text) {
+            if (text && currentState === STATE.LISTENING) {
+                stopListening();
                 sendMessageToIframe(text);
+                setState(STATE.PROCESSING, '&#9203; Waiting for AI response...');
+                transcriptText.textContent = '(sent manually)';
                 voiceSendBtn.disabled = true;
                 lastTranscript = '';
-                transcriptText.textContent = '(sent manually)';
-                if (silenceTimer) {
-                    clearTimeout(silenceTimer);
-                    silenceTimer = null;
-                }
             }
         });
 
@@ -451,7 +530,12 @@
             const text = questionInput.value.trim();
             if (!text) return;
             questionInput.value = '';
+            // If we are listening, stop it.
+            if (currentState === STATE.LISTENING) {
+                stopListening();
+            }
             sendMessageToIframe(text);
+            setState(STATE.PROCESSING, '&#9203; Waiting for AI response...');
         }
 
         sendBtn.addEventListener('click', sendFromInput);
@@ -460,11 +544,20 @@
         });
 
         testBtn.addEventListener('click', () => {
+            if (currentState === STATE.LISTENING) stopListening();
             sendMessageToIframe('Who is Jose Rizal?');
+            setState(STATE.PROCESSING, '&#9203; Waiting for AI response...');
         });
         testPhotosynthesis.addEventListener('click', () => {
+            if (currentState === STATE.LISTENING) stopListening();
             sendMessageToIframe('Explain photosynthesis simply');
+            setState(STATE.PROCESSING, '&#9203; Waiting for AI response...');
         });
+
+        // ============================================================
+        // Initialize
+        // ============================================================
+        setState(STATE.IDLE, '&#127908; Click mic to speak');
     </script>
 </body>
 </html>

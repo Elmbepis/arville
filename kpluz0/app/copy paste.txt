@@ -1,0 +1,51 @@
+
+<head>
+	<meta charset="UTF-8">
+	<link rel="icon" href="/images/1x/favicon.png" type="image/png" sizes="16x16">
+	<link href="https://fonts.googleapis.com/css?family=Fredoka+One|Montserrat:100,400,700" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css" />
+  	<link rel="stylesheet" href="/app/css/style.css">
+  	<link rel="stylesheet" href="/app/css/app.css">	
+
+  	<!-- React.js -->
+	<script src="/app/js/lib/react-js/react.js"></script>
+	<script src="/app/js/lib/react-js/react-dom.js"></script>
+
+	<script src="/app/js/lib/scrollmagic/minified/ScrollMagic.min.js"></script>
+	<script src="/app/js/script.js"></script>
+	
+	<!-- Google Tag Manager -->
+	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+	new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+	j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+	'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+	})(window,document,'script','dataLayer','GTM-P76JCJB');</script>	
+	<!-- End Google Tag Manager -->
+</head>
+
+<body id="root" class="menu-page app">
+	<header id="header" class="shadow transition text-right">
+		<div class="container transition">		
+			<div class="nav-links">
+				<ul class="menu">
+					<li class="text-center" id="home-link" ><a href="/app/menu.php"><img src="/images/svg/kpluz_logo_no_sub.svg"></a></li>
+					<li class="text-center"><a href="/how-to-use-kpluz.php">How To Use KPluz</a></li>
+					<li class="text-center"><a href="/community.php">Community</a></li>
+					<li class="text-center"><a href="/contact.php">Contact Us</a></li>
+				</ul>			
+			</div>
+			<div class="nav-icons">
+				<ul class="menu">
+					<li class="text-center"><a href="/games/2017/game-home.php"><img src="/images/svg/icon_game.svg">Games</a></li>
+					<li class="text-center"><a href="/app/bluebars_student.php"><img src="/images/svg/icon_bars.svg">My Blue Bars</a></li>
+					<li class="text-center"><a href="/logout.php"><img src="/images/svg/icon_logout.svg">Logout</a></li>
+				</ul>
+			</div>
+		</div>
+		<div id="toggle-container">
+		</div>
+		<div class="mobile-home-link"><a href="/app/menu.php"><img src="/images/svg/kpluz_logo_no_sub.svg"></a></div>
+	</header>
+
+</body>
+

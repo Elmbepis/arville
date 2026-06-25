@@ -1,0 +1,878 @@
+{
+  "pdfs": [
+    {
+      "id": 1,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Eff Comm/Q1_LE1.pdf",
+      "description": "Effective Communication in Various Forms"
+    },
+    {
+      "id": 2,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Eff Comm/Q1_LE2.pdf",
+      "description": "Intrapersonal Communication"
+    },
+    {
+      "id": 3,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Eff Comm/Q1_LE3.pdf",
+      "description": "Conversation Strategies and Politeness Markers"
+    },
+    {
+      "id": 4,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q1 Lesson 4",
+      "file_path": "rmats/Eff Comm/Q1_LE4.pdf",
+      "description": "Resolving Personal Conflict"
+    },
+    {
+      "id": 5,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q1 Lesson 5",
+      "file_path": "rmats/Eff Comm/Q1_LE5.pdf",
+      "description": "Cohesive Devices/Personal and Interpersonal Correspondence"
+    },
+    {
+      "id": 11,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Eff Comm/Q2_LE1.pdf",
+      "description": "Effective Communication in Social and Cultural Contexts"
+    },
+    {
+      "id": 12,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Eff Comm/Q2_LE2.pdf",
+      "description": "Social Responsibility, Cultural Diversity, and Shared Values"
+    },
+    {
+      "id": 13,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Eff Comm/Q2_LE3.pdf",
+      "description": "Cultural Awareness and Sensitivity"
+    },
+    {
+      "id": 14,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q2 Lesson 4",
+      "file_path": "rmats/Eff Comm/Q2_LE4.pdf",
+      "description": "Meaningful Public and Cultural Messages/Texts"
+    },
+    {
+      "id": 51,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Gen Math/Q1_LE1.pdf",
+      "description": "Computing Salary, Wage, and Commission"
+    },
+    {
+      "id": 52,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Gen Math/Q1_LE2.pdf",
+      "description": "Sequences"
+    },
+    {
+      "id": 53,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Gen Math/Q1_LE3.pdf",
+      "description": "Application of Sequences: Interest, Appreciation, Depreciation, etc."
+    },
+    {
+      "id": 57,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q2 Lesson 4",
+      "file_path": "rmats/Gen Math/Q2_LE4.pdf",
+      "description": "Measurement and Conversion"
+    },
+    {
+      "id": 58,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q2 Lesson 5",
+      "file_path": "rmats/Gen Math/Q2_LE5.pdf",
+      "description": "Functions and its Graphs"
+    },
+    {
+      "id": 59,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q2 Lesson 6",
+      "file_path": "rmats/Gen Math/Q2_LE6.pdf",
+      "description": "Statistical Variables"
+    },
+    {
+      "id": 101,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Gen Sci/Q1_LE1.pdf",
+      "description": "Physics in Daily Life"
+    },
+    {
+      "id": 102,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Gen Sci/Q1_LE2.pdf",
+      "description": "Translational and Rotational Motion"
+    },
+    {
+      "id": 103,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Gen Sci/Q1_LE3.pdf",
+      "description": "Simple and Compound Machines"
+    },
+    {
+      "id": 104,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson 4",
+      "file_path": "rmats/Gen Sci/Q1_LE4.pdf",
+      "description": "Characteristics of Efficient Machines"
+    },
+    {
+      "id": 105,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson 5",
+      "file_path": "rmats/Gen Sci/Q1_LE5.pdf",
+      "description": "The Physics of Fluids 1"
+    },
+    {
+      "id": 106,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson 6",
+      "file_path": "rmats/Gen Sci/Q1_LE6.pdf",
+      "description": "The Physics of Fluids 2"
+    },
+    {
+      "id": 107,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson 7",
+      "file_path": "rmats/Gen Sci/Q1_LE7.pdf",
+      "description": "Electrical Hazards and Safety Practices"
+    },
+    {
+      "id": 108,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q1 Lesson 8",
+      "file_path": "rmats/Gen Sci/Q1_LE8.pdf",
+      "description": "Energy Efficiency Practices"
+    },
+    {
+      "id": 117,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Gen Sci/Q2_LE1.pdf",
+      "description": "Chemists and their Impact on our Lives"
+    },
+    {
+      "id": 118,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Gen Sci/Q2_LE2.pdf",
+      "description": "Applications of Chemical Substances"
+    },
+    {
+      "id": 119,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q2 Lesson 4",
+      "file_path": "rmats/Gen Sci/Q2_LE4.pdf",
+      "description": "Chemical Reactions in Everyday Life"
+    },
+    {
+      "id": 120,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q2 Lesson 6",
+      "file_path": "rmats/Gen Sci/Q2_LE6.pdf",
+      "description": "Metabolism as Chemical Reaction in the Body"
+    },
+    {
+      "id": 151,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Life Career/Q1_LE1.pdf",
+      "description": "Understanding and Strengthening the Self"
+    },
+    {
+      "id": 152,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Life Career/Q1_LE2.pdf",
+      "description": "Protective and Risk Factors of Late Adolescence"
+    },
+    {
+      "id": 153,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Life Career/Q1_LE3.pdf",
+      "description": "Strengthening Protective Factors and Minimizing Risk Factors"
+    },
+    {
+      "id": 154,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson 4",
+      "file_path": "rmats/Life Career/Q1_LE4.pdf",
+      "description": "Promoting Development/Well-Being Through Fitness and Mindfulness Activities"
+    },
+    {
+      "id": 155,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson 5",
+      "file_path": "rmats/Life Career/Q1_LE5.pdf",
+      "description": "Personal Mindfulness Activities and Routine Plan"
+    },
+    {
+      "id": 156,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson 6",
+      "file_path": "rmats/Life Career/Q1_LE6.pdf",
+      "description": "Applying Life Skills to Different Domains (Part 1)"
+    },
+    {
+      "id": 157,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson 7",
+      "file_path": "rmats/Life Career/Q1_LE7.pdf",
+      "description": "Applying Life Skills to Different Domains (Part 2)"
+    },
+    {
+      "id": 158,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q1 Lesson 8",
+      "file_path": "rmats/Life Career/Q1_LE8.pdf",
+      "description": "Achieving Life Balance and Managing Emotions Through Self-Regulation"
+    },
+    {
+      "id": 167,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Life Career/Q2_LE1.pdf",
+      "description": "The Nature and Dynamics of Social Relationships"
+    },
+    {
+      "id": 168,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Life Career/Q2_LE2.pdf",
+      "description": "Building Happy Relationships"
+    },
+    {
+      "id": 169,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Life Career/Q2_LE3.pdf",
+      "description": "Applying Interpersonal Effectiveness, Principles, and Practices"
+    },
+    {
+      "id": 170,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson 4",
+      "file_path": "rmats/Life Career/Q2_LE4.pdf",
+      "description": "Effective Communication as a Core Interpersonal Skill"
+    },
+    {
+      "id": 171,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson 5",
+      "file_path": "rmats/Life Career/Q2_LE5.pdf",
+      "description": "Relational Harmony"
+    },
+    {
+      "id": 172,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson 6",
+      "file_path": "rmats/Life Career/Q2_LE6.pdf",
+      "description": "Building Personal Effectiveness Through Social Interaction"
+    },
+    {
+      "id": 173,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson 7",
+      "file_path": "rmats/Life Career/Q2_LE7.pdf",
+      "description": "Team Sports Including Traditional Filipino Games"
+    },
+    {
+      "id": 174,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q2 Lesson 8",
+      "file_path": "rmats/Life Career/Q2_LE8.pdf",
+      "description": "Recreational and Rhythmic Activities for Developing Social Skills"
+    },
+    {
+      "id": 201,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Mabisang Kom/Q1_LE1.pdf",
+      "description": "Batayang Kaalaman sa Wika; Mga Antas at Uri ng Komunikasyon"
+    },
+    {
+      "id": 202,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Mabisang Kom/Q1_LE2.pdf",
+      "description": "Komunikasyong Intrapersonal at Interpersonal"
+    },
+    {
+      "id": 203,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Mabisang Kom/Q1_LE3.pdf",
+      "description": "Tekstong Pasalita, Pasulat, at Multimodal"
+    },
+    {
+      "id": 204,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson 4",
+      "file_path": "rmats/Mabisang Kom/Q1_LE4.pdf",
+      "description": "Magagalang na Pananalita at Pamamahala ng Usapan"
+    },
+    {
+      "id": 205,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q1 Lesson 5",
+      "file_path": "rmats/Mabisang Kom/Q1_LE5.pdf",
+      "description": "Paggamit ng Wika Ayon sa Layunin; Konsiderasyon sa Pag-unawa ng Awdiyens"
+    },
+    {
+      "id": 221,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Mabisang Kom/Q2_LE1.pdf",
+      "description": "Komunikasyon at Kulturang Pilipino, Kamalayang Kultural sa Komunikasyon"
+    },
+    {
+      "id": 222,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Mabisang Kom/Q2_LE2.pdf",
+      "description": "Mga Komunikasyong Publiko, Sibiko, o Kultural"
+    },
+    {
+      "id": 223,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Mabisang Kom/Q2_LE3.pdf",
+      "description": "Tekstong Public-Facing, Persuweysib, Prosidyural, Naratibo, Deskriptibo"
+    },
+    {
+      "id": 251,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Kasaysayan/Q1_LE1.pdf",
+      "description": "Kamalayang Pangkasaysayan"
+    },
+    {
+      "id": 252,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Kasaysayan/Q1_LE2.pdf",
+      "description": "Ugnayan ng Heograpiya at Kultura 1"
+    },
+    {
+      "id": 253,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Kasaysayan/Q1_LE3.pdf",
+      "description": "Ugnayan ng Heograpiya at Kultura 2"
+    },
+    {
+      "id": 254,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson 4",
+      "file_path": "rmats/Kasaysayan/Q1_LE4.pdf",
+      "description": "Kaugnayan ng Kultura sa Kamalayang Pangkaaysayan"
+    },
+    {
+      "id": 255,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson 5",
+      "file_path": "rmats/Kasaysayan/Q1_LE5.pdf",
+      "description": "Mga Paniniwala ng mga Pilipino Tungkol sa Buhay at Kabilang-buhay"
+    },
+    {
+      "id": 256,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson 6",
+      "file_path": "rmats/Kasaysayan/Q1_LE6.pdf",
+      "description": "Mga Katutubo at Tradisyunal na Paraan ng Pagpapagaling"
+    },
+    {
+      "id": 257,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q1 Lesson 7",
+      "file_path": "rmats/Kasaysayan/Q1_LE7.pdf",
+      "description": "Pagpapahalaga sa mga Personal at Panlipunang Paniniwala/Pananampalataya"
+    },
+  
+    {
+      "id": 271,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Kasaysayan/Q2_LE1.pdf",
+      "description": "Mga Anyo ng Pakikibaka at Pakikiangkop sa Pag-usbong ng Kamalayang Pilipino"
+    },
+    {
+      "id": 272,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 2.1",
+      "file_path": "rmats/Kasaysayan/Q2_LE2.1.pdf",
+      "description": "Pakikibaka Laban sa mga Dayuhang Espanyol, Amerikano, at Hapon 1"
+    },
+    {
+      "id": 273,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 2.2",
+      "file_path": "rmats/Kasaysayan/Q2_LE2.2.pdf",
+      "description": "Pakikibaka Laban sa mga Dayuhang Espanyol, Amerikano, at Hapon 2"
+    },
+    {
+      "id": 274,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Kasaysayan/Q2_LE3.pdf",
+      "description": "Mga Naging Tugon ng Pilipino sa Kasaysayan"
+    },
+    {
+      "id": 275,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 4",
+      "file_path": "rmats/Kasaysayan/Q2_LE4.pdf",
+      "description": "Mga Karanasan ng Pakikiangkop sa Panahon ng Pagsasarili"
+    },
+    {
+      "id": 276,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 5",
+      "file_path": "rmats/Kasaysayan/Q2_LE5.pdf",
+      "description": "Bunga ng Lokal na Elitismo at Diktadura sa Kamalayang Pilipino"
+    },
+    {
+      "id": 277,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q2 Lesson 6",
+      "file_path": "rmats/Kasaysayan/Q2_LE6.pdf",
+      "description": "Pagsasakonteksto ng Kasalukuyang Anyo ng Pakikibaka at Pakikiangkop"
+    },
+    {
+      "id": 300,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 1",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Biology 1/Q1_LE1.pdf",
+      "description": "The Cell – The Fundamental Unit of Life"
+    },
+    {
+      "id": 301,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 1",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Biology 1/Q1_LE2.pdf",
+      "description": "The Cell Cycle – Growth, Division, and Life"
+    },
+    {
+      "id": 302,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 1",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Biology 1/Q1_LE3.pdf",
+      "description": "Transport Mechanisms – How Cells Control What Enters and Leaves"
+    },
+    {
+      "id": 303,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 1",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Biology 1/Q2_LE1.pdf",
+      "description": "Cell Requirements – Energy, Nutrients, and Waste Removal"
+    },
+    {
+      "id": 304,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 1",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Biology 1/Q2_LE2.pdf",
+      "description": "Photosynthesis – Transforming Light into Life"
+    },
+    {
+      "id": 305,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 1",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Biology 1/Q2_LE3.pdf",
+      "description": "Cell Respiration – Converting Chemical Energy into ATP (Energy for Cells)"
+    },
+    {
+      "id": 320,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Chemistry 1",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Chemistry 1/Q1_LE1.pdf",
+      "description": "Scientific Measurement – The Foundation of Reliable Science"
+    },
+    {
+      "id": 321,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Chemistry 1",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Chemistry 1/Q1_LE2.pdf",
+      "description": "The Quantum Theory and the Electronic Structure of Atoms"
+    },
+    {
+      "id": 322,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Chemistry 1",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Chemistry 1/Q1_LE3.pdf",
+      "description": "Isotopes and Radioisotopes"
+    },
+    {
+      "id": 323,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Chemistry 1",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Chemistry 1/Q2_LE1.pdf",
+      "description": "Atomic Mass, Percentage Composition, and Chemical Formulas"
+    },
+    {
+      "id": 324,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Chemistry 1",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Chemistry 1/Q2_LE2.pdf",
+      "description": "Chemical Nomenclature – Naming Compounds the IUPAC Way"
+    },
+    {
+      "id": 325,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Chemistry 1",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Chemistry 1/Q2_LE3.pdf",
+      "description": "Chemical Bonds and Properties of Chemical Compounds"
+    },
+    {
+      "id": 350,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Creative Composition 1",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Creative Comp 1/Q1_LE1.pdf",
+      "description": "Analyzing Creative Nonfiction"
+    },
+    {
+      "id": 351,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Creative Composition 1",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Creative Comp 1/Q1_LE2.pdf",
+      "description": "Composing Creative Nonfiction"
+    },
+    {
+      "id": 352,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Creative Composition 1",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Creative Comp 1/Q1_LE3.pdf",
+      "description": "Reflecting on Creative Nonfiction"
+    },
+    {
+      "id": 353,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Creative Composition 1",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Creative Comp 1/Q2_LE1.pdf",
+      "description": "Analyzing Poetry"
+    },
+    {
+      "id": 354,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Creative Composition 1",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Creative Comp 1/Q2_LE2.pdf",
+      "description": "Composing Poetry"
+    },
+    {
+      "id": 355,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Creative Composition 1",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Creative Comp 1/Q2_LE3.pdf",
+      "description": "Reflecting on Poetry"
+    },
+    {
+      "id": 380,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Social Sciences/Q1_LE1.pdf",
+      "description": "Social Sciences as the Study of Society"
+    },
+    {
+      "id": 381,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Social Sciences/Q1_LE2.pdf",
+      "description": "Historical Context of the Emergence of the Social Sciences"
+    },
+    {
+      "id": 382,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Social Sciences/Q1_LE3.pdf",
+      "description": "The Social Science Disciplines"
+    },
+    {
+      "id": 383,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q1 Lesson 4",
+      "file_path": "rmats/Social Sciences/Q1_LE4.pdf",
+      "description": "Integration and Collaboration Among and Beyond the Disciplines"
+    },
+    {
+      "id": 384,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Social Sciences/Q2_LE1.pdf",
+      "description": "Psychology and Counseling as Applied Sciences"
+    },
+    {
+      "id": 385,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Social Sciences/Q2_LE2.pdf",
+      "description": "The Focus of Social Work as an Applied Social Science"
+    },
+    {
+      "id": 386,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Social Sciences/Q2_LE3.pdf",
+      "description": "The Role of Education"
+    },
+    {
+      "id": 387,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 4",
+      "file_path": "rmats/Social Sciences/Q2_LE4.pdf",
+      "description": "Criminology as an Applied Social Science"
+    },
+    {
+      "id": 388,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 5",
+      "file_path": "rmats/Social Sciences/Q2_LE5.pdf",
+      "description": "Communication and Multimedia Arts as an Applied Social Science"
+    },
+    {
+      "id": 389,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 6",
+      "file_path": "rmats/Social Sciences/Q2_LE6.pdf",
+      "description": "Gender Studies and Development as an Interdisciplinary Social Science"
+    },
+    {
+      "id": 390,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Social Sciences",
+      "lesson": "Q2 Lesson 7",
+      "file_path": "rmats/Social Sciences/Q2_LE7.pdf",
+      "description": "The Interdisciplinary Lens: Viewing Society Through Multiple Social Science Fields"
+    },
+    {
+      "id": 420,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Org Management/Q1_LE1.pdf",
+      "description": "Understanding Management Concepts and the Business Environment"
+    },
+    {
+      "id": 421,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Org Management/Q1_LE2.pdf",
+      "description": "Planning, Organizing, and Staffing"
+    },
+    {
+      "id": 422,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Org Management/Q1_LE3.pdf",
+      "description": "Leadership Versus Management"
+    },
+    {
+      "id": 423,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Org Management/Q2_LE1.pdf",
+      "description": "Management Control:  Nature, Methods, Systems, and Application"
+    },
+    {
+      "id": 424,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Org Management/Q2_LE2.pdf",
+      "description": "Functional Areas of Management and Their Roles in Controlling"
+    },
+    {
+      "id": 425,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Org Management/Q2_LE3.pdf",
+      "description": "Legal Foundations and Business Ethics for  Micro,  Small, and Medium Enterprises"
+    },
+    {
+      "id": 426,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Introduction to Organization and Management",
+      "lesson": "Q2 Lesson 4",
+      "file_path": "rmats/Org Management/Q2_LE4.pdf",
+      "description": "The United Nations Sustainable Development Goals"
+    },
+    {
+      "id": 450,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Basic Accounting/Q1_LE1.pdf",
+      "description": "Introduction to Accounting – Nature, History, Concepts, and Principles"
+    },
+    {
+      "id": 451,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Basic Accounting/Q1_LE2.pdf",
+      "description": "The Five Major Accounts – Assets, Liabilities, Equity, Income, and Expenses"
+    },
+    {
+      "id": 452,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Basic Accounting/Q1_LE3.pdf",
+      "description": "Analyzing Business Transactions – The Rules of Debit and Credit"
+    },
+    {
+      "id": 453,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q1 Lesson 4",
+      "file_path": "rmats/Basic Accounting/Q1_LE4.pdf",
+      "description": "Books of Accounts – General Journal, General Ledger, and Special Journals"
+    },
+    {
+      "id": 454,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q1 Lesson 5",
+      "file_path": "rmats/Basic Accounting/Q1_LE5.pdf",
+      "description": "Understanding and Preparing Financial Statements"
+    },
+    {
+      "id": 455,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q1 Lesson 6",
+      "file_path": "rmats/Basic Accounting/Q1_LE6.pdf",
+      "description": "The Accounting Cycle of a Service Business"
+    },
+    {
+      "id": 456,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Basic Accounting/Q2_LE1.pdf",
+      "description": "Introduction to Merchandising Business"
+    },
+    {
+      "id": 457,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Business 1 - Basic Accounting",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Basic Accounting/Q2_LE2.pdf",
+      "description": "The Accounting Cycle of a Merchandising Business"
+    }
+
+  ]
+}

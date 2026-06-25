@@ -1,0 +1,33 @@
+/* .page{
+	min-height: 100vh;
+
+}
+ */
+#content + footer{
+	display: none;
+}
+
+#content-container{	
+	min-height: 100vh;
+	margin-top: 0!important;
+	top: 0;
+	left: 0;
+	width: 100%;
+}
+.quiz-container{
+	max-width: 768px;
+	margin: auto;
+}
+
+.quiz-content{
+	max-width: 575px;
+	margin: auto;
+}
+
+.Arithmetic span{
+	font-size: 3em;
+	letter-spacing: 12px;
+	color: #000;
+	display: block;
+/* 	font-family: monospace!important; */
+}
