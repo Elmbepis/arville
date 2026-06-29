@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
 var MenuNavigation;
 
 // Use absolute paths, now point to home.php with subject parameter
-// Mandarin removed from all grade levels
+// Mandarin is now included for all grade levels – points directly to mandarin-menu.php
 var _subjectsSetup = [
     { title: "English", image: "/arville/kpluz0/images/subjects/png/1x/english.png", url: "/arville/kpluz0/home.php?subject=English" },
     { title: "Math", image: "/arville/kpluz0/images/subjects/png/1x/math.png", url: "/arville/kpluz0/home.php?subject=math" },
@@ -22,7 +22,8 @@ var _subjectsSetup = [
     { title: "Filipino", image: "/arville/kpluz0/images/subjects/png/1x/filipino.png", url: "/arville/kpluz0/home.php?subject=Filipino" },
     { title: "MAPEH", image: "/arville/kpluz0/images/subjects/png/1x/mapeh.png", url: "/arville/kpluz0/home.php?subject=mapeh" },
     { title: "TLE", image: "/arville/kpluz0/images/subjects/png/1x/tle.png", url: "/arville/kpluz0/home.php?subject=tle" },
-    { title: "GMRC", image: "/arville/kpluz0/images/subjects/png/1x/gmrc.png", url: "/arville/kpluz0/home.php?subject=gmrc" }
+    { title: "GMRC", image: "/arville/kpluz0/images/subjects/png/1x/gmrc.png", url: "/arville/kpluz0/home.php?subject=gmrc" },
+    { title: "Mandarin", image: "/arville/kpluz0/images/subjects/png/1x/mandarin.png", url: "/arville/kpluz0/mandarin/modules/mandarin-menu.php" }
 ];
 
 function initReactDOM() {
