@@ -1,0 +1,50 @@
+<html> 
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Pagiging Makatarungan at Patas sa Lahat - GMRC in KPluz.com    </title>
+<body>
+
+<?php
+// $_SESSION['title'] is needed to show module name in q-display
+$_SESSION['title']="Pagiging Makatarungan at Patas sa Lahat";
+$_SESSION['tnum']="*a5";
+
+$questions=array(
+
+"Alin sa mga sumusunod ang tunay na kahulugan ng katarungan?=Pagkilala na ang bawat tao ay may likas na dignidad na dapat igalang>Paghuli sa mga kriminal para mapanagot sila sa batas+Paggawa ng mga batas na makakabuti sa mga mamamayan<Pagmamalasakit sa mga taong kapos sa buhay",
+"Alin sa mga sumusunod ang hindi kabilang sa mga katangian ng isang makatarungang lipunan?=Sumusupil sa pagpapahayag ng mga mamamayan ng kanilang saloobin>Kumikilala sa dignidad ng bawat isa+Nagbibigay ng pantay na pagkakataon para sa lahat na umunlad<Hindi lumalabag sa mga karapatang pantao",
+"Saan nagmumula ang karapatang pantao at dignidad ng mga mamamayan?=Likas ang mga ito sa bawat tao>Ipinagkakaloob ang mga ito ng ating mga batas sa karamihan ng mga mamamayan+Namamana ang mga ito mula sa ating mga magulang<Nakukuha ang mga ito sa pamamagitan ng pera at kapangyarihan",
+"Alin sa mga sumusunod ang dapat mong sabihin sa isang taong narinig mong nagpahayag ng diskriminasyon?=Paumanhin po, ngunit iyan po ay isang anyo ng diskriminasyon.>Tumahimik ka dahil wala kang alam!+Nakakahiya ka dahil sa sinabi mong iyan!<Tama ka - walang karapatan ang mga katulad nila.",
+"Ang simpleng pagsasabi ng 'Hindi tama iyan' kapag may nakikitang taong dinidiskrimina dahil sa kanyang kasarian, relihiyon, lahi, o katayuan sa buhay ay tumutukoy sa ng alin sa mga sumusunod na paraan ng paninindigan sa karapatang pantao?=Pagsasalita laban sa diskriminasyon at pang-aapi>Pagkilala na ang karapatang pantao ay likas+Paggalang sa karapatan ng ibang magkaroon ng sariling opinyon<Pagiging bukas sa pakikinig at pag-unawa sa karanasan ng iba",
+"Ang pagkilala na ang ibang tao ay may karapatang bumuo ng kanyang sariling pananaw kahit hindi ka sumasang-ayon sa kanya ay tumutukoy sa alin sa mga sumusunod na paraan ng paninindigan sa karapatang pantao?=Paggalang sa karapatan ng ibang magkaroon ng sariling opinyon>Pagsasalita laban sa diskriminasyon at pang-aapi+Pagtatanggol sa mga biktima ng pang-aabuso<Pagtangging makisali sa cancel culture",
+"Ang pagbibigay sa isang taong nagkamali ng pagkakataong magpaliwanag, matuto, at magbago sa halip na siraan siya sa publiko ay tumutukoy sa alin sa mga sumusunod na paraan ng paninindigan sa karapatang pantao?=Pagtangging makisali sa cancel culture>Pagsuporta sa mga batas na nagtataguyod ng pagkakapantay-pantay+Pagiging bukas sa pakikinig<Hindi pamimilit sa iba ng iyong mga sariling pagkiling",
+"Ang pagtindig para sa isang taong inaabuso kahit hindi mo siya kaibigan ay tumutukoy sa alin sa mga sumusunod na paraan ng paninindigan sa karapatang pantao?=Pagtatanggol sa mga biktima ng pang-aabuso o pang-aapi>Pagkilala na ang karapatang pantao ay likas+Pagsuporta sa mga batas na nagtataguyod ng pagkakapantay-pantay<Pagiging bukas sa pakikinig at pag-unawa sa karanasan ng iba",
+"Ang pagiging bahagi ng mga kampanyang sumusuporta sa mga anti-discrimination laws ay tumutukoy sa alin sa mga sumusunod na paraan ng paninindigan sa karapatang pantao?=Pagsuporta sa mga batas na nagtataguyod ng pagkakapantay-pantay>Pagtatanggol sa mga biktima ng pang-aabuso+Pagkilala na ang karapatang pantao ay likas<Pagtangging makisali sa cancel culture",
+"Ang pagbibigay-pansin at paniniwala sa isang kaklaseng nagsasabing siya ay dinidiskrimina sa halip na balewalain ang kanyang pahayag ay halimbawa ng alin sa mga sumusunod na paraan ng paninindigan sa karapatang pantao?=Pagiging bukas sa pakikinig at pag-unawa sa karanasan ng iba>Paggalang sa karapatan ng ibang magkaroon ng sariling opinyon+Pagsasalita laban sa diskriminasyon<Hindi pamimilit sa iba ng iyong mga sariling pagkiling",
+"Ang pagsaabi sa isang kaibigang hindi niya kailangang iboto ang kandidato mo kung ayaw niya ay halimbawa ng alin sa mga sumusunod na paraan ng paninindigan sa karapatang pantao?=Hindi pamimilit sa iba ng iyong mga sariling pagkiling>Pagiging bukas sa pakikinig at pag-unawa+Pagsuporta sa mga batas na nagtataguyod ng pagkakapantay-pantay<Pagtatanggol sa mga biktima ng pang-aabuso",
+"Ang hindi pagsasabi ng mga biro tungkol sa kasarian, relihiyon, o kapansanan ay halimbawa ng alin sa mga sumusunod na paraan ng pagsasakilos ng paninindigan sa karapatang pantao?=Pagsusuri ng iyong sariling mga salita at kilos>Hindi panghushusga batay sa panlabas na anyo+Pagtanggap ng mga puna at pagkatuto mula sa iyong mga pagkakamali<Hindi pagsali sa tsismisan o paninira",
+"Ang pagbibigay ng pagkakataon sa isang taong may tattoo upang ipakita kung sino siya bago ka bumuo ng opinyon ay halimbawa ng alin sa mga sumusunod na paraan ng pagsasakilos ng paninindigan sa karapatang pantao?=Hindi panghushusga batay sa panlabas na anyo>Pagtanggap ng mga puna at pagkatuto mula sa iyong mga pagkakamali+Pagtatanggol sa mga taong dinidiskrimina<Hindi pagsali sa tsismisan o paninira",
+"Ang paghingi ng paumanhin at pagsisikap na magbago kapag may nagsabi sa iyong nakakasakit ka ng damdamin ay halimbawa ng alin sa mga sumusunod na paraan ng pagsasakilos ng paninindigan sa karapatang pantao?=Pagtanggap ng mga puna at pagkatuto mula sa iyong mga pagkakamali>Hindi panghushusga batay sa panlabas na anyo+Pagtatanggol sa mga taong dinidiskrimina<Hindi pagsali sa tsismisan o paninira",
+"Ang pagsasabi ng 'Huwag nating pag-usapan iyan dahil wala naman tayong alam sa totoong nangyari' kapag may tsismis na kumakalat tungkol sa iyong kaklase ay halimbawa ng alin sa mga sumusunod na paraan ng pagsasakilos ng paninindigan sa karapatang pantao?=Hindi pagsali sa tsismisan o paninira>Pagtatanggol sa mga taong dinidiskrimina+Pagtanggap ng mga puna at pagkatuto mula sa iyong mga pagkakamalio<Hindi panghushusga batay sa panlabas na anyo",
+"Ang pagsasabi ng 'Tama na dahil hindi na nakakatawa iyan' sa isang kaklaseng paulit-ulit na nambubulas sa isang kaklaseng galing sa ibang kultura ay halimbawa ng alin sa mga sumusunod na paraan ng pagsasakilos ng paninindigan sa karapatang pantao?=Pagtatanggol sa mga taong dinidiskrimina>Hindi pagsali sa tsismisan o paninira+Pagtanggap ng mga puna at pagkatuto mula sa iyong mga pagkakamalio<Hindi panghushusga batay sa panlabas na anyo",
+"Ang pagmumungkahing ang lahat ay dapat magtrabaho sa inyong proyekto dahil napansin mong iisang kaklase mo lang ang gumagawa rito ay halimbawa ng alin sa mga sumusunod na paraan ng pagsasakilos ng paninindigan sa karapatang pantao?=Pagtitiyak na nabibigyan ang lahat ng pantay na ambag at kredito>Hindi pagsali sa tsismisan o paninira+Pagtanggap ng mga puna at pagkatuto mula sa iyong mga pagkakamalio<Hindi panghushusga batay sa panlabas na anyo",
+"Ang panonood ng isang dokumentaryo tungkol sa diskriminasyon at pagkakaroon ninyong magkakaklase ng diskusyon tungkol dito ay halimbawa ng alin sa mga sumusunod na paraan ng pagsasakilos ng paninindigan sa karapatang pantao?=Pakikilahok sa mga talakayan tungkol sa karapatang pantao>Pagsuporta sa mga organisasyong tumutulong sa marginalized sectors+Pagsuporta sa mga pinunong makatarungan<Pagsuporta sa mga batas na nagtataguyod ng pagkakapantay-pantay",
+"Ang paghahandog ng iyong oras at pawis para mag-organisa ng mga files sa opisina ng isang grupo ng mga abogadong tumutulong sa mga dukha ay halimbawa ng alin sa mga sumusunod na paraan ng pagsasakilos ng paninindigan sa karapatang pantao?=Pagsuporta sa mga organisasyong tumutulong sa marginalized sectors>Pakikilahok sa mga talakayan tungkol sa karapatang pantao+Pagsuporta sa mga pinunong makatarungan<Pagsuporta sa mga batas na nagtataguyod ng pagkakapantay-pantay",
+"Ang pag-alam kung sino ang mga kandidatong nagtataguyod ng karapatang pantao at pagbabahagi ng mga leaflet tungkol sa kanilang mga naiambag sa bayan ay halimbawa ng alin sa mga sumusunod na paraan ng pagsasakilos ng paninindigan sa karapatang pantao?=Pagsuporta sa mga pinunong makatarungan>Pakikilahok sa mga talakayan tungkol sa karapatang pantao+Pagsuporta sa mga organisasyong tumutulong sa marginalized sectors<Pagsuporta sa mga batas na nagtataguyod ng pagkakapantay-pantay",
+"Alin sa mga sumusunod na bunga ng pagiging makatarungan ang tumutukoy sa kawalan ng mga alitan dahil sa patas na pagtrato sa lahat ng tao?=Kapayapaan sa iyong paligid>Tiwala mula sa iba+Paggalang mula sa iyong kapwa<Isang makatarungang pamayanan",
+"Alin sa mga sumusunod na bunga ng pagiging makatarungan ang tumutukoy sa pagpapahalaga ng mga tao sa mga sinasabi at ipinapangako mo dahil alam nilang ikaw ay hindi nang-aapi at hindi nananahimik sa pang-aapi?=Tiwala mula sa iba>Kapayapaan sa iyong paligid+Katiyakan sa iyong sarili na ikaw ay nabuhay nang tama<Isang makatarungang pamayanan",
+"Alin sa mga sumusunod na bunga ng pagiging makatarungan ang tumutukoy sa pagiging kapita-pitagan mo sa mata ng mga tao dahil sa iyong integridad at paninindigan sa tama?=Paggalang mula sa iyong kapwa>Kapayapaan sa iyong paligid+Katiyakan sa iyong sarili na ikaw ay nabuhay nang tama<Isang makatarungang pamayanan",
+"Alin sa mga sumusunod na bunga ng pagiging makatarungan ang tumutukoy sa pagkakaroon ng mga tao sa inyong komunidad ng pantay-pantay na pagkakataong umunlad at mabuhay nang may dignidad?=Isang makatarungang pamayanan>Tiwala mula sa iba+Katiyakan sa iyong sarili na ikaw ay nabuhay nang tama<Paggalang mula sa iyong kapwa",
+"Alin sa mga sumusunod na bunga ng pagiging makatarungan ang tumutukoy sa pagiging sigurado ng puso mo na hindi ka naging bulag sa kawalan ng katarungan, at hindi ka naging duwag sa paninidigan para sa karapatan ng lahat?=Katiyakan sa iyong sarili na ikaw ay nabuhay nang tama>Tiwala mula sa iba+Isang makatarungang pamayanan<Paggalang mula sa iyong kapwa",
+
+);
+
+?>
+
+</head>
+
+</body
+
+</html>

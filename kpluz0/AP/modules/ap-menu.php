@@ -94,34 +94,34 @@ $sectionHeaders = [
     'pagbabago-espanyol'   => $iconBase . 'note-pagbabago-pil-espan.jpg',
     'pakikibaka'           => $iconBase . 'note-usbong-pakikibaka.jpg',
     // ===== GRADE 6 =====
-    'kinalalagyan2' 		 => $iconBase . 'note-kinalalagyan-pilipinas.jpg', 
+    'kinalalagyan2'        => $iconBase . 'note-kinalalagyan-pilipinas.jpg', 
     'espanyol-alsa'          => $iconBase . 'note-espanyol-alsa.jpg',
     'kol-amerikano'          => $iconBase . 'note-kol-amerikano.jpg',
     'ww2'                    => $iconBase . 'note-ww2.jpg',
     'kasarinlan'             => $iconBase . 'note-kasarinlan.jpg',
     'bahagi-unlad'           => $iconBase . 'note-bahagi-unlad.jpg',            
     // Grade 7 sections
-	'asya-heograpiya'   => $iconBase . 'note-asya-heograpiya.jpg',
-	'asya-kabihasnan'   => $iconBase . 'note-asya-kabihasnan-luma.jpg',
-	'asya-kolonyalismo' => $iconBase . 'note-asya-mula.jpg',
-	// Grade 8 sections
-	'daigdig-heograpiya'       => $iconBase . 'note-daigdig-heograpiya.jpg',
-	'daigdig-kabihasnan-una'   => $iconBase . 'note-daigdig-kabihasnan-una.jpg',
-	'daigdig-klasik-trans'     => $iconBase . 'note-daigdig-klasik-trans.jpg',
-	'daigdig-makabago'         => $iconBase . 'note-daigdig-makabago.jpg',
-	'daigdig-kontemporaryo'    => $iconBase . 'note-daigdig-kontemporaryo.jpg',
-	// Grade 9 sections
-	'ekonomiks-konsepto' => $iconBase . 'note-ekonomiks-konsepto.jpg',
-	'maykroekonomiks'    => $iconBase . 'note-maykroekonomiks.jpg',
-	'makroekonomiks'     => $iconBase . 'note-makroekonomiks.jpg',
-	'ekonomiya-sektor'   => $iconBase . 'note-ekonomiya-sektor.jpg',
-	// Grade 10 sections
-	'pambungad'        => $iconBase . 'note-pambungad.jpg',
-	'isyu-kapaligiran' => $iconBase . 'note-isyu-kapaligiran.jpg',
-	'isyu-kabuhayan'   => $iconBase . 'note-isyu-kabuhayan.jpg',
-	'isyu-politikal'   => $iconBase . 'note-isyu-politikal.jpg',
-	'isyu-karapatan'   => $iconBase . 'note-isyu-karapatan.jpg',
-	'isyu-sibiko'      => $iconBase . 'note-isyu-sibiko.jpg',
+    'asya-heograpiya'   => $iconBase . 'note-asya-heograpiya.jpg',
+    'asya-kabihasnan'   => $iconBase . 'note-asya-kabihasnan-luma.jpg',
+    'asya-kolonyalismo' => $iconBase . 'note-asya-mula.jpg',
+    // Grade 8 sections
+    'daigdig-heograpiya'       => $iconBase . 'note-daigdig-heograpiya.jpg',
+    'daigdig-kabihasnan-una'   => $iconBase . 'note-daigdig-kabihasnan-una.jpg',
+    'daigdig-klasik-trans'     => $iconBase . 'note-daigdig-klasik-trans.jpg',
+    'daigdig-makabago'         => $iconBase . 'note-daigdig-makabago.jpg',
+    'daigdig-kontemporaryo'    => $iconBase . 'note-daigdig-kontemporaryo.jpg',
+    // Grade 9 sections
+    'ekonomiks-konsepto' => $iconBase . 'note-ekonomiks-konsepto.jpg',
+    'maykroekonomiks'    => $iconBase . 'note-maykroekonomiks.jpg',
+    'makroekonomiks'     => $iconBase . 'note-makroekonomiks.jpg',
+    'ekonomiya-sektor'   => $iconBase . 'note-ekonomiya-sektor.jpg',
+    // Grade 10 sections
+    'pambungad'        => $iconBase . 'note-pambungad.jpg',
+    'isyu-kapaligiran' => $iconBase . 'note-isyu-kapaligiran.jpg',
+    'isyu-kabuhayan'   => $iconBase . 'note-isyu-kabuhayan.jpg',
+    'isyu-politikal'   => $iconBase . 'note-isyu-politikal.jpg',
+    'isyu-karapatan'   => $iconBase . 'note-isyu-karapatan.jpg',
+    'isyu-sibiko'      => $iconBase . 'note-isyu-sibiko.jpg',
 ];
 
 // Top row icons (Report Card, Tutorials, Videos)
@@ -296,7 +296,7 @@ $videosHover = $iconBase . 'videosb.jpg';
         <tr>
             <td style="padding:0; margin:0;">
                 <table border="0" width="100%" cellspacing="0" cellpadding="0" id="table61" style="margin:0; padding:0; border-collapse:collapse;">
-                    <!-- Top banner (from /AP/images/) -->
+                    <!-- Top banner (from /AP/images/) – no bottom padding to avoid white gap -->
                     <tr>
                         <td valign="top" style="line-height:0; font-size:0; padding-top:10px; padding-left:0; padding-right:0; padding-bottom:0; margin:0;">
                             <img border="0" src="<?= $topBanner ?>" alt="Grade <?= $grade ?> AP" style="display:block; width:100%;">
@@ -305,24 +305,26 @@ $videosHover = $iconBase . 'videosb.jpg';
                     <!-- Main menu -->
                     <tr>
                         <td style="padding:0; margin:0;">
-                            <!-- FIXED: table width = 800, left 72, content 656, right 72 -->
+                            <!-- Fixed table layout: left 72, content 656, right 72 -->
                             <table border="0" width="800" cellspacing="0" cellpadding="0" id="table62" style="margin:0; padding:0; border-collapse:collapse;">
                                 <tr>
                                     <!-- Left background – width 72, no horizontal repeat -->
                                     <td width="72" background="<?= $leftBg ?>" rowspan="2" style="padding:0; margin:0; line-height:0; background-repeat: repeat-y;">&nbsp;</td>
-                                    <!-- Content background – width 656 -->
-                                    <td background="<?= $contentBg ?>" valign="top" width="656" style="padding:0; margin:0; line-height:normal;" class="content-table">
+                                    <!-- Content background – width 656, with top padding -->
+                                    <td background="<?= $contentBg ?>" valign="top" width="656" style="padding-top:40px; padding-left:0; padding-right:0; padding-bottom:0; margin:0; line-height:normal;" class="content-table">
                                         <div align="center" style="padding:0; margin:0;">
                                             <table border="0" width="100%" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
                                                 <tr>
                                                     <td colspan="3" style="padding:0; margin:0;">
                                                         <div align="center" style="padding:0; margin:0;">
                                                             <table border="0" width="500" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
+                                                                <!-- Top spacer row (empty cells) for alignment -->
                                                                 <tr>
                                                                     <td width="158" align="center" style="padding:0; margin:0;">&nbsp;</td>
                                                                     <td width="159" align="center" style="padding:0; margin:0;">&nbsp;</td>
                                                                     <td width="159" align="center" style="padding:0; margin:0;">&nbsp;</td>
                                                                 </tr>
+                                                                <!-- Icons row -->
                                                                 <tr>
                                                                     <td width="158" align="center" style="padding:0; margin:0;">
                                                                         <p style="margin:0; padding:0; line-height:normal;">
@@ -351,6 +353,10 @@ $videosHover = $iconBase . 'videosb.jpg';
                                                                             </a>
                                                                         </p>
                                                                     </td>
+                                                                </tr>
+                                                                <!-- Spacer row below icons -->
+                                                                <tr>
+                                                                    <td colspan="3" style="height:20px; line-height:0;">&nbsp;</td>
                                                                 </tr>
                                                             </table>
                                                         </div>

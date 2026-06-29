@@ -1,0 +1,10 @@
+MSYS-1.0.12 Build:2011-07-20 17:52
+Exception: STATUS_ACCESS_VIOLATION at eip=002F7948
+eax=00000001 ebx=0022FB74 ecx=0036DB68 edx=00490000 esi=0022FB78 edi=00000000
+ebp=0022FB4C esp=0022F9D4 program=C:\Program Files\Git\git-cheetah\..\bin\sh.exe
+cs=001B ds=0023 es=0023 fs=003B gs=0000 ss=0023
+Stack trace:
+Frame     Function  Args
+0022FB4C  002F7948  (00000000, 00021000, 0A052000, 0A051280)
+00529406  0052DB48  (5BE8658D, 5DEC895E, 895590C3, 89C031E5)
+End of stack trace

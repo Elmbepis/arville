@@ -75,11 +75,11 @@ $sectionHeaders = [
     'pang-ugnay-pantukoy'=> $iconBase . 'note2-pang-ugnay-pantukoy.jpg',
     'dagdag'             => $iconBase . 'note2-dagdag.jpg',
     'pangungusap'        => $iconBase . 'note-pangungusap.jpg',
-    'pagbuo-pangungusap' => $iconBase . 'note-pagbuo-pangungusap.jpg', // kept for Grade 1/2
+    'pagbuo-pangungusap' => $iconBase . 'note-pagbuo-pangungusap.jpg',
     'pagbasa'            => $iconBase . 'note-pagbasa.jpg',
     'panitikan'          => $iconBase . 'note-panitikan.jpg',
-    'noli'               => $iconBase . 'note-noli.jpg',      // from Grade 9
-    'fili'               => $iconBase . 'note-fili.jpg',      // NEW for Grade 10
+    'noli'               => $iconBase . 'note-noli.jpg',
+    'fili'               => $iconBase . 'note-fili.jpg',
     'ibang-paksa'        => $iconBase . 'note-ibang-paksa.jpg',
 ];
 
@@ -255,7 +255,7 @@ $videosHover = $iconBase . 'videosb.jpg';
         <tr>
             <td style="padding:0; margin:0;">
                 <table border="0" width="100%" cellspacing="0" cellpadding="0" id="table61" style="margin:0; padding:0; border-collapse:collapse;">
-                    <!-- Top banner (from /Filipino/images/) -->
+                    <!-- Top banner (from /Filipino/images/) – no bottom padding to avoid white gap -->
                     <tr>
                         <td valign="top" style="line-height:0; font-size:0; padding-top:10px; padding-left:0; padding-right:0; padding-bottom:0; margin:0;">
                             <img border="0" src="<?= $topBanner ?>" alt="Grade <?= $grade ?> Filipino" style="display:block; width:100%;">
@@ -268,19 +268,21 @@ $videosHover = $iconBase . 'videosb.jpg';
                                 <tr>
                                     <!-- Left background (from /Filipino/images/) -->
                                     <td width="72" background="<?= $leftBg ?>" rowspan="2" style="padding:0; margin:0; line-height:0; background-repeat: repeat-y;">&nbsp;</td>
-                                    <!-- Content background (from /Filipino/images/) -->
-                                    <td background="<?= $contentBg ?>" valign="top" width="656" style="padding:0; margin:0; line-height:normal;" class="content-table">
+                                    <!-- Content background (from /Filipino/images/) – added padding top & bottom -->
+                                    <td background="<?= $contentBg ?>" valign="top" width="656" style="padding-top:40px; padding-left:0; padding-right:0; padding-bottom:0px; margin:0; line-height:normal;" class="content-table">
                                         <div align="center" style="padding:0; margin:0;">
                                             <table border="0" width="100%" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
                                                 <tr>
                                                     <td colspan="3" style="padding:0; margin:0;">
                                                         <div align="center" style="padding:0; margin:0;">
                                                             <table border="0" width="500" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
+                                                                <!-- First spacer row (empty cells) – kept for layout consistency -->
                                                                 <tr>
                                                                     <td width="158" align="center" style="padding:0; margin:0;">&nbsp;</td>
                                                                     <td width="159" align="center" style="padding:0; margin:0;">&nbsp;</td>
                                                                     <td width="159" align="center" style="padding:0; margin:0;">&nbsp;</td>
                                                                 </tr>
+                                                                <!-- Icons row -->
                                                                 <tr>
                                                                     <td width="158" align="center" style="padding:0; margin:0;">
                                                                         <p style="margin:0; padding:0; line-height:normal;">
@@ -309,6 +311,10 @@ $videosHover = $iconBase . 'videosb.jpg';
                                                                             </a>
                                                                         </p>
                                                                     </td>
+                                                                </tr>
+                                                                <!-- Spacer row below icons -->
+                                                                <tr>
+                                                                    <td colspan="3" style="height:20px; line-height:0;">&nbsp;</td>
                                                                 </tr>
                                                             </table>
                                                         </div>

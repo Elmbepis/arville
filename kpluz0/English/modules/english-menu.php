@@ -56,7 +56,7 @@ $sectionHeaders = [
     'phrases-sentences'  => '../images/topics-phrases-sentences.jpg',
     'grammar'            => '../images/topics-grammar.jpg',
     'comprehension'      => '../images/topics-comprehension.jpg',
-    'literature' 		 => '../images/topics-literature.jpg',
+    'literature'         => '../images/topics-literature.jpg',
     'others'             => '../images/topics-others.jpg'
 ];
 
@@ -272,7 +272,7 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
         <tr>
             <td style="padding:0; margin:0;">
                 <table border="0" width="100%" cellspacing="0" cellpadding="0" id="table61" style="margin:0; padding:0; border-collapse:collapse;">
-                    <!-- Top banner row -->
+                    <!-- Top banner row – no bottom padding to avoid white gap -->
                     <tr>
                         <td valign="top" style="line-height:0; font-size:0; padding-top:10px; padding-left:0; padding-right:0; padding-bottom:0; margin:0;">
                             <img border="0" src="<?= $topBanner ?>" alt="Grade <?= $grade ?> English" style="display:block; width:100%;">
@@ -284,15 +284,17 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                             <table border="0" width="100%" cellspacing="0" cellpadding="0" id="table62" style="margin:0; padding:0; border-collapse:collapse;">
                                 <tr>
                                     <td width="72" background="../images/grd-left.jpg" rowspan="2" style="padding:0; margin:0; line-height:0;">&nbsp;</td>
-                                    <td background="../images/grd-content.jpg" valign="top" width="656" style="padding:0; margin:0; line-height:normal;" class="content-table">
+                                    <!-- Content background – now with top padding -->
+                                    <td background="../images/grd-content.jpg" valign="top" width="656" style="padding-top:40px; padding-left:0; padding-right:0; padding-bottom:0; margin:0; line-height:normal;" class="content-table">
                                         <div align="center" style="padding:0; margin:0;">
                                             <table border="0" width="585" cellspacing="0" cellpadding="0" id="table114" style="margin:0; padding:0; border-collapse:collapse;">
-                                                <!-- Report Card, Tutorials, Videos -->
+                                                <!-- Top spacer row (empty) -->
                                                 <tr>
                                                     <td width="208" style="padding:0; margin:0;">&nbsp;</td>
                                                     <td width="208" style="padding:0; margin:0;">&nbsp;</td>
                                                     <td width="208" style="padding:0; margin:0;">&nbsp;</td>
                                                 </tr>
+                                                <!-- Icons row -->
                                                 <tr>
                                                     <td colspan="3" style="padding:0; margin:0;">
                                                         <div align="center" style="padding:0; margin:0;">
@@ -329,6 +331,10 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                                                             </table>
                                                         </div>
                                                     </td>
+                                                </tr>
+                                                <!-- Spacer row below icons -->
+                                                <tr>
+                                                    <td colspan="3" style="height:20px; line-height:0;">&nbsp;</td>
                                                 </tr>
 
                                                 <?php
@@ -372,9 +378,6 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                                                         <?php
                                                     } else {
                                                         // Regular section (not a POS subsection) – output its header directly
-                                                        // Check if it's a subtopic image (should not be resized) – but we don't have subtopics here except maybe others? 
-                                                        // Actually, 'phrases-sentences', 'grammar', 'comprehension', 'others', 'vocabulary', 'phonics' are main sections.
-                                                        // They all have their own header, and we should resize them to 212x99.
                                                         ?>
                                                         <tr>
                                                             <td colspan="3" style="padding:0; margin:0;">

@@ -325,7 +325,7 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
         <tr>
             <td style="padding:0; margin:0;">
                 <table border="0" width="100%" cellspacing="0" cellpadding="0" id="table61" style="margin:0; padding:0; border-collapse:collapse;">
-                    <!-- Top banner -->
+                    <!-- Top banner – no bottom padding to avoid white gap -->
                     <tr>
                         <td valign="top" style="line-height:0; font-size:0; padding-top:10px; padding-left:0; padding-right:0; padding-bottom:0; margin:0;">
                             <img border="0" src="<?= $topBanner ?>" alt="Grade <?= $grade ?> Math" style="display:block; width:100%;">
@@ -337,12 +337,14 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                             <table border="0" width="100%" cellspacing="0" cellpadding="0" id="table62" style="margin:0; padding:0; border-collapse:collapse;">
                                 <tr>
                                     <td width="72" background="<?= $leftBg ?>" rowspan="2" style="padding:0; margin:0; line-height:0;">&nbsp;</td>
-                                    <td background="<?= $contentBg ?>" valign="top" width="656" style="padding:0; margin:0; line-height:normal;" class="content-table">
+                                    <!-- Content background – now with top padding -->
+                                    <td background="<?= $contentBg ?>" valign="top" width="656" style="padding-top:20px; padding-left:0; padding-right:0; padding-bottom:0; margin:0; line-height:normal;" class="content-table">
                                         <div align="center" style="padding:0; margin:0;">
                                             <table border="0" width="585" cellspacing="0" cellpadding="0" id="table114" style="margin:0; padding:0; border-collapse:collapse;">
-                                                <!-- Static top row: conditional for high school vs elementary -->
+                                                <!-- Empty rows (kept for layout) -->
                                                 <tr><td colspan="3" style="padding:0; margin:0;">&nbsp;</td></tr>
                                                 <tr><td colspan="3" style="padding:0; margin:0;">&nbsp;</td></tr>
+                                                <!-- Top icons row -->
                                                 <tr>
                                                     <td colspan="3" style="padding:0; margin:0;">
                                                         <div align="center" style="padding:0; margin:0;">
@@ -454,8 +456,10 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                                                         </div>
                                                     </td>
                                                 </tr>
-                                                <tr><td colspan="3" style="padding:0; margin:0;">&nbsp;</td></tr>
-                                                <tr><td colspan="3" style="padding:0; margin:0;">&nbsp;</td></tr>
+                                                <!-- Spacer row below icons -->
+                                                <tr>
+                                                    <td colspan="3" style="height:20px; line-height:0;">&nbsp;</td>
+                                                </tr>
 
                                                 <?php
                                                 // ============================================================
