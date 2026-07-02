@@ -1,145 +1,150 @@
 <?php
-// container.php – exact original layout with all images centered and natural sizes
+// container.php – shared layout, no session handling
 
-function render_header($page_title = 'EnglishPluz', $page_heading = '') {
-    session_start();
-    // === CENTRALIZED SESSION SCORE INITIALIZATION ===
-    if (!isset($_SESSION['score'])) {
+function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_images = []) {
+    // Session must be started by the caller – we just ensure score exists
+    if (isset($_SESSION) && !isset($_SESSION['score'])) {
         $_SESSION['score'] = 0;
     }
+
+    $defaults = [
+        'top_banner'    => '/arville/kpluz0/English/images/ex-23-top.jpg',
+        'title_bg'      => '/arville/kpluz0/English/images/ex-23-top2.jpg',
+        'left_side'     => '/arville/kpluz0/English/images/ex-23-left.jpg',
+        'right_side'    => '/arville/kpluz0/English/images/ex-23-right.jpg',
+        'content_bg'    => '/arville/kpluz0/English/images/ex-23-content.jpg',
+        'bottom_banner' => '/arville/kpluz0/English/images/ex-23-bottom.jpg',
+        'score_top'     => '/arville/kpluz0/English/images/score-top-3.jpg',
+        'score_bottom'  => '/arville/kpluz0/English/images/score-bottom-3.jpg',
+    ];
+    $theme = array_merge($defaults, $theme_images);
+    $GLOBALS['_theme'] = $theme;
+
     ?>
     <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title><?= htmlspecialchars($page_title) ?></title>
+        <title><?php echo htmlspecialchars($page_title); ?></title>
         <style>
-            /* ----- RESET & BASE ----- */
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body {
-                font-family: Arial, sans-serif;
-                background: url('/arville/kpluz0/images/bluetop-bg.jpg') repeat-x top left !important;
-                padding-top: 15px;
-                line-height: 1.4;
-            }
-
-            /* ----- MAIN WRAPPER ----- */
-            .main-wrapper { max-width: 900px; margin: 0 auto; padding: 0 10px; }
-
-            /* ----- HEADER TABLE – transparent ----- */
-            .header-table {
-                width: 900px;
-                margin: 0 auto;
-                border-collapse: collapse;
-                background: transparent !important;
-            }
-            .header-table td {
-                padding: 0;
-                vertical-align: top;
-                background: transparent !important;
-            }
-            .header-table img {
-                display: block;
-                border: 0;
-            }
-
-            /* ----- MODULE THEME TABLE (800px) ----- */
-            .module-theme { width: 800px; margin: 0 auto; border-collapse: collapse; }
-            .module-theme td { padding: 0; vertical-align: top; }
-
-            .top-banner { padding: 0; line-height: 0; }
-            .top-banner img { display: block; margin: 0; border: 0; }
-
-            .title-area {
-                background: url('/arville/kpluz0/English/images/ex-23-top2.jpg') repeat-x top;
-                height: 80px;
-            }
-            .title-area table { width: 100%; height: 100%; }
-            .title-area .title-text {
-                text-align: center;
-                font-size: 22pt;
-                font-weight: 700;
-                color: #CC0066;
-                font-family: Verdana;
-                vertical-align: middle;
-            }
-            .title-area .title-text .blue { color: #0000CC; }
-            .title-area .title-text .red { color: #CC0066; }
-
-            /* ----- CONTENT WRAPPER (75&#8209;655&#8209;70) ----- */
-            .content-wrapper {
-                width: 800px;
-                border-collapse: collapse;
-                table-layout: fixed;
-            }
-            .content-wrapper .side-left {
-                width: 75px;
-                background: url('/arville/kpluz0/English/images/ex-23-left.jpg') repeat-y top left;
-                min-height: 34px;
-                overflow: hidden;
-            }
-            .content-wrapper .side-right {
-                width: 70px;
-                background: url('/arville/kpluz0/English/images/ex-23-right.jpg') repeat-y top right;
-                min-height: 34px;
-                overflow: hidden;
-            }
-            .content-wrapper .content-bg {
-                width: 655px;
-                background: url('/arville/kpluz0/English/images/ex-23-content.jpg') repeat-y top left;
-                overflow: hidden;
-            }
-
-            .module-output {
-                width: 100%;
-                padding: 15px 20px;
-            }
-
-            .bottom-banner {
-                padding: 0;
-                line-height: 0;
-                margin-top: 15px;
-            }
-            .bottom-banner img {
-                display: block;
-                margin: 0;
-                border: 0;
-                width: 100%;
-                height: auto;
-            }
-
-            /* ----- DIFFICULTY & SCORE ----- */
-            .difficulty { text-align: center; margin: 15px 0; }
-            .difficulty label { margin: 0 10px; font-weight: bold; cursor: pointer; font-size: 10pt; color: #000080; }
-            .difficulty input[type="radio"] { margin-right: 4px; }
-
-            .score-box {
-                text-align: center;
-                margin: 0 auto;
-            }
-            .score-box table { margin: 0 auto; border-collapse: collapse; }
-            .score-box .score-top { background: url('/arville/kpluz0/English/images/score-top-3.jpg') no-repeat center; width: 114px; height: 85px; }
-            .score-box .score-bottom { background: url('/arville/kpluz0/English/images/score-bottom-3.jpg') no-repeat center; width: 114px; height: 60px; font-size: 22pt; font-weight: 700; color: #800080; text-align: center; vertical-align: middle; font-family: 'Comic Sans MS', sans-serif; }
-
-            /* ----- FOOTER ----- */
-            .footer { background: #0086CE; text-align: center; padding: 5px 0; width: 800px; margin: 10px auto 0; }
-            .footer font { font-size: 10pt; color: #FFFFFF; font-family: Arial; }
-            .footer a { color: #FFFFFF; text-decoration: none; }
-
-            /* ----- RESPONSIVE ----- */
-            @media (max-width: 820px) {
-                .header-table { width: 100%; }
-                .module-theme, .content-wrapper, .footer { width: 100%; }
-                .top-banner img, .bottom-banner img { max-width: 100%; height: auto; }
-                .content-wrapper .side-left { width: 20px; }
-                .content-wrapper .side-right { width: 20px; }
-                .content-wrapper .content-bg { width: auto; padding: 0; }
-                .module-output { padding: 10px; }
-                .title-area .title-text { font-size: 18pt; }
-                .score-box .score-top { width: 80px; height: 60px; background-size: contain; }
-                .score-box .score-bottom { width: 80px; height: 45px; font-size: 18pt; background-size: contain; }
-            }
+        <?php
+        // ===== CSS as a double&#8209;quoted string (no heredoc) =====
+        echo "
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: url('/arville/kpluz0/images/bluetop-bg.jpg') repeat-x top left !important;
+            padding-top: 15px;
+            line-height: 1.4;
+        }
+        .main-wrapper { max-width: 900px; margin: 0 auto; padding: 0 10px; }
+        .header-table {
+            width: 900px;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background: transparent !important;
+        }
+        .header-table td {
+            padding: 0;
+            vertical-align: top;
+            background: transparent !important;
+        }
+        .header-table img { display: block; border: 0; }
+        .module-theme { width: 800px; margin: 0 auto; border-collapse: collapse; }
+        .module-theme td { padding: 0; vertical-align: top; }
+        .top-banner { padding: 0; line-height: 0; }
+        .top-banner img { display: block; margin: 0; border: 0; }
+        .title-area {
+            background: url('{$theme['title_bg']}') repeat-x top;
+            height: 80px;
+        }
+        .title-area table { width: 100%; height: 100%; }
+        .title-area .title-text {
+            text-align: center;
+            font-size: 22pt;
+            font-weight: 700;
+            color: #CC0066;
+            font-family: Verdana;
+            vertical-align: middle;
+        }
+        .title-area .title-text .blue { color: #0000CC; }
+        .title-area .title-text .red { color: #CC0066; }
+        .content-wrapper {
+            width: 800px;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .content-wrapper .side-left {
+            width: 75px;
+            background: url('{$theme['left_side']}') repeat-y top left;
+            min-height: 34px;
+            height: 100%;
+            overflow: hidden;
+        }
+        .content-wrapper .side-right {
+            width: 70px;
+            background: url('{$theme['right_side']}') repeat-y top right;
+            min-height: 34px;
+            height: 100%;
+            overflow: hidden;
+        }
+        .content-wrapper .content-bg {
+            width: 655px;
+            background: url('{$theme['content_bg']}') repeat-y top left;
+            overflow: hidden;
+        }
+        .module-output { width: 100%; padding: 15px 20px; }
+        .difficulty { text-align: center; margin: 15px 0; }
+        .difficulty label { margin: 0 10px; font-weight: bold; cursor: pointer; font-size: 10pt; color: #000080; }
+        .difficulty input[type='radio'] { margin-right: 4px; }
+        .score-box { text-align: center; margin: 0 auto; }
+        .score-box table { margin: 0 auto; border-collapse: collapse; }
+        .score-box .score-top {
+            background: url('{$theme['score_top']}') no-repeat center;
+            width: 114px;
+            height: 85px;
+        }
+        .score-box .score-bottom {
+            background: url('{$theme['score_bottom']}') no-repeat center;
+            width: 114px;
+            height: 60px;
+            font-size: 22pt;
+            font-weight: 700;
+            color: #800080;
+            text-align: center;
+            vertical-align: middle;
+            font-family: 'Comic Sans MS', sans-serif;
+        }
+        .footer { background: #0086CE; text-align: center; padding: 5px 0; width: 800px; margin: 10px auto 0; }
+        .footer font { font-size: 10pt; color: #FFFFFF; font-family: Arial; }
+        .footer a { color: #FFFFFF; text-decoration: none; }
+        .bottom-banner {
+            padding: 0;
+            line-height: 0;
+            margin-top: 15px;
+        }
+        .bottom-banner img {
+            display: block;
+            margin: 0 auto;
+            border: 0;
+            max-width: 100%;
+            height: auto;
+        }
+        @media (max-width: 820px) {
+            .header-table { width: 100%; }
+            .module-theme, .content-wrapper, .footer { width: 100%; }
+            .top-banner img, .bottom-banner img { max-width: 100%; height: auto; }
+            .content-wrapper .side-left { width: 20px; }
+            .content-wrapper .side-right { width: 20px; }
+            .content-wrapper .content-bg { width: auto; padding: 0; }
+            .module-output { padding: 10px; }
+            .title-area .title-text { font-size: 18pt; }
+            .score-box .score-top { width: 80px; height: 60px; background-size: contain; }
+            .score-box .score-bottom { width: 80px; height: 45px; font-size: 18pt; background-size: contain; }
+        }
+        ";
+        ?>
         </style>
         <script>
             // FP_* functions (identical to original)
@@ -188,8 +193,6 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '') {
                     }
                 return null;
             }
-
-            // Preload header images (global)
             window.onload = function() {
                 FP_preloadImgs(
                     '/arville/kpluz0/images/header1c.jpg',
@@ -209,10 +212,9 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '') {
         </script>
     </head>
     <body>
-
     <div class="main-wrapper">
 
-        <!-- ===== HEADER TABLE ===== -->
+        <!-- ===== HEADER ===== -->
         <table class="header-table" cellspacing="0" cellpadding="0">
             <tr>
                 <td width="193" height="100" valign="top">
@@ -277,17 +279,19 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '') {
             </tr>
         </table>
 
-        <!-- ===== MODULE THEME (800px) ===== -->
+        <!-- ===== MODULE THEME ===== -->
         <table class="module-theme" cellspacing="0" cellpadding="0">
             <tr>
                 <td>
                     <table class="module-theme" cellspacing="0" cellpadding="0">
-                        <tr><td class="top-banner"><img src="/arville/kpluz0/English/images/ex-23-top.jpg" alt=""></td></tr>
+                        <tr><td class="top-banner">
+                            <img src="<?php echo $theme['top_banner']; ?>" alt="">
+                        </td></tr>
                         <tr><td class="title-area">
                             <table cellspacing="0" cellpadding="0" style="width:100%; height:100%;">
                                 <tr>
                                     <td style="width:111px;">&nbsp;</td>
-                                    <td class="title-text"><?= $page_heading ?></td>
+                                    <td class="title-text"><?php echo $page_heading; ?></td>
                                     <td style="width:103px;">&nbsp;</td>
                                 </tr>
                             </table>
@@ -309,14 +313,14 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '') {
 
 
 function render_footer() {
-    // Close module-output, add bottom banner, close remaining tags
     ?>
                                 </div> <!-- /.module-output -->
 
                                 <div class="bottom-banner">
-                                    <img src="/arville/kpluz0/English/images/ex-23-bottom.jpg" alt="">
+                                    <img src="<?php echo $GLOBALS['_theme']['bottom_banner']; ?>" alt="">
                                 </div>
-                            </td>
+
+                            </td> <!-- /.content-bg -->
                             <td class="side-right" valign="top">&nbsp;</td>
                         </tr>
                     </table>
@@ -339,13 +343,17 @@ function render_footer() {
 }
 
 
-// ===== CENTRALIZED SCORE BOX RENDERER =====
-function render_score_box() {
+function render_score_box($score_top_img = null, $score_bottom_img = null) {
+    $theme = $GLOBALS['_theme'] ?? [];
+    $top = $score_top_img ?? ($theme['score_top'] ?? '/arville/kpluz0/English/images/score-top-3.jpg');
+    $bottom = $score_bottom_img ?? ($theme['score_bottom'] ?? '/arville/kpluz0/English/images/score-bottom-3.jpg');
     ?>
     <div class="score-box">
         <table cellspacing="0" cellpadding="0">
-            <tr><td class="score-top">&nbsp;</td></tr>
-            <tr><td class="score-bottom"><span style="position:relative; top:-10px;"><?= $_SESSION['score'] ?? 0 ?></span></td></tr>
+            <tr><td class="score-top" style="background-image: url('<?php echo $top; ?>');">&nbsp;</td></tr>
+            <tr><td class="score-bottom" style="background-image: url('<?php echo $bottom; ?>');">
+                <span style="position:relative; top:-10px;"><?php echo $_SESSION['score'] ?? 0; ?></span>
+            </td></tr>
         </table>
     </div>
     <?php

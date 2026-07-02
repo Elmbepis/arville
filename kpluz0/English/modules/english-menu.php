@@ -79,11 +79,16 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { margin: 0; padding: 0; line-height: 1; }
+        body {
+            margin: 0;
+            padding: 0;
+            padding-top: 20px;
+            line-height: 1;
+            background: url('/arville/kpluz0/images/bluetop-bg.jpg') repeat-x top left;
+        }
         table, tr, td, div { margin: 0; padding: 0; line-height: 0; border-spacing: 0; border-collapse: collapse; }
         img { display: block; border: 0; }
         
-        /* Allow spacing inside content area */
         .content-table td { line-height: normal; padding: 0 5px; }
         .content-table p { line-height: normal; margin: 0; padding: 0; }
         .content-table img { display: inline-block; }
@@ -137,9 +142,7 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
             return null;
         }
 
-        // Preload all hover images
         window.onload = function() {
-            // Preload header images
             FP_preloadImgs(
                 '/arville/kpluz0/images/header1c.jpg',
                 '/arville/kpluz0/images/header1b.jpg',
@@ -154,7 +157,6 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                 '/arville/kpluz0/images/header6c.jpg',
                 '/arville/kpluz0/images/header6b.jpg'
             );
-            // Preload module hover images
             <?php
             $hoverImages = [];
             foreach ($sections as $section) {
@@ -176,9 +178,9 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
         };
     </script>
 </head>
-<body background="/arville/kpluz0/images/bluetop-bg.jpg">
+<body>
 
-<!-- HEADER – with zero spacing -->
+<!-- ===== HEADER TABLE ===== -->
 <div align="center" style="margin:0; padding:0; line-height:0;">
     <table width="900" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
         <tr>
@@ -186,72 +188,59 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                 <div align="center" style="margin:0; padding:0; line-height:0;">
                     <table border="0" width="900" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
                         <tr>
-                            <!-- Logo -->
                             <td width="193" valign="top" style="padding:0; margin:0; line-height:0;">
                                 <a href="/arville/kpluz0/app/menu.php">
                                     <img border="0" src="/arville/kpluz0/images/header-logo.jpg" alt="KPluz Logo" style="display:block;">
                                 </a>
                             </td>
-                            <!-- Button: How To Use -->
                             <td width="133" valign="top" style="padding:0; margin:0; line-height:0;">
                                 <a href="/arville/kpluz0/how-to-use-kpluz.php">
-                                    <img border="0" id="img1" src="/arville/kpluz0/images/header1a.jpg" 
-                                         style="display:block;" 
+                                    <img border="0" id="img1" src="/arville/kpluz0/images/header1a.jpg" style="display:block;" 
                                          onmouseover="FP_swapImg(1,0,'img1','/arville/kpluz0/images/header1b.jpg')" 
                                          onmouseout="FP_swapImg(0,0,'img1','/arville/kpluz0/images/header1a.jpg')" 
                                          onmousedown="FP_swapImg(1,0,'img1','/arville/kpluz0/images/header1c.jpg')" 
                                          onmouseup="FP_swapImg(0,0,'img1','/arville/kpluz0/images/header1b.jpg')">
                                 </a>
                             </td>
-                            <!-- Button: Blue Bars -->
                             <td width="133" valign="top" style="padding:0; margin:0; line-height:0;">
                                 <a href="/arville/kpluz0/bluebars_student.php">
-                                    <img border="0" id="img2" src="/arville/kpluz0/images/header2a.jpg" 
-                                         style="display:block;" 
+                                    <img border="0" id="img2" src="/arville/kpluz0/images/header2a.jpg" style="display:block;" 
                                          onmouseover="FP_swapImg(1,0,'img2','/arville/kpluz0/images/header2b.jpg')" 
                                          onmouseout="FP_swapImg(0,0,'img2','/arville/kpluz0/images/header2a.jpg')" 
                                          onmousedown="FP_swapImg(1,0,'img2','/arville/kpluz0/images/header2c.jpg')" 
                                          onmouseup="FP_swapImg(0,0,'img2','/arville/kpluz0/images/header2b.jpg')">
                                 </a>
                             </td>
-                            <!-- Button: Programs -->
                             <td width="133" valign="top" style="padding:0; margin:0; line-height:0;">
                                 <a href="/arville/kpluz0/programs.php">
-                                    <img border="0" id="img3" src="/arville/kpluz0/images/header3a.jpg" 
-                                         style="display:block;" 
+                                    <img border="0" id="img3" src="/arville/kpluz0/images/header3a.jpg" style="display:block;" 
                                          onmouseover="FP_swapImg(1,0,'img3','/arville/kpluz0/images/header3b.jpg')" 
                                          onmouseout="FP_swapImg(0,0,'img3','/arville/kpluz0/images/header3a.jpg')" 
                                          onmousedown="FP_swapImg(1,0,'img3','/arville/kpluz0/images/header3c.jpg')" 
                                          onmouseup="FP_swapImg(0,0,'img3','/arville/kpluz0/images/header3b.jpg')">
                                 </a>
                             </td>
-                            <!-- Button: Community -->
                             <td width="134" valign="top" style="padding:0; margin:0; line-height:0;">
                                 <a href="/arville/kpluz0/community.php">
-                                    <img border="0" id="img4" src="/arville/kpluz0/images/header4a.jpg" 
-                                         style="display:block;" 
+                                    <img border="0" id="img4" src="/arville/kpluz0/images/header4a.jpg" style="display:block;" 
                                          onmouseover="FP_swapImg(1,0,'img4','/arville/kpluz0/images/header4b.jpg')" 
                                          onmouseout="FP_swapImg(0,0,'img4','/arville/kpluz0/images/header4a.jpg')" 
                                          onmousedown="FP_swapImg(1,0,'img4','/arville/kpluz0/images/header4c.jpg')" 
                                          onmouseup="FP_swapImg(0,0,'img4','/arville/kpluz0/images/header4b.jpg')">
                                 </a>
                             </td>
-                            <!-- Button: Contact -->
                             <td width="134" valign="top" style="padding:0; margin:0; line-height:0;">
                                 <a href="/arville/kpluz0/contact.php">
-                                    <img border="0" id="img5" src="/arville/kpluz0/images/header5a.jpg" 
-                                         style="display:block;" 
+                                    <img border="0" id="img5" src="/arville/kpluz0/images/header5a.jpg" style="display:block;" 
                                          onmouseover="FP_swapImg(1,0,'img5','/arville/kpluz0/images/header5b.jpg')" 
                                          onmouseout="FP_swapImg(0,0,'img5','/arville/kpluz0/images/header5a.jpg')" 
                                          onmousedown="FP_swapImg(1,0,'img5','/arville/kpluz0/images/header5c.jpg')" 
                                          onmouseup="FP_swapImg(0,0,'img5','/arville/kpluz0/images/header5b.jpg')">
                                 </a>
                             </td>
-                            <!-- Button: Logout -->
                             <td width="134" valign="top" style="padding:0; margin:0; line-height:0;">
                                 <a href="/arville/kpluz0/logout.php">
-                                    <img border="0" id="img6" src="/arville/kpluz0/images/header6a.jpg" 
-                                         style="display:block;" 
+                                    <img border="0" id="img6" src="/arville/kpluz0/images/header6a.jpg" style="display:block;" 
                                          onmouseover="FP_swapImg(1,0,'img6','/arville/kpluz0/images/header6b.jpg')" 
                                          onmouseout="FP_swapImg(0,0,'img6','/arville/kpluz0/images/header6a.jpg')" 
                                          onmousedown="FP_swapImg(1,0,'img6','/arville/kpluz0/images/header6c.jpg')" 
@@ -266,39 +255,37 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
     </table>
 </div>
 
-<!-- MAIN CONTENT -->
+<!-- ===== 10px SPACER (proven to work) ===== -->
+<div style="height:30px; line-height:10px; font-size:0;">&nbsp;</div>
+
+<!-- ===== MAIN CONTENT ===== -->
 <div align="center" style="margin:0; padding:0; line-height:0;">
     <table border="0" width="800" cellspacing="0" cellpadding="0" id="table7" style="margin:0; padding:0; border-collapse:collapse;">
         <tr>
             <td style="padding:0; margin:0;">
                 <table border="0" width="100%" cellspacing="0" cellpadding="0" id="table61" style="margin:0; padding:0; border-collapse:collapse;">
-                    <!-- Top banner row – no bottom padding to avoid white gap -->
+                    <!-- Top banner -->
                     <tr>
-                        <td valign="top" style="line-height:0; font-size:0; padding-top:10px; padding-left:0; padding-right:0; padding-bottom:0; margin:0;">
+                        <td valign="top" style="line-height:0; font-size:0; padding:0; margin:0;">
                             <img border="0" src="<?= $topBanner ?>" alt="Grade <?= $grade ?> English" style="display:block; width:100%;">
                         </td>
                     </tr>
-                    <!-- Main menu row -->
+                    <!-- Main menu -->
                     <tr>
                         <td style="padding:0; margin:0;">
                             <table border="0" width="100%" cellspacing="0" cellpadding="0" id="table62" style="margin:0; padding:0; border-collapse:collapse;">
                                 <tr>
                                     <td width="72" background="../images/grd-left.jpg" rowspan="2" style="padding:0; margin:0; line-height:0;">&nbsp;</td>
-                                    <!-- Content background – now with top padding -->
                                     <td background="../images/grd-content.jpg" valign="top" width="656" style="padding-top:40px; padding-left:0; padding-right:0; padding-bottom:0; margin:0; line-height:normal;" class="content-table">
                                         <div align="center" style="padding:0; margin:0;">
                                             <table border="0" width="585" cellspacing="0" cellpadding="0" id="table114" style="margin:0; padding:0; border-collapse:collapse;">
-                                                <!-- Top spacer row (empty) -->
-                                                <tr>
-                                                    <td width="208" style="padding:0; margin:0;">&nbsp;</td>
-                                                    <td width="208" style="padding:0; margin:0;">&nbsp;</td>
-                                                    <td width="208" style="padding:0; margin:0;">&nbsp;</td>
-                                                </tr>
-                                                <!-- Icons row -->
+                                                <!-- Top spacer -->
+                                                <tr><td width="208" style="padding:0; margin:0;">&nbsp;</td><td width="208" style="padding:0; margin:0;">&nbsp;</td><td width="208" style="padding:0; margin:0;">&nbsp;</td></tr>
+                                                <!-- Icons -->
                                                 <tr>
                                                     <td colspan="3" style="padding:0; margin:0;">
                                                         <div align="center" style="padding:0; margin:0;">
-                                                            <table border="0" width="465" cellspacing="0" cellpadding="0" id="table115" style="margin:0; padding:0; border-collapse:collapse;">
+                                                            <table border="0" width="465" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
                                                                 <tr>
                                                                     <td width="150" align="center" style="padding:0; margin:0;">
                                                                         <p style="margin:0; padding:0; line-height:normal;">
@@ -332,28 +319,18 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                                                         </div>
                                                     </td>
                                                 </tr>
-                                                <!-- Spacer row below icons -->
-                                                <tr>
-                                                    <td colspan="3" style="height:20px; line-height:0;">&nbsp;</td>
-                                                </tr>
+                                                <!-- Spacer -->
+                                                <tr><td colspan="3" style="height:20px; line-height:0;">&nbsp;</td></tr>
 
                                                 <?php
-                                                // ============================================================
-                                                // DYNAMIC MODULE SECTIONS FROM DATABASE
-                                                // ============================================================
-                                                $shownMainHeaders = []; // track which main headers have been output
-                                                
+                                                $shownMainHeaders = [];
                                                 foreach ($sections as $sectionName => $sectionData):
                                                     $modules = $sectionData['modules'];
                                                     $headerImg = $sectionHeaders[$sectionName] ?? '../images/topics-generic.jpg';
-                                                    
-                                                    // Determine if this section is a subsection of Parts of Speech
                                                     $isPartOfSpeechSub = in_array($sectionName, $partOfSpeechSubs);
                                                     
-                                                    // If it's a sub-section, we need to output the main "Parts of Speech" header first
                                                     if ($isPartOfSpeechSub) {
                                                         $mainHeader = '../images/topics-parts-speech.jpg';
-                                                        // Output the main header only once
                                                         if (!in_array('parts-of-speech', $shownMainHeaders)) {
                                                             $shownMainHeaders[] = 'parts-of-speech';
                                                             ?>
@@ -366,7 +343,6 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                                                             </tr>
                                                             <?php
                                                         }
-                                                        // Now output the subsection header (subtopics) – no resize
                                                         ?>
                                                         <tr>
                                                             <td colspan="3" style="padding:0; margin:0;">
@@ -377,7 +353,6 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                                                         </tr>
                                                         <?php
                                                     } else {
-                                                        // Regular section (not a POS subsection) – output its header directly
                                                         ?>
                                                         <tr>
                                                             <td colspan="3" style="padding:0; margin:0;">
@@ -388,10 +363,7 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                                                         </tr>
                                                         <?php
                                                     }
-                                                    ?>
                                                     
-                                                    <!-- Module rows (3 per row) -->
-                                                    <?php
                                                     $total = count($modules);
                                                     for ($i = 0; $i < $total; $i += 3):
                                                     ?>
@@ -421,7 +393,7 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                                                     <?php endfor; ?>
                                                 <?php endforeach; ?>
 
-                                                <!-- Matatag mapping link -->
+                                                <!-- Matatag -->
                                                 <tr>
                                                     <td colspan="3" align="center" style="padding:15px 0 5px 0; margin:0;">
                                                         <a href="/arville/kpluz0/matatag-mapping.php?subject=english&grade=<?= $grade ?>">

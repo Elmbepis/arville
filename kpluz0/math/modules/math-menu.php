@@ -50,8 +50,8 @@ $db->close();
 // ============================================================
 $sectionHeaders = [
     // ========== ELEMENTARY SECTIONS (Grades 0–6) ==========
-    'cognitive'            => '/arville/kpluz0/math/images/images/topics-cognitive.jpg',       // ADDED
-    'counting-arithmetic'  => '/arville/kpluz0/math/images/images/topics-counting-arithmetic.jpg', // ADDED
+    'cognitive'            => '/arville/kpluz0/math/images/images/topics-cognitive.jpg',
+    'counting-arithmetic'  => '/arville/kpluz0/math/images/images/topics-counting-arithmetic.jpg',
     'arithmetic'           => '/arville/kpluz0/math/images/images/topics-arithmetic.jpg',
     'number-relationships' => '/arville/kpluz0/math/images/images/topics-number-relationships.jpg',
     'fractions'            => '/arville/kpluz0/math/images/images/topics-fractions.jpg',
@@ -65,11 +65,8 @@ $sectionHeaders = [
     'problem-solving'      => '/arville/kpluz0/math/images/images/topics-problem-solving.jpg',
 
     // ========== HIGH SCHOOL SECTIONS (Grades 7–10) ==========
-    // Number Sense & Measurement
     'number-sense'         => '/arville/kpluz0/math/images/topics-number-sense.jpg',
     'measurement'          => '/arville/kpluz0/math/images/topics-measurement.jpg',
-
-    // Algebra & Expressions
     'algebraic-expressions'=> '/arville/kpluz0/math/images/topics-alg-exp.jpg',
     'polynomials'          => '/arville/kpluz0/math/images/topics-polynomials.jpg',
     'solving-equations'    => '/arville/kpluz0/math/images/topics-solving-equations.jpg',
@@ -77,12 +74,8 @@ $sectionHeaders = [
     'equations-functions'  => '/arville/kpluz0/math/images/topics-equations-functions.jpg',
     'progression'          => '/arville/kpluz0/math/images/topics-progression.jpg',
     'alg-special'          => '/arville/kpluz0/math/images/topics-alg-special.jpg',
-    
-    // Lines & Functions (Grade 10)
     'lines'                => '/arville/kpluz0/math/images/topics-lines.jpg',
     'functions'            => '/arville/kpluz0/math/images/topics-functions.jpg',
-
-    // Geometry
     'intro-geometry'       => '/arville/kpluz0/math/images/topics-intro-geom.jpg',
     'angles'               => '/arville/kpluz0/math/images/topics-angles.jpg',
     'shapes-solids'        => '/arville/kpluz0/math/images/topics-shapes-solids.jpg',
@@ -90,21 +83,13 @@ $sectionHeaders = [
     'triangle-congruence'  => '/arville/kpluz0/math/images/topics-triangle-congruence.jpg',
     'tri-quad'             => '/arville/kpluz0/math/images/topics-tri-quad.jpg',
     'circles-conics'       => '/arville/kpluz0/math/images/topics-circles.jpg',
-
-    // Trigonometry
     'trig-functions'       => '/arville/kpluz0/math/images/topics-trigo-functions.jpg',
     'trig-identities'      => '/arville/kpluz0/math/images/topics-trigo-identities.jpg',
     'trigo'                => '/arville/kpluz0/math/images/topics-trigo.jpg',
-
-    // Logarithms & Calculus (Grade 10)
     'logarithms'           => '/arville/kpluz0/math/images/topics-log.jpg',
     'calculus'             => '/arville/kpluz0/math/images/topics-calculus.jpg',
-
-    // Statistics, Probability & Logic
     'stat-prob'            => '/arville/kpluz0/math/images/topics-stat-prob.jpg',
     'logic'                => '/arville/kpluz0/math/images/topics-logic.jpg',
-
-    // Word Problems
     'word-problems'        => '/arville/kpluz0/math/images/topics-word-problems1.jpg',
 ];
 
@@ -126,7 +111,6 @@ if ($isHS) {
     $bookHover = '/arville/kpluz0/math/images/bookhsb.jpg';
     $videos = '/arville/kpluz0/math/images/videoshsa.jpg';
     $videosHover = '/arville/kpluz0/math/images/videoshsb.jpg';
-    // Trivia and Games are NOT used for high school, but we keep the variables for preload (they won't be displayed)
     $trivia = '/arville/kpluz0/math/images/triviaa.jpg';
     $triviaHover = '/arville/kpluz0/math/images/triviab.jpg';
     $games = '/arville/kpluz0/math/images/gamesa.jpg';
@@ -167,7 +151,13 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { margin: 0; padding: 0; line-height: 1; }
+        body {
+            margin: 0;
+            padding: 0;
+            padding-top: 20px; /* shift page down */
+            line-height: 1;
+            background: url('/arville/kpluz0/images/bluetop-bg.jpg') repeat-x top left; /* horizontal only */
+        }
         table, tr, td, div { margin: 0; padding: 0; line-height: 0; border-spacing: 0; border-collapse: collapse; }
         img { display: block; border: 0; }
         .content-table td { line-height: normal; padding: 0 5px; }
@@ -214,10 +204,8 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
             );
             // Preload top row hover images
             <?php
-            // Only preload the icons that are actually used
             echo "FP_preloadImgs('$reportCardHover','$solversHover','$bookHover','$videosHover'";
             if (!$isHS) {
-                // For elementary, also preload trivia and games
                 echo ",'$triviaHover','$gamesHover'";
             }
             echo ");";
@@ -242,9 +230,10 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
         };
     </script>
 </head>
-<body background="/arville/kpluz0/images/bluetop-bg.jpg">
+<body>
+<!-- HTML background attribute removed; CSS handles it -->
 
-<!-- HEADER (same for all grades) -->
+<!-- ===== HEADER TABLE ===== -->
 <div align="center" style="margin:0; padding:0; line-height:0;">
     <table width="900" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
         <tr>
@@ -319,13 +308,16 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
     </table>
 </div>
 
-<!-- MAIN CONTENT -->
+<!-- ===== 25px SPACER (correct spacing) ===== -->
+<div style="height:20px; line-height:25px; font-size:0;">&nbsp;</div>
+
+<!-- ===== MAIN CONTENT ===== -->
 <div align="center" style="margin:0; padding:0; line-height:0;">
     <table border="0" width="800" cellspacing="0" cellpadding="0" id="table7" style="margin:0; padding:0; border-collapse:collapse;">
         <tr>
             <td style="padding:0; margin:0;">
                 <table border="0" width="100%" cellspacing="0" cellpadding="0" id="table61" style="margin:0; padding:0; border-collapse:collapse;">
-                    <!-- Top banner – no bottom padding to avoid white gap -->
+                    <!-- Top banner -->
                     <tr>
                         <td valign="top" style="line-height:0; font-size:0; padding-top:10px; padding-left:0; padding-right:0; padding-bottom:0; margin:0;">
                             <img border="0" src="<?= $topBanner ?>" alt="Grade <?= $grade ?> Math" style="display:block; width:100%;">
@@ -337,11 +329,10 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                             <table border="0" width="100%" cellspacing="0" cellpadding="0" id="table62" style="margin:0; padding:0; border-collapse:collapse;">
                                 <tr>
                                     <td width="72" background="<?= $leftBg ?>" rowspan="2" style="padding:0; margin:0; line-height:0;">&nbsp;</td>
-                                    <!-- Content background – now with top padding -->
                                     <td background="<?= $contentBg ?>" valign="top" width="656" style="padding-top:20px; padding-left:0; padding-right:0; padding-bottom:0; margin:0; line-height:normal;" class="content-table">
                                         <div align="center" style="padding:0; margin:0;">
                                             <table border="0" width="585" cellspacing="0" cellpadding="0" id="table114" style="margin:0; padding:0; border-collapse:collapse;">
-                                                <!-- Empty rows (kept for layout) -->
+                                                <!-- Empty rows -->
                                                 <tr><td colspan="3" style="padding:0; margin:0;">&nbsp;</td></tr>
                                                 <tr><td colspan="3" style="padding:0; margin:0;">&nbsp;</td></tr>
                                                 <!-- Top icons row -->
@@ -349,7 +340,6 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                                                     <td colspan="3" style="padding:0; margin:0;">
                                                         <div align="center" style="padding:0; margin:0;">
                                                             <?php if ($isHS): ?>
-                                                                <!-- HIGH SCHOOL: 4 icons in one row -->
                                                                 <table border="0" width="500" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
                                                                     <tr>
                                                                         <td width="25%" align="center" style="padding:0; margin:0;">
@@ -391,7 +381,6 @@ if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
                                                                     </tr>
                                                                 </table>
                                                             <?php else: ?>
-                                                                <!-- ELEMENTARY: 6 icons in two rows (3+3) -->
                                                                 <table border="0" width="500" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
                                                                     <tr>
                                                                         <td width="166" align="center" style="padding:0; margin:0;">

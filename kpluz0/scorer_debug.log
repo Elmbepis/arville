@@ -1,0 +1,12 @@
+2026-07-02 16:33:02 - Scorer: __construct called. Module ID: 1
+2026-07-02 16:33:02 - processAnswer START. Selected: 'b', Correct: 'b', Level: 'Easy'
+2026-07-02 16:33:02 - Correct! Added 1 points. New session score: 4
+2026-07-02 16:33:02 - Database connection exists, saving...
+2026-07-02 16:33:02 - saveToDatabase START
+2026-07-02 16:33:02 - Cookie KPluzID_my_site = ''
+2026-07-02 16:33:02 - Cookie empty – using test username 'testuser' for debugging.
+2026-07-02 16:33:02 - getUserId called for username 'testuser'
+2026-07-02 16:33:02 - No user found for username 'testuser'.
+2026-07-02 16:33:02 - User ID not found for username 'testuser'. Aborting save.
+2026-07-02 16:33:02 - saveToDatabase returned: FALSE
+2026-07-02 16:33:02 - processAnswer END. Returning true

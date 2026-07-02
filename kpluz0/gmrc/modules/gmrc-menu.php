@@ -82,7 +82,13 @@ $bookHover = $iconBase . 'bookb.jpg';
     <link rel="stylesheet" href="/arville/kpluz0/app/css/app.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { margin: 0; padding: 0; line-height: 1; }
+        body {
+            margin: 0;
+            padding: 0;
+            padding-top: 20px; /* shift page down */
+            line-height: 1;
+            background: url('/arville/kpluz0/images/bluetop-bg.jpg') repeat-x top left; /* horizontal only */
+        }
         table, tr, td, div { margin: 0; padding: 0; line-height: 0; border-spacing: 0; border-collapse: collapse; }
         img { display: block; border: 0; }
         .content-table td { line-height: normal; padding: 0 5px; }
@@ -158,9 +164,10 @@ $bookHover = $iconBase . 'bookb.jpg';
         };
     </script>
 </head>
-<body background="/arville/kpluz0/images/bluetop-bg.jpg">
+<body>
+<!-- HTML background attribute removed – CSS handles it now -->
 
-<!-- HEADER (global) -->
+<!-- ===== HEADER TABLE ===== -->
 <div align="center" style="margin:0; padding:0; line-height:0;">
     <table width="900" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
         <tr>
@@ -235,7 +242,10 @@ $bookHover = $iconBase . 'bookb.jpg';
     </table>
 </div>
 
-<!-- MAIN CONTENT -->
+<!-- ===== 25px SPACER (correct spacing) ===== -->
+<div style="height:20px; line-height:25px; font-size:0;">&nbsp;</div>
+
+<!-- ===== MAIN CONTENT ===== -->
 <div align="center" style="margin:0; padding:0; line-height:0;">
     <table border="0" width="800" cellspacing="0" cellpadding="0" id="table7" style="margin:0; padding:0; border-collapse:collapse;">
         <tr>
@@ -262,18 +272,19 @@ $bookHover = $iconBase . 'bookb.jpg';
                                                     <td colspan="3" style="padding:0; margin:0;">
                                                         <div align="center" style="padding:0; margin:0;">
                                                             <!-- Top row: two icons side by side (MAPEH style) -->
-<p style="margin:0; padding:0; line-height:normal; display:inline-block;">
-    <a href="/arville/kpluz0/GMRC/GMRC-report-card.php">
-        <img border="0" id="reportcardh-home1" src="<?= $reportCard ?>" 
-             onmouseover="FP_swapImg(1,0,'reportcardh-home1','<?= $reportCardHover ?>')" 
-             onmouseout="FP_swapImg(0,0,'reportcardh-home1','<?= $reportCard ?>')" style="display:inline-block; vertical-align:middle; margin-right:30px;">
-    </a>
-    <a href="/arville/kpluz0/GMRC/books/g<?= $grade ?>/<?= $grade ?>toc.php">
-        <img border="0" id="book-home2" src="<?= $book ?>" 
-             onmouseover="FP_swapImg(1,0,'book-home2','<?= $bookHover ?>')" 
-             onmouseout="FP_swapImg(0,0,'book-home2','<?= $book ?>')" style="display:inline-block; vertical-align:middle; margin-left:30px; margin-top:-4px;">
-    </a>
-</p>                                                            <!-- Spacer below icons -->
+                                                            <p style="margin:0; padding:0; line-height:normal; display:inline-block;">
+                                                                <a href="/arville/kpluz0/GMRC/GMRC-report-card.php">
+                                                                    <img border="0" id="reportcardh-home1" src="<?= $reportCard ?>" 
+                                                                         onmouseover="FP_swapImg(1,0,'reportcardh-home1','<?= $reportCardHover ?>')" 
+                                                                         onmouseout="FP_swapImg(0,0,'reportcardh-home1','<?= $reportCard ?>')" style="display:inline-block; vertical-align:middle; margin-right:30px;">
+                                                                </a>
+                                                                <a href="/arville/kpluz0/GMRC/books/g<?= $grade ?>/<?= $grade ?>toc.php">
+                                                                    <img border="0" id="book-home2" src="<?= $book ?>" 
+                                                                         onmouseover="FP_swapImg(1,0,'book-home2','<?= $bookHover ?>')" 
+                                                                         onmouseout="FP_swapImg(0,0,'book-home2','<?= $book ?>')" style="display:inline-block; vertical-align:middle; margin-left:30px; margin-top:-4px;">
+                                                                </a>
+                                                            </p>
+                                                            <!-- Spacer below icons -->
                                                             <div style="height:20px;"></div>
                                                         </div>
                                                     </td>

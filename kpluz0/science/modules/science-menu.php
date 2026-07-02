@@ -89,7 +89,13 @@ $videosHover = '/arville/kpluz0/science/images/videosb.jpg';
     <link rel="stylesheet" href="/arville/kpluz0/app/css/app.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { margin: 0; padding: 0; line-height: 1; }
+        body {
+            margin: 0;
+            padding: 0;
+            padding-top: 20px; /* shift page down */
+            line-height: 1;
+            background: url('/arville/kpluz0/images/bluetop-bg.jpg') repeat-x top left; /* horizontal only */
+        }
         table, tr, td, div { margin: 0; padding: 0; line-height: 0; border-spacing: 0; border-collapse: collapse; }
         img { display: block; border: 0; }
         .content-table td { line-height: normal; padding: 0 5px; }
@@ -160,9 +166,10 @@ $videosHover = '/arville/kpluz0/science/images/videosb.jpg';
         };
     </script>
 </head>
-<body background="/arville/kpluz0/images/bluetop-bg.jpg">
+<body>
+<!-- HTML background attribute removed – CSS handles it now -->
 
-<!-- HEADER (ALL ABSOLUTE) -->
+<!-- ===== HEADER TABLE ===== -->
 <div align="center" style="margin:0; padding:0; line-height:0;">
     <table width="900" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
         <tr>
@@ -237,7 +244,10 @@ $videosHover = '/arville/kpluz0/science/images/videosb.jpg';
     </table>
 </div>
 
-<!-- MAIN CONTENT -->
+<!-- ===== 25px SPACER (correct spacing) ===== -->
+<div style="height:20px; line-height:25px; font-size:0;">&nbsp;</div>
+
+<!-- ===== MAIN CONTENT ===== -->
 <div align="center" style="margin:0; padding:0; line-height:0;">
     <table border="0" width="800" cellspacing="0" cellpadding="0" id="table7" style="margin:0; padding:0; border-collapse:collapse;">
         <tr>
