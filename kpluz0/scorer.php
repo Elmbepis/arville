@@ -1,18 +1,81 @@
 <?php
-// scorer.php – uses session variables for user identification
+// scorer.php – uses session variables for user identification, accepts module URL
 
 class Scorer {
     private $db;
     private $moduleId;
     private $debugMessages = [];
 
-    public function __construct($dbConnection, $moduleId = 1) {
+    /**
+     * Constructor
+     * @param mysqli $dbConnection - active database connection
+     * @param string|null $moduleUrl - the URL of the module (e.g., "English/modules/first-letters.php")
+     *                                 or just the filename (e.g., "first-letters.php")
+     *                                 If null, auto-detect from $_SERVER['SCRIPT_NAME']
+     */
+    public function __construct($dbConnection, $moduleUrl = null) {
         $this->db = $dbConnection;
-        $this->moduleId = $moduleId;
+        $this->moduleId = $this->resolveModuleId($moduleUrl);
         if (!isset($_SESSION['score'])) {
             $_SESSION['score'] = 0;
         }
-        $this->addDebug("Scorer: __construct called. Module ID: $moduleId");
+        $this->addDebug("Scorer: __construct called. Resolved module ID: {$this->moduleId}");
+    }
+
+    /**
+     * Resolve module ID from modules table using the provided URL or auto-detection
+     * @param string|null $moduleUrl
+     * @return int
+     */
+    private function resolveModuleId($moduleUrl = null) {
+        // If no URL provided, try to auto-detect from script name
+        if (empty($moduleUrl)) {
+            $moduleUrl = $_SERVER['SCRIPT_NAME'];
+            $this->addDebug("Auto-detected module URL: '$moduleUrl'");
+        } else {
+            $this->addDebug("Received module URL: '$moduleUrl'");
+        }
+
+        // Extract the base filename (e.g., "colors.php" from a full path)
+        $filename = basename($moduleUrl);
+        $this->addDebug("Extracted filename: '$filename'");
+
+        // Try to match by URL (which should contain just the filename)
+        $stmt = $this->db->prepare("SELECT id FROM modules WHERE url = ? LIMIT 1");
+        if ($stmt) {
+            $stmt->bind_param("s", $filename);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($row = $result->fetch_assoc()) {
+                $id = $row['id'];
+                $stmt->close();
+                $this->addDebug("Found module ID: $id by filename '$filename'.");
+                return $id;
+            }
+            $stmt->close();
+        }
+
+        // If not found, try by module_key (filename without .php)
+        $moduleKey = basename($moduleUrl, '.php');
+        if (!empty($moduleKey)) {
+            $stmt2 = $this->db->prepare("SELECT id FROM modules WHERE module_key = ? LIMIT 1");
+            if ($stmt2) {
+                $stmt2->bind_param("s", $moduleKey);
+                $stmt2->execute();
+                $result2 = $stmt2->get_result();
+                if ($row2 = $result2->fetch_assoc()) {
+                    $id = $row2['id'];
+                    $stmt2->close();
+                    $this->addDebug("Found module ID $id by module_key '$moduleKey'.");
+                    return $id;
+                }
+                $stmt2->close();
+            }
+        }
+
+        // Fallback to ID 1 with warning
+        $this->addDebug("WARNING: Module not found for filename '$filename'. Using fallback ID 1.");
+        return 1;
     }
 
     private function addDebug($msg) {
@@ -20,6 +83,9 @@ class Scorer {
         error_log($msg);
     }
 
+    // ============================================================
+    // MAIN PROCESSING
+    // ============================================================
     public function processAnswer($selectedLetter, $correctAnswer, $level) {
         $this->addDebug("processAnswer START. Selected: '$selectedLetter', Correct: '$correctAnswer', Level: '$level'");
 
@@ -45,10 +111,13 @@ class Scorer {
         return $isCorrect;
     }
 
+    // ============================================================
+    // DATABASE SAVING
+    // ============================================================
     private function saveToDatabase($correct, $level) {
         $this->addDebug("saveToDatabase START");
 
-        // Use session user_id directly (if available)
+        // Use session user_id directly
         $userId = $_SESSION['user_id'] ?? null;
         if ($userId) {
             $this->addDebug("Using user_id from session: $userId");
@@ -133,8 +202,12 @@ class Scorer {
                 return false;
             }
         }
+        return false;
     }
 
+    // ============================================================
+    // USER LOOKUP
+    // ============================================================
     private function getUserId($username) {
         $this->addDebug("getUserId called for username '$username'");
         if (empty($username)) {
@@ -160,6 +233,9 @@ class Scorer {
         return null;
     }
 
+    // ============================================================
+    // CONSOLE DEBUG OUTPUT
+    // ============================================================
     public function outputConsoleDebug() {
         echo "<script>\n";
         echo "console.log('=== SCORER DEBUG ===');\n";
@@ -183,6 +259,9 @@ class Scorer {
         echo "</script>\n";
     }
 
+    // ============================================================
+    // SCORE ACCESS
+    // ============================================================
     public function getScore() {
         return $_SESSION['score'] ?? 0;
     }

@@ -141,7 +141,9 @@ if (isset($_GET['ansclick'])) {
     $selected = $_GET['ansclick'];
     $wordData = $_SESSION['current_question'] ?? null;
     if ($wordData) {
-        $scorer = new Scorer($conn, 1);
+        // ===== PASS THE FILENAME TO THE SCORER =====
+        $moduleUrl = basename(__FILE__); // "first-letters.php"
+        $scorer = new Scorer($conn, $moduleUrl);
         $correct = $scorer->processAnswer($selected, $wordData['answer'], $_SESSION['level']);
         $result = [
             'correct' => $correct,
