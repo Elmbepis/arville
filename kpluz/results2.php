@@ -17,9 +17,9 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get user details
+// Get user details including school
 $user_id = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT name, role FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT name, role, school FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -33,6 +33,7 @@ if (!$user) {
 
 $user_name = $user['name'];
 $user_role = $user['role'];
+$user_school = $user['school']; // school of the logged-in user
 
 // Restrict to teachers and admins only
 if ($user_role !== 'teacher' && $user_role !== 'admin') {
@@ -48,10 +49,16 @@ if (empty($subject)) {
 }
 
 if ($view_type === 'students') {
-    // STUDENTS VIEW - Show all students with their overall performance for this subject
+    // STUDENTS VIEW - Show students from the teacher's school (or all for admin)
     
-    // Get all students
-    $student_stmt = $conn->prepare("SELECT id, name, grade, school FROM users WHERE role = 'student' ORDER BY name");
+    // Build student query with school filter for teachers
+    if ($user_role === 'teacher') {
+        $student_stmt = $conn->prepare("SELECT id, name, grade, school FROM users WHERE role = 'student' AND school = ? ORDER BY name");
+        $student_stmt->bind_param("s", $user_school);
+    } else {
+        // Admin: show all students
+        $student_stmt = $conn->prepare("SELECT id, name, grade, school FROM users WHERE role = 'student' ORDER BY name");
+    }
     $student_stmt->execute();
     $students = $student_stmt->get_result();
     
@@ -369,8 +376,8 @@ if ($view_type === 'students') {
                                     <?php else: ?>
                                         <span class="view-student-btn disabled" title="No test results for this student in <?= htmlspecialchars($subject) ?>">View Test Results</span>
                                     <?php endif; ?>
-                                </div>
-                            </td>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -388,6 +395,8 @@ if ($view_type === 'students') {
 <?php
 } elseif ($view_type === 'topics') {
     // TOPICS VIEW - Show results per test (lesson + topic) using test_id to separate duplicates
+    
+    // Get all tests for this subject
     $tests_stmt = $conn->prepare("SELECT id, lesson, topic FROM tests WHERE subject = ? ORDER BY lesson, topic");
     $tests_stmt->bind_param("s", $subject);
     $tests_stmt->execute();
@@ -397,8 +406,14 @@ if ($view_type === 'students') {
         $test_list[$test['id']] = $test;  // key by test_id
     }
 
-    // Get all students
-    $student_stmt = $conn->prepare("SELECT id, name FROM users WHERE role = 'student' ORDER BY name");
+    // Get students from the teacher's school (or all for admin)
+    if ($user_role === 'teacher') {
+        $student_stmt = $conn->prepare("SELECT id, name FROM users WHERE role = 'student' AND school = ? ORDER BY name");
+        $student_stmt->bind_param("s", $user_school);
+    } else {
+        // Admin: show all students
+        $student_stmt = $conn->prepare("SELECT id, name FROM users WHERE role = 'student' ORDER BY name");
+    }
     $student_stmt->execute();
     $students = $student_stmt->get_result();
     $student_list = [];
@@ -459,7 +474,7 @@ if ($view_type === 'students') {
             'lesson' => $lesson,
             'topic' => $topic,
             'students_taken' => $students_taken,
-            'total_students' => count($student_list),
+            'total_students' => count($student_list),  // only students from the teacher's school
             'average_percentage' => $average_percentage,
             'students_passed' => $students_passed,
             'passing_rate' => $students_taken > 0 ? ($students_passed / $students_taken) * 100 : 0
