@@ -872,6 +872,14 @@
       "lesson": "Q2 Lesson 2",
       "file_path": "rmats/Basic Accounting/Q2_LE2.pdf",
       "description": "The Accounting Cycle of a Merchandising Business"
+    },
+    {
+      "id": 480,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Computer Programming (.NET Technology)",
+      "lesson": "Q1 Lesson 1",
+      "file_path": "rmats/Net Technology/Q1_LE1.pdf",
+      "description": "HTML Fundamentals"
     }
 
   ]
