@@ -344,6 +344,7 @@
       "file_path": "rmats/Life Career/Q2_LE8.pdf",
       "description": "Recreational and Rhythmic Activities for Developing Social Skills"
     },
+
     {
       "id": 201,
       "shs_pathway": "SHS Core Subject",
@@ -408,6 +409,7 @@
       "file_path": "rmats/Mabisang Kom/Q2_LE3.pdf",
       "description": "Tekstong Public-Facing, Persuweysib, Prosidyural, Naratibo, Deskriptibo"
     },
+
     {
       "id": 251,
       "shs_pathway": "SHS Core Subject",
@@ -521,6 +523,7 @@
       "file_path": "rmats/Kasaysayan/Q2_LE6.pdf",
       "description": "Pagsasakonteksto ng Kasalukuyang Anyo ng Pakikibaka at Pakikiangkop"
     },
+
     {
       "id": 300,
       "shs_pathway": "SHS Academic Elective Subject",
@@ -617,6 +620,7 @@
       "file_path": "rmats/Chemistry 1/Q2_LE3.pdf",
       "description": "Chemical Bonds and Properties of Chemical Compounds"
     },
+
     {
       "id": 350,
       "shs_pathway": "SHS Academic Elective Subject",
@@ -665,6 +669,7 @@
       "file_path": "rmats/Creative Comp 1/Q2_LE3.pdf",
       "description": "Reflecting on Poetry"
     },
+
     {
       "id": 380,
       "shs_pathway": "SHS Academic Elective Subject",
@@ -753,6 +758,7 @@
       "file_path": "rmats/Social Sciences/Q2_LE7.pdf",
       "description": "The Interdisciplinary Lens: Viewing Society Through Multiple Social Science Fields"
     },
+
     {
       "id": 420,
       "shs_pathway": "SHS Academic Elective Subject",
@@ -809,6 +815,7 @@
       "file_path": "rmats/Org Management/Q2_LE4.pdf",
       "description": "The United Nations Sustainable Development Goals"
     },
+
     {
       "id": 450,
       "shs_pathway": "SHS Academic Elective Subject",
@@ -873,6 +880,7 @@
       "file_path": "rmats/Basic Accounting/Q2_LE2.pdf",
       "description": "The Accounting Cycle of a Merchandising Business"
     },
+
     {
       "id": 480,
       "shs_pathway": "SHS Academic Elective Subject",
@@ -880,7 +888,22 @@
       "lesson": "Q1 Lesson 1",
       "file_path": "rmats/Net Technology/Q1_LE1.pdf",
       "description": "HTML Fundamentals"
+    },
+    {
+      "id": 481,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Computer Programming (.NET Technology)",
+      "lesson": "Q1 Lesson 2",
+      "file_path": "rmats/Net Technology/Q1_LE2.pdf",
+      "description": "Lists, Multimedia, and Tables: Organizing Web Content"
+    },
+    {
+      "id": 482,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Computer Programming (.NET Technology)",
+      "lesson": "Q1 Lesson 3",
+      "file_path": "rmats/Net Technology/Q1_LE3.pdf",
+      "description": "HTML Forms: Collecting User Input"
     }
-
   ]
 }
