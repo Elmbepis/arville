@@ -65,35 +65,42 @@ $elective_list = [
 // Extract all distinct subjects from the PDFs
 $all_subjects = array_unique(array_column($all_pdfs, 'subject'));
 
-// Core subjects are those NOT in the elective list
-$core_subjects = array_diff($all_subjects, $elective_list);
+// Create lowercase versions for case&#8209;insensitive comparisons
+$elective_list_lower = array_map('strtolower', array_map('trim', $elective_list));
+$all_subjects_lower = array_map('strtolower', array_map('trim', $all_subjects));
+
+// Core subjects = those NOT in elective list (case&#8209;insensitive)
+$core_subjects_lower = array_diff($all_subjects_lower, $elective_list_lower);
 
 // Determine which subjects to show
-$allowed_subjects = null;
+$allowed_subjects_lower = null;
 if ($user_role === 'student' && !empty($electives_json)) {
     $student_electives = json_decode($electives_json, true);
     if (is_array($student_electives) && count($student_electives) > 0) {
-        // Show core subjects + the student's chosen electives
-        $allowed_subjects = array_merge($core_subjects, $student_electives);
-        $allowed_subjects = array_unique($allowed_subjects); // remove duplicates
+        // Normalise student's electives (trim + lowercase)
+        $student_electives_lower = array_map('strtolower', array_map('trim', $student_electives));
+        // Allowed = core + student's electives
+        $allowed_subjects_lower = array_merge($core_subjects_lower, $student_electives_lower);
+        $allowed_subjects_lower = array_unique($allowed_subjects_lower);
     }
 }
 
-// If no filter, show all subjects
-if ($allowed_subjects === null) {
-    $allowed_subjects = $all_subjects;
+// If no filter (e.g., admin/teacher or no electives), show all subjects
+if ($allowed_subjects_lower === null) {
+    $allowed_subjects_lower = $all_subjects_lower;
 }
 
-// Filter PDFs based on allowed subjects
+// Filter PDFs based on allowed subjects (case&#8209;insensitive, trimmed)
 $filtered_pdfs = [];
 foreach ($all_pdfs as $pdf) {
     $subject = isset($pdf['subject']) ? trim($pdf['subject']) : '';
-    if (in_array($subject, $allowed_subjects)) {
+    $subject_lower = strtolower($subject);
+    if (in_array($subject_lower, $allowed_subjects_lower)) {
         $filtered_pdfs[] = $pdf;
     }
 }
 
-// Group filtered PDFs by shs_pathway and subject
+// Group filtered PDFs by shs_pathway and subject (keep original case for display)
 $pdf_groups = [];
 foreach ($filtered_pdfs as $pdf) {
     $key = $pdf['shs_pathway'] . '|' . $pdf['subject'];

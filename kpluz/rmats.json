@@ -884,7 +884,7 @@
     {
       "id": 480,
       "shs_pathway": "SHS Academic Elective Subject",
-      "subject": "Computer Programming (.NET Technology)",
+      "subject": ".NET Technology",
       "lesson": "Q1 Lesson 1",
       "file_path": "rmats/Net Technology/Q1_LE1.pdf",
       "description": "HTML Fundamentals"
@@ -892,7 +892,7 @@
     {
       "id": 481,
       "shs_pathway": "SHS Academic Elective Subject",
-      "subject": "Computer Programming (.NET Technology)",
+      "subject": ".NET Technology",
       "lesson": "Q1 Lesson 2",
       "file_path": "rmats/Net Technology/Q1_LE2.pdf",
       "description": "Lists, Multimedia, and Tables: Organizing Web Content"
@@ -900,7 +900,7 @@
     {
       "id": 482,
       "shs_pathway": "SHS Academic Elective Subject",
-      "subject": "Computer Programming (.NET Technology)",
+      "subject": ".NET Technology",
       "lesson": "Q1 Lesson 3",
       "file_path": "rmats/Net Technology/Q1_LE3.pdf",
       "description": "HTML Forms: Collecting User Input"
