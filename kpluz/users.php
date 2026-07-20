@@ -62,7 +62,8 @@ $valid_electives = [
     "Social Sciences",
     "Creative Composition 1",
     "Chemistry 1",
-    "Biology 1"
+    "Biology 1",
+    ".Net Technology"
 ];
 
 $message = '';
