@@ -59,7 +59,7 @@ $elective_list = [
     "Creative Composition 1",
     "Chemistry 1",
     "Biology 1",
-    "Computer Programming (.NET Technology)"
+    ".NET Technology"
 ];
 
 // Extract all distinct subjects from the PDFs
