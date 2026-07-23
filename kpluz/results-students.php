@@ -61,7 +61,7 @@ if (!$test) {
 
 $test_id = $test['id'];
 
-// Build the query for students who took this test
+// Build the query – use CASE&#8209;INSENSITIVE, TRIMMED comparison for school
 $sql = "
     SELECT u.id, u.name, tr.score, tr.total_questions, tr.percentage, tr.completed_at
     FROM users u
@@ -69,9 +69,14 @@ $sql = "
     WHERE u.role = 'student' AND tr.test_id = ?
 ";
 
-// If the logged&#8209;in user is a teacher, only show students from the same school
-if ($user_role === 'teacher' && !empty($user_school)) {
-    $sql .= " AND u.school = ?";
+if ($user_role === 'teacher') {
+    if (empty($user_school)) {
+        // If teacher has no school, show no students (or handle as you wish)
+        $sql .= " AND 1=0"; // force empty result
+    } else {
+        // Compare trimmed, lowercased school values
+        $sql .= " AND LOWER(TRIM(u.school)) = LOWER(TRIM(?))";
+    }
 }
 $sql .= " ORDER BY tr.percentage DESC, u.name ASC";
 
@@ -116,6 +121,7 @@ $conn->close();
   <meta charset="utf-8">
   <title>Students - <?= htmlspecialchars($lesson_name) ?> | KPluz SHS</title>
   <style>
+    /* (your existing styles – unchanged) */
     * {
         box-sizing: border-box;
     }
@@ -199,7 +205,6 @@ $conn->close();
         margin-bottom: 10px;
     }
     
-    /* Statistics Cards */
     .stats-container {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
@@ -227,7 +232,6 @@ $conn->close();
         margin-top: 5px;
     }
     
-    /* Students Table */
     .students-table {
         width: 100%;
         border-collapse: collapse;
