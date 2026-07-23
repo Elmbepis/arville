@@ -447,7 +447,7 @@ if ($view_type === 'students') {
         ];
     }
 
-    // Calculate statistics per test
+    // Calculate statistics per test – **filter by teacher's school**
     $lesson_stats = [];
     foreach ($test_list as $test_id => $test) {
         $lesson = $test['lesson'];
@@ -459,6 +459,10 @@ if ($view_type === 'students') {
 
         if (isset($results_data[$test_id])) {
             foreach ($results_data[$test_id] as $student_id => $result) {
+                // *** FIX: Only count students that are in the teacher's school list ***
+                if (!isset($student_list[$student_id])) {
+                    continue; // skip students from other schools
+                }
                 $students_taken++;
                 $total_score_sum += $result['score'];
                 $total_questions_sum += $result['total_questions'];
