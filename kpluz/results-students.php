@@ -25,9 +25,9 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get user details
+// Get user details (including school)
 $user_id = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT name, role FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT name, role, school FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -41,6 +41,7 @@ if (!$user) {
 
 $user_name = $user['name'];
 $user_role = $user['role'];
+$user_school = trim($user['school'] ?? '');
 
 // Restrict to teachers and admins only
 if ($user_role !== 'teacher' && $user_role !== 'admin') {
@@ -60,19 +61,31 @@ if (!$test) {
 
 $test_id = $test['id'];
 
-// Get all students who took this test with their scores (using test_id)
-$students_stmt = $conn->prepare("
+// Build the query for students who took this test
+$sql = "
     SELECT u.id, u.name, tr.score, tr.total_questions, tr.percentage, tr.completed_at
     FROM users u
     INNER JOIN test_results tr ON u.id = tr.user_id
     WHERE u.role = 'student' AND tr.test_id = ?
-    ORDER BY tr.percentage DESC, u.name ASC
-");
-$students_stmt->bind_param("i", $test_id);
+";
+
+// If the logged&#8209;in user is a teacher, only show students from the same school
+if ($user_role === 'teacher' && !empty($user_school)) {
+    $sql .= " AND u.school = ?";
+}
+$sql .= " ORDER BY tr.percentage DESC, u.name ASC";
+
+// Prepare and execute
+$students_stmt = $conn->prepare($sql);
+if ($user_role === 'teacher' && !empty($user_school)) {
+    $students_stmt->bind_param("is", $test_id, $user_school);
+} else {
+    $students_stmt->bind_param("i", $test_id);
+}
 $students_stmt->execute();
 $students_results = $students_stmt->get_result();
 
-// Calculate class statistics
+// Calculate class statistics (only for the filtered students)
 $total_students = 0;
 $scores_sum = 0;
 $highest_score = 0;
@@ -403,7 +416,7 @@ $conn->close();
             </table>
         <?php else: ?>
             <div class="no-results">
-                <p>No students have taken this test yet.</p>
+                <p>No students from your school have taken this test yet.</p>
             </div>
         <?php endif; ?>
         
