@@ -904,6 +904,31 @@
       "lesson": "Q1 Lesson 3",
       "file_path": "rmats/Net Technology/Q1_LE3.pdf",
       "description": "HTML Forms: Collecting User Input"
+    },
+    {
+      "id": 483,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": ".NET Technology",
+      "lesson": "Q2 Lesson 1",
+      "file_path": "rmats/Net Technology/Q2_LE1.pdf",
+      "description": "CSS Styling – Text, Colors, and Visual Effects"
+    },
+    {
+      "id": 484,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": ".NET Technology",
+      "lesson": "Q2 Lesson 2",
+      "file_path": "rmats/Net Technology/Q2_LE2.pdf",
+      "description": "CSS Positioning, Layout, and Design"
+    },
+    {
+      "id": 485,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": ".NET Technology",
+      "lesson": "Q2 Lesson 3",
+      "file_path": "rmats/Net Technology/Q2_LE3.pdf",
+      "description": "Responsive Web Design and Introduction to JavaScript"
     }
+
   ]
 }
