@@ -24,6 +24,49 @@ if (isset($_SESSION['current_test_questions_order']) && !empty($_SESSION['curren
 }
 // END ADDED
 
+// ============================================================
+// &#128737;&#65039; NEW: Stop grading if ANY answer is missing or empty
+// ============================================================
+$missing_answers = [];
+foreach ($question_ids as $qid) {
+    $answer_key = 'answer_' . $qid;
+    if (!isset($_POST[$answer_key]) || trim($_POST[$answer_key]) === '') {
+        $missing_answers[] = $qid;
+    }
+}
+
+if (!empty($missing_answers)) {
+    // Build redirect URL back to the test page
+    $subject = isset($_POST['subject']) ? urlencode($_POST['subject']) : '';
+    $lesson  = isset($_POST['lesson'])  ? urlencode($_POST['lesson'])  : '';
+    $test_id = isset($_POST['test_id']) ? (int)$_POST['test_id'] : 0;
+
+    $redirect_url = "take_test.php?subject=$subject&lesson=$lesson";
+
+    // Fetch the topic from the database (needed for the URL)
+    if ($test_id > 0) {
+        $conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz");
+        if (!$conn->connect_error) {
+            $topic_stmt = $conn->prepare("SELECT topic FROM tests WHERE id = ?");
+            $topic_stmt->bind_param("i", $test_id);
+            $topic_stmt->execute();
+            $topic_res = $topic_stmt->get_result();
+            if ($topic_row = $topic_res->fetch_assoc()) {
+                $redirect_url .= "&topic=" . urlencode($topic_row['topic']);
+            }
+            $topic_stmt->close();
+            $conn->close();
+        }
+    }
+
+    // Store error message in session so it can be shown on the test page
+    $_SESSION['test_error'] = "You did not answer all questions. Missing " . count($missing_answers) . " answer(s). Please scroll up and complete the entire test.";
+
+    header("Location: $redirect_url");
+    exit(); // &#9989; Grading stops – no score is recorded
+}
+// ============================================================
+
 $total = count($question_ids);
 $score = 0;
 
@@ -434,8 +477,6 @@ $passed = $percentage >= 75;
         background: #c82333; 
         color: white;
     }
-
-
   </style>
 </head>
 <body>

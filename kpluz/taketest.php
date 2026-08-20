@@ -150,6 +150,7 @@ $_SESSION['current_test_id'] = $test_id;
 $_SESSION['current_test_question_ids'] = array_column($questions, 'id');
 $_SESSION['current_test_question_count'] = count($questions);
 $_SESSION['current_test_questions_order'] = $questions;
+$_SESSION['current_test_topic'] = $test_topic; // store topic for redirect
 
 $conn->close();
 ?>
@@ -348,6 +349,17 @@ $conn->close();
         background: #c82333; 
         color: white;
     }
+
+    /* Error message style */
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        padding: 15px 20px;
+        border-radius: 5px;
+        margin-bottom: 25px;
+        font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -365,6 +377,13 @@ $conn->close();
     </div>
 
     <div class="dashboard-content">
+        <?php if (isset($_SESSION['test_error'])): ?>
+            <div class="error-message">
+                &#9888;&#65039; <?= htmlspecialchars($_SESSION['test_error']) ?>
+            </div>
+            <?php unset($_SESSION['test_error']); ?>
+        <?php endif; ?>
+
         <h2><span class="test-for-text">Test for:</span><br/><?= htmlspecialchars($test_subject) ?> - <?= htmlspecialchars($test_lesson) ?></h2>
         
         <div class="topic-line">&#128214; Topic: <?= htmlspecialchars($test_topic) ?></div>
