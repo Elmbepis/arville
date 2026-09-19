@@ -261,6 +261,54 @@
       "description": "Quantities of Different Magnitudes"
     },
 
+    {
+      "id": 65,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q3 Lesson Exemplar 1",
+      "file_path": "pdfs/Gen Math/SHS_GM_Q3_LE7.pdf",
+      "description": "Basic Concepts of Trigonometry"
+    },
+    {
+      "id": 66,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q3 Lesson Exemplar 2",
+      "file_path": "pdfs/Gen Math/SHS_GM_Q3_LE8.pdf",
+      "description": "Practical Applications of Measurement"
+    },
+    {
+      "id": 67,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q3 Lesson Exemplar 3",
+      "file_path": "pdfs/Gen Math/SHS_GM_Q3_LE9.pdf",
+      "description": "Random Variables and Sampling"
+    },
+    {
+      "id": 68,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q3 Activity Sheet 1",
+      "file_path": "pdfs/Gen Math/SHS_GM_Q3_LAS_LE7.pdf",
+      "description": "Trigonometric Ratios in a Right Triangle"
+    },
+    {
+      "id": 69,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q3 Activity Sheet 2",
+      "file_path": "pdfs/Gen Math/SHS_GM_Q3_LAS_LE8.pdf",
+      "description": "Estimating and Measuring Lengths and Distances"
+    },
+    {
+      "id": 70,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q3 Activity Sheet 3",
+      "file_path": "pdfs/Gen Math/SHS_GM_Q3_LAS_LE9.pdf",
+      "description": "Discrete Random Variables"
+    },
 
     {
       "id": 101,
