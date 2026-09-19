@@ -463,7 +463,103 @@
       "file_path": "pdfs/Gen Sci/SHS_GS_Q2_LE6.pdf",
       "description": "Metabolism as Chemical Reaction in the Body"
     },
-    
+
+    {
+      "id": 121,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson Exemplar 1",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LE1.pdf",
+      "description": "Major Systems in Plants and Animals"
+    },
+    {
+      "id": 122,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson Exemplar 2",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LE2.pdf",
+      "description": "Structural Components of Biological Systems"
+    },
+    {
+      "id": 123,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson Exemplar 3",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LE3.pdf",
+      "description": "Cells and Cellular Processes"
+    },
+    {
+      "id": 124,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson Exemplar 4",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LE4.pdf",
+      "description": "Plant Organ Systems"
+    },
+    {
+      "id": 125,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson Exemplar 5",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LE5.pdf",
+      "description": "Human Body System"
+    },
+    {
+      "id": 126,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson Exemplar 6",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LE6.pdf",
+      "description": "Human Body Thermoregulation"
+    },
+    {
+      "id": 127,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson Exemplar 7",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LE7.pdf",
+      "description": "Human Immune and Lymphatic Systems"
+    },
+    {
+      "id": 128,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson Exemplar 8",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LE8.pdf",
+      "description": "Climate Change"
+    },
+    {
+      "id": 129,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson Exemplar 9",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LE9.pdf",
+      "description": "Climate Change and Biological Systems"
+    },    
+    {
+      "id": 130,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson Exemplar 10",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LE10.pdf",
+      "description": "Impact of Climate Change on Philippine Ecosystems"
+    }, 
+    {
+      "id": 131,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson Exemplar 11",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LE11.pdf",
+      "description": "Mitigating Climate Change Impacts on Local Biodiversity"
+    },
+    {
+      "id": 132,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson Exemplar 12",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LE12.pdf",
+      "description": "Overpopulation"
+    },     
     
     {
       "id": 151,
