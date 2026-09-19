@@ -114,6 +114,70 @@
       "description": "Meaningful Public and Cultural Messages/Texts"
     },
 
+    {
+      "id": 21,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q3 Lesson Exemplar 1",
+      "file_path": "pdfs/Eff Comm/SHS_Core_EC_Q3_LE1.pdf",
+      "description": "Multimodal Academic and Technical Texts 1"
+    },
+    {
+      "id": 22,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q3 Lesson Exemplar 2",
+      "file_path": "pdfs/Eff Comm/SHS_Core_EC_Q3_LE2.pdf",
+      "description": "Multimodal Academic and Technical Texts 2"
+    },
+    {
+      "id": 23,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q3 Exemplar 3",
+      "file_path": "pdfs/Eff Comm/SHS_Core_EC_Q3_LE3.pdf",
+      "description": "Multimodal Academic and Technical Texts 3"
+    },
+    {
+      "id": 24,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q3 Lesson Exemplar 4",
+      "file_path": "pdfs/Eff Comm/SHS_Core_EC_Q3_LE4.pdf",
+      "description": "Multimodal Academic and Technical Texts 4"
+    },
+    {
+      "id": 25,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q3 Activity Sheet 1",
+      "file_path": "pdfs/Eff Comm/SHS_Core_CAE_Q3_LAS1.pdf",
+      "description": "Interpreting Meaning in Multimodal Academic and Technical Texts"
+    },
+    {
+      "id": 26,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q3 Activity Sheet 2",
+      "file_path": "pdfs/Eff Comm/SHS_Core_CAE_Q3_LAS2.pdf",
+      "description": "Interpreting Data and Presenting Information Effectively"
+    },
+    {
+      "id": 27,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q3 Activity Sheet 3",
+      "file_path": "pdfs/Eff Comm/SHS_Core_CAE_Q3_LAS3.pdf",
+      "description": "Collaborative Communication and Summarizing Key Information"
+    },
+    {
+      "id": 28,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q3 Activity Sheet 4",
+      "file_path": "pdfs/Eff Comm/SHS_Core_CAE_Q3_LAS4.pdf",
+      "description": "Expressing Ideas Through Reflective Essays, etc."
+    },
 
     {
       "id": 51,
