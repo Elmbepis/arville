@@ -1108,10 +1108,89 @@
       "file_path": "pdfs/Mabisang Kom/SHS_MK_Q2_LAS3.pdf",
       "description": "Tekstong Public-Facing, Persuweysib, Prosidyural, Naratibo, Deskriptibo"
     },
-
+    {
+      "id": 285,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Lesson Exemplar 1",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q3_LE1.pdf",
+      "description": "Pagbibigay-kahulugan sa mga Datos sa mga Multimodal na Anyo"
+    },
+    {
+      "id": 286,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Lesson Exemplar 2",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q3_LE2.pdf",
+      "description": "Pagsunod sa mga Proseso o Panutong Pasalita, Pasulat, at Multimodal"
+    },
+    {
+      "id": 287,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Lesson Exemplar 3",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q3_LE3.pdf",
+      "description": "Paggamit ng Representasyong Multimodal sa Tekstong Alademiko o Teknikal"
+    },
+    {
+      "id": 288,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Lesson Exemplar 4",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q3_LE4.pdf",
+      "description": "Pagbibigay-kahulugan, Pakikilahok, at Pagpapahayag sa Kontekstong Akademiko"
+    },
+    {
+      "id": 289,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Lesson Exemplar 5",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q3_LE5.pdf",
+      "description": "Pakikibahagi sa Kolaboratibong Gawaing Akademiko o Teknikal"
+    },
+    {
+      "id": 290,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Activity Sheet 1",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q3_LAS1.pdf",
+      "description": "Pagbibigay-kahulugan sa mga Datos sa mga Multimodal na Anyo"
+    },
+    {
+      "id": 291,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Activity Sheet 2",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q3_LAS2.pdf",
+      "description": "Pagsunod sa mga Proseso o Panutong Pasalita, Pasulat, at Multimodal"
+    },
+    {
+      "id": 292,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Activity Sheet 3",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q3_LAS3.pdf",
+      "description": "Paggamit ng Representasyong Multimodal sa Tekstong Alademiko o Teknikal"
+    },
+    {
+      "id": 293,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Activity Sheet 4",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q3_LAS4.pdf",
+      "description": "Pagbibigay-kahulugan, Pakikilahok, at Pagpapahayag sa Kontekstong Akademiko"
+    },
+    {
+      "id": 294,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Activity Sheet 5",
+      "file_path": "pdfs/Mabisang Kom/SHS_MK_Q3_LAS5.pdf",
+      "description": "Pakikibahagi sa Kolaboratibong Gawaing Akademiko o Teknikal"
+    },
 
     {
-      "id": 301,
+      "id": 321,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Lesson Exemplar 1",
@@ -1119,7 +1198,7 @@
       "description": "Kamalayang Pangkasaysayan"
     },
     {
-      "id": 302,
+      "id": 322,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Lesson Exemplar 2",
@@ -1127,7 +1206,7 @@
       "description": "Ugnayan ng Heograpiya at Kultura 1"
     },
     {
-      "id": 303,
+      "id": 323,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Lesson Exemplar 3",
@@ -1135,7 +1214,7 @@
       "description": "Ugnayan ng Heograpiya at Kultura 2"
     },
     {
-      "id": 304,
+      "id": 324,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Lesson Exemplar 4",
@@ -1143,7 +1222,7 @@
       "description": "Kaugnayan ng Kultura sa Kamalayang Pangkaaysayan"
     },
     {
-      "id": 305,
+      "id": 325,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Lesson Exemplar 5",
@@ -1151,7 +1230,7 @@
       "description": "Mga Paniniwala ng mga Pilipino Tungkol sa Buhay at Kabilang-buhay"
     },
     {
-      "id": 306,
+      "id": 326,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Lesson Exemplar 6",
@@ -1159,7 +1238,7 @@
       "description": "Mga Katutubo at Tradisyunal na Paraan ng Pagpapagaling"
     },
     {
-      "id": 307,
+      "id": 327,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Lesson Exemplar 7",
@@ -1167,7 +1246,7 @@
       "description": "Pagpapahalaga sa mga Personal at Panlipunang Paniniwala/Pananampalataya"
     },
     {
-      "id": 311,
+      "id": 331,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Activity Sheet 1",
@@ -1175,7 +1254,7 @@
       "description": "Kamalayang Pangkasaysayan"
     },
     {
-      "id": 312,
+      "id": 332,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Activity Sheet 2",
@@ -1183,7 +1262,7 @@
       "description": "Ugnayan ng Heograpiya at Kultura"
     },
     {
-      "id": 313,
+      "id": 333,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Activity Sheet 3",
@@ -1191,7 +1270,7 @@
       "description": "Natatanging Kultura at Kabuhayan sa Ilaya at Ilawod"
     },
     {
-      "id": 314,
+      "id": 334,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Activity Sheet 4",
@@ -1199,7 +1278,7 @@
       "description": "Kaugnayan ng Kultura sa Kamalayang Pangkaaysayan"
     },
     {
-      "id": 315,
+      "id": 335,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Activity Sheet 5",
@@ -1207,7 +1286,7 @@
       "description": "Mga Paniniwala ng mga Pilipino Tungkol sa Buhay at Kabilang-buhay"
     },
     {
-      "id": 316,
+      "id": 336,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Activity Sheet 6",
@@ -1215,7 +1294,7 @@
       "description": "Mga Katutubo at Tradisyunal na Paraan ng Pagpapagaling"
     },
     {
-      "id": 317,
+      "id": 337,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q1 Activity Sheet 7",
@@ -1224,7 +1303,7 @@
     },
 
     {
-      "id": 321,
+      "id": 341,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q2 Lesson Exemplar 1",
@@ -1232,7 +1311,7 @@
       "description": "Mga Anyo ng Pakikibaka at Pakikiangkop sa Pag-usbong ng Kamalayang Pilipino"
     },
     {
-      "id": 322,
+      "id": 342,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q2 Lesson Exemplar 2.1",
@@ -1240,7 +1319,7 @@
       "description": "Pakikibaka Laban sa mga Dayuhang Espanyol, Amerikano, at Hapon 1"
     },
     {
-      "id": 323,
+      "id": 343,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q2 Lesson Exemplar 2.2",
@@ -1248,7 +1327,7 @@
       "description": "Pakikibaka Laban sa mga Dayuhang Espanyol, Amerikano, at Hapon 2"
     },
     {
-      "id": 324,
+      "id": 344,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q2 Lesson Exemplar 3",
@@ -1256,7 +1335,7 @@
       "description": "Mga Naging Tugon ng Pilipino sa Kasaysayan"
     },
     {
-      "id": 325,
+      "id": 345,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q2 Lesson Exemplar 4",
@@ -1264,7 +1343,7 @@
       "description": "Mga Karanasan ng Pakikiangkop sa Panahon ng Pagsasarili"
     },
     {
-      "id": 326,
+      "id": 346,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q2 Lesson Exemplar 5",
@@ -1272,7 +1351,7 @@
       "description": "Bunga ng Lokal na Elitismo at Diktadura sa Kamalayang Pilipino"
     },
     {
-      "id": 327,
+      "id": 347,
       "shs_pathway": "SHS Core Subject",
       "subject": "Kasaysayan at Lipunang Pilipino",
       "lesson": "Q2 Lesson Exemplar 6",
