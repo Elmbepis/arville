@@ -1357,8 +1357,137 @@
       "lesson": "Q2 Lesson Exemplar 6",
       "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q2_LE6.pdf",
       "description": "Pagsasakonteksto ng Kasalukuyang Anyo ng Pakikibaka at Pakikiangkop"
-    }
+    },
 
+    {
+      "id": 351,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Lesson Exemplar 1",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LE1.1.pdf",
+      "description": "Konsepto at Katuturan ng Likas-Kayang Pag-unlad"
+    },
+    {
+      "id": 352,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Lesson Exemplar 2",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LE1.2.pdf",
+      "description": "Ugnayan ng Likas-Kayang Pag-unlad at Katarungang Panlipunan"
+    },
+    {
+      "id": 353,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Lesson Exemplar 3",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LE2.1.pdf",
+      "description": "United Nations Sustainable Development Goals"
+    },
+    {
+      "id": 354,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Lesson Exemplar 4",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LE2.2.pdf",
+      "description": "Philippine Development Plan"
+    },
+    {
+      "id": 355,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Lesson Exemplar 5",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LE3.1.pdf",
+      "description": "Universal Health Care System"
+    },
+    {
+      "id": 356,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Lesson Exemplar 6",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LE3.2.pdf",
+      "description": "Universal Access to Quality Tertiary Education"
+    },
+    {
+      "id": 357,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Lesson Exemplar 7",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LE3.3.pdf",
+      "description": "Mga Piling Programang Panlipunan para sa Likas-Kayang Pag-unlad "
+    },
+    {
+      "id": 358,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Lesson Exemplar 8",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LE4.pdf",
+      "description": "Pagtugon sa Hindi Pagkakapantay-pantay"
+    },
+
+    {
+      "id": 361,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Activity Sheet 1",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LAS1.1.pdf",
+      "description": "Konsepto at Katuturan ng Likas-Kayang Pag-unlad"
+    },
+    {
+      "id": 362,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Activity Sheet 2",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LAS1.2.pdf",
+      "description": "Ugnayan ng Likas-Kayang Pag-unlad at Katarungang Panlipunan"
+    },
+    {
+      "id": 363,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Activity Sheet 3",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LAS2.1.pdf",
+      "description": "United Nations Sustainable Development Goals"
+    },
+    {
+      "id": 364,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Activity Sheet 4",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LAS2.2.pdf",
+      "description": "Philippine Development Plan"
+    },
+    {
+      "id": 365,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Activity Sheet 5",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LAS3.1.pdf",
+      "description": "Universal Health Care System"
+    },
+    {
+      "id": 366,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Activity Sheet 6",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LAS3.2.pdf",
+      "description": "Universal Access to Quality Tertiary Education"
+    },
+    {
+      "id": 367,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Activity Sheet 7",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LAS3.3.pdf",
+      "description": "Mga Piling Programang Panlipunan para sa Likas-Kayang Pag-unlad"
+    },
+    {
+      "id": 368,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Activity Sheet 8",
+      "file_path": "pdfs/Kasaysayan/SHS_PKLP_Q3_LAS4.pdf",
+      "description": "Pagtugon sa Hindi Pagkakapantay-pantay"
+    }
 
   ]
 }
