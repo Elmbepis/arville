@@ -560,6 +560,70 @@
       "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LE12.pdf",
       "description": "Overpopulation"
     },     
+    {
+      "id": 133,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Activity Sheet 1",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LAS1.pdf",
+      "description": "Unifying Themes in Life Sciences 1"
+    },
+    {
+      "id": 134,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Activity Sheet 2",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LAS2.pdf",
+      "description": "Unifying Themes in Life Sciences 2"
+    },
+    {
+      "id": 135,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Activity Sheet 3",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LAS3.pdf",
+      "description": "Importance of Cells in Living Things"
+    },
+    {
+      "id": 136,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Activity Sheet 4",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LAS4.pdf",
+      "description": "Flow Forces: Modeling Transport in Plants"
+    },
+    {
+      "id": 137,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Activity Sheet 5",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LAS5.pdf",
+      "description": "Body Systems"
+    },
+    {
+      "id": 138,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Activity Sheet 6",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LAS6.pdf",
+      "description": "Body Thermoregulation"
+    },
+    {
+      "id": 139,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Activity Sheet 7",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LAS7.pdf",
+      "description": "Organ Systems Working Together"
+    },
+    {
+      "id": 140,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Activity Sheet 8",
+      "file_path": "pdfs/Gen Sci/SHS_Core_GS_Q3_LAS8.pdf",
+      "description": "Climate Change"
+    },
     
     {
       "id": 171,
