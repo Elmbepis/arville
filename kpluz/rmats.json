@@ -121,6 +121,30 @@
       "description": "Statistical Variables"
     },
     {
+      "id": 60,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q3 Lesson 7",
+      "file_path": "rmats/Gen Math/Q3_LE7.pdf",
+      "description": "Basic Trigonometry"
+    },
+    {
+      "id": 61,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q3 Lesson 8",
+      "file_path": "rmats/Gen Math/Q3_LE8.pdf",
+      "description": "Practical Applications of Measurements and Transformational Geometry"
+    },
+    {
+      "id": 62,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Mathematics",
+      "lesson": "Q3 Lesson 9",
+      "file_path": "rmats/Gen Math/Q3_LE9.pdf",
+      "description": "Statistics and Probability: Random Variables and Sampling"
+    },
+    {
       "id": 101,
       "shs_pathway": "SHS Core Subject",
       "subject": "General Science",
