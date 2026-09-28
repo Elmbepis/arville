@@ -432,7 +432,22 @@
       "file_path": "rmats/Life Career/Q2_LE8.pdf",
       "description": "Recreational and Rhythmic Activities for Developing Social Skills"
     },
-
+    {
+      "id": 175,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q3 Lesson 1",
+      "file_path": "rmats/Life Career/Q3_LE1.pdf",
+      "description": "Factors Affecting Career Planning"
+    },
+    {
+      "id": 176,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q3 Lesson 2",
+      "file_path": "rmats/Life Career/Q3_LE2.pdf",
+      "description": "Workplace Considerations and Career Success"
+    },
     {
       "id": 201,
       "shs_pathway": "SHS Core Subject",
