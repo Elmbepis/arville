@@ -73,6 +73,38 @@
       "description": "Meaningful Public and Cultural Messages/Texts"
     },
     {
+      "id": 15,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q3 Lesson 1",
+      "file_path": "rmats/Eff Comm/Q3_LE1.pdf",
+      "description": "Interpreting Meaning in Academic and Technical Texts"
+    },
+    {
+      "id": 16,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q3 Lesson 2",
+      "file_path": "rmats/Eff Comm/Q3_LE2.pdf",
+      "description": "Engaging Effectively in Interactive Communication"
+    },
+    {
+      "id": 17,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q3 Lesson 3",
+      "file_path": "rmats/Eff Comm/Q3_LE3.pdf",
+      "description": "Expressing Ideas Clearly and Coherently in Academic and Technical Forms"
+    },
+    {
+      "id": 18,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Effective Communication",
+      "lesson": "Q3 Lesson 4",
+      "file_path": "rmats/Eff Comm/Q3_LE4.pdf",
+      "description": "Reflecting on Interpretation, Engagement, and Expression in Academic and Technical Communication"
+    },
+    {
       "id": 51,
       "shs_pathway": "SHS Core Subject",
       "subject": "General Mathematics",
@@ -239,6 +271,38 @@
       "lesson": "Q2 Lesson 6",
       "file_path": "rmats/Gen Sci/Q2_LE6.pdf",
       "description": "Metabolism as Chemical Reaction in the Body"
+    },
+    {
+      "id": 121,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson 1",
+      "file_path": "rmats/Gen Sci/Q3_LE1.pdf",
+      "description": "Unifying Themes of Life Science – Systems, Structures, and Functions"
+    },
+    {
+      "id": 122,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson 2",
+      "file_path": "rmats/Gen Sci/Q3_LE2.pdf",
+      "description": "The Importance of Cells – How Cells Convert Nutrients into Energy"
+    },
+    {
+      "id": 123,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson 3",
+      "file_path": "rmats/Gen Sci/Q3_LE3.pdf",
+      "description": "How Organ Systems Work Together"
+    },
+    {
+      "id": 124,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "General Science",
+      "lesson": "Q3 Lesson 4",
+      "file_path": "rmats/Gen Sci/Q3_LE4.pdf",
+      "description": "Philippine Ecosystems, Climate Change, and Overpopulation"
     },
     {
       "id": 151,
