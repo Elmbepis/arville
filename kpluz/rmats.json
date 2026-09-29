@@ -449,6 +449,22 @@
       "description": "Workplace Considerations and Career Success"
     },
     {
+      "id": 177,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q3 Lesson 3",
+      "file_path": "rmats/Life Career/Q3_LE3.pdf",
+      "description": "Desirable Work Behaviors and Career Competence"
+    },
+    {
+      "id": 178,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Life and Career Skills",
+      "lesson": "Q3 Lesson 4",
+      "file_path": "rmats/Life Career/Q3_LE4.pdf",
+      "description": "Physical Activities That Promote Work-Life Balance"
+    },
+    {
       "id": 201,
       "shs_pathway": "SHS Core Subject",
       "subject": "Mabisang Komunikasyon",
@@ -511,6 +527,22 @@
       "lesson": "Q2 Lesson 3",
       "file_path": "rmats/Mabisang Kom/Q2_LE3.pdf",
       "description": "Tekstong Public-Facing, Persuweysib, Prosidyural, Naratibo, Deskriptibo"
+    },
+    {
+      "id": 224,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Lesson 1",
+      "file_path": "rmats/Mabisang Kom/Q3_LE1.pdf",
+      "description": "Pagbibigay-Kahulugan sa mga Akademiko at Teknikal na Teksto"
+    },
+    {
+      "id": 225,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Lesson 2",
+      "file_path": "rmats/Mabisang Kom/Q3_LE2.pdf",
+      "description": "Mabisang Pakikilahok sa Interaktibong Komunikasyon"
     },
 
     {
