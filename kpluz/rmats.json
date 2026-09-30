@@ -544,6 +544,22 @@
       "file_path": "rmats/Mabisang Kom/Q3_LE2.pdf",
       "description": "Mabisang Pakikilahok sa Interaktibong Komunikasyon"
     },
+    {
+      "id": 226,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Lesson 3",
+      "file_path": "rmats/Mabisang Kom/Q3_LE3.pdf",
+      "description": "Epektibong Pagpapahayag ng mga Ideya sa Akademiko at Teknikal na Anyo"
+    },
+    {
+      "id": 227,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Mabisang Komunikasyon",
+      "lesson": "Q3 Lesson 4",
+      "file_path": "rmats/Mabisang Kom/Q3_LE4.pdf",
+      "description": "Pagninilay sa mga Proseso ng Pagbibigay-Kahulugan, Pakikilahok, at Pagpapahayag"
+    },
 
     {
       "id": 251,
