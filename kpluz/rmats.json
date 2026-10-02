@@ -690,6 +690,22 @@
       "file_path": "rmats/Kasaysayan/Q3_LE2.pdf",
       "description": "Pagsusuri sa mga Dokumentong Nagsusulong ng Likas-Kayang Pag-Unlad"
     },
+    {
+      "id": 280,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Lesson 3",
+      "file_path": "rmats/Kasaysayan/Q3_LE3.pdf",
+      "description": "Mga Programang Panlipunang Nagsusulong ng Likas-Kayang Pag-Unlad"
+    },
+    {
+      "id": 281,
+      "shs_pathway": "SHS Core Subject",
+      "subject": "Kasaysayan at Lipunang Pilipino",
+      "lesson": "Q3 Lesson 4",
+      "file_path": "rmats/Kasaysayan/Q3_LE4.pdf",
+      "description": "Likas-Kayang Pag-Unlad at Katarungang Panlipunan bilang Tugon sa Hindi Pagkakapantay-Pantay"
+    },
 
     {
       "id": 300,
