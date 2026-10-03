@@ -7,7 +7,7 @@ header('Cache-Control: no-store');
 $DB_HOST = 'localhost';
 $DB_NAME = 'worlds';
 $DB_USER = 'root';
-$DB_PASS = '';
+$DB_PASS = 'AcadeV25!';
 
 try {
     $pdo = new PDO(
