@@ -53,7 +53,7 @@ $stmt->execute([$world['id']]);
 $areas = $stmt->fetchAll();
 
 $objStmt = $pdo->prepare(
-    "SELECT id, creator, model_path,
+    "SELECT id, creator, model_path, texture,
             pos_x, pos_y, pos_z,
             rot_x, rot_y, rot_z,
             scale, params, sort_order, label
@@ -72,6 +72,11 @@ foreach ($areas as &$a) {
             $o[$k] = (float)$o[$k];
         }
         $o['id'] = (int)$o['id'];
+
+        // Ensure texture is either a string or null (never an empty string)
+        if (isset($o['texture']) && $o['texture'] === '') {
+            $o['texture'] = null;
+        }
     }
     unset($o);
 

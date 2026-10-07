@@ -237,7 +237,7 @@
         }
 
         // =================================================================
-        // Resource loading (textures + obj_create.js)
+        // Resource loading (textures + obj_create.js + obj_create_db.js)
         // =================================================================
         async function loadResources() {
             await loadHallTextureConfig();
@@ -270,10 +270,10 @@
 
         function loadObjectCreator() {
             return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = 'universe/obj_create.js?v=' + Date.now();
+                const mainScript = document.createElement('script');
+                mainScript.src = 'universe/obj_create.js?v=' + Date.now();
 
-                script.onload = function () {
+                mainScript.onload = function () {
                     console.log('&#9989; Object creator loaded');
                     if (!window.textureLoader) {
                         window.textureLoader = new THREE.TextureLoader();
@@ -281,15 +281,30 @@
                     if (window.initObjectTextures) {
                         window.initObjectTextures(window.textureLoader);
                     }
-                    resolve();
+
+                    // Load the DB variant next
+                    const dbScript = document.createElement('script');
+                    dbScript.src = 'universe/obj_create_db.js?v=' + Date.now();
+
+                    dbScript.onload = function () {
+                        console.log('&#9989; DB object helpers loaded');
+                        resolve();
+                    };
+
+                    dbScript.onerror = function () {
+                        console.warn('&#9888;&#65039; Failed to load obj_create_db.js — DB texture override unavailable');
+                        resolve();   // don't fail the whole load
+                    };
+
+                    document.head.appendChild(dbScript);
                 };
 
-                script.onerror = function () {
+                mainScript.onerror = function () {
                     console.error('&#10060; Failed to load object creator');
                     reject(new Error('Failed to load object creator script'));
                 };
 
-                document.head.appendChild(script);
+                document.head.appendChild(mainScript);
             });
         }
 
@@ -423,10 +438,6 @@
 
         // =================================================================
         // DATA-DRIVEN BOOTH LOADING
-        // -----------------------------------------------------------------
-        // Replaces the old loadBooths / loadBoothContent / positionBooth /
-        // getAvailableBooths functions. Fetches api/hall.php once, then
-        // builds every booth from the returned JSON.
         // =================================================================
 
         async function loadBooths() {
@@ -513,7 +524,9 @@
             return group;
         }
 
-        // Dispatcher: maps a row's `creator` value to the matching createX() call
+        // =================================================================
+        // Dispatcher: maps a row's `creator` value to a createX() call
+        // =================================================================
         async function instantiateAreaObject(o) {
             const p = o.params || {};
 
@@ -573,16 +586,78 @@
                         p.width, p.depth, p.texture,
                         p.repeats || { x: 2, y: 2 });
 
-                case 'glb':
-                    return await createStaticGLBModel(o.model_path,
+                // ---------------------------------------------------------
+                // Static GLB — with optional texture override
+                // ---------------------------------------------------------
+                case 'glb': {
+                    const m = await createStaticGLBModel(o.model_path,
                         o.pos_x, o.pos_y, o.pos_z,
                         o.rot_x, o.rot_y, o.rot_z, o.scale);
 
-                case 'rotatingGLB':
-                    return await createRotatingGLBModel(o.model_path,
+                    // Prefer the DB-safe variant; fall back to the original
+                    const overrideFn = window.changeGLBTextureDB || window.changeGLBTexture;
+
+                    if (o.texture && typeof overrideFn === 'function' && m.children[0]) {
+                        const original = m.children[0];
+
+                        const posCopy   = original.position.clone();
+                        const rotCopy   = original.rotation.clone();
+                        const scaleCopy = original.scale.clone();
+
+                        const textured = await overrideFn(original, o.texture);
+
+                        textured.position.copy(posCopy);
+                        textured.rotation.copy(rotCopy);
+                        textured.scale.copy(scaleCopy);
+                        textured.updateMatrixWorld(true);
+
+                        m.remove(original);
+                        m.add(textured);
+
+                        console.log(`&#9989; [glb] Applied texture override: ${o.texture}`);
+                    } else if (!o.texture) {
+                        console.log(`&#8505;&#65039; [glb] ${o.label} — no texture override, using GLB's own material`);
+                    }
+
+                    return m;
+                }
+
+                // ---------------------------------------------------------
+                // Rotating GLB — with optional texture override
+                // ---------------------------------------------------------
+                case 'rotatingGLB': {
+                    const m = await createRotatingGLBModel(o.model_path,
                         o.pos_x, o.pos_y, o.pos_z,
                         o.rot_x, o.rot_y, o.rot_z, o.scale,
                         p.rotationSpeed ?? 1.0);
+
+                    // Prefer the DB-safe variant; fall back to the original
+                    const overrideFn = window.changeGLBTextureDB || window.changeGLBTexture;
+
+                    if (o.texture && typeof overrideFn === 'function' && m.children[0]) {
+                        const original = m.children[0];
+
+                        const posCopy   = original.position.clone();
+                        const rotCopy   = original.rotation.clone();
+                        const scaleCopy = original.scale.clone();
+
+                        const textured = await overrideFn(original, o.texture);
+
+                        textured.position.copy(posCopy);
+                        textured.rotation.copy(rotCopy);
+                        textured.scale.copy(scaleCopy);
+                        textured.updateMatrixWorld(true);
+
+                        m.remove(original);
+                        m.add(textured);
+
+                        console.log(`&#9989; [rotatingGLB] Applied texture override: ${o.texture}`);
+                    } else if (!o.texture) {
+                        console.log(`&#8505;&#65039; [rotatingGLB] ${o.label} — no texture override, using GLB's own material`);
+                    }
+
+                    return m;
+                }
 
                 default:
                     console.warn('Unknown creator:', o.creator, o);
