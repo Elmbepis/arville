@@ -12,7 +12,7 @@ if (!is_readable($taxonomyFile)) {
     die('Taxonomy file missing: ' . htmlspecialchars($taxonomyFile));
 }
 $taxonomy = json_decode(file_get_contents($taxonomyFile), true);
-if (!is_array($taxonomy) || empty($taxonomy['subjects'])) {
+if (!is_array($taxonomy) || empty($taxonomy['domains'])) {
     die('Taxonomy file is empty or malformed.');
 }
 
