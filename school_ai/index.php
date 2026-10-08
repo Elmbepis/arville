@@ -1,15 +1,15 @@
 <?php
 /**
- * school_ai/index.php â€” School AI homepage
- * Student types a question, gets the classified topic.
+ * school_ai/index.php — Ask a question, get a lesson
  */
 
 require __DIR__ . '/lib/laya.php';
+require __DIR__ . '/lib/content.php';
 
 // ---------- Load taxonomy ----------
 $taxonomyFile = __DIR__ . '/config/taxonomy.json';
 if (!is_readable($taxonomyFile)) {
-    die('Taxonomy file missing: ' . htmlspecialchars($taxonomyFile));
+    die('Taxonomy file missing.');
 }
 $taxonomy = json_decode(file_get_contents($taxonomyFile), true);
 if (!is_array($taxonomy) || empty($taxonomy['domains'])) {
@@ -20,21 +20,27 @@ if (!is_array($taxonomy) || empty($taxonomy['domains'])) {
 $question = '';
 $result   = null;
 $error    = null;
+$lesson   = null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['question'])) {
-    $question = trim($_POST['question']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $question = trim($_POST['question'] ?? '');
 
-    if (mb_strlen($question) > 500) {
-        $error = 'Question is too long. Please keep it under 500 characters.';
-    } else {
-        $result = laya_classify($question, $taxonomy);
-        if (!$result['ok']) {
-            $error = $result['error'];
+    if ($question !== '') {
+        if (mb_strlen($question) > 500) {
+            $error = 'Question is too long. Please keep it under 500 characters.';
+        } else {
+            $result = laya_classify($question, $taxonomy);
+            if (!$result['ok']) {
+                $error = $result['error'];
+            } else {
+                // Grade 5 is a reasonable middle for the 3–6 range
+                $lesson = get_lesson($result['topic'], 5, __DIR__ . '/lessons');
+            }
         }
     }
 }
 
-// ---------- Mode for the badge ----------
+// ---------- Mode badge ----------
 $host     = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $hostname = preg_replace('/:\d+$/', '', $host);
 $isLocal  = in_array($hostname, ['localhost', '127.0.0.1', '::1'], true)
@@ -46,7 +52,7 @@ $mode = $isLocal ? 'local' : 'online';
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>School AI â€” Ask a Science Question</title>
+    <title>School AI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         :root {
@@ -60,11 +66,11 @@ $mode = $isLocal ? 'local' : 'online';
         * { box-sizing: border-box; }
         body {
             font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-            max-width: 720px;
+            max-width: 780px;
             margin: 40px auto;
             padding: 0 20px;
             color: #222;
-            line-height: 1.5;
+            line-height: 1.65;
         }
         .mode-badge {
             display: inline-block;
@@ -83,7 +89,13 @@ $mode = $isLocal ? 'local' : 'online';
         h1 { margin: 0 0 4px; font-size: 28px; }
         .tagline { color: var(--gray); margin: 0 0 24px; }
 
-        form { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+        form.ask {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 8px;
+        }
         input[type=text] {
             flex: 1;
             min-width: 240px;
@@ -106,43 +118,42 @@ $mode = $isLocal ? 'local' : 'online';
         }
         button:hover { background: var(--green-dark); }
 
-        .result {
-            background: var(--bg);
-            padding: 24px;
-            border-radius: 10px;
+        .topic-badge {
+            display: inline-block;
+            background: #e8f7ee;
+            color: var(--green-dark);
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
             margin-top: 24px;
         }
-        .topic {
-            font-size: 26px;
-            font-weight: 600;
-            color: var(--green);
-            margin-bottom: 6px;
-            text-transform: capitalize;
-        }
-        .conf { color: var(--gray); margin-bottom: 18px; }
 
-        .prob-list { list-style: none; padding: 0; margin: 0; }
-        .prob-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 6px 0;
-            font-size: 14px;
+        .lesson {
+            background: #fff;
+            border: 1px solid #e4e4e4;
+            border-radius: 10px;
+            padding: 28px;
+            margin-top: 12px;
         }
-        .prob-label { flex: 0 0 160px; color: #333; }
-        .prob-bar {
-            flex: 1;
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
+        .lesson h1 { font-size: 26px; margin-top: 0; color: #111; }
+        .lesson h2 { font-size: 19px; margin-top: 28px; color: #111; }
+        .lesson h3 { font-size: 17px; margin-top: 22px; color: #111; }
+        .lesson p  { margin: 8px 0; }
+        .lesson ul, .lesson ol { padding-left: 22px; }
+        .lesson li { margin-bottom: 6px; }
+        .lesson strong { color: #111; }
+
+        .no-lesson {
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 24px;
+            margin-top: 24px;
+            color: var(--gray);
         }
-        .prob-fill {
-            height: 100%;
-            background: var(--green);
-            border-radius: 4px;
-        }
-        .prob-value { flex: 0 0 60px; text-align: right; color: var(--gray); }
+        .no-lesson strong { color: #333; }
 
         .error {
             background: var(--red-bg);
@@ -160,9 +171,9 @@ $mode = $isLocal ? 'local' : 'online';
 
     <span class="mode-badge mode-<?= $mode ?>"><?= $mode ?> mode</span>
     <h1>School AI</h1>
-    <p class="tagline">Ask a science question and get the right topic.</p>
+    <p class="tagline">Ask a science question. Get a lesson.</p>
 
-    <form method="POST">
+    <form method="POST" class="ask">
         <input type="text" name="question"
                value="<?= htmlspecialchars($question) ?>"
                placeholder="e.g., How do plants make food?"
@@ -175,31 +186,16 @@ $mode = $isLocal ? 'local' : 'online';
         <div class="error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <?php if ($result && $result['ok']):
-        $topic = $result['topic'] ?? 'unknown';
-        $conf  = $result['confidence'] * 100;
-        $probs = $result['probabilities'] ?? [];
-        arsort($probs);
-    ?>
-        <div class="result">
-            <div class="topic"><?= htmlspecialchars($topic) ?></div>
-            <div class="conf">Confidence: <?= number_format($conf, 1) ?>%</div>
-
-            <?php if (!empty($probs)): ?>
-                <ul class="prob-list">
-                    <?php foreach ($probs as $label => $prob):
-                        $pct = $prob * 100;
-                    ?>
-                        <li class="prob-item">
-                            <span class="prob-label"><?= htmlspecialchars($label) ?></span>
-                            <span class="prob-bar">
-                                <span class="prob-fill" style="width: <?= number_format($pct, 2) ?>%"></span>
-                            </span>
-                            <span class="prob-value"><?= number_format($pct, 1) ?>%</span>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            <?php endif; ?>
+    <?php if ($lesson): ?>
+        <div class="topic-badge"><?= htmlspecialchars($result['topic']) ?></div>
+        <div class="lesson">
+            <?= $lesson['html'] ?>
+        </div>
+    <?php elseif ($result && $result['ok']): ?>
+        <div class="no-lesson">
+            <p>We classified this question as <strong><?= htmlspecialchars($result['topic']) ?></strong>,
+               but the lesson content isn't ready yet.</p>
+            <p>Check back soon — this topic is coming.</p>
         </div>
     <?php endif; ?>
 

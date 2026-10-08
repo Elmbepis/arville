@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Chat with Pixel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #000;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #fff;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #faceContainer {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    #faceImg {
+      width: auto;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    #status {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 20px;
+      background: rgba(0, 0, 0, 0.75);
+      border: 1px solid rgba(100, 150, 255, 0.3);
+      border-radius: 20px;
+      font-size: 14px;
+      color: #aaf;
+      transition: all 0.3s;
+      z-index: 10;
+      white-space: nowrap;
+    }
+    #status.idle      { color: #aaf; border-color: rgba(100, 150, 255, 0.3); }
+    #status.listening { color: #f88; border-color: rgba(255, 100, 100, 0.6); }
+    #status.thinking  { color: #fd8; border-color: rgba(255, 200, 100, 0.6); }
+    #status.speaking  { color: #8f8; border-color: rgba(100, 255, 100, 0.6); }
+
+    /* Tap button (only visible at start) */
+    #micBtn {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #2a7, #1e8a5a);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(42, 167, 119, 0.4);
+      transition: transform 0.15s, opacity 0.3s, box-shadow 0.15s;
+      z-index: 10;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+    #micBtn:active { transform: translateX(-50%) scale(0.94); }
+    #micBtn.hidden { opacity: 0; pointer-events: none; }
+
+    /* Small pulse indicator when listening */
+    #pulse {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 100, 100, 0.7);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 8;
+    }
+    #pulse.active {
+      animation: pulseAnim 1.4s infinite;
+    }
+    @keyframes pulseAnim {
+      0%   { opacity: 0.9; transform: translateX(-50%) scale(0.7); }
+      100% { opacity: 0;   transform: translateX(-50%) scale(1.3); }
+    }
+
+    #transcript {
+      position: fixed;
+      bottom: 160px;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 80%;
+      padding: 12px 20px;
+      background: rgba(20, 25, 40, 0.9);
+      border: 1px solid rgba(100, 150, 255, 0.2);
+      border-radius: 14px;
+      font-size: 16px;
+      line-height: 1.4;
+      text-align: center;
+      transition: opacity 0.3s;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9;
+    }
+    #transcript.visible { opacity: 1; }
+    #transcript .label {
+      display: block;
+      font-size: 10px;
+      color: #779;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 4px;
+    }
+
+    #hint {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: #556;
+      z-index: 10;
+      transition: opacity 0.3s;
+    }
+    #hint.hidden { opacity: 0; }
+  </style>
+</head>
+<body>
+
+<div id="faceContainer">
+  <img id="faceImg" alt="robot face">
+</div>
+
+<div id="status">Waking up...</div>
+<div id="transcript"><span class="label">You</span><span id="transcriptText"></span></div>
+<div id="pulse"></div>
+<button id="micBtn" disabled>TAP</button>
+<div id="hint">Tap once to start talking</div>
+
+<script>
+// ================= CONFIG =================
+const urlParams = new URLSearchParams(window.location.search);
+let faceId = parseInt(urlParams.get('id')) || 1;
+
+const isLocal = window.location.href.includes('localhost:8081/arville/');
+const textureBase = isLocal
+  ? '/arville/universe/textures/faces/' + faceId + '/'
+  : '/universe/textures/faces/' + faceId + '/';
+const chatApiUrl = isLocal
+  ? '/arville/bot-chat/api.php'
+  : '/bot-chat/api.php';
+
+console.log('&#129302; Chat | face:', faceId, '| API:', chatApiUrl);
+
+// ================= FACE CONTROLLER =================
+const VISEME = { CLOSED: 'smile', A: 'a', E: 'e', I: 'i' };
+const faceImg = document.getElementById('faceImg');
+
+let currentEyeState = 'open';
+let currentViseme   = VISEME.CLOSED;
+let blinkTimer      = null;
+let isPlaying       = false;
+let visemeInterval  = null;
+
+const imageCache  = {};
+const visemeTypes = ['smile', 'a', 'e', 'i'];
+const eyeStates   = ['open', 'closed'];
+let imagesLoaded  = 0;
+const totalImages = visemeTypes.length * eyeStates.length;
+
+function preloadImages() {
+  for (const v of visemeTypes) {
+    for (const e of eyeStates) {
+      const path = `${textureBase}${v}-${e}.jpg`;
+      const img  = new Image();
+      img.onload = img.onerror = () => {
+        imageCache[`${v}-${e}`] = path;
+        imagesLoaded++;
+        if (imagesLoaded === totalImages) onImagesReady();
+      };
+      img.src = path;
+    }
+  }
+  faceImg.src = `${textureBase}smile-open.jpg`;
+}
+
+function updateFaceImage() {
+  const path = imageCache[`${currentViseme}-${currentEyeState}`]
+    || `${textureBase}${currentViseme}-${currentEyeState}.jpg`;
+  if (faceImg.src !== path) faceImg.src = path;
+}
+
+function setMouthShape(v) {
+  if (currentViseme === v) return;
+  currentViseme = v;
+  updateFaceImage();
+}
+
+function performBlink() {
+  if (currentEyeState === 'closed') return;
+  currentEyeState = 'closed';
+  updateFaceImage();
+  setTimeout(() => {
+    if (currentEyeState === 'closed') {
+      currentEyeState = 'open';
+      updateFaceImage();
+    }
+  }, 120);
+}
+
+function startPeriodicBlink() {
+  if (blinkTimer) clearInterval(blinkTimer);
+  blinkTimer = setInterval(performBlink, 4500);
+}
+
+function getVisemeForChar(c) {
+  c = c.toLowerCase();
+  if (/[aáàâäãå&#257;oóòôöõ&#333;]/.test(c)) return VISEME.A;
+  if (/[eéèêë&#275;uúùûü&#363;]/.test(c))   return VISEME.E;
+  if (/[iíìîï&#299;]/.test(c))         return VISEME.I;
+  return null;
+}
+
+function generateVisemeSequence(text) {
+  const seq = [];
+  for (let i = 0; i < text.length; i++) {
+    const v = getVisemeForChar(text[i]);
+    if (v) seq.push({ viseme: v, startTime: i * 0.06, duration: 0.1 });
+  }
+  if (seq.length) {
+    const last = seq[seq.length - 1];
+    seq.push({ viseme: VISEME.CLOSED, startTime: last.startTime + last.duration, duration: 0.1 });
+  }
+  return seq;
+}
+
+function stopVisemeAnimation() {
+  if (visemeInterval) { clearInterval(visemeInterval); visemeInterval = null; }
+}
+
+function startVisemeAnimation(seq, totalDuration) {
+  stopVisemeAnimation();
+  const t0 = performance.now() / 1000;
+  if (seq.length) setMouthShape(seq[0].viseme);
+
+  visemeInterval = setInterval(() => {
+    if (!isPlaying) { stopVisemeAnimation(); return; }
+    const now = (performance.now() / 1000) - t0;
+    let found = false;
+    for (const item of seq) {
+      if (now >= item.startTime && now < item.startTime + item.duration) {
+        setMouthShape(item.viseme);
+        found = true;
+        break;
+      }
+    }
+    if (!found && currentViseme !== VISEME.CLOSED) setMouthShape(VISEME.CLOSED);
+    if (now >= totalDuration) {
+      stopVisemeAnimation();
+      setMouthShape(VISEME.CLOSED);
+    }
+  }, 30);
+}
+
+// ================= VOICE =================
+let preferredVoice = null;
+
+function findVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  const prefs = [
+    'Google UK English Female',
+    'Google US English Female',
+    'Samantha', 'Microsoft Zira', 'Zira', 'Female'
+  ];
+  for (const p of prefs) {
+    const found = voices.find(v => v.name.includes(p));
+    if (found) { preferredVoice = found; console.log('&#9989; Voice:', found.name); return; }
+  }
+  const fb = voices.find(v => v.lang === 'en-US');
+  if (fb) { preferredVoice = fb; console.log('&#9888;&#65039; Fallback voice:', fb.name); }
+}
+
+window.robotSay = function(text, onDone) {
+  if (!window.speechSynthesis) { onDone && onDone(); return; }
+
+  if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    stopVisemeAnimation();
+    isPlaying = false;
+  }
+
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate   = 0.95;
+  utt.pitch  = 1.2;
+  utt.volume = 1.0;
+  if (preferredVoice) utt.voice = preferredVoice;
+
+  const seq = generateVisemeSequence(text);
+  const dur = Math.max(0.3, text.length * 0.09);
+
+  utt.onstart = () => {
+    isPlaying = true;
+    startVisemeAnimation(seq, dur);
+    currentEyeState = 'open';
+    updateFaceImage();
+  };
+
+  const finish = () => {
+    isPlaying = false;
+    stopVisemeAnimation();
+    setMouthShape(VISEME.CLOSED);
+    currentEyeState = 'open';
+    updateFaceImage();
+    onDone && onDone();
+  };
+
+  utt.onend   = finish;
+  utt.onerror = finish;
+
+  window.speechSynthesis.speak(utt);
+};
+
+// ================= CONVERSATION LOOP =================
+const statusEl       = document.getElementById('status');
+const micBtn         = document.getElementById('micBtn');
+const transcriptEl   = document.getElementById('transcript');
+const transcriptText = document.getElementById('transcriptText');
+const pulseEl        = document.getElementById('pulse');
+const hintEl         = document.getElementById('hint');
+
+let recognition   = null;
+let isListening   = false;
+let isBusy        = false;
+let sessionActive = false;
+let restartTimer  = null;
+
+function setStatus(text, cls) {
+  statusEl.textContent = text;
+  statusEl.className = cls || '';
+}
+
+function showTranscript(text) {
+  transcriptText.textContent = text;
+  transcriptEl.classList.add('visible');
+  clearTimeout(showTranscript._t);
+  showTranscript._t = setTimeout(() => transcriptEl.classList.remove('visible'), 6000);
+}
+
+function setupSTT() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    setStatus('Speech recognition not supported');
+    micBtn.textContent = 'NO STT';
+    micBtn.style.fontSize = '13px';
+    return false;
+  }
+
+  recognition = new SR();
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  recognition.continuous = false;
+
+  recognition.onstart = () => {
+    isListening = true;
+    pulseEl.classList.add('active');
+    setStatus('Listening...', 'listening');
+  };
+
+  recognition.onresult = (event) => {
+    const text = event.results[0][0].transcript.trim();
+    if (!text) return;
+    console.log('&#127908; Heard:', text);
+    showTranscript(text);
+    handleUserInput(text);
+  };
+
+  recognition.onerror = (event) => {
+    console.log('STT error:', event.error);
+    isListening = false;
+    pulseEl.classList.remove('active');
+
+    if (event.error === 'no-speech') {
+      setStatus('Listening...', 'listening');
+      scheduleRestart(600);
+    } else if (event.error === 'not-allowed') {
+      setStatus('Microphone permission denied');
+      sessionActive = false;
+      micBtn.classList.remove('hidden');
+      micBtn.disabled = false;
+    } else if (event.error === 'aborted') {
+      // user tapped to stop — do nothing
+    } else {
+      setStatus('Tap to continue', 'idle');
+      sessionActive = false;
+      micBtn.classList.remove('hidden');
+      micBtn.disabled = false;
+    }
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    pulseEl.classList.remove('active');
+    if (sessionActive && !isBusy && !isPlaying) {
+      scheduleRestart(400);
+    }
+  };
+
+  return true;
+}
+
+function scheduleRestart(delayMs) {
+  if (restartTimer) clearTimeout(restartTimer);
+  restartTimer = setTimeout(() => {
+    if (sessionActive && !isBusy && !isPlaying && !isListening) {
+      startListening();
+    }
+  }, delayMs);
+}
+
+function startListening() {
+  if (!recognition) return;
+  if (isBusy || isPlaying || isListening) return;
+  try {
+    recognition.start();
+  } catch (e) {
+    console.log('recognition.start() threw:', e);
+    scheduleRestart(500);
+  }
+}
+
+function stopListening() {
+  if (recognition && isListening) {
+    try { recognition.stop(); } catch (e) {}
+  }
+}
+
+async function handleUserInput(text) {
+  isBusy = true;
+  setStatus('Thinking...', 'thinking');
+
+  try {
+    const url = chatApiUrl + '?text=' + encodeURIComponent(text);
+    const res = await fetch(url, { cache: 'no-store' });
+    const data = await res.json();
+    console.log('&#129302; Bot:', data);
+
+    if (!data.ok) {
+      setStatus('Hmm, something went wrong');
+      isBusy = false;
+      if (sessionActive) scheduleRestart(800);
+      return;
+    }
+
+    setStatus('Speaking...', 'speaking');
+    window.robotSay(data.response, () => {
+      isBusy = false;
+      if (sessionActive) {
+        setStatus('Listening...', 'listening');
+        scheduleRestart(500);
+      } else {
+        setStatus('Tap to talk', 'idle');
+      }
+    });
+
+  } catch (err) {
+    console.error('Fetch error:', err);
+    setStatus('Connection error');
+    isBusy = false;
+    if (sessionActive) scheduleRestart(1500);
+  }
+}
+
+micBtn.addEventListener('click', async () => {
+  if (sessionActive) {
+    sessionActive = false;
+    stopListening();
+    setStatus('Paused — tap to resume', 'idle');
+    micBtn.classList.remove('hidden');
+    micBtn.disabled = false;
+    return;
+  }
+
+  sessionActive = true;
+  micBtn.classList.add('hidden');
+  hintEl.classList.add('hidden');
+
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') await ctx.resume();
+  } catch (e) {}
+
+  window.speechSynthesis.cancel();
+
+  setStatus('Listening...', 'listening');
+  startListening();
+});
+
+// ================= BOOT =================
+function onImagesReady() {
+  console.log('&#9989; Face ready');
+  startPeriodicBlink();
+  setMouthShape(VISEME.CLOSED);
+  currentEyeState = 'open';
+  updateFaceImage();
+
+  if (window.speechSynthesis) {
+    if (window.speechSynthesis.getVoices().length) findVoice();
+    window.speechSynthesis.onvoiceschanged = findVoice;
+  }
+
+  const sttOk = setupSTT();
+  micBtn.disabled = !sttOk;
+
+  if (sttOk) {
+    setStatus('Tap to talk', 'idle');
+  }
+}
+
+preloadImages();
+</script>
+</body>
+</html>

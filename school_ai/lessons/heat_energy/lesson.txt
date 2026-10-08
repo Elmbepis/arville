@@ -1,0 +1,76 @@
+# Heat Energy
+How heat moves and why it matters.
+
+## What is heat?
+**Heat** is a form of **energy**. It's the energy of moving particles. Everything is made of tiny particles that are always moving. The faster they move, the hotter the object is. The slower they move, the colder it is.
+
+Even cold objects have some heat — their particles are just moving slowly.
+
+## Temperature
+**Temperature** measures how hot or cold something is. We measure it in **degrees Celsius (°C)**.
+
+Useful temperatures:
+- **0°C** — water freezes
+- **37°C** — normal body temperature
+- **100°C** — water boils
+
+## Sources of heat
+Heat comes from many places:
+- **The Sun** — Earth's biggest source of heat
+- **Fire** — burning wood, coal, or gas
+- **Electricity** — heaters, stoves, light bulbs
+- **Friction** — rubbing things together
+- **Living things** — your body makes heat from food
+- **Chemical reactions** — like rusting or burning
+
+## How heat moves
+Heat always moves from a **hotter** object to a **cooler** object. It never moves the other way on its own. There are three ways heat moves:
+
+### 1. Conduction
+Heat moves through direct contact. When you touch a hot spoon in soup, heat moves from the spoon to your hand. Metals conduct heat well. Wood, plastic, and air conduct heat poorly — that's why pot handles are made of wood or plastic.
+
+### 2. Convection
+Heat moves through liquids and gases. Warm air rises, cool air sinks. This creates a circular motion called a **convection current**. That's why heaters are usually placed near the floor — the warm air rises to heat the whole room.
+
+### 3. Radiation
+Heat moves through empty space as waves. This is how the Sun's heat reaches Earth — there's no air in space, so it must travel as radiation. Sitting near a fire, you feel its warmth through radiation.
+
+## Conductors and insulators
+
+### Conductors — let heat pass through easily
+- Metals: iron, copper, aluminum, steel
+- Used in: cooking pots, frying pans, radiators
+
+### Insulators — slow heat down
+- Wood, plastic, rubber, cloth, air, foam
+- Used in: pot handles, oven mitts, jackets, thermos bottles
+
+Air is one of the best insulators. That's why:
+- Birds fluff their feathers in cold weather (trapping air)
+- Double-pane windows have air between the panes
+- Foam cups keep drinks hot
+
+## Heat and change of state
+Heat causes matter to change state:
+- **Melting** — solid to liquid (ice to water)
+- **Evaporation** — liquid to gas (water to steam)
+- **Condensation** — gas to liquid (steam to water droplets)
+- **Freezing** — liquid to solid (water to ice)
+
+Adding heat makes particles move faster; removing heat slows them down.
+
+## Heat in daily life
+- Cooking food
+- Drying clothes in the Sun
+- Warming homes
+- Boiling water for drinking
+- Generating electricity (power plants use heat to make steam)
+
+## Try this at home
+Fill one glass with hot water and one with cold water. Add a drop of food coloring to each. In which glass does the color spread faster? Heat makes particles move faster, so it spreads quickly in hot water.
+
+## Quick check
+1. What is heat?
+2. Name the three ways heat moves.
+3. What is the difference between a conductor and an insulator?
+4. Give two examples of insulators used in everyday life.

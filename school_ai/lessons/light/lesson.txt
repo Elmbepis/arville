@@ -1,0 +1,46 @@
+# Light
+Where light comes from, how it moves, and why we see things.
+
+## What is light?
+Light is a form of **energy** that travels in straight lines. It's what lets us see. Without light, everything would be dark. Light moves very fast — about 300,000 kilometers every second. That's fast enough to go around the Earth seven times in one second.
+
+## Sources of light
+A **source of light** is anything that gives off light. There are two kinds:
+
+### Natural sources
+- **The Sun** — our biggest natural source of light
+- **Stars** — distant suns that shine at night
+- **Fire** — flames from volcanoes, lightning, and burning wood
+- **Some animals** — fireflies, glowworms, and some fish make their own light
+
+### Artificial sources
+- Lamps, flashlights, candles, and light bulbs
+- Screens on phones, TVs, and computers
+
+## How light moves
+Light travels in **straight lines**. If something blocks its path, the light stops and creates a **shadow**.
+
+Shadows show us where light can't reach. If you hold your hand in front of a lamp, a shadow forms behind it — because your hand is blocking the light.
+
+## Reflection
+When light hits a smooth surface like a mirror, it **bounces back**. This is called **reflection**. That's how mirrors work: they reflect light into your eyes, showing you what's in front of them.
+
+Water can also reflect light. That's why you can see reflections of trees and clouds on the surface of a lake.
+
+## Refraction
+When light passes from air into water or glass, it **bends**. This is called **refraction**. It's why a pencil looks bent when you put it in a glass of water, and why a straw in a glass seems to shift position.
+
+## Colors
+White light isn't really plain white — it's made of all the colors mixed together. When sunlight passes through raindrops, the water bends each color a different amount. The result is a **rainbow** — red, orange, yellow, green, blue, indigo, and violet.
+
+## Why light matters
+Almost all energy on Earth comes from the Sun. Plants use sunlight to make food through photosynthesis. Animals eat the plants. We see because light bounces off objects and reaches our eyes. Without light, life on Earth wouldn't exist.
+
+## Try this at home
+Take a glass of water and put a pencil in it. Look at the pencil from the side. Does it look bent or broken? That's refraction — light bending as it enters the water.
+
+## Quick check
+1. Name one natural and one artificial source of light.
+2. How does light travel?
+3. What is reflection? Give an example.
+4. Why does a pencil look bent in water?

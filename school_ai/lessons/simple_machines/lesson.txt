@@ -1,0 +1,71 @@
+# Simple Machines
+Tools that make work easier by changing forces.
+
+## What is a machine?
+A **machine** is any tool that helps us do work. In science, "work" means using a force to move something. **Simple machines** use just one or two parts to make work easier — either by changing the direction of a force, or by making a small force do the job of a big one.
+
+## The six simple machines
+
+### 1. Lever
+A **lever** is a bar that pivots on a fixed point called a **fulcrum**.
+
+Examples: seesaw, crowbar, scissors, bottle opener
+
+If you put the fulcrum near the object you want to lift, a small push on the other end lifts a heavy load. That's the magic of a lever.
+
+### 2. Inclined Plane
+An **inclined plane** is a flat surface set at an angle — a **ramp**.
+
+Instead of lifting something straight up, you push it up the ramp. It takes less force but the distance is longer. That's a fair trade.
+
+Examples: wheelchair ramps, roads up a hill, playground slides
+
+### 3. Wedge
+A **wedge** is two inclined planes joined together. It pushes things apart.
+
+Examples: axe, knife, chisel, nail, teeth
+
+A wedge works by concentrating force on a small point. That's why a sharp knife cuts more easily than a dull one.
+
+### 4. Pulley
+A **pulley** is a wheel with a rope or cable running over it. It changes the direction of a force, and with more pulleys, it can reduce the force needed to lift heavy things.
+
+Examples: flagpole, crane, blinds, well bucket
+
+### 5. Wheel and Axle
+A **wheel and axle** is a wheel attached to a rod. Turning the wheel turns the axle, or vice versa.
+
+Examples: doorknob, screwdriver, bicycle wheel, steering wheel
+
+### 6. Screw
+A **screw** is an inclined plane wrapped around a cylinder. It converts turning force into forward force.
+
+Examples: bolts, jar lids, water bottle caps, spiral staircase
+
+## Simple vs compound machines
+A **compound machine** is made of two or more simple machines working together. A bicycle, for example, uses:
+- Wheels and axles
+- Levers (brakes and pedals)
+- Pulleys (chain and gears)
+
+A wheelbarrow combines a lever and a wheel and axle.
+
+## Why machines matter
+Simple machines have been used for thousands of years — long before electricity or engines. Pyramids were built with inclined planes and levers. Ships were loaded with pulleys. Fields were plowed with wedges. Even today, every machine — from a bicycle to a spacecraft — is built on these six basic ideas.
+
+## Try this at home
+Look around your home and find one example of each simple machine:
+- A lever
+- An inclined plane
+- A wedge
+- A pulley
+- A wheel and axle
+- A screw
+
+Hint: check the kitchen, toolbox, and doors.
+
+## Quick check
+1. What is a simple machine?
+2. What is a fulcrum?
+3. Give one example of an inclined plane.
+4. Name two simple machines that make up a bicycle.

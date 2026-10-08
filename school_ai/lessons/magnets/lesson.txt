@@ -1,0 +1,56 @@
+# Magnets
+Invisible forces that pull or push without touching.
+
+## What is a magnet?
+A **magnet** is an object that attracts certain metals. It can pull iron, nickel, and cobalt toward it. This pull happens even when the magnet isn't touching the object — that's why magnets are called a **non-contact force**.
+
+## Magnetic materials
+Not everything is attracted to magnets. Materials that stick to magnets are called **magnetic**. Materials that don't are called **non-magnetic**.
+
+| Magnetic | Non-magnetic |
+|---|---|
+| Iron | Wood |
+| Steel | Plastic |
+| Nickel | Glass |
+| Cobalt | Aluminum |
+| Paper clips | Rubber |
+| Nails | Copper |
+
+**Note:** Not all metals are magnetic! Copper, aluminum, and gold are metals but they don't stick to magnets. Only iron, nickel, and cobalt (and things made from them, like steel) are magnetic.
+
+## Poles: north and south
+Every magnet has two ends called **poles**: a **north pole** and a **south pole**.
+
+The two poles behave in an important way:
+
+- **Like poles repel** — North pushes North away. South pushes South away.
+- **Unlike poles attract** — North pulls South toward it.
+
+Try it: bring two magnets' north poles near each other. They push apart without touching. Now bring a north pole near a south pole. They snap together.
+
+## How magnets affect each other from far away
+Magnets can push or pull other magnets across empty space. You don't need to touch them. This is why magnets are useful in machines — they can do work without touching moving parts.
+
+## The magnetic field
+Around every magnet is a **magnetic field** — an invisible area where the magnet's force can be felt. The field is strongest near the poles. If you sprinkle iron filings on paper over a magnet, the filings line up to show the field's pattern.
+
+## Uses of magnets
+Magnets are everywhere:
+- **Refrigerator doors** — the seal uses a magnetic strip
+- **Speakers and headphones** — magnets make the sound vibrate
+- **Electric motors** — magnets spin the motor in fans and blenders
+- **Compasses** — a small magnet always points north
+- **Credit cards** — magnetic strips store information
+- **MRI machines** in hospitals — huge magnets see inside the body
+
+## The Earth is a giant magnet
+The Earth has a magnetic field too. That's why a compass needle always points north — it's lining up with the Earth's magnetic field.
+
+## Try this at home
+Gather 5 small objects (paper clip, coin, rubber band, pencil, small toy). Which ones stick to a magnet? Which don't? Sort them into two piles.
+
+## Quick check
+1. What three metals are attracted to magnets?
+2. What happens when you bring two north poles together?
+3. What is a magnetic field?
+4. Name two uses of magnets in everyday life.

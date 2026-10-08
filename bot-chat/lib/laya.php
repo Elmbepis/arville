@@ -1,10 +1,14 @@
 <?php
 /**
- * lib/laya.php — HTTP client for Laya classification.
+ * lib/laya.php — Laya HTTP client + question-pattern router
  *
- * Delegates routing to lib/router.php:
- *   1. Ask keyword_route() first — fast, deterministic
- *   2. If null, call Laya two-stage model
+ * Flow:
+ *   1. Pattern router — reads questions.txt files under responses/
+ *   2. Laya two-stage classification — for novel questions not covered by patterns
+ *
+ * Endpoint auto-detection:
+ *   - Local:  http://127.0.0.1:8000 (no auth)
+ *   - Online: http://127.0.0.1:8080 (Bearer auth from /etc/arville/config.php)
  */
 
 require_once __DIR__ . '/router.php';
@@ -41,13 +45,15 @@ function laya_classify(string $question, array $taxonomy, int $timeout = 120): a
         return ['ok' => false, 'mode' => $mode, 'error' => 'Taxonomy has no domains'];
     }
 
-    // ---------- Shortcut layer ----------
-    $shortcut = keyword_route($question, $taxonomy);
+    // ---------- Tier 1+2: pattern router ----------
+    // The router reads responses/<topic>/questions.txt directly.
+    $responsesDir = __DIR__ . '/../responses';
+    $shortcut = keyword_route($question, $responsesDir);
     if ($shortcut !== null) {
         return [
             'ok'                => true,
             'mode'              => $mode,
-            'via'               => 'shortcut',
+            'via'               => 'pattern',
             'domain'            => null,
             'domain_label'      => null,
             'domain_confidence' => 1.0,
@@ -57,7 +63,7 @@ function laya_classify(string $question, array $taxonomy, int $timeout = 120): a
         ];
     }
 
-    // ---------- Laya fallback ----------
+    // ---------- Tier 3: Laya fallback ----------
     $call = function (string $q, string $qid, string $instructions, array $criteria)
              use ($url, $key, $timeout) {
 
@@ -112,6 +118,7 @@ function laya_classify(string $question, array $taxonomy, int $timeout = 120): a
         ];
     };
 
+    // Stage 1: which domain?
     $domainCriteria = [];
     foreach ($taxonomy['domains'] as $dk => $d) {
         $domainCriteria[$dk] = $d['description'] ?? ($d['label'] ?? $dk);
@@ -119,7 +126,8 @@ function laya_classify(string $question, array $taxonomy, int $timeout = 120): a
 
     $r1 = $call($question, 'domain', 'Which broad area is this question about?', $domainCriteria);
     if (!$r1['ok']) {
-        return ['ok' => false, 'mode' => $mode, 'via' => 'laya', 'error' => 'Stage 1: ' . $r1['error']];
+        return ['ok' => false, 'mode' => $mode, 'via' => 'laya',
+                'error' => 'Stage 1: ' . $r1['error']];
     }
 
     $domainKey = $r1['choice'];
@@ -128,6 +136,7 @@ function laya_classify(string $question, array $taxonomy, int $timeout = 120): a
                 'error' => "Stage 1 returned unknown domain: $domainKey"];
     }
 
+    // Stage 2: which topic?
     $domainData    = $taxonomy['domains'][$domainKey];
     $topicCriteria = $domainData['topics'] ?? [];
 
@@ -138,7 +147,8 @@ function laya_classify(string $question, array $taxonomy, int $timeout = 120): a
 
     $r2 = $call($question, 'topic', "Which specific topic within {$domainData['label']}?", $topicCriteria);
     if (!$r2['ok']) {
-        return ['ok' => false, 'mode' => $mode, 'via' => 'laya', 'error' => 'Stage 2: ' . $r2['error']];
+        return ['ok' => false, 'mode' => $mode, 'via' => 'laya',
+                'error' => 'Stage 2: ' . $r2['error']];
     }
 
     return [

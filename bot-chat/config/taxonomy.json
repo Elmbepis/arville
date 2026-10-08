@@ -1,0 +1,101 @@
+{
+  "version": "1.0",
+  "updated": "2026-10-09",
+  "domains": {
+    "greetings": {
+      "label": "Greetings",
+      "description": "hello, hi, hey, good morning, good afternoon, good evening, goodbye, bye, see you later, goodnight",
+      "topics": {
+        "hello": "hello, hi, hey, greetings, hi there, hello robot",
+        "good_morning": "good morning, morning, rise and shine",
+        "good_night": "good night, goodnight, sleep well, bedtime",
+        "goodbye": "goodbye, bye, see you later, see you, farewell, take care",
+        "how_are_you": "how are you, how are you doing, how's it going, are you okay"
+      }
+    },
+    "identity": {
+      "label": "Identity",
+      "description": "questions about the robot itself — name, age, what it is, where it lives, what it likes, what it can do",
+      "topics": {
+        "name_question": "what is your name, who are you, what are you called, your name",
+        "age_question": "how old are you, when were you born, your age",
+        "robot_question": "are you a robot, are you a machine, are you a computer, are you real, are you alive",
+        "home_question": "where do you live, where are you from, where do you stay, your home",
+        "abilities_question": "what can you do, what are you good at, can you do tricks, what do you know"
+      }
+    },
+    "fun": {
+      "label": "Fun",
+      "description": "jokes, stories, songs, riddles, games, dances, fun facts, sing me a song, tell me a joke, play a game",
+      "topics": {
+        "joke_request": "tell me a joke, joke, make me laugh, something funny, funny joke",
+        "story_request": "tell me a story, story, once upon a time, tell a tale",
+        "song_request": "sing me a song, sing a song, song, let's sing, music",
+        "riddle_request": "riddle, tell me a riddle, puzzle, brain teaser",
+        "game_request": "let's play a game, play with me, game, can we play",
+        "fact_request": "tell me something cool, fun fact, interesting fact, did you know, tell me something interesting"
+      }
+    },
+    "feelings": {
+      "label": "Feelings",
+      "description": "happy, sad, scared, bored, excited, angry, tired, lonely, proud, the child expressing emotion",
+      "topics": {
+        "child_happy": "I'm happy, I am happy, yay, I'm excited, this is fun, I love this, best day ever",
+        "child_sad": "I'm sad, I feel sad, I'm crying, I'm upset, I feel bad, I'm hurt",
+        "child_scared": "I'm scared, I'm afraid, I'm frightened, I'm nervous, I'm worried",
+        "child_bored": "I'm bored, nothing to do, this is boring, I'm tired of this",
+        "child_angry": "I'm angry, I'm mad, I'm upset, I'm frustrated, I hate this",
+        "child_lonely": "I'm lonely, I have no friends, nobody likes me, I'm all alone"
+      }
+    },
+    "about_child": {
+      "label": "About the Child",
+      "description": "the child telling the robot about themselves — their name, family, pet, school, favorite things",
+      "topics": {
+        "child_name": "my name is, I am called, call me, my name",
+        "child_family": "my mom, my dad, my mother, my father, my sister, my brother, my family, my grandma, my grandpa",
+        "child_pet": "my dog, my cat, my pet, my fish, my bird, my hamster, my rabbit",
+        "child_school": "my school, my teacher, my class, my classmates, I go to school, homework",
+        "child_favorites": "I like, my favorite, I love, I enjoy, best thing, favorite food, favorite color, favorite game"
+      }
+    },
+    "character_lore": {
+      "label": "Character Lore",
+      "description": "the robot's fictional backstory — its friends, dreams, favorite things, feelings, what it likes",
+      "topics": {
+        "favorite_color": "what is your favorite color, favorite color, do you like colors",
+        "favorite_food": "what is your favorite food, do you eat, favorite food, do you like pizza",
+        "dream_question": "do you dream, do you sleep, what do you dream about, do you have dreams",
+        "friend_question": "do you have friends, who are your friends, are we friends, will you be my friend",
+        "love_question": "do you love me, do you like me, do you care about me, do you have feelings"
+      }
+    },
+    "politeness": {
+      "label": "Politeness",
+      "description": "thank you, sorry, please, compliments, insults, being polite or rude",
+      "topics": {
+        "thanks": "thank you, thanks, thank you so much, thanks a lot, appreciate it",
+        "apology": "I'm sorry, sorry, my bad, I apologize, forgive me",
+        "compliment": "you're nice, you're cute, I like you, you're funny, you're smart, good robot, you're the best",
+        "insult": "you're dumb, you're stupid, I hate you, you're boring, bad robot, I don't like you"
+      }
+    },
+    "meta": {
+      "label": "Conversation Help",
+      "description": "repeat that, say it again, I don't understand, what do you mean, stop, be quiet",
+      "topics": {
+        "repeat_request": "say it again, repeat that, what did you say, I didn't hear you, come again",
+        "confusion": "I don't understand, what do you mean, I don't get it, that doesn't make sense",
+        "stop_request": "stop, be quiet, shush, quiet please, stop talking, that's enough"
+      }
+    },
+    "fallback": {
+      "label": "Fallback",
+      "description": "unknown topics, inappropriate input, questions the robot cannot answer",
+      "topics": {
+        "unknown": "things the robot doesn't understand or hasn't been taught",
+        "inappropriate": "rude, inappropriate, or unsafe content that needs gentle redirection"
+      }
+    }
+  }
+}

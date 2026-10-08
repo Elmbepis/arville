@@ -1,0 +1,100 @@
+# Food Webs
+How energy moves from the Sun through plants, animals, and back to the soil.
+
+## Where the energy starts
+Every food web begins with the **Sun**. The Sun shines on green plants, and plants capture that energy to make their own food. When animals eat those plants, the energy moves into them. When other animals eat those animals, the energy keeps moving up.
+
+A **food web** is a picture of all these connections at once. It shows who eats whom in an ecosystem.
+
+## Producers: the food makers
+**Producers** are living things that make their own food. Green plants are the most common producers. They use sunlight, water, and carbon dioxide to make sugar — a process called **photosynthesis**.
+
+Examples of producers:
+- Grass
+- Rice plants
+- Trees
+- Algae in ponds and oceans
+
+Every food web starts with one or more producers. Without them, there would be no energy for any other living thing.
+
+## Consumers: the food eaters
+**Consumers** cannot make their own food. They must eat other living things. There are three kinds:
+
+### Herbivores
+Plant eaters. They eat producers.
+- Cows, rabbits, grasshoppers, caterpillars
+
+### Carnivores
+Meat eaters. They eat other animals.
+- Lions, eagles, snakes, sharks
+
+### Omnivores
+Eat both plants and animals.
+- Humans, pigs, chickens, bears
+
+## Predators and prey
+A **predator** is an animal that hunts and eats other animals. A **prey** is an animal that gets hunted and eaten.
+
+Examples:
+- A lion is a **predator**; a zebra is its **prey**
+- A snake is a **predator**; a frog is its **prey**
+- An eagle is a **predator**; a mouse is its **prey**
+
+The same animal can be both. A frog is a predator of grasshoppers, but it is also prey for snakes. This is normal — most animals are both predators and prey, depending on what's nearby.
+
+## Decomposers: the recyclers
+**Decomposers** break down dead plants and animals. They return nutrients to the soil so new plants can grow.
+
+Examples:
+- Mushrooms
+- Bacteria
+- Earthworms
+
+Without decomposers, dead leaves, dead animals, and old wood would pile up everywhere. The soil would run out of nutrients and plants would stop growing.
+
+**Scavengers** like vultures, hyenas, and some crabs also help by eating animals that are already dead.
+
+## Food chains vs food webs
+
+A **food chain** is a single straight line:
+
+Rice plant → Grasshopper → Frog → Snake → Eagle
+
+The arrows mean "is eaten by." Energy moves in the direction of the arrows.
+
+A **food web** is many food chains connected together. It shows all the feeding relationships in an ecosystem. For example:
+
+- Rice plant → Grasshopper → Frog → Snake
+- Rice plant → Grasshopper → Bird → Snake
+- Algae → Small fish → Frog → Snake
+- Algae → Small fish → Bird → Eagle
+
+Each arrow is one connection. Together, they form a web.
+
+**Why the difference matters:** Food chains are simple and easy to understand, but they don't match real life. In real ecosystems, most animals eat more than one kind of food, and they're eaten by more than one predator. A food web shows the true picture.
+
+## Why food webs matter
+Food webs show how everything in nature is connected. If one part of the web breaks, the whole ecosystem feels it.
+
+For example, imagine all the frogs in a rice field disappeared:
+- Grasshoppers would increase — nothing is eating them
+- Rice plants would decrease — too many grasshoppers eating them
+- Snakes would go hungry — no frogs to eat
+- The whole web would shift
+
+A healthy ecosystem has a food web with **many links**. If one link is lost, others can often take its place. But if too many links disappear, the ecosystem can collapse.
+
+## Try this at home
+Go outside and look at the plants and animals around you. Can you find:
+- One producer? (a plant)
+- One herbivore? (an animal eating the plant)
+- One predator? (an animal hunting another animal)
+
+Draw a small food web with arrows. Start with a plant you can see. Then add the animals that might eat it, and the animals that might eat those.
+
+## Quick check
+1. What is a food web?
+2. What is the difference between a food chain and a food web?
+3. What is the difference between a predator and prey?
+4. Name one producer, one herbivore, and one carnivore.
+5. Why are decomposers important?

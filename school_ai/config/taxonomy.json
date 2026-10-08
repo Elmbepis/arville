@@ -48,21 +48,20 @@
         "digestion_respiration": "stomach, intestines, esophagus, digestion, lungs, breathing, nose, windpipe, respiratory system"
       }
     },
-    "ecosystems": {
-      "label": "Ecosystems",
-      "description": "habitats, food chains, food webs, producers consumers decomposers, conservation, predator prey",
-      "topics": {
-        "habitats": "land habitat, water habitat, garden, rice field, seashore, mangrove, where animals live, where plants grow",
-        "food_chains": "herbivores, carnivores, omnivores, food chain, what eats what, plant eaters, meat eaters",
-        "food_webs": "producers, consumers, scavengers, decomposers, food web, energy flow, role of decomposers",
-        "biotic_abiotic": "biotic living factors, abiotic non-living factors, light water temperature soil",
-        "organism_interactions": "competition, predation, predator prey, mutualism, how living things interact",
-        "environment_conservation": "conservation, protecting nature, saving habitats, pollution, caring for environment"
-      }
-    },
+"ecosystems": {
+  "label": "Ecosystems",
+    "description": "habitats, food chains, food webs, what eats what, prey and predators, producers consumers decomposers, competition, conservation, how living things depend on each other",
+  "topics": {
+    "habitats": "land habitat, water habitat, garden, rice field, seashore, mangrove, where animals live, where plants grow",
+    "food_webs": "food chain, food web, herbivores, carnivores, omnivores, producers, consumers, scavengers, decomposers, what eats what, prey and predators, what are predators, what are prey, how energy moves from plants to animals",
+    "biotic_abiotic": "biotic living factors, abiotic non-living factors, light water temperature soil",
+    "organism_interactions": "competition, predation, predator prey, mutualism, how living things interact",
+    "environment_conservation": "conservation, protecting nature, saving habitats, pollution, caring for environment"
+  }
+},
     "forces_and_motion": {
       "label": "Forces and Motion",
-      "description": "pushes pulls, speed direction, friction, gravity, magnets, levers pulleys inclined planes",
+      "description": "pushes pulls, speed direction, friction, gravity, magnets, simple machines",
       "topics": {
         "movement": "pushing, pulling, rolling, carrying, position change, moving closer farther left right",
         "contact_forces": "contact force, push and pull, changing shape, bending twisting stretching squeezing",

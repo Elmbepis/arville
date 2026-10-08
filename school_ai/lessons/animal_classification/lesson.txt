@@ -1,0 +1,70 @@
+# Classifying Animals
+How scientists group animals by their features.
+
+## Why classify?
+There are millions of different animals on Earth. To study them, scientists group them by things they have in common — like whether they have a backbone, what they eat, or how they have babies. Grouping things by their features is called **classification**.
+
+## The biggest split: vertebrates vs invertebrates
+
+### Vertebrates
+**Vertebrates** are animals with a **backbone**. The backbone is a column of small bones that runs down their back and protects their spinal cord.
+
+About 4% of all animals are vertebrates. They include:
+- Mammals
+- Birds
+- Fish
+- Reptiles
+- Amphibians
+
+### Invertebrates
+**Invertebrates** are animals **without a backbone**. They are by far the largest group — about 96% of all animal species.
+
+They include:
+- Insects (beetles, ants, butterflies)
+- Arachnids (spiders, scorpions)
+- Mollusks (snails, octopuses, clams)
+- Crustaceans (crabs, shrimp)
+- Worms (earthworms, leeches)
+
+## The five vertebrate groups
+
+### Mammals
+Fur or hair, feed their babies milk, warm-blooded. Examples: dogs, whales, humans.
+
+### Birds
+Feathers, lay eggs, have wings. Most can fly. Warm-blooded. Examples: eagles, chickens, penguins.
+
+### Fish
+Live in water, breathe with gills, have scales and fins. Cold-blooded. Examples: tilapia, sharks, goldfish.
+
+### Reptiles
+Dry scaly skin, lay eggs on land, cold-blooded. Examples: snakes, lizards, turtles, crocodiles.
+
+### Amphibians
+Moist skin, live partly in water and partly on land. Start life with gills, then develop lungs. Cold-blooded. Examples: frogs, toads, salamanders.
+
+## Grouping by what they eat
+Animals can also be grouped by their food:
+- **Herbivores** — plant eaters (cows, rabbits, caterpillars)
+- **Carnivores** — meat eaters (lions, eagles, snakes)
+- **Omnivores** — eat both (humans, pigs, chickens)
+
+## Grouping by habitat
+- **Terrestrial** — live on land (elephants, lions)
+- **Aquatic** — live in water (fish, dolphins)
+- **Aerial** — spend most time in the air (birds, bats)
+
+## Why classification matters
+Grouping animals helps us understand them. When we know an animal is a mammal, we already know a lot about it — it has fur, feeds its young milk, and is warm-blooded. Classification turns millions of animals into a few understandable groups.
+
+## Try this at home
+Look at 5 animals in a book or online. For each one, decide:
+- Vertebrate or invertebrate?
+- If vertebrate, which group?
+- What does it eat?
+
+## Quick check
+1. What is the difference between a vertebrate and an invertebrate?
+2. Name the five groups of vertebrates.
+3. What group has feathers and lays eggs?
+4. What is an omnivore? Give one example.

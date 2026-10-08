@@ -1,0 +1,65 @@
+# Friction
+The force that slows things down when they rub together.
+
+## What is friction?
+**Friction** is a force that happens when two surfaces rub against each other. It slows moving objects down and can even stop them. Friction is a **contact force** — it only happens when things are touching.
+
+## Why friction happens
+Even surfaces that look smooth are actually rough if you zoom in enough. When two surfaces slide past each other, these tiny bumps catch on each other. That catching is friction.
+
+## Examples in everyday life
+- Rubbing your hands together makes them warm
+- A ball rolling on grass slows down quickly
+- A bicycle stops when you squeeze the brakes
+- A match lights when you strike it against a rough surface
+- Rubbing an eraser on paper creates heat and rubs away pencil marks
+
+## Friction produces heat
+Whenever two surfaces rub together, some energy turns into **heat**. That's why:
+- Rubbing your hands warms them up
+- Rubbing two sticks together can start a fire
+- Tires get hot on a long drive
+- Spacecraft need heat shields when re-entering Earth's atmosphere
+
+## Rough vs smooth surfaces
+The type of surface affects friction:
+
+- **Rough surfaces** — high friction. A ball rolls slowly on sand.
+- **Smooth surfaces** — low friction. A ball rolls fast on ice or polished floor.
+
+Try sliding a book across a table vs. across a carpet. Which one is harder to push? The carpet has more friction.
+
+## When friction helps
+Sometimes we want more friction:
+- **Shoes** have rubber soles to grip the ground
+- **Tires** have treads to grip the road in rain
+- **Brakes** use friction to slow vehicles
+- **Matches** need friction to light
+- **Pencils** rely on friction to leave marks on paper
+
+## When friction is a problem
+Sometimes we want less friction:
+- **Machines** lose energy to friction, so engineers add oil
+- **Ice skaters** want to glide, so they use smooth metal blades
+- **Airplanes** have smooth, streamlined shapes to reduce friction with air
+- **Slides** are polished so children slide down easily
+
+## Ways to reduce friction
+- Use oil or grease (like in car engines)
+- Use smooth surfaces (ice, polished floors)
+- Use wheels or ball bearings
+- Make surfaces streamlined (airplane shape)
+
+## Ways to increase friction
+- Use rough surfaces (sandpaper, treads)
+- Increase the weight pressing the surfaces together
+- Use materials with more grip (rubber)
+
+## Try this at home
+Push a small toy car across different surfaces: wood, carpet, tile, and paper. Which surface lets it roll the farthest? That surface has the least friction.
+
+## Quick check
+1. What is friction?
+2. Why does rubbing your hands together make them warm?
+3. Give one example where friction helps and one where it's a problem.
+4. Name two ways to reduce friction.
