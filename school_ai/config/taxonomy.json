@@ -1,95 +1,110 @@
 {
-  "version": "3.0",
+  "version": "5.0",
   "updated": "2026-10-08",
   "domains": {
     "matter_and_materials": {
       "label": "Matter and Materials",
-      "description": "properties of materials, states of matter, changes, reactions, mixtures, disposal, metals, soils",
+      "description": "solids liquids gases, melting freezing boiling, burning rusting, mixtures filtering, recycling, metals, rocks soil",
       "topics": {
-        "states_of_matter": "matter, mass, takes up space, solids liquids gases, definite shape and volume, measuring volume in milliliters and liters, changes of state, melting, freezing, evaporation, condensation, heat energy causing change of state",
-        "physical_chemical_change": "physical changes are reversible, chemical changes are irreversible, burning, rusting, evidence of chemical change",
-        "mixtures_separation": "uniform and non-uniform mixtures, solutions, suspensions, separation techniques, decantation, winnowing, scooping, picking, evaporation, filtering, sieving, magnets, air as a mixture of oxygen nitrogen carbon dioxide and water vapor",
-        "material_properties": "physical properties of solid materials, hard, shiny, stretchable, rough, smooth, chemical properties, burnable, reactive, degradable, biodegradable, changes by shaping, pressing, hammering, joining, cutting, temperature effects",
-        "waste_disposal": "proper handling and disposal of materials, reusing, recycling paper plastic glass, waste management, harmful effects of trash and burning",
-        "metals": "metals in the community, iron, gold, silver, copper, properties and uses of metals",
-        "soils": "types of soil, sandy, clay, silt, loam, water-holding ability, soil and plant growth, soil composition",
-        "earth_materials": "non-living things in the environment, rocks, minerals, water, air, clouds, rain, sunlight, useful products made from non-living things"
+        "states_of_matter": "solid liquid gas, melting freezing boiling, evaporation condensation, water cycle, ice steam",
+        "physical_chemical_change": "reversible physical change, irreversible chemical change, burning wood, rusting iron, new substance formed",
+        "mixtures_separation": "filtering, sieving, evaporation, decantation, magnets, solutions, suspensions, separating mixtures",
+        "material_properties": "hard soft shiny stretchable, flexible rigid, burnable biodegradable, cutting shaping hammering",
+        "waste_disposal": "recycling, reuse, trash, garbage, pollution, waste disposal, burning trash",
+        "metals": "iron, gold, silver, copper, aluminum, steel, uses of metals, metal objects",
+        "soils": "sandy clay silt loam, water-holding soil, plant growth in different soils",
+        "earth_materials": "rocks, minerals, ores, water, air, sunlight, natural resources"
       }
     },
-    "living_things": {
-      "label": "Living Things",
-      "description": "plants, animals, human body, classification, adaptation, life cycles, needs",
+    "plants": {
+      "label": "Plants",
+      "description": "photosynthesis, leaves roots stems, flowers seeds, pollination, plant adaptations, flowering non-flowering",
       "topics": {
-        "living_nonliving": "difference between living and non-living things, characteristics of living things, growing, responding, reproducing",
-        "basic_needs": "basic needs of all living things, air, food, water, shelter, how living things meet their needs from the environment",
-        "plant_parts": "leaves, roots, stems, shoot system, root system, how plants get water and nutrients, functions of plant parts",
-        "photosynthesis": "how plants make food from sunlight, produce glucose, use chlorophyll, leaves making energy, converting light to sugar",
-        "plant_reproduction": "ways plants reproduce, pollination, seed production, plant propagation, cutting, budding, layering, grafting",
-        "plant_adaptation": "specialized plant structures, rhizomes, tubers, thorns, bulbs, aerial roots, how plants adapt to unfavorable conditions, lack of rain, floods",
-        "animal_parts": "outer body parts of animals, head, legs, wings, tails, how animals move and gather food",
-        "animal_classification": "classification of animals, vertebrates and invertebrates, animals with backbones and without, mammals, reptiles, insects, birds, fish, amphibians, flowering and non-flowering plants, microorganisms, fungi, bacteria",
-        "animal_adaptation": "how animals change to suit their environment, mimicry, camouflage, survival adaptations",
-        "animal_life_cycles": "life cycles of animals, butterfly, frog, chicken, human, mammals from birth to adulthood, birds from egg to maturity, plants from seed to mature plant, stages of development, reproduction",
-        "human_body_systems": "human body systems, muscular, skeletal, digestive, circulatory, respiratory, reproductive, heart, blood, blood vessels, nose, windpipe, lungs, how the body works"
+        "plant_parts": "roots, stems, leaves, flowers, fruits, seeds, what do roots do, what do leaves do",
+        "photosynthesis": "how plants make food, sunlight, chlorophyll, glucose, leaves making food, plants needing light",
+        "plant_reproduction": "pollination, seeds, seed dispersal, plant propagation, cutting, grafting, budding, layering",
+        "plant_adaptation": "thorns, tubers, bulbs, rhizomes, aerial roots, desert plants, aquatic plants, drought",
+        "plant_classification": "flowering plants, non-flowering plants, mosses, ferns, conifers, classifying plants"
+      }
+    },
+    "animals": {
+      "label": "Animals",
+      "description": "vertebrates invertebrates, backbones, mammals birds fish reptiles, insects worms, animal life cycles, camouflage",
+      "topics": {
+        "animal_parts": "head, legs, wings, tails, fins, beaks, claws, feathers, fur, scales, animal body parts",
+        "animal_classification": "mammals, birds, fish, reptiles, amphibians, insects, classes of animals, how animals are grouped",
+        "vertebrates": "animals with backbones, spine, examples of vertebrates, dogs cats eagles snakes frogs",
+        "invertebrates": "animals without backbones, insects, worms, snails, spiders, jellyfish, octopus, crabs",
+        "animal_adaptation": "camouflage, mimicry, survival adaptations, protective coloring, blending in",
+        "animal_life_cycles": "butterfly life cycle, frog life cycle, chicken life cycle, metamorphosis, tadpole, caterpillar"
+      }
+    },
+    "human_body": {
+      "label": "Human Body",
+      "description": "heart blood, lungs breathing, stomach digestion, bones muscles, body systems",
+      "topics": {
+        "body_systems": "skeletal system, muscular system, digestive system, circulatory system, respiratory system, how body works",
+        "circulatory_system": "heart, blood, blood vessels, arteries, veins, pulse, pumping blood, circulation",
+        "digestion_respiration": "stomach, intestines, esophagus, digestion, lungs, breathing, nose, windpipe, respiratory system"
       }
     },
     "ecosystems": {
       "label": "Ecosystems",
-      "description": "habitats, food relationships, biotic and abiotic factors, interactions, conservation",
+      "description": "habitats, food chains, food webs, producers consumers decomposers, conservation, predator prey",
       "topics": {
-        "habitats": "terrestrial, aquatic, aerial habitats, garden, rice field, seashore, mangrove swamp, Philippine plants and animals by habitat",
-        "food_chains": "herbivores, carnivores, omnivores, food chains, feeding relationships",
-        "food_webs": "producers, consumers, scavengers, decomposers, food webs, energy flow in ecosystems",
-        "biotic_abiotic": "biotic factors, living things in an ecosystem, abiotic factors, light, water, temperature, soil type",
-        "organism_interactions": "how living things interact, competition, predation, natural environment relationships",
-        "environment_conservation": "living things depend on one another and the environment, protecting and conserving the environment, caring for nature, environmental responsibility"
+        "habitats": "land habitat, water habitat, garden, rice field, seashore, mangrove, where animals live, where plants grow",
+        "food_chains": "herbivores, carnivores, omnivores, food chain, what eats what, plant eaters, meat eaters",
+        "food_webs": "producers, consumers, scavengers, decomposers, food web, energy flow, role of decomposers",
+        "biotic_abiotic": "biotic living factors, abiotic non-living factors, light water temperature soil",
+        "organism_interactions": "competition, predation, predator prey, mutualism, how living things interact",
+        "environment_conservation": "conservation, protecting nature, saving habitats, pollution, caring for environment"
       }
     },
     "forces_and_motion": {
       "label": "Forces and Motion",
-      "description": "movement, pushes, pulls, speed, direction, friction, gravity, magnets, simple machines",
+      "description": "pushes pulls, speed direction, friction, gravity, magnets, levers pulleys inclined planes",
       "topics": {
-        "movement": "ways to make objects move, pushing, pulling, rolling, carrying, wind and water, changes in position, moving closer farther left right, how size shape heaviness material surface texture affect movement",
-        "contact_forces": "contact forces, objects moving in the direction force is applied, pushes and pulls, changing speed, direction, shape",
-        "non_contact_forces": "non-contact forces, forces acting without touching, magnets, gravity, light from the sun, loud noises",
-        "friction": "friction, different surfaces, smooth and rough, how friction produces heat, reducing and increasing friction, fair test investigation",
-        "gravity": "gravity as a non-contact force, objects falling to Earth, heavier vs lighter objects falling, predictable behavior, motion of objects",
-        "magnets": "magnets, magnetic properties, magnetic and non-magnetic materials, magnet-to-magnet interactions",
-        "simple_machines": "simple machines, inclined planes, wedges, levers, pulleys, how machines change direction and size of forces, doing work"
+        "movement": "pushing, pulling, rolling, carrying, position change, moving closer farther left right",
+        "contact_forces": "contact force, push and pull, changing shape, bending twisting stretching squeezing",
+        "non_contact_forces": "non-contact force, acting from a distance, magnets attracting, gravity pulling",
+        "friction": "friction, rough surface, smooth surface, heat from friction, sliding, rubbing",
+        "gravity": "gravity, falling objects, heavier lighter objects, force pulling down, why things fall",
+        "magnets": "magnets, magnetic materials, north pole, south pole, attraction, repulsion, magnetic field",
+        "simple_machines": "levers, pulleys, inclined planes, wedges, wheel and axle, screws, tools that help us"
       }
     },
     "energy": {
       "label": "Energy",
-      "description": "sound, light, heat, waves, energy sources and uses, safety",
+      "description": "sound, light, heat, waves, protecting eyes and ears, energy sources",
       "topics": {
-        "sound": "how sound is made, how sound transfers, vibration, sources of sound, ringing bell, hearing noises",
-        "light": "sources of light, natural and artificial light, sunlight, lamps, how light behaves, shadows, reflection, uses of light",
-        "heat_energy": "heat energy, sources of heat, uses of heat, temperature, how heat transfers, energy causing change",
-        "waves": "waves, how waves carry energy, water waves, features and behaviors of waves",
-        "light_sound_safety": "harmful effects of light and sound, protecting eyes and ears, very bright sunlight, wearing hats, loud noises, lowering volume, sending messages with light or sound"
+        "sound": "sound, vibration, loudness, pitch, echo, how sound travels, ringing bell, hearing",
+        "light": "sources of light, sunlight, lamps, candles, shadows, reflection, refraction, colors of light",
+        "heat_energy": "heat, temperature, hot cold, conduction, sources of heat, how heat transfers",
+        "waves": "waves, water waves, wave height, wavelength, waves carrying energy, waves in rope",
+        "light_sound_safety": "bright sunlight safety, sunglasses, hats, loud noise protection, ear protection, lowering volume"
       }
     },
     "earth_and_space": {
       "label": "Earth and Space",
-      "description": "weather, seasons, Earth's motions, Sun, Moon, stars, volcanoes, sky knowledge",
+      "description": "typhoons weather, seasons, day and night, Sun Moon stars, volcanoes, eclipses, constellations",
       "topics": {
-        "weather": "weather patterns, air temperature, air pressure, wind speed, wind direction, humidity, rain, cloud cover, weather instruments, weather charts, weather safety, extreme weather",
-        "seasons": "seasons in the Philippines, activities appropriate for each season, wet and dry seasons",
-        "earth_motions": "rotation of the Earth on its axis, day and night, Sun-Earth-Moon system, changes in seasons, visible star patterns, solar and lunar eclipses",
-        "celestial_objects": "natural objects in the sky, Sun, Moon, planets, stars, how they move across the sky, Sun's composition and size, sun safety, shadows",
-        "constellations": "constellations, ancient cultures using stars for direction and seasons, indigenous knowledge, patterns in the night sky, tracking time",
-        "volcanoes": "volcanoes, how they are formed, active and inactive volcanoes in the Philippines, volcanic eruptions, materials from eruptions, PHIVOLCS alert levels, eruption safety"
+        "weather": "typhoons, storms, rain, clouds, wind, temperature, humidity, weather charts, weather safety",
+        "seasons": "wet season, dry season, seasons in the Philippines, activities for each season",
+        "earth_motions": "rotation, revolution, day and night, eclipses, Sun-Earth-Moon system, why day and night",
+        "celestial_objects": "Sun, Moon, planets, stars, shadows, sun safety, phases of the moon",
+        "constellations": "constellations, stars for navigation, indigenous sky knowledge, patterns in the night sky",
+        "volcanoes": "volcanoes, eruptions, lava, ash, PHIVOLCS, active volcanoes, eruption safety"
       }
     },
-    "scientific_practice": {
-      "label": "Scientific Practice",
-      "description": "science processes, tools, investigation, scientists, community issues",
+    "lab_skills": {
+      "label": "Lab Skills",
+      "description": "measuring, units, fair tests, science tools, famous scientists, inventions",
       "topics": {
-        "science_processes": "science process skills, observing, predicting, measuring, using millimeters centimeters meters, science in everyday life, objects and natural events explained by science",
-        "science_tools": "science tools, ruler, hand lens, scissors, balloons, modeling clay, cardboard, measuring cylinders, beakers, balance, thermometer, how each tool is used safely",
-        "scientific_investigation": "steps of a scientific investigation, problem, materials, procedure, findings, fair test, change one factor, measure one factor, keep others the same, three trials, replication, accurate measurement, units mg g kg °C",
-        "science_inventions": "famous scientists, Filipino and foreign scientists, inventions, how inventions affect daily life",
-        "gathering_information": "gathering scientific information, community environmental issues, surveys, grouping and classifying, open-mindedness, addressing local concerns with science"
+        "measurement": "ruler, thermometer, balance, stopwatch, centimeters, meters, grams, kilograms, degrees Celsius, liters, milliliters",
+        "fair_test": "fair test, one variable changed, three trials, replication, controlling variables, reliable results",
+        "investigation_steps": "problem, materials, procedure, findings, writing up an experiment, what did you find out",
+        "science_tools": "hand lens, scissors, beakers, measuring cylinders, lab safety, how tools are used",
+        "science_inventions": "famous scientists, inventions, inventors in history, impact on daily life"
       }
     }
   }
