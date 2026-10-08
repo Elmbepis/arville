@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "updated": "2026-10-08",
+  "subjects": {
+    "biology": {
+      "label": "Biology",
+      "topics": {
+        "photosynthesis": "how plants make food from sunlight, produce glucose, use chlorophyll, leaves making energy, converting light to sugar",
+        "water_cycle": "evaporation, condensation, precipitation, how water moves through nature, rain, clouds, rivers, groundwater",
+        "respiration": "how organisms breathe, how cells release energy from food, gas exchange, breathing, oxygen and carbon dioxide",
+        "vertebrates": "animals with backbones, mammals, birds, fish, reptiles, amphibians, classification of animals",
+        "cell_biology": "cell structure, organelles, how cells work, cell division, nucleus, mitochondria, cell membrane"
+      }
+    }
+  }
+}
