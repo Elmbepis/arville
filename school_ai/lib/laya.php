@@ -54,7 +54,7 @@ function laya_classify(string $question, array $taxonomy, int $timeout = 120): a
              use ($url, $key, $timeout) {
 
         $payload = [
-            'model' => 'auto',
+            'model' => 'english',
             'state' => $q,
             'questions' => [
                 $qid => [
