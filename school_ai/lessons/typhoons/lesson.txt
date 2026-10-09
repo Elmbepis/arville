@@ -1,0 +1,79 @@
+# Typhoons
+The strongest storms on Earth — and how to stay safe.
+
+## What is a typhoon?
+A **typhoon** is a very large, powerful tropical storm. It forms over warm ocean water and is made of huge spiral bands of clouds, rain, and strong winds spinning around a calm center.
+
+The same type of storm is called different names in different places:
+- **Typhoon** — in the Northwest Pacific, including the Philippines
+- **Hurricane** — in the Atlantic and Northeast Pacific
+- **Cyclone** — in the Indian Ocean and South Pacific
+
+They are all the same kind of storm.
+
+## How a typhoon forms
+Typhoons need three things to form:
+1. **Warm ocean water** — at least 26.5°C, warm enough to feed the storm with energy
+2. **Moist air** — rising air that cools and forms clouds
+3. **Spinning winds** — the Earth's rotation makes the storm spin
+
+As warm air rises from the ocean, it cools and forms clouds. More warm air rushes in below. The whole system spins faster and faster. After a few days, it becomes a typhoon.
+
+## Parts of a typhoon
+- **Eye** — the calm center, usually 20–60 km wide. Skies are clear and winds are light.
+- **Eyewall** — the ring of clouds around the eye. This is where winds are strongest and rain is heaviest.
+- **Rain bands** — spiral arms of clouds and rain stretching hundreds of kilometers outward
+
+## Typhoon strength
+Typhoons are measured by their **wind speed**. In the Philippines, **PAGASA** (the national weather agency) uses **Tropical Cyclone Wind Signals** — Signal 1 (weakest) to Signal 5 (strongest).
+
+| Signal | Wind speed | What to expect |
+|---|---|---|
+| Signal 1 | 39–61 km/h | Strong winds, some rain |
+| Signal 2 | 62–88 km/h | Damage to light structures |
+| Signal 3 | 89–117 km/h | Moderate damage, trees uprooted |
+| Signal 4 | 118–184 km/h | Heavy damage, power outage |
+| Signal 5 | Above 185 km/h | Catastrophic damage |
+
+## How typhoons affect the Philippines
+The Philippines sits in the **Northwest Pacific typhoon belt** — the most active typhoon region in the world. About **20 typhoons** enter the Philippine Area of Responsibility each year. Some are weak; some, like Super Typhoon Haiyan (Yolanda) in 2013, are devastating.
+
+Typhoons bring:
+- **Heavy rain** — flooding, landslides
+- **Strong winds** — damage to houses, trees, power lines
+- **Storm surge** — ocean water pushed onto land, dangerous for coastal areas
+- **Loss of life and property**
+
+## Typhoon safety
+
+### Before a typhoon
+- Follow PAGASA updates on TV, radio, or online
+- Prepare an **emergency kit** — water, food, flashlight, batteries, radio, first-aid
+- Secure loose objects outside — roofs, signs, plants
+- Charge phones and power banks
+- Know your **evacuation center**
+
+### During a typhoon
+- **Stay indoors.** Do not go outside, even if it seems calm (you may be in the eye — the storm will return).
+- Stay away from windows and glass
+- Unplug appliances if flooding is possible
+- Listen to the radio for updates
+
+### After a typhoon
+- Wait for the **all-clear** before going outside
+- Watch out for downed power lines, damaged trees, and flooded areas
+- Boil water if the supply may be contaminated
+- Help neighbors if it's safe to do so
+
+## Why typhoons matter
+Typhoons are part of life in the Philippines. Learning about them helps us prepare, stay safe, and rebuild faster. Every Filipino family should know the warning signals, have an emergency plan, and know where to go if evacuation is needed.
+
+## Try this at home
+With an adult, look up the current PAGASA weather bulletin online. Is there any tropical cyclone in the Philippine Area of Responsibility right now? If yes, what signal level is it?
+
+## Quick check
+1. What is the difference between a typhoon, a hurricane, and a cyclone?
+2. What three things does a typhoon need to form?
+3. What is the eye of a typhoon?
+4. What are three things you should do *before* a typhoon arrives?
+5. Why is it dangerous to go outside during the "calm" of the eye?

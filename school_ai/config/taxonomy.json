@@ -1,6 +1,6 @@
 {
-  "version": "5.0",
-  "updated": "2026-10-08",
+  "version": "5.1",
+  "updated": "2026-10-09",
   "domains": {
     "matter_and_materials": {
       "label": "Matter and Materials",
@@ -41,24 +41,31 @@
     },
     "human_body": {
       "label": "Human Body",
-      "description": "heart blood, lungs breathing, stomach digestion, bones muscles, body systems",
+      "description": "heart blood, lungs breathing, stomach digestion, bones muscles, skin hair nails, glands hormones, kidneys bladder, body systems",
       "topics": {
-        "body_systems": "skeletal system, muscular system, digestive system, circulatory system, respiratory system, how body works",
         "circulatory_system": "heart, blood, blood vessels, arteries, veins, pulse, pumping blood, circulation",
-        "digestion_respiration": "stomach, intestines, esophagus, digestion, lungs, breathing, nose, windpipe, respiratory system"
+        "digestive_system": "stomach, intestines, esophagus, digestion, how food moves through the body, breaking down food, absorbing nutrients, digest food",
+        "respiratory_system": "lungs, breathing, nose, windpipe, trachea, oxygen, carbon dioxide, gas exchange",
+        "skeletal_system": "bones, skeleton, skull, ribs, spine, backbone, joints, what bones do, how many bones",
+        "muscular_system": "muscles, how muscles move bones, voluntary and involuntary muscles, biceps, triceps",
+"excretory_system": "excretory system, removing waste from the body, how the body gets rid of waste",
+"urinary_system": "urinary system, kidneys, bladder, ureters, urethra, urine, nephrons, filtering blood, kidney stones",
+        "integumentary_system": "skin, hair, nails, integumentary system, largest organ, how skin protects the body, sweat, touch, temperature, dermis, epidermis, hypodermis",
+        "endocrine_system": "glands, hormones, endocrine system, thyroid, pancreas, adrenal glands, pituitary gland, growth, how hormones control the body",
+        "reproductive_system": "how living things make young, basic male and female reproductive organs, growth and development, sperm, egg cell, ovaries, uterus"
       }
     },
-"ecosystems": {
-  "label": "Ecosystems",
-    "description": "habitats, food chains, food webs, what eats what, prey and predators, producers consumers decomposers, competition, conservation, how living things depend on each other",
-  "topics": {
-    "habitats": "land habitat, water habitat, garden, rice field, seashore, mangrove, where animals live, where plants grow",
-    "food_webs": "food chain, food web, herbivores, carnivores, omnivores, producers, consumers, scavengers, decomposers, what eats what, prey and predators, what are predators, what are prey, how energy moves from plants to animals",
-    "biotic_abiotic": "biotic living factors, abiotic non-living factors, light water temperature soil",
-    "organism_interactions": "competition, predation, predator prey, mutualism, how living things interact",
-    "environment_conservation": "conservation, protecting nature, saving habitats, pollution, caring for environment"
-  }
-},
+    "ecosystems": {
+      "label": "Ecosystems",
+      "description": "habitats, food chains, food webs, what eats what, prey and predators, producers consumers decomposers, competition, conservation, how living things depend on each other",
+      "topics": {
+        "habitats": "land habitat, water habitat, garden, rice field, seashore, mangrove, where animals live, where plants grow",
+        "food_webs": "food chain, food web, herbivores, carnivores, omnivores, producers, consumers, scavengers, decomposers, what eats what, prey and predators, what are predators, what are prey, how energy moves from plants to animals",
+        "biotic_abiotic": "biotic living factors, abiotic non-living factors, light water temperature soil",
+        "organism_interactions": "competition, predation, predator prey, mutualism, how living things interact",
+        "environment_conservation": "conservation, protecting nature, saving habitats, pollution, caring for environment"
+      }
+    },
     "forces_and_motion": {
       "label": "Forces and Motion",
       "description": "pushes pulls, speed direction, friction, gravity, magnets, simple machines",
@@ -87,12 +94,14 @@
       "label": "Earth and Space",
       "description": "typhoons weather, seasons, day and night, Sun Moon stars, volcanoes, eclipses, constellations",
       "topics": {
-        "weather": "typhoons, storms, rain, clouds, wind, temperature, humidity, weather charts, weather safety",
+"weather": "weather, weather patterns, air temperature, wind, humidity, rain, clouds, weather charts, weather instruments",
+"typhoons": "typhoons, storms, cyclones, storm surge, PAGASA, typhoon signals, typhoon safety",
         "seasons": "wet season, dry season, seasons in the Philippines, activities for each season",
         "earth_motions": "rotation, revolution, day and night, eclipses, Sun-Earth-Moon system, why day and night",
-        "celestial_objects": "Sun, Moon, planets, stars, shadows, sun safety, phases of the moon",
+        "celestial_objects": "Sun, Moon, planets, stars, shadows, sun safety, phases of the moon, solar system",
         "constellations": "constellations, stars for navigation, indigenous sky knowledge, patterns in the night sky",
-        "volcanoes": "volcanoes, eruptions, lava, ash, PHIVOLCS, active volcanoes, eruption safety"
+        "volcanoes": "volcanoes, eruptions, lava, ash, PHIVOLCS, active volcanoes, eruption safety",
+"earthquakes": "earthquakes, faults, tectonic plates, seismic waves, Richter scale, magnitude, epicenter, PHIVOLCS earthquake drills, earthquake safety"
       }
     },
     "lab_skills": {

@@ -15,11 +15,6 @@ Weather has several parts. Scientists measure each one:
 - **Rain** — water falling from clouds
 - **Clouds** — collections of tiny water droplets or ice crystals floating in the sky
 
-## Weather in the Philippines
-The Philippines has two main seasons: the **wet season** and the **dry season**. The wet season usually runs from June to November, and the dry season from December to May.
-
-The Philippines also has **typhoons** — very strong tropical storms with heavy rain and fast winds. Typhoons usually form over warm ocean water and move toward land. They can be dangerous, so people listen to weather reports and follow safety advice from PAGASA (the country's weather agency).
-
 ## Weather instruments
 Scientists use special tools to measure weather:
 
@@ -29,14 +24,25 @@ Scientists use special tools to measure weather:
 - **Barometer** — measures air pressure
 - **Weather vane** — shows wind direction
 
+## Weather in the Philippines
+The Philippines has two main seasons: the **wet season** and the **dry season**.
+
+- **Wet season** — usually June to November. Heavy rain and typhoons.
+- **Dry season** — usually December to May. Little rain, sunny and hot.
+
+## Weather disturbances
+The Philippines experiences many **weather disturbances** — sudden changes that bring heavy rain, strong winds, or both. The most important are **typhoons**.
+
+[[typhoons|Learn more about typhoons →]]
+
 ## Why weather matters
 Weather affects what we wear, what we eat, how we travel, and even how we feel. Farmers depend on rain to grow crops. Fishermen watch the wind and waves before going out to sea. Pilots check the weather before flying. Knowing the weather helps us stay safe and plan our day.
 
 ## Try this at home
-Keep a simple weather chart for one week. Every morning, write down: Is it sunny, cloudy, or rainy? Is it hot, warm, or cool? Is it windy? At the end of the week, look for patterns. Which day was the hottest? The wettest?
+Keep a simple weather chart for one week. Every morning, write down: Is it sunny, cloudy, or rainy? Is it hot, warm, or cool? Is it windy? At the end of the week, look for patterns.
 
 ## Quick check
 1. Name three things that make up weather.
-2. What is a typhoon?
-3. What instrument measures temperature?
+2. What instrument measures temperature?
+3. What are the two seasons in the Philippines?
 4. Why is knowing the weather important?

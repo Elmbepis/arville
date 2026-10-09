@@ -1,0 +1,71 @@
+# Measurement
+How we measure length, mass, volume, and temperature.
+
+## Why we measure
+**Measurement** tells us "how much" — how long, how heavy, how hot, how full. Scientists measure things to compare them, to record results, and to repeat experiments accurately. Without measurement, science is just guessing.
+
+## Length and distance
+We measure length using a **ruler**, **meterstick**, or **tape measure**.
+
+Units of length, from smallest to largest:
+- **Millimeter (mm)** — about the thickness of a coin
+- **Centimeter (cm)** — about the width of your finger (10 mm = 1 cm)
+- **Meter (m)** — about the height of a door (100 cm = 1 m)
+- **Kilometer (km)** — a walk of about 10 minutes (1,000 m = 1 km)
+
+## Mass (weight)
+We measure mass using a **balance** or **weighing scale**.
+
+Units of mass:
+- **Milligram (mg)** — very tiny, like a grain of salt
+- **Gram (g)** — about a paperclip (1,000 mg = 1 g)
+- **Kilogram (kg)** — about a bag of rice (1,000 g = 1 kg)
+
+## Volume (how much space)
+We measure the volume of liquids using a **measuring cylinder** or **beaker**.
+
+Units of volume:
+- **Milliliter (mL)** — about a teaspoon (used for small amounts)
+- **Liter (L)** — about a big bottle of water (1,000 mL = 1 L)
+
+For solids, we measure volume in **cubic centimeters (cm³)**. A cube 1 cm on every side has a volume of 1 cm³ — and holds exactly 1 mL of water.
+
+## Temperature
+We measure temperature using a **thermometer**.
+
+The unit is **degrees Celsius (°C)**:
+- **0°C** — water freezes
+- **25°C** — a warm room
+- **37°C** — normal body temperature
+- **100°C** — water boils
+
+In science, we always say the unit. "It is 20" means nothing — "it is 20 °C" or "20 cm" or "20 g" tells us what we measured.
+
+## Time
+We measure time using a **clock**, **stopwatch**, or **timer**.
+
+Units of time:
+- **Second (s)** — a quick blink
+- **Minute (min)** — 60 seconds
+- **Hour (h)** — 60 minutes
+- **Day** — 24 hours
+- **Year** — about 365 days
+
+## Estimating vs measuring
+**Estimating** is guessing a measurement without a tool — "the table looks about 1 meter wide." **Measuring** is checking with a tool — "the table is 97 cm wide." Estimation is useful when you don't have a tool, but for science, always measure.
+
+## Accuracy tips
+- Start measuring from the **0 mark**, not the edge of the ruler
+- Keep the ruler **flat** against what you're measuring
+- Read at **eye level** to avoid errors
+- For liquids, read the bottom of the **meniscus** (the curve of the liquid)
+- Record the number and the **unit**
+
+## Try this at home
+Use a ruler to measure five things in your home: a pencil, a book, a spoon, a shoe, and the width of your thumb. Write down the measurements in centimeters. Which is longest? Which is shortest?
+
+## Quick check
+1. How many centimeters are in a meter?
+2. What unit would you use to measure the mass of a bag of rice?
+3. What does a thermometer measure?
+4. Why is it important to include the unit when you write a measurement?
