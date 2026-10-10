@@ -2,8 +2,20 @@
 /**
  * lib/eliza.php — ELIZA-style fallback responses for bot-chat.
  *
- * Preference questions ("do you like X?") get their own treatment —
- * they're about the robot's tastes, not about actions.
+ * Order of matching (most specific &#8594; most general):
+ *   1. Preference questions    (do you like X?)
+ *   2. Desire questions        (do you want X?)
+ *   3. Possession questions    (do you have X?)
+ *   4. Knowledge questions     (do you know X?)
+ *   5. Feeling statements      (X makes me happy/sad/etc.)
+ *   6. Feeling questions       (does X make you happy?)
+ *   7. Action questions        (can you X?, do you <verb>?)
+ *   8. Self-reflections        (I like X, I have X, I want X, ...)
+ *   9. Unknown question        (why/what/how...)
+ *  10. Generic fallback
+ *
+ * The bot never interprets the object — it only reflects it and
+ * chooses a response template based on the FEELING's polarity.
  */
 
 function eliza_response(string $input): ?string
@@ -23,10 +35,9 @@ function eliza_response(string $input): ?string
         ]);
     }
 
-    // ============ PREFERENCE QUESTIONS ============
-    // These come FIRST so they don't fall through to generic "do you".
-
-    // "Do you like X?" / "Do you love X?"
+    /* =========================================================
+     *  1. PREFERENCE QUESTIONS — do you like/love/enjoy X?
+     * ========================================================= */
     if (preg_match('/^do you (?:like|love|enjoy|prefer) (.+)$/', $lower, $m)) {
         $thing = clean_thing($m[1], $text);
         if ($thing) return pick_from([
@@ -39,7 +50,9 @@ function eliza_response(string $input): ?string
         ]);
     }
 
-    // "Do you want X?" — desire
+    /* =========================================================
+     *  2. DESIRE QUESTIONS — do you want X?
+     * ========================================================= */
     if (preg_match('/^do you (?:want|wish for|need) (.+)$/', $lower, $m)) {
         $thing = clean_thing($m[1], $text);
         if ($thing) return pick_from([
@@ -50,7 +63,9 @@ function eliza_response(string $input): ?string
         ]);
     }
 
-    // "Do you have X?" — possession
+    /* =========================================================
+     *  3. POSSESSION QUESTIONS — do you have X?
+     * ========================================================= */
     if (preg_match('/^do you have (.+)$/', $lower, $m)) {
         $thing = clean_thing($m[1], $text);
         if ($thing) return pick_from([
@@ -61,7 +76,9 @@ function eliza_response(string $input): ?string
         ]);
     }
 
-    // "Do you know X?" — knowledge
+    /* =========================================================
+     *  4. KNOWLEDGE QUESTIONS — do you know X?
+     * ========================================================= */
     if (preg_match('/^do you know (.+)$/', $lower, $m)) {
         $thing = clean_thing($m[1], $text);
         if ($thing) return pick_from([
@@ -72,7 +89,44 @@ function eliza_response(string $input): ?string
         ]);
     }
 
-    // "Do you (verb)?" — general action question
+    /* =========================================================
+     *  5. FEELING STATEMENTS — [object] makes me [feeling]
+     * ========================================================= */
+    if (preg_match('/^(.{2,50}?) makes? me (?:feel |feeling )?(.+)$/', $lower, $m)) {
+        $object  = clean_thing($m[1], $text);
+        $feeling = clean_thing($m[2], $text);
+        if ($object && $feeling) {
+            return respond_to_feeling($object, $feeling, 'child');
+        }
+    }
+
+    /* =========================================================
+     *  6. FEELING QUESTIONS — does [object] make you [feeling]?
+     * ========================================================= */
+    if (preg_match('/^(?:does )?(.{2,50}?) makes? you (?:feel |feeling )?(.+)$/', $lower, $m)) {
+        $object  = clean_thing($m[1], $text);
+        $feeling = clean_thing($m[2], $text);
+        if ($object && $feeling) {
+            return respond_to_feeling($object, $feeling, 'robot');
+        }
+    }
+
+    /* =========================================================
+     *  7. ACTION QUESTIONS — can you X?
+     * ========================================================= */
+    if (preg_match('/^can you (.+)$/', $lower, $m)) {
+        $thing = clean_thing($m[1], $text);
+        if ($thing) return pick_from([
+            "Hmm, I'm not sure I can $thing. But I can tell jokes, stories, and sing songs!",
+            "I don't think I can $thing — but I'm pretty good at being silly!",
+            "Maybe! I'm still learning. For now, jokes and stories are my best tricks!",
+            "I wish I could $thing! But I can be your friend, and that's pretty great too.",
+        ]);
+    }
+
+    /* =========================================================
+     *  7b. GENERAL ACTION QUESTIONS — do you <verb>?
+     * ========================================================= */
     if (preg_match('/^do you (\w+)(.*)$/', $lower, $m)) {
         $verb = $m[1];
         $rest = trim($m[2] ?? '');
@@ -86,9 +140,11 @@ function eliza_response(string $input): ?string
         ]);
     }
 
-    // ============ REFLECTION RULES ============
+    /* =========================================================
+     *  8. SELF-REFLECTIONS — "I ..." statements
+     * ========================================================= */
 
-    // "I like/love/enjoy X"
+    // "I like/love/enjoy/adore X"
     if (preg_match('/^i (?:really )?(?:like|love|enjoy|adore) (.+)$/', $lower, $m)) {
         $thing = clean_thing($m[1], $text);
         if ($thing) return pick_from([
@@ -109,7 +165,7 @@ function eliza_response(string $input): ?string
         ]);
     }
 
-    // "I have/got X"
+    // "I have/got/own X"
     if (preg_match('/^i (?:have|got|own) (?:a |an |the )?(.+)$/', $lower, $m)) {
         $thing = clean_thing($m[1], $text);
         if ($thing) return pick_from([
@@ -198,18 +254,9 @@ function eliza_response(string $input): ?string
         ]);
     }
 
-    // "Can you X?" — action question about the robot
-    if (preg_match('/^can you (.+)$/', $lower, $m)) {
-        $thing = clean_thing($m[1], $text);
-        if ($thing) return pick_from([
-            "Hmm, I'm not sure I can $thing. But I can tell jokes, stories, and sing songs!",
-            "I don't think I can $thing — but I'm pretty good at being silly!",
-            "Maybe! I'm still learning. For now, jokes and stories are my best tricks!",
-            "I wish I could $thing! But I can be your friend, and that's pretty great too.",
-        ]);
-    }
-
-    // "Why/What/How/Where/When/Who X?" — unknown question
+    /* =========================================================
+     *  9. UNKNOWN QUESTIONS
+     * ========================================================= */
     if (preg_match('/^(why|what|how|where|when|who) (.+)$/', $lower, $m)) {
         return pick_from([
             "That's a really good question! I'm still learning about that.",
@@ -217,17 +264,6 @@ function eliza_response(string $input): ?string
             "Ooh, that's a big question! My little brain doesn't know it yet.",
             "You ask such good questions! I don't have the answer, but I'd love to hear what you think.",
             "I'm not sure! But I know lots of other things — like jokes and stories!",
-        ]);
-    }
-
-    // "You are X" — compliment or tease
-    if (preg_match('/^you (?:are|were|look) (.+)$/', $lower, $m)) {
-        $thing = clean_thing($m[1], $text);
-        if ($thing) return pick_from([
-            "Really? You think I'm $thing? Thank you!",
-            "Aww, you're so kind!",
-            "That made my circuits happy!",
-            "Beep boop! You're pretty wonderful yourself!",
         ]);
     }
 
@@ -241,7 +277,9 @@ function eliza_response(string $input): ?string
         ]);
     }
 
-    // ============ GENERIC FALLBACKS ============
+    /* =========================================================
+     * 10. GENERIC FALLBACK
+     * ========================================================= */
     return pick_from([
         "Tell me more about that!",
         "That's interesting! What else?",
@@ -254,12 +292,120 @@ function eliza_response(string $input): ?string
     ]);
 }
 
+/* =============================================================
+ *  Helpers
+ * ============================================================= */
+
+/**
+ * Choose a response based on the polarity of the feeling word.
+ * $speaker = 'child' (child feels) or 'robot' (asking about the bot)
+ *
+ * The object is reflected back as-is. The bot doesn't need to understand it.
+ */
+function respond_to_feeling(string $object, string $feeling, string $speaker): string
+{
+    $polarity = feeling_polarity($feeling);
+
+    // ---------- Question about the robot ----------
+    if ($speaker === 'robot') {
+        if ($polarity === 'positive') {
+            return pick_from([
+                "Yes! $object makes me $feeling!",
+                "It does! $object makes me $feeling every time!",
+                "Of course! $object really does make me $feeling!",
+                "You know what? $object makes me $feeling too!",
+            ]);
+        }
+        if ($polarity === 'negative') {
+            return pick_from([
+                "Hmm, sometimes $object makes me $feeling too.",
+                "Yes, a little. But I try not to let $object make me $feeling.",
+                "I try not to let $object make me $feeling. But it happens!",
+                "Sometimes! But talking to you helps.",
+            ]);
+        }
+        return pick_from([
+            "Hmm, I'm not sure! $object makes me think, that's for sure.",
+            "I'm still deciding how $object makes me feel!",
+            "That's a good question! What does $object make you feel?",
+        ]);
+    }
+
+    // ---------- Child expressing a feeling ----------
+    if ($polarity === 'positive') {
+        return pick_from([
+            "$object makes you $feeling? That's wonderful!",
+            "I love that $object makes you $feeling! Tell me more!",
+            "Yay! $object makes you $feeling! That makes me happy too!",
+            "Really? $object makes you $feeling? That's so nice to hear!",
+            "I'm happy that $object makes you $feeling!",
+        ]);
+    }
+    if ($polarity === 'negative') {
+        return pick_from([
+            "I'm sorry $object makes you $feeling. Want to tell me more?",
+            "That sounds hard. $object making you $feeling — I'm here for you.",
+            "I'm sorry to hear that. Why does $object make you $feeling?",
+            "It's okay to feel $feeling sometimes. I'm right here with you.",
+            "I don't like that $object makes you $feeling. Want to talk about it?",
+        ]);
+    }
+
+    // ---------- Neutral / unknown feeling word ----------
+    return pick_from([
+        "Why does $object make you $feeling?",
+        "That's interesting! Why does $object make you $feeling?",
+        "Can you tell me more about why $object makes you $feeling?",
+        "What is it about $object that makes you $feeling?",
+    ]);
+}
+
+/**
+ * Classify a feeling word as positive, negative, or unknown.
+ */
+function feeling_polarity(string $feeling): string
+{
+    $feeling = mb_strtolower($feeling);
+
+    static $positive = [
+        'happy','glad','joyful','joy','excited','great','good','wonderful',
+        'cheerful','delighted','proud','calm','peaceful','grateful','thankful',
+        'amazing','awesome','fantastic','love','loved','smile','smiley',
+        'energetic','hopeful','safe','cozy','warm','fuzzy','silly','funny',
+        'giggly','playful','curious','interested',
+    ];
+    static $negative = [
+        'sad','unhappy','angry','mad','frustrated','annoyed','scared',
+        'afraid','frightened','nervous','worried','anxious','upset',
+        'cry','crying','lonely','alone','tired','exhausted','bored',
+        'sick','hurt','pain','bad','terrible','awful','horrible',
+        'grumpy','miserable','stressed','confused','embarrassed',
+        'sleepy','dizzy','weak','sore','grumpy',
+    ];
+
+    foreach ($positive as $w) {
+        if (strpos($feeling, $w) !== false) return 'positive';
+    }
+    foreach ($negative as $w) {
+        if (strpos($feeling, $w) !== false) return 'negative';
+    }
+    return 'unknown';
+}
+
+/**
+ * Clean up a reflected phrase:
+ *   - trim
+ *   - remove trailing punctuation
+ *   - cap length
+ *   - escape for safety
+ * Returns null if nothing useful.
+ */
 function clean_thing(string $lowerPhrase, string $originalText): ?string
 {
     $thing = trim($lowerPhrase);
     $thing = rtrim($thing, ' .,!?');
     if ($thing === '') return null;
-    if (mb_strlen($thing) > 50) return null;
+    if (mb_strlen($thing) > 60) return null;
 
     $drop = ['a', 'an', 'the', 'to', 'of', 'in', 'on', 'for', 'with', 'is', 'are', 'was', 'were'];
     $words = explode(' ', $thing);
@@ -275,11 +421,14 @@ function clean_thing(string $lowerPhrase, string $originalText): ?string
     return htmlspecialchars($thing, ENT_QUOTES, 'UTF-8');
 }
 
+/**
+ * Random pick from an array with session-based de-duplication.
+ * Won't repeat any of the last 3 responses.
+ */
 function pick_from(array $options): string
 {
     if (empty($options)) return '';
 
-    // Session-based de-duplication
     if (session_status() === PHP_SESSION_NONE) {
         @session_start();
     }
