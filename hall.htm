@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  	<title id="dynamic-title">Arville Virtual Village</title>
+    <title>Arville Virtual Trade Expo</title>
     <style>
         body {
             margin: 0;
@@ -39,8 +39,7 @@
             border-radius: 10px;
             z-index: 100;
         }
-        
-        /* Mobile Controls - Hidden by default */
+
         #mobile-controls {
             display: none;
             position: absolute;
@@ -51,7 +50,6 @@
             pointer-events: none;
             z-index: 5;
         }
-        
         #joystick-container {
             position: absolute;
             bottom: 100px;
@@ -60,7 +58,6 @@
             height: 120px;
             pointer-events: auto;
         }
-        
         #joystick-base {
             width: 80px;
             height: 80px;
@@ -71,7 +68,6 @@
             top: 20px;
             left: 20px;
         }
-        
         #joystick-handle {
             width: 40px;
             height: 40px;
@@ -82,7 +78,6 @@
             left: 40px;
             transition: transform 0.1s;
         }
-        
         #camera-control-area {
             position: absolute;
             top: 0;
@@ -91,7 +86,6 @@
             height: 100%;
             pointer-events: auto;
         }
-        
         #center-tap-area {
             position: absolute;
             top: 0;
@@ -100,24 +94,18 @@
             height: 100%;
             pointer-events: auto;
         }
-        
-        /* Flight Controls - HIDDEN */
-        #flight-controls {
-            display: none;
-        }
+        #flight-controls { display: none; }
     </style>
 </head>
 <body>
-    <div id="info">Arville Virtual Hall #${hallId} | WASD: Move | Mouse: Look Around | R: Reset Position | H: Home</div>
+    <div id="info">Arville Virtual Trade Expo | WASD: Move | Mouse: Look Around | R: Reset Position | H: Home</div>
     <div id="loading">Preparing venue...</div>
-    
-    <!-- Flight Controls - HIDDEN -->
+
     <div id="flight-controls">
         <button id="fly-up">Fly Up (Q)</button>
         <button id="fly-down">Fly Down (E)</button>
     </div>
-    
-    <!-- Mobile Controls - Only shown on mobile devices -->
+
     <div id="mobile-controls">
         <div id="joystick-container">
             <div id="joystick-base"></div>
@@ -134,55 +122,52 @@
     <script>
         let scene, camera, renderer;
         const clock = new THREE.Clock();
-        const EYE_HEIGHT = 1.7; // Changed from 3 to 1.7 for normal walking height
-        let currentBooths = []; // Changed from currentAreas
-        
-        // Get hall ID from URL
+        const EYE_HEIGHT = 1.7;
+        let currentBooths = [];
+
+        // -----------------------------------------------------------------
+        // URL params
+        // -----------------------------------------------------------------
         const urlParams = new URLSearchParams(window.location.search);
         const hallId = urlParams.get('id') || '1';
 
-    	// Set dynamic title based on villageId
-    	const TITLE_CONFIG = {
-    	  'default': 'ARville Virtual Trade Expo',
-    	  '1': 'ARville Snack and Beverage Expo',
-    	  '2': 'ARville Breakfast Cereal Expo',
-    	  '3': 'ARville Health and Wellness Expo',
-    	};
-    
-    // Set the page title
-    document.title = TITLE_CONFIG[hallId] || TITLE_CONFIG['default'];
-    console.log(`&#128221; Set page title to: ${document.title}`);
+        // -----------------------------------------------------------------
+        // Fallback titles (used until the API responds)
+        // -----------------------------------------------------------------
+        const TITLE_CONFIG = {
+            'default': 'ARville Virtual Trade Expo',
+            '1': 'ARville Snack and Beverage Expo',
+            '2': 'ARville Breakfast Cereal Expo',
+            '3': 'ARville Health and Wellness Expo'
+        };
+        document.title = TITLE_CONFIG[hallId] || TITLE_CONFIG['default'];
 
-        // Hall dimensions for navigation
+        // -----------------------------------------------------------------
+        // Hall shell dimensions (hardcoded — one hall)
+        // -----------------------------------------------------------------
         const PLACE_WIDTH = 30;
         const PLACE_DEPTH = 80;
 
         window.ROOM_INITIAL_POSITION = new THREE.Vector3(0, EYE_HEIGHT, 41.5);
-        window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0 * Math.PI / 180, 0, 'YXZ');
+        window.ROOM_INITIAL_ROTATION = new THREE.Euler(0, 0, 0, 'YXZ');
 
-        // Booth positions for 12 booths (6 on each side)
+        // -----------------------------------------------------------------
+        // Fixed booth slot positions (hardcoded — one hall, 12 slots)
+        // -----------------------------------------------------------------
         const BOOTH_POSITIONS = {
-            // Left side booths (6 total)
-            '1': new THREE.Vector3(-10, 0, -30),
-            '2': new THREE.Vector3(-10, 0, -18),
-            '3': new THREE.Vector3(-10, 0, -6),
-            '4': new THREE.Vector3(-10, 0, 6),
-            '5': new THREE.Vector3(-10, 0, 18),
-            '6': new THREE.Vector3(-10, 0, 30),
-            
-            // Right side booths (6 total)
-            '7': new THREE.Vector3(10, 0, -30),
-            '8': new THREE.Vector3(10, 0, -18),
-            '9': new THREE.Vector3(10, 0, -6),
-            '10': new THREE.Vector3(10, 0, 6),
-            '11': new THREE.Vector3(10, 0, 18),
-            '12': new THREE.Vector3(10, 0, 30)
+            '1':  new THREE.Vector3(-10, 0, -30),
+            '2':  new THREE.Vector3(-10, 0, -18),
+            '3':  new THREE.Vector3(-10, 0,  -6),
+            '4':  new THREE.Vector3(-10, 0,   6),
+            '5':  new THREE.Vector3(-10, 0,  18),
+            '6':  new THREE.Vector3(-10, 0,  30),
+            '7':  new THREE.Vector3( 10, 0, -30),
+            '8':  new THREE.Vector3( 10, 0, -18),
+            '9':  new THREE.Vector3( 10, 0,  -6),
+            '10': new THREE.Vector3( 10, 0,   6),
+            '11': new THREE.Vector3( 10, 0,  18),
+            '12': new THREE.Vector3( 10, 0,  30)
         };
-
-        // Simple function to get all booth IDs for this hall
-        function getAvailableBooths() { // Changed from getAvailableAreas
-            return ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-        }
 
         init();
         animate();
@@ -192,37 +177,32 @@
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.set(0, EYE_HEIGHT, 41.5);
-            camera.rotation.set(0, 0 * Math.PI / 180, 0);
+            camera.rotation.set(0, 0, 0);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setClearColor(0x202020);
             document.body.appendChild(renderer.domElement);
 
-            // Add H key handler for Home
             window.addEventListener('keydown', (event) => {
                 if (event.key.toLowerCase() === 'h') {
-                    // Navigate to site's index.php
                     window.location.href = 'index.php';
                 }
             });
 
-			// Initialize mobile controls - wait for navigation.js to be ready
-			setTimeout(() => {
-		    initMobileControls();
-			}, 100);
+            setTimeout(() => {
+                if (typeof initMobileControls === 'function') initMobileControls();
+            }, 100);
 
-            // Update title to show hall ID
-            document.getElementById('info').textContent = 
-                `Arville Virtual Hall #${hallId} | WASD: Move | Mouse: Look | R: Reset | H: Home`;
+            document.getElementById('info').textContent =
+                `Arville Virtual Trade Expo | WASD: Move | Mouse: Look | R: Reset | H: Home`;
 
-            // Lighting - balanced from multiple directions
+            // Lighting
             const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.9);
             hemiLight.position.set(0, 20, 0);
             scene.add(hemiLight);
 
-            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambient);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 
             const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.6);
             dirLight1.position.set(30, 12, 0);
@@ -240,57 +220,99 @@
             dirLight4.position.set(0, 12, 30);
             scene.add(dirLight4);
 
-            // Load resources
+            // Load resources, then build the room + booths from the DB
             loadResources().then(() => {
                 createRoom();
-                loadBooths(); // Changed from loadAreas
+                loadBooths();
             }).catch((error) => {
                 console.error('Failed to load resources:', error);
                 createRoom();
-                loadBooths(); // Changed from loadAreas
+                loadBooths();
             });
 
-            // Use the shared navigation controls
-            setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
-            window.addEventListener("resize", onWindowResize);
+            if (typeof setupControls === 'function') {
+                setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
+            }
+            window.addEventListener('resize', onWindowResize);
         }
 
+        // =================================================================
+        // Resource loading (textures + obj_create.js + obj_create_db.js)
+        // =================================================================
         async function loadResources() {
-            // Load hall-specific main-textures configuration
             await loadHallTextureConfig();
-            
-            // Load object creator
             await loadObjectCreator();
         }
 
         function loadHallTextureConfig() {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 const script = document.createElement('script');
                 script.src = `universe/hall-sections/${hallId}/main-textures.js`;
-                
-                script.onload = function() {
+
+                script.onload = function () {
                     console.log(`&#9989; main-textures.js loaded for hall ${hallId}`);
                     if (window.HALL_TEXTURES) {
-                        console.log(`&#9989; Hall texture configuration loaded for hall ${hallId}`);
-                        console.log('&#128195; Texture config:', window.HALL_TEXTURES);
+                        console.log('&#128203; Texture config:', window.HALL_TEXTURES);
                     } else {
-                        console.warn(`&#9888;&#65039; No HALL_TEXTURES configuration found for hall ${hallId}`);
+                        console.warn(`&#9888;&#65039; No HALL_TEXTURES found for hall ${hallId}`);
                     }
                     resolve();
                 };
-                
-                script.onerror = function() {
+
+                script.onerror = function () {
                     console.error(`&#10060; Failed to load main-textures.js for hall ${hallId}`);
-                    resolve(); // Still resolve to continue loading
+                    resolve();
                 };
-                
+
                 document.head.appendChild(script);
             });
         }
 
+        function loadObjectCreator() {
+            return new Promise((resolve, reject) => {
+                const mainScript = document.createElement('script');
+                mainScript.src = 'universe/obj_create.js?v=' + Date.now();
+
+                mainScript.onload = function () {
+                    console.log('&#9989; Object creator loaded');
+                    if (!window.textureLoader) {
+                        window.textureLoader = new THREE.TextureLoader();
+                    }
+                    if (window.initObjectTextures) {
+                        window.initObjectTextures(window.textureLoader);
+                    }
+
+                    // Load the DB variant next
+                    const dbScript = document.createElement('script');
+                    dbScript.src = 'universe/obj_create_db.js?v=' + Date.now();
+
+                    dbScript.onload = function () {
+                        console.log('&#9989; DB object helpers loaded');
+                        resolve();
+                    };
+
+                    dbScript.onerror = function () {
+                        console.warn('&#9888;&#65039; Failed to load obj_create_db.js — DB texture override unavailable');
+                        resolve();   // don't fail the whole load
+                    };
+
+                    document.head.appendChild(dbScript);
+                };
+
+                mainScript.onerror = function () {
+                    console.error('&#10060; Failed to load object creator');
+                    reject(new Error('Failed to load object creator script'));
+                };
+
+                document.head.appendChild(mainScript);
+            });
+        }
+
+        // =================================================================
+        // Room shell (floor, walls, ceiling) — unchanged
+        // =================================================================
         async function createRoom() {
             try {
-                // Load textures using the configuration from main-textures.js
                 const materials = await loadHallMaterials();
                 createRoomWithMaterials(materials);
             } catch (error) {
@@ -301,79 +323,57 @@
 
         async function loadHallMaterials() {
             const materials = {};
-            
-            // Check if HALL_TEXTURES is available, otherwise use defaults
+
             if (!window.HALL_TEXTURES) {
-                console.warn('&#9888;&#65039; No HALL_TEXTURES configuration found, using default hall textures');
+                console.warn('&#9888;&#65039; No HALL_TEXTURES — using defaults');
                 window.HALL_TEXTURES = {
-                    floor: {
-                        path: 'universe/textures/hall-floor.jpg',
-                        repeat: { x: 9, y: 18 }
-                    },
-                    walls: {
-                        path: 'universe/textures/hall-walls1.jpg',
-                        repeat: { x: 32, y: 4 }
-                    },
-                    ceiling: {
-                        path: 'universe/textures/expo1_ceiling.jpg',
-                        repeat: { x: 16, y: 32 }
-                    }
+                    floor:   { path: 'universe/textures/hall-floor.jpg',     repeat: { x: 9,  y: 18 } },
+                    walls:   { path: 'universe/textures/hall-walls1.jpg',    repeat: { x: 32, y: 4  } },
+                    ceiling: { path: 'universe/textures/expo1_ceiling.jpg',  repeat: { x: 16, y: 32 } }
                 };
             }
-            
-            const textureConfig = window.HALL_TEXTURES;
-            
-            // Load floor texture
+
+            const cfg = window.HALL_TEXTURES;
+
             try {
-                const floorTexture = await loadTexture(textureConfig.floor.path);
-                floorTexture.wrapS = THREE.RepeatWrapping;
-                floorTexture.wrapT = THREE.RepeatWrapping;
-                floorTexture.repeat.set(textureConfig.floor.repeat.x, textureConfig.floor.repeat.y);
-                materials.floor = new THREE.MeshLambertMaterial({ map: floorTexture });
-                console.log('&#9989; Floor texture loaded with repeat:', textureConfig.floor.repeat);
-            } catch (error) {
-                console.error('&#10060; Failed to load floor texture:', error);
+                const t = await loadTexture(cfg.floor.path);
+                t.wrapS = t.wrapT = THREE.RepeatWrapping;
+                t.repeat.set(cfg.floor.repeat.x, cfg.floor.repeat.y);
+                materials.floor = new THREE.MeshLambertMaterial({ map: t });
+                console.log('&#9989; Floor texture loaded');
+            } catch (e) {
+                console.error('&#10060; Floor texture failed:', e);
                 materials.floor = new THREE.MeshLambertMaterial({ color: 0x888888 });
             }
 
-            // Load wall texture
             try {
-                const wallTexture = await loadTexture(textureConfig.walls.path);
-                wallTexture.wrapS = THREE.RepeatWrapping;
-                wallTexture.wrapT = THREE.RepeatWrapping;
-                wallTexture.repeat.set(textureConfig.walls.repeat.x, textureConfig.walls.repeat.y);
-                wallTexture.needsUpdate = true;
-                materials.walls = new THREE.MeshStandardMaterial({ 
-                    map: wallTexture,
-                    roughness: 0.8,
-                    side: THREE.DoubleSide
+                const t = await loadTexture(cfg.walls.path);
+                t.wrapS = t.wrapT = THREE.RepeatWrapping;
+                t.repeat.set(cfg.walls.repeat.x, cfg.walls.repeat.y);
+                t.needsUpdate = true;
+                materials.walls = new THREE.MeshStandardMaterial({
+                    map: t, roughness: 0.8, side: THREE.DoubleSide
                 });
-                console.log('&#9989; Wall texture loaded with repeat:', textureConfig.walls.repeat);
-            } catch (error) {
-                console.error('&#10060; Failed to load wall texture:', error);
-                materials.walls = new THREE.MeshStandardMaterial({ 
-                    color: 0xeeeeee, 
-                    roughness: 0.6,
-                    side: THREE.DoubleSide
+                console.log('&#9989; Wall texture loaded');
+            } catch (e) {
+                console.error('&#10060; Wall texture failed:', e);
+                materials.walls = new THREE.MeshStandardMaterial({
+                    color: 0xeeeeee, roughness: 0.6, side: THREE.DoubleSide
                 });
             }
 
-            // Load ceiling texture
             try {
-                const ceilingTexture = await loadTexture(textureConfig.ceiling.path);
-                ceilingTexture.wrapS = THREE.RepeatWrapping;
-                ceilingTexture.wrapT = THREE.RepeatWrapping;
-                ceilingTexture.repeat.set(textureConfig.ceiling.repeat.x, textureConfig.ceiling.repeat.y);
-                materials.ceiling = new THREE.MeshStandardMaterial({ 
-                    map: ceilingTexture,
-                    roughness: 0.9
+                const t = await loadTexture(cfg.ceiling.path);
+                t.wrapS = t.wrapT = THREE.RepeatWrapping;
+                t.repeat.set(cfg.ceiling.repeat.x, cfg.ceiling.repeat.y);
+                materials.ceiling = new THREE.MeshStandardMaterial({
+                    map: t, roughness: 0.9
                 });
-                console.log('&#9989; Ceiling texture loaded with repeat:', textureConfig.ceiling.repeat);
-            } catch (error) {
-                console.error('&#10060; Failed to load ceiling texture:', error);
-                materials.ceiling = new THREE.MeshStandardMaterial({ 
-                    color: 0xdddddd, 
-                    roughness: 0.9 
+                console.log('&#9989; Ceiling texture loaded');
+            } catch (e) {
+                console.error('&#10060; Ceiling texture failed:', e);
+                materials.ceiling = new THREE.MeshStandardMaterial({
+                    color: 0xdddddd, roughness: 0.9
                 });
             }
 
@@ -385,13 +385,7 @@
                 if (!window.textureLoader) {
                     window.textureLoader = new THREE.TextureLoader();
                 }
-                
-                window.textureLoader.load(
-                    path,
-                    resolve,
-                    undefined,
-                    reject
-                );
+                window.textureLoader.load(path, resolve, undefined, reject);
             });
         }
 
@@ -400,12 +394,10 @@
             const roomDepth = PLACE_DEPTH;
             const wallHeight = 11.5;
 
-            // Floor
             const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), materials.floor);
             floor.rotation.x = -Math.PI / 2;
             scene.add(floor);
 
-            // Walls
             const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, wallHeight), materials.walls);
             backWall.position.set(0, wallHeight / 2, -roomDepth / 2);
             scene.add(backWall);
@@ -425,7 +417,6 @@
             rightWall.position.set(roomWidth / 2, wallHeight / 2, 0);
             scene.add(rightWall);
 
-            // Ceiling
             const ceiling = new THREE.Mesh(
                 new THREE.PlaneGeometry(roomWidth, roomDepth),
                 materials.ceiling
@@ -433,168 +424,279 @@
             ceiling.rotation.x = Math.PI / 2;
             ceiling.position.y = wallHeight;
             scene.add(ceiling);
-            
+
             console.log(`&#9989; Hall room created for hall ${hallId}`);
         }
 
         function createRoomWithDefaultMaterials() {
-            const roomWidth = PLACE_WIDTH;
-            const roomDepth = PLACE_DEPTH;
-            const wallHeight = 10;
-
-            // Fallback materials with colors only
-            const materials = {
-                floor: new THREE.MeshLambertMaterial({ color: 0x888888 }),
-                walls: new THREE.MeshStandardMaterial({ 
-                    color: 0xeeeeee, 
-                    roughness: 0.6,
-                    side: THREE.DoubleSide 
-                }),
+            createRoomWithMaterials({
+                floor:   new THREE.MeshLambertMaterial({ color: 0x888888 }),
+                walls:   new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.6, side: THREE.DoubleSide }),
                 ceiling: new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.9 })
-            };
-
-            createRoomWithMaterials(materials);
-        }
-
-        function loadObjectCreator() {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = 'universe/obj_create.js?v=' + Date.now();
-                
-                script.onload = function() {
-                    console.log('&#9989; Object creator loaded');
-                    if (!window.textureLoader) {
-                        window.textureLoader = new THREE.TextureLoader();
-                    }
-                    if (window.initObjectTextures) {
-                        window.initObjectTextures(window.textureLoader);
-                    }
-                    resolve();
-                };
-                
-                script.onerror = function() {
-                    console.error('&#10060; Failed to load object creator');
-                    reject(new Error('Failed to load object creator script'));
-                };
-                
-                document.head.appendChild(script);
             });
         }
 
-        async function loadBooths() { // Changed from loadAreas
+        // =================================================================
+        // DATA-DRIVEN BOOTH LOADING
+        // =================================================================
+
+        async function loadBooths() {
             const loadingDiv = document.getElementById('loading');
-            
-            // Get all booth IDs
-            const boothIds = getAvailableBooths(); // Changed from getAvailableAreas
-            const loadedBooths = [];
-            
-            loadingDiv.textContent = `Loading ${boothIds.length} booths...`;
-            
-            // Try to load each booth
-            for (const boothId of boothIds) {
-                loadingDiv.textContent = `Loading booth ${boothId}...`;
+            loadingDiv.style.display = 'block';
+            loadingDiv.textContent = 'Loading expo data...';
+
+            const urlId = new URLSearchParams(location.search).get('id') || 'tradehall';
+
+            let payload;
+            try {
+                const res = await fetch(
+                    `api/hall.php?id=${encodeURIComponent(urlId)}`,
+                    { cache: 'no-store' }
+                );
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                payload = await res.json();
+            } catch (err) {
+                console.error('Failed to load hall data:', err);
+                loadingDiv.textContent = 'Failed to load hall data.';
+                return;
+            }
+
+            if (payload.error) {
+                console.error('API error:', payload.error);
+                loadingDiv.textContent = 'API error: ' + payload.error;
+                return;
+            }
+
+            // If API returned a world title, prefer it over the hardcoded fallback
+            if (payload.world && payload.world.title) {
+                document.title = payload.world.title;
+                document.getElementById('info').textContent =
+                    `${payload.world.title} | WASD: Move | Mouse: Look | R: Reset | H: Home`;
+            }
+
+            const bySlot = Object.fromEntries(payload.areas.map(a => [a.slot, a]));
+
+            let loaded = 0;
+            for (const slotStr of Object.keys(BOOTH_POSITIONS)) {
+                const slot = Number(slotStr);
+                const area = bySlot[slot];
+                if (!area) continue;   // empty slot — skip
+
+                loadingDiv.textContent =
+                    `Building booth ${slot} (${area.vendor_name || ''})...`;
+
+                const group = await buildBoothGroup(area);
+                group.name = `booth-${slot}`;
+
+                const base = BOOTH_POSITIONS[slotStr];
+                group.position.set(
+                    area.pos_x !== null ? area.pos_x : base.x,
+                    area.pos_y !== null ? area.pos_y : base.y,
+                    area.pos_z !== null ? area.pos_z : base.z
+                );
+                group.rotation.y = (area.rot_y !== null) ? area.rot_y : 0;
+
+                scene.add(group);
+                currentBooths.push(slot);
+                loaded++;
+            }
+
+            loadingDiv.style.display = 'none';
+            console.log(`&#9989; Loaded ${loaded} booth(s) from database`);
+
+            const instructionsDiv = document.getElementById('instructions');
+            if (instructionsDiv && !window.isMobile) {
+                instructionsDiv.textContent =
+                    `Loaded ${loaded} booth(s) | WASD: Move | Mouse: Look | R: Reset | H: Home`;
+            }
+        }
+
+        async function buildBoothGroup(area) {
+            const group = new THREE.Group();
+            for (const obj of area.objects) {
                 try {
-                    await loadBoothContent(boothId); // Changed from loadAreaContent
-                    loadedBooths.push(boothId);
-                } catch (error) {
-                    console.log(`Booth ${boothId} not available - leaving empty`);
+                    const node = await instantiateAreaObject(obj);
+                    if (node) group.add(node);
+                } catch (err) {
+                    console.error(`Failed to build ${obj.creator} (${obj.label}):`, err);
                 }
             }
-            
-            loadingDiv.style.display = 'none';
-            console.log(`&#9989; Loaded ${loadedBooths.length} booths`);
-            
-            // Update instructions with loaded count
-            if (!window.isMobile) {
-                document.getElementById('instructions').textContent = 
-                    `Loaded ${loadedBooths.length} booth(s) | WASD: Move | Mouse: Look | R: Reset | H: Home`;
-            } else {
-                document.getElementById('instructions').style.display = 'none';
+            return group;
+        }
+
+        // =================================================================
+        // Dispatcher: maps a row's `creator` value to a createX() call
+        // =================================================================
+        async function instantiateAreaObject(o) {
+            const p = o.params || {};
+
+            switch (o.creator) {
+
+                case 'cubicle':
+                    return createCubicle(o.pos_x, o.pos_y, o.pos_z,
+                        p.size, p.wallTex, p.bannerTex, p.poleTex, p.floorTex);
+
+                case 'billboard':
+                    return createBillboard(o.pos_x, o.pos_y, o.pos_z,
+                        p.totalHeight, p.displayWidth, p.displayHeight,
+                        p.displayTex, p.postTex,
+                        p.displayRepeats || { x: 1, y: 1 },
+                        p.postRepeats    || { x: 1, y: 1 },
+                        o.rot_y,
+                        p.brightness ?? 0.8, p.contrast ?? 1.0);
+
+                case 'signPost':
+                    return createSignPost(o.pos_x, o.pos_y, o.pos_z,
+                        p.totalHeight, p.displayWidth, p.displayHeight,
+                        p.frontTex, p.backTex, p.poleTex, o.rot_y);
+
+                case 'table':
+                    return createTable(o.pos_x, o.pos_y, o.pos_z,
+                        p.topTex, p.legTex,
+                        p.topRepeats || { x: 2, y: 1 },
+                        p.legRepeats || { x: 1, y: 1 });
+
+                case 'chair':
+                    return createChair(o.pos_x, o.pos_y, o.pos_z, o.rot_y,
+                        p.seatTex, p.backTex, p.legTex,
+                        p.seatRepeats || { x: 2, y: 2 },
+                        p.backRepeats || { x: 2, y: 2 },
+                        p.legRepeats  || { x: 1, y: 1 });
+
+                case 'texturedBox':
+                    return createTexturedBox(o.pos_x, o.pos_y, o.pos_z, o.rot_y,
+                        p.width, p.height, p.depth,
+                        p.textures || {},
+                        p.rotateInPlace ?? false,
+                        p.rotationSpeed ?? 0);
+
+                case 'displayStand':
+                    return createDisplayStand(o.pos_x, o.pos_y, o.pos_z,
+                        p.platformRadius, p.baseRadius, p.poleHeight,
+                        p.platformTex, p.poleTex, p.baseTex);
+
+                case 'lightFixture':
+                    return createLightFixture(o.pos_x, o.pos_y, o.pos_z,
+                        p.poleTex, p.fixtureTex,
+                        p.poleRepeats    || { x: 1, y: 1 },
+                        p.fixtureRepeats || { x: 1, y: 1 });
+
+                case 'floorArea':
+                    return createFloorArea(o.pos_x, o.pos_y, o.pos_z,
+                        p.width, p.depth, p.texture,
+                        p.repeats || { x: 2, y: 2 });
+
+                // ---------------------------------------------------------
+                // Static GLB — with optional texture override
+                // ---------------------------------------------------------
+                case 'glb': {
+                    const m = await createStaticGLBModel(o.model_path,
+                        o.pos_x, o.pos_y, o.pos_z,
+                        o.rot_x, o.rot_y, o.rot_z, o.scale);
+
+                    // Prefer the DB-safe variant; fall back to the original
+                    const overrideFn = window.changeGLBTextureDB || window.changeGLBTexture;
+
+                    if (o.texture && typeof overrideFn === 'function' && m.children[0]) {
+                        const original = m.children[0];
+
+                        const posCopy   = original.position.clone();
+                        const rotCopy   = original.rotation.clone();
+                        const scaleCopy = original.scale.clone();
+
+                        const textured = await overrideFn(original, o.texture);
+
+                        textured.position.copy(posCopy);
+                        textured.rotation.copy(rotCopy);
+                        textured.scale.copy(scaleCopy);
+                        textured.updateMatrixWorld(true);
+
+                        m.remove(original);
+                        m.add(textured);
+
+                        console.log(`&#9989; [glb] Applied texture override: ${o.texture}`);
+                    } else if (!o.texture) {
+                        console.log(`&#8505;&#65039; [glb] ${o.label} — no texture override, using GLB's own material`);
+                    }
+
+                    return m;
+                }
+
+                // ---------------------------------------------------------
+                // Rotating GLB — with optional texture override
+                // ---------------------------------------------------------
+                case 'rotatingGLB': {
+                    const m = await createRotatingGLBModel(o.model_path,
+                        o.pos_x, o.pos_y, o.pos_z,
+                        o.rot_x, o.rot_y, o.rot_z, o.scale,
+                        p.rotationSpeed ?? 1.0);
+
+                    // Prefer the DB-safe variant; fall back to the original
+                    const overrideFn = window.changeGLBTextureDB || window.changeGLBTexture;
+
+                    if (o.texture && typeof overrideFn === 'function' && m.children[0]) {
+                        const original = m.children[0];
+
+                        const posCopy   = original.position.clone();
+                        const rotCopy   = original.rotation.clone();
+                        const scaleCopy = original.scale.clone();
+
+                        const textured = await overrideFn(original, o.texture);
+
+                        textured.position.copy(posCopy);
+                        textured.rotation.copy(rotCopy);
+                        textured.scale.copy(scaleCopy);
+                        textured.updateMatrixWorld(true);
+
+                        m.remove(original);
+                        m.add(textured);
+
+                        console.log(`&#9989; [rotatingGLB] Applied texture override: ${o.texture}`);
+                    } else if (!o.texture) {
+                        console.log(`&#8505;&#65039; [rotatingGLB] ${o.label} — no texture override, using GLB's own material`);
+                    }
+
+                    return m;
+                }
+
+                default:
+                    console.warn('Unknown creator:', o.creator, o);
+                    return null;
             }
         }
 
-        async function loadBoothContent(boothId) { // Changed from loadAreaContent
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = `universe/booths/${hallId}/booth${boothId}.js`;
-                
-                script.onload = () => {
-                    setTimeout(() => {
-                        // Look for booth group (booth files should create groups named 'booth-1', 'booth-2', etc.)
-                        const boothGroup = scene.getObjectByName(`booth-${boothId}`);
-                        if (boothGroup) {
-                            positionBooth(boothId); // Changed from positionArea
-                            currentBooths.push(boothId);
-                            console.log(`&#9989; Booth ${boothId} loaded successfully`);
-                            resolve();
-                        } else {
-                            console.error(`&#10060; Booth group booth-${boothId} not found after loading script`);
-                            reject(new Error(`Booth group not found: booth-${boothId}`));
-                        }
-                    }, 0);
-                };
-                
-                script.onerror = () => {
-                    reject(new Error(`Booth ${boothId} file not found`));
-                };
-                
-                document.head.appendChild(script);
-            });
-        }
-
-        function positionBooth(boothId) { // Changed from positionArea
-            const boothGroup = scene.getObjectByName(`booth-${boothId}`);
-            if (boothGroup && BOOTH_POSITIONS[boothId]) {
-                const boothPosition = BOOTH_POSITIONS[boothId];
-                boothGroup.position.copy(boothPosition);
-                console.log(`&#128205; Positioned booth ${boothId} at:`, boothPosition);
-                boothGroup.updateMatrixWorld(true);
-            } else {
-                console.error(`&#10060; Could not position booth ${boothId}`);
-            }
-        }
-
+        // =================================================================
+        // Resize + animate
+        // =================================================================
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-function animate() {
-    requestAnimationFrame(animate);
-    const delta = clock.getDelta();
-    
-    // ENFORCE FLIGHT CEILING LIMIT
-    const CEILING_HEIGHT = 10.0;
-    const MIN_HEIGHT = 0.5;
-    
-    if (camera.position.y > CEILING_HEIGHT) {
-        camera.position.y = CEILING_HEIGHT;
-    }
-    if (camera.position.y < MIN_HEIGHT) {
-        camera.position.y = MIN_HEIGHT;
-    }
-    
-    // UPDATE ALL ROTATING OBJECTS
-    scene.traverse((object) => {
-        // Update textured boxes (if you have them)
-        if (object.userData && object.userData.type === 'textured_box' && object.update) {
-            object.update(delta);
-        }
-        // Update rotating GLB models
-        if (object.userData && object.userData.type === 'rotating_glb' && object.update) {
-            object.update(delta);
-        }
-        // Update rotating placeholders
-        if (object.userData && object.userData.type === 'rotating_placeholder' && object.update) {
-            object.update(delta);
-        }
-    });
-    
-    if (camera.userData.update) camera.userData.update();
-    renderer.render(scene, camera);
-}
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
 
+            // Enforce flight ceiling / floor
+            const CEILING_HEIGHT = 10.0;
+            const MIN_HEIGHT = 0.5;
+            if (camera.position.y > CEILING_HEIGHT) camera.position.y = CEILING_HEIGHT;
+            if (camera.position.y < MIN_HEIGHT)     camera.position.y = MIN_HEIGHT;
+
+            // Update rotating objects
+            scene.traverse((object) => {
+                if (object.userData && object.update) {
+                    const t = object.userData.type;
+                    if (t === 'textured_box' || t === 'rotating_glb' || t === 'rotating_placeholder') {
+                        object.update(delta);
+                    }
+                }
+            });
+
+            if (camera.userData.update) camera.userData.update();
+            renderer.render(scene, camera);
+        }
     </script>
 </body>
 </html>
