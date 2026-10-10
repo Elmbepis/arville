@@ -756,6 +756,23 @@
       "description": "Cell Respiration – Converting Chemical Energy into ATP (Energy for Cells)"
     },
     {
+      "id": 306,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 2",
+      "lesson": "Q3 Lesson 1",
+      "file_path": "rmats/Biology 2/Q3_LE1.pdf",
+      "description": "Plant Cells, Tissues, Organs, and Organ Systems"
+    },
+    {
+      "id": 307,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Biology 2",
+      "lesson": "Q3 Lesson 2",
+      "file_path": "rmats/Biology 2/Q3_LE2.pdf",
+      "description": "Animal Tissues and Their Role in Organ Function"
+    },
+
+    {
       "id": 320,
       "shs_pathway": "SHS Academic Elective Subject",
       "subject": "Chemistry 1",
