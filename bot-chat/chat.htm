@@ -53,6 +53,7 @@
     #status.thinking  { color: #fd8; border-color: rgba(255, 200, 100, 0.6); }
     #status.speaking  { color: #8f8; border-color: rgba(100, 255, 100, 0.6); }
 
+    /* Tap button (only visible at start) */
     #micBtn {
       position: fixed;
       bottom: 40px;
@@ -77,6 +78,7 @@
     #micBtn:active { transform: translateX(-50%) scale(0.94); }
     #micBtn.hidden { opacity: 0; pointer-events: none; }
 
+    /* Small pulse indicator when listening */
     #pulse {
       position: fixed;
       bottom: 90px;
@@ -98,6 +100,7 @@
       100% { opacity: 0;   transform: translateX(-50%) scale(1.3); }
     }
 
+    /* Transcript bubble — bottom-left corner */
     #transcript {
       position: fixed;
       bottom: 12px;
@@ -372,8 +375,7 @@ function setupSTT() {
   recognition.lang = 'en-US';
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
-  // KEY CHANGE: continuous mode keeps the mic open across utterances
-  recognition.continuous = true;
+  recognition.continuous = false;
 
   recognition.onstart = () => {
     isListening = true;
@@ -382,40 +384,30 @@ function setupSTT() {
   };
 
   recognition.onresult = (event) => {
-    // Ignore any speech the mic picks up while the bot is busy or speaking
-    if (isBusy || isPlaying) return;
-
-    // In continuous mode, results arrive as an array; find the latest final
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      if (!event.results[i].isFinal) continue;
-      const text = event.results[i][0].transcript.trim();
-      if (!text) continue;
-      console.log('&#127908; Heard:', text);
-      showTranscript(text);
-      handleUserInput(text);
-      break;
-    }
+    const text = event.results[0][0].transcript.trim();
+    if (!text) return;
+    console.log('&#127908; Heard:', text);
+    showTranscript(text);
+    handleUserInput(text);
   };
 
   recognition.onerror = (event) => {
     console.log('STT error:', event.error);
+    isListening = false;
     pulseEl.classList.remove('active');
 
     if (event.error === 'no-speech') {
-      // Continuous mode: mic stays open. Nothing to do.
       setStatus('Listening...', 'listening');
+      scheduleRestart(600);
     } else if (event.error === 'not-allowed') {
       setStatus('Microphone permission denied');
-      isListening = false;
       sessionActive = false;
       micBtn.classList.remove('hidden');
       micBtn.disabled = false;
     } else if (event.error === 'aborted') {
-      // user stopped — handled by mic button
-      isListening = false;
+      // user tapped to stop — do nothing
     } else {
       setStatus('Tap to continue', 'idle');
-      isListening = false;
       sessionActive = false;
       micBtn.classList.remove('hidden');
       micBtn.disabled = false;
@@ -425,10 +417,6 @@ function setupSTT() {
   recognition.onend = () => {
     isListening = false;
     pulseEl.classList.remove('active');
-
-    // In continuous mode, onend should only fire when the session ends
-    // (e.g., browser closed the mic). If we're still in session, restart
-    // — but only if we're not currently speaking or thinking.
     if (sessionActive && !isBusy && !isPlaying) {
       scheduleRestart(400);
     }
@@ -476,6 +464,7 @@ async function handleUserInput(text) {
     if (!data.ok) {
       setStatus('Hmm, something went wrong');
       isBusy = false;
+      if (sessionActive) scheduleRestart(800);
       return;
     }
 
@@ -484,6 +473,7 @@ async function handleUserInput(text) {
       isBusy = false;
       if (sessionActive) {
         setStatus('Listening...', 'listening');
+        scheduleRestart(500);
       } else {
         setStatus('Tap to talk', 'idle');
       }
@@ -493,6 +483,7 @@ async function handleUserInput(text) {
     console.error('Fetch error:', err);
     setStatus('Connection error');
     isBusy = false;
+    if (sessionActive) scheduleRestart(1500);
   }
 }
 
