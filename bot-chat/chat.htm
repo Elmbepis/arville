@@ -53,7 +53,6 @@
     #status.thinking  { color: #fd8; border-color: rgba(255, 200, 100, 0.6); }
     #status.speaking  { color: #8f8; border-color: rgba(100, 255, 100, 0.6); }
 
-    /* Tap button (only visible at start) */
     #micBtn {
       position: fixed;
       bottom: 40px;
@@ -78,7 +77,6 @@
     #micBtn:active { transform: translateX(-50%) scale(0.94); }
     #micBtn.hidden { opacity: 0; pointer-events: none; }
 
-    /* Small pulse indicator when listening */
     #pulse {
       position: fixed;
       bottom: 90px;
@@ -100,7 +98,6 @@
       100% { opacity: 0;   transform: translateX(-50%) scale(1.3); }
     }
 
-    /* Transcript bubble — bottom-left corner */
     #transcript {
       position: fixed;
       bottom: 12px;
@@ -254,14 +251,28 @@ function stopVisemeAnimation() {
   if (visemeInterval) { clearInterval(visemeInterval); visemeInterval = null; }
 }
 
-function startVisemeAnimation(seq, totalDuration) {
+/**
+ * Loops the viseme sequence while isPlaying is true.
+ * The mouth keeps moving until onend stops it, so it stays in
+ * sync with whatever actual duration the TTS engine produces.
+ */
+function startVisemeAnimation(seq) {
   stopVisemeAnimation();
+  if (!seq.length) return;
+
   const t0 = performance.now() / 1000;
-  if (seq.length) setMouthShape(seq[0].viseme);
+  const last = seq[seq.length - 1];
+  const passDur = last.startTime + last.duration;
+  if (passDur <= 0) return;
+
+  setMouthShape(seq[0].viseme);
 
   visemeInterval = setInterval(() => {
     if (!isPlaying) { stopVisemeAnimation(); return; }
-    const now = (performance.now() / 1000) - t0;
+
+    const elapsed = (performance.now() / 1000) - t0;
+    const now = elapsed % passDur;   // loop back to start
+
     let found = false;
     for (const item of seq) {
       if (now >= item.startTime && now < item.startTime + item.duration) {
@@ -271,10 +282,6 @@ function startVisemeAnimation(seq, totalDuration) {
       }
     }
     if (!found && currentViseme !== VISEME.CLOSED) setMouthShape(VISEME.CLOSED);
-    if (now >= totalDuration) {
-      stopVisemeAnimation();
-      setMouthShape(VISEME.CLOSED);
-    }
   }, 30);
 }
 
@@ -305,6 +312,10 @@ window.robotSay = function(text, onDone) {
     isPlaying = false;
   }
 
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const startDelay = isAndroid ? 300 : 0;   // Android queue lag before audio begins
+  const tailDelay  = isAndroid ? 250 : 0;   // Android end-of-speech lag after last syllable
+
   const utt = new SpeechSynthesisUtterance(text);
   utt.rate   = 0.95;
   utt.pitch  = 1.2;
@@ -312,22 +323,32 @@ window.robotSay = function(text, onDone) {
   if (preferredVoice) utt.voice = preferredVoice;
 
   const seq = generateVisemeSequence(text);
-  const dur = Math.max(0.3, text.length * 0.09);
 
   utt.onstart = () => {
     isPlaying = true;
-    startVisemeAnimation(seq, dur);
     currentEyeState = 'open';
     updateFaceImage();
+
+    // Wait for actual audio to begin before moving the mouth.
+    // PC starts immediately (startDelay = 0).
+    setTimeout(() => {
+      if (!isPlaying) return;
+      startVisemeAnimation(seq);
+    }, startDelay);
   };
 
   const finish = () => {
-    isPlaying = false;
-    stopVisemeAnimation();
-    setMouthShape(VISEME.CLOSED);
-    currentEyeState = 'open';
-    updateFaceImage();
-    onDone && onDone();
+    // On Android, onend can fire slightly before the last syllable
+    // finishes playing. Add a small tail delay so the mouth doesn't
+    // snap closed early.
+    setTimeout(() => {
+      isPlaying = false;
+      stopVisemeAnimation();
+      setMouthShape(VISEME.CLOSED);
+      currentEyeState = 'open';
+      updateFaceImage();
+      onDone && onDone();
+    }, tailDelay);
   };
 
   utt.onend   = finish;
@@ -417,7 +438,10 @@ function setupSTT() {
   recognition.onend = () => {
     isListening = false;
     pulseEl.classList.remove('active');
-    if (sessionActive && !isBusy && !isPlaying) {
+    // Always attempt restart on Android — isBusy/isPlaying checks
+    // inside startListening will skip if we're not ready yet, and the
+    // post-speech restart in handleUserInput() catches the rest.
+    if (sessionActive) {
       scheduleRestart(400);
     }
   };
