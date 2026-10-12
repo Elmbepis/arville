@@ -165,6 +165,8 @@ const chatApiUrl = isLocal
 
 console.log('&#129302; Chat | face:', faceId, '| API:', chatApiUrl);
 
+const IS_ANDROID = /Android/i.test(navigator.userAgent);
+
 // ================= FACE CONTROLLER =================
 const VISEME = { CLOSED: 'smile', A: 'a', E: 'e', I: 'i' };
 const faceImg = document.getElementById('faceImg');
@@ -251,11 +253,6 @@ function stopVisemeAnimation() {
   if (visemeInterval) { clearInterval(visemeInterval); visemeInterval = null; }
 }
 
-/**
- * Loops the viseme sequence while isPlaying is true.
- * The mouth keeps moving until onend stops it, so it stays in
- * sync with whatever actual duration the TTS engine produces.
- */
 function startVisemeAnimation(seq) {
   stopVisemeAnimation();
   if (!seq.length) return;
@@ -269,9 +266,8 @@ function startVisemeAnimation(seq) {
 
   visemeInterval = setInterval(() => {
     if (!isPlaying) { stopVisemeAnimation(); return; }
-
     const elapsed = (performance.now() / 1000) - t0;
-    const now = elapsed % passDur;   // loop back to start
+    const now = elapsed % passDur;
 
     let found = false;
     for (const item of seq) {
@@ -312,9 +308,8 @@ window.robotSay = function(text, onDone) {
     isPlaying = false;
   }
 
-  const isAndroid = /Android/i.test(navigator.userAgent);
-  const startDelay = isAndroid ? 300 : 0;   // Android queue lag before audio begins
-  const tailDelay  = isAndroid ? 250 : 0;   // Android end-of-speech lag after last syllable
+  const startDelay = IS_ANDROID ? 300 : 0;
+  const tailDelay  = IS_ANDROID ? 250 : 0;
 
   const utt = new SpeechSynthesisUtterance(text);
   utt.rate   = 0.95;
@@ -329,8 +324,6 @@ window.robotSay = function(text, onDone) {
     currentEyeState = 'open';
     updateFaceImage();
 
-    // Wait for actual audio to begin before moving the mouth.
-    // PC starts immediately (startDelay = 0).
     setTimeout(() => {
       if (!isPlaying) return;
       startVisemeAnimation(seq);
@@ -338,9 +331,6 @@ window.robotSay = function(text, onDone) {
   };
 
   const finish = () => {
-    // On Android, onend can fire slightly before the last syllable
-    // finishes playing. Add a small tail delay so the mouth doesn't
-    // snap closed early.
     setTimeout(() => {
       isPlaying = false;
       stopVisemeAnimation();
@@ -365,11 +355,17 @@ const transcriptText = document.getElementById('transcriptText');
 const pulseEl        = document.getElementById('pulse');
 const hintEl         = document.getElementById('hint');
 
-let recognition   = null;
-let isListening   = false;
-let isBusy        = false;
-let sessionActive = false;
-let restartTimer  = null;
+let recognition    = null;
+let isListening    = false;
+let isBusy         = false;
+let sessionActive  = false;
+let muteMicUntil   = 0;
+
+// Utterance tracking
+let interimText        = '';   // current best guess
+let silenceTimer       = null; // fires 900ms after last interim
+let watchdogTimer      = null; // fires if no results for 10s
+let lastResultTime     = 0;
 
 function setStatus(text, cls) {
   statusEl.textContent = text;
@@ -394,82 +390,137 @@ function setupSTT() {
 
   recognition = new SR();
   recognition.lang = 'en-US';
-  recognition.interimResults = false;
+  recognition.interimResults = true;    // get partial results as you speak
   recognition.maxAlternatives = 1;
-  recognition.continuous = false;
+  recognition.continuous = true;        // keep mic session alive
 
   recognition.onstart = () => {
     isListening = true;
+    lastResultTime = Date.now();
     pulseEl.classList.add('active');
     setStatus('Listening...', 'listening');
+    resetWatchdog();
   };
 
   recognition.onresult = (event) => {
-    const text = event.results[0][0].transcript.trim();
-    if (!text) return;
-    console.log('&#127908; Heard:', text);
-    showTranscript(text);
-    handleUserInput(text);
+    lastResultTime = Date.now();
+    resetWatchdog();
+
+    // Ignore while bot is busy or speaking, or during mute window
+    if (isBusy || isPlaying) return;
+    if (Date.now() < muteMicUntil) return;
+
+    // Collect final and interim from this event
+    let newFinal = '';
+    let newInterim = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) newFinal += transcript;
+      else newInterim += transcript;
+    }
+
+    if (newFinal.trim()) {
+      // Final result arrived — process immediately
+      clearTimeout(silenceTimer);
+      silenceTimer = null;
+      interimText = '';
+      const text = newFinal.trim();
+      console.log('&#127908; Final:', text);
+      showTranscript(text);
+      handleUserInput(text);
+      return;
+    }
+
+    if (newInterim.trim()) {
+      // Interim result — show it, wait for silence
+      interimText = newInterim.trim();
+      showTranscript(interimText);
+
+      clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(() => {
+        if (!interimText) return;
+        if (isBusy || isPlaying) return;
+        if (Date.now() < muteMicUntil) return;
+
+        const text = interimText;
+        interimText = '';
+        console.log('&#127908; Silent-finalize:', text);
+        handleUserInput(text);
+      }, 900);
+    }
   };
 
   recognition.onerror = (event) => {
     console.log('STT error:', event.error);
-    isListening = false;
     pulseEl.classList.remove('active');
+    isListening = false;
+    clearTimeout(watchdogTimer);
 
-    if (event.error === 'no-speech') {
-      setStatus('Listening...', 'listening');
-      scheduleRestart(600);
+    if (event.error === 'no-speech' || event.error === 'aborted') {
+      // Normal — try again if session is active
+      if (sessionActive && !isBusy && !isPlaying) {
+        setTimeout(tryStartRecognition, 300);
+      }
     } else if (event.error === 'not-allowed') {
       setStatus('Microphone permission denied');
       sessionActive = false;
       micBtn.classList.remove('hidden');
       micBtn.disabled = false;
-    } else if (event.error === 'aborted') {
-      // user tapped to stop — do nothing
     } else {
-      setStatus('Tap to continue', 'idle');
-      sessionActive = false;
-      micBtn.classList.remove('hidden');
-      micBtn.disabled = false;
+      // Any other error — restart if session active
+      if (sessionActive && !isBusy && !isPlaying) {
+        setTimeout(tryStartRecognition, 800);
+      }
     }
   };
 
   recognition.onend = () => {
     isListening = false;
     pulseEl.classList.remove('active');
-    // Always attempt restart on Android — isBusy/isPlaying checks
-    // inside startListening will skip if we're not ready yet, and the
-    // post-speech restart in handleUserInput() catches the rest.
-    if (sessionActive) {
-      scheduleRestart(400);
+    clearTimeout(watchdogTimer);
+
+    // Always attempt restart if session is active
+    if (sessionActive && !isBusy && !isPlaying) {
+      setTimeout(tryStartRecognition, 300);
     }
   };
 
   return true;
 }
 
-function scheduleRestart(delayMs) {
-  if (restartTimer) clearTimeout(restartTimer);
-  restartTimer = setTimeout(() => {
-    if (sessionActive && !isBusy && !isPlaying && !isListening) {
-      startListening();
-    }
-  }, delayMs);
-}
-
-function startListening() {
+function tryStartRecognition() {
   if (!recognition) return;
-  if (isBusy || isPlaying || isListening) return;
+  if (!sessionActive) return;
+  if (isBusy || isPlaying) return;
+  if (isListening) return;
+
   try {
     recognition.start();
   } catch (e) {
+    // Sometimes start() throws "already started" or similar;
+    // try again shortly.
     console.log('recognition.start() threw:', e);
-    scheduleRestart(500);
+    setTimeout(tryStartRecognition, 500);
   }
 }
 
+function resetWatchdog() {
+  clearTimeout(watchdogTimer);
+  watchdogTimer = setTimeout(() => {
+    // No results for 10s while listening — likely a stuck session
+    if (!sessionActive || isBusy || isPlaying) return;
+    console.log('Watchdog: no result in 10s — restarting');
+    try { recognition.abort(); } catch (e) {}
+    setTimeout(tryStartRecognition, 300);
+  }, 10000);
+}
+
 function stopListening() {
+  clearTimeout(silenceTimer);
+  clearTimeout(watchdogTimer);
+  silenceTimer = null;
+  watchdogTimer = null;
+  interimText = '';
   if (recognition && isListening) {
     try { recognition.stop(); } catch (e) {}
   }
@@ -488,16 +539,26 @@ async function handleUserInput(text) {
     if (!data.ok) {
       setStatus('Hmm, something went wrong');
       isBusy = false;
-      if (sessionActive) scheduleRestart(800);
+      if (sessionActive && !isListening) tryStartRecognition();
       return;
     }
+
+    // Mute the mic while the bot speaks so it doesn't hear itself.
+    // +200ms buffer after the estimated speech duration.
+    const speechMs = Math.max(1000, data.response.length * 95) + (IS_ANDROID ? 500 : 200);
+    muteMicUntil = Date.now() + speechMs;
+
+    // Clear any partial interim so we don't accidentally process it later
+    interimText = '';
 
     setStatus('Speaking...', 'speaking');
     window.robotSay(data.response, () => {
       isBusy = false;
       if (sessionActive) {
         setStatus('Listening...', 'listening');
-        scheduleRestart(500);
+        // Ensure recognition is running after speech ends
+        if (!isListening) tryStartRecognition();
+        resetWatchdog();
       } else {
         setStatus('Tap to talk', 'idle');
       }
@@ -507,7 +568,7 @@ async function handleUserInput(text) {
     console.error('Fetch error:', err);
     setStatus('Connection error');
     isBusy = false;
-    if (sessionActive) scheduleRestart(1500);
+    if (sessionActive && !isListening) tryStartRecognition();
   }
 }
 
@@ -533,7 +594,7 @@ micBtn.addEventListener('click', async () => {
   window.speechSynthesis.cancel();
 
   setStatus('Listening...', 'listening');
-  startListening();
+  tryStartRecognition();
 });
 
 // ================= BOOT =================
