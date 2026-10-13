@@ -193,7 +193,7 @@ let faceId = parseInt(urlParams.get('id')) || 1;
 
 const isLocal = window.location.href.includes('localhost:8081/arville/');
 const textureBase = isLocal
-  ? '/arville/university/textures/faces/' + faceId + '/'
+  ? '/arville/universe/textures/faces/' + faceId + '/'
   : '/universe/textures/faces/' + faceId + '/';
 const chatApiUrl = isLocal
   ? '/arville/bot-chat/api.php'
@@ -203,10 +203,10 @@ console.log('&#129302; Chat | face:', faceId, '| API:', chatApiUrl);
 
 const IS_ANDROID = /Android/i.test(navigator.userAgent);
 
-// Silence threshold before considering speech "done"
-const SILENCE_MS       = IS_ANDROID ? 2000 : 900;
-// Minimum time we should have been listening before we're willing to finalize
-const MIN_SPEECH_MS    = IS_ANDROID ? 1200 : 400;
+// How long to wait after the last STT result before we process it.
+// Android's recognizer sends premature "final" results on pauses —
+// we need a longer silence window so we capture the full sentence.
+const SILENCE_MS = IS_ANDROID ? 2200 : 1000;
 
 // ================= FACE CONTROLLER =================
 const VISEME = { CLOSED: 'smile', A: 'a', E: 'e', I: 'i' };
@@ -402,11 +402,12 @@ let isBusy         = false;
 let sessionActive  = false;
 let muteMicUntil   = 0;
 
-let interimText        = '';
-let silenceTimer       = null;
-let watchdogTimer      = null;
-let listenStartTime    = 0;
-let lastInterimAt      = 0;
+// Accumulator: all confirmed finals + current interim
+let finalText         = '';
+let interimText       = '';
+let silenceTimer      = null;
+let watchdogTimer     = null;
+let firstResultAt     = 0;
 
 function setStatus(text, cls) {
   statusEl.textContent = text;
@@ -418,6 +419,14 @@ function showTranscript(text) {
   transcriptEl.classList.add('visible');
   clearTimeout(showTranscript._t);
   showTranscript._t = setTimeout(() => transcriptEl.classList.remove('visible'), 6000);
+}
+
+function resetAccumulator() {
+  finalText = '';
+  interimText = '';
+  firstResultAt = 0;
+  clearTimeout(silenceTimer);
+  silenceTimer = null;
 }
 
 function setupSTT() {
@@ -437,7 +446,6 @@ function setupSTT() {
 
   recognition.onstart = () => {
     isListening = true;
-    listenStartTime = Date.now();
     pulseEl.classList.add('active');
     setStatus('Listening...', 'listening');
     resetWatchdog();
@@ -449,38 +457,27 @@ function setupSTT() {
     if (isBusy || isPlaying) return;
     if (Date.now() < muteMicUntil) return;
 
-    let newFinal = '';
-    let newInterim = '';
+    // Accumulate finals; replace interim
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const transcript = event.results[i][0].transcript;
-      if (event.results[i].isFinal) newFinal += transcript;
-      else newInterim += transcript;
+      if (event.results[i].isFinal) {
+        finalText += transcript + ' ';
+        interimText = '';
+      } else {
+        interimText = transcript;
+      }
     }
 
-    if (newFinal.trim()) {
-      // Android sometimes sends a final immediately — but if the final
-      // is a partial word, that means the recognizer gave up early.
-      // Keep listening for the true final.
-      clearTimeout(silenceTimer);
-      silenceTimer = null;
-      interimText = '';
-      const text = newFinal.trim();
-      console.log('&#127908; Final:', text);
-      showTranscript(text);
-      handleUserInput(text);
-      return;
-    }
+    const combined = (finalText + interimText).trim();
+    if (!combined) return;
 
-    if (newInterim.trim()) {
-      interimText = newInterim.trim();
-      lastInterimAt = Date.now();
-      showTranscript(interimText);
+    if (firstResultAt === 0) firstResultAt = Date.now();
+    showTranscript(combined);
 
-      // Reset silence timer only if we've listened long enough AND
-      // the interim text has stopped changing for SILENCE_MS.
-      clearTimeout(silenceTimer);
-      silenceTimer = setTimeout(maybeFinalize, SILENCE_MS);
-    }
+    // KEY CHANGE: don't process on isFinal. Just reset the silence timer.
+    // The silence timer is the ONLY thing that triggers processing.
+    clearTimeout(silenceTimer);
+    silenceTimer = setTimeout(maybeFinalize, SILENCE_MS);
   };
 
   recognition.onerror = (event) => {
@@ -519,37 +516,27 @@ function setupSTT() {
 }
 
 /**
- * Called by the silence timer. Guards against finalizing too early.
- * Only fires when:
- *   - we've been listening for at least MIN_SPEECH_MS
- *   - we have interim text
- *   - the last interim hasn't changed for SILENCE_MS
+ * The single place that decides "the user is done speaking".
+ * Called only by the silence timer.
  */
 function maybeFinalize() {
-  if (!interimText) return;
+  silenceTimer = null;
+
   if (isBusy || isPlaying) return;
   if (Date.now() < muteMicUntil) return;
 
-  const elapsed = Date.now() - listenStartTime;
-  if (elapsed < MIN_SPEECH_MS) {
-    // Not enough time has passed to be sure the user is done
-    clearTimeout(silenceTimer);
-    silenceTimer = setTimeout(maybeFinalize, MIN_SPEECH_MS - elapsed);
+  const combined = (finalText + interimText).trim();
+  if (!combined) {
+    resetAccumulator();
     return;
   }
 
-  const sinceLast = Date.now() - lastInterimAt;
-  if (sinceLast < SILENCE_MS - 50) {
-    // Interim changed recently — wait a bit more
-    clearTimeout(silenceTimer);
-    silenceTimer = setTimeout(maybeFinalize, SILENCE_MS - sinceLast);
-    return;
-  }
+  // Reset accumulator BEFORE processing so any new speech
+  // that arrives during bot response is captured fresh.
+  resetAccumulator();
 
-  const text = interimText;
-  interimText = '';
-  console.log('&#127908; Silent-finalize:', text);
-  handleUserInput(text);
+  console.log('&#127908; Finalized:', combined);
+  handleUserInput(combined);
 }
 
 function tryStartRecognition() {
@@ -557,6 +544,9 @@ function tryStartRecognition() {
   if (!sessionActive) return;
   if (isBusy || isPlaying) return;
   if (isListening) return;
+
+  // Clear any leftover text from previous session
+  resetAccumulator();
 
   try {
     recognition.start();
@@ -570,10 +560,10 @@ function resetWatchdog() {
   clearTimeout(watchdogTimer);
   watchdogTimer = setTimeout(() => {
     if (!sessionActive || isBusy || isPlaying) return;
-    console.log('Watchdog: no result in 15s — restarting');
+    console.log('Watchdog: no result in 12s — restarting');
     try { recognition.abort(); } catch (e) {}
     setTimeout(tryStartRecognition, 300);
-  }, 10000);
+  }, 12000);
 }
 
 function stopListening() {
@@ -581,7 +571,7 @@ function stopListening() {
   clearTimeout(watchdogTimer);
   silenceTimer = null;
   watchdogTimer = null;
-  interimText = '';
+  resetAccumulator();
   if (recognition && isListening) {
     try { recognition.stop(); } catch (e) {}
   }
@@ -607,7 +597,7 @@ async function handleUserInput(text) {
     const speechMs = Math.max(1000, data.response.length * 95) + (IS_ANDROID ? 500 : 200);
     muteMicUntil = Date.now() + speechMs;
 
-    interimText = '';
+    resetAccumulator();
 
     setStatus('Speaking...', 'speaking');
     window.robotSay(data.response, () => {
