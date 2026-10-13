@@ -16,8 +16,8 @@
     body {
       background: #000;
       width: 100%;
-      height: 100vh;    /* fallback */
-      height: 100dvh;   /* modern mobile-safe viewport height */
+      height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       font-family: system-ui, -apple-system, sans-serif;
       color: #fff;
@@ -26,8 +26,6 @@
       position: relative;
     }
 
-    /* Face container: fixed to the actual visible viewport, so the face
-       always fits exactly within the phone's usable screen area. */
     #faceContainer {
       position: fixed;
       top: 0;
@@ -97,7 +95,6 @@
     #micBtn:active { transform: translateX(-50%) scale(0.94); }
     #micBtn.hidden { opacity: 0; pointer-events: none; }
 
-    /* On narrow phones, shrink the mic button so it doesn't crowd the face */
     @media (max-width: 500px) {
       #micBtn {
         width: 80px;
@@ -172,8 +169,6 @@
     }
     #hint.hidden { opacity: 0; }
 
-    /* On phones, the transcript and hint would collide.
-       Hide the hint on narrow screens once the user has tapped. */
     @media (max-width: 500px) {
       #hint { display: none; }
     }
@@ -198,7 +193,7 @@ let faceId = parseInt(urlParams.get('id')) || 1;
 
 const isLocal = window.location.href.includes('localhost:8081/arville/');
 const textureBase = isLocal
-  ? '/arville/universe/textures/faces/' + faceId + '/'
+  ? '/arville/university/textures/faces/' + faceId + '/'
   : '/universe/textures/faces/' + faceId + '/';
 const chatApiUrl = isLocal
   ? '/arville/bot-chat/api.php'
@@ -207,6 +202,11 @@ const chatApiUrl = isLocal
 console.log('&#129302; Chat | face:', faceId, '| API:', chatApiUrl);
 
 const IS_ANDROID = /Android/i.test(navigator.userAgent);
+
+// Silence threshold before considering speech "done"
+const SILENCE_MS       = IS_ANDROID ? 2000 : 900;
+// Minimum time we should have been listening before we're willing to finalize
+const MIN_SPEECH_MS    = IS_ANDROID ? 1200 : 400;
 
 // ================= FACE CONTROLLER =================
 const VISEME = { CLOSED: 'smile', A: 'a', E: 'e', I: 'i' };
@@ -405,7 +405,8 @@ let muteMicUntil   = 0;
 let interimText        = '';
 let silenceTimer       = null;
 let watchdogTimer      = null;
-let lastResultTime     = 0;
+let listenStartTime    = 0;
+let lastInterimAt      = 0;
 
 function setStatus(text, cls) {
   statusEl.textContent = text;
@@ -436,14 +437,13 @@ function setupSTT() {
 
   recognition.onstart = () => {
     isListening = true;
-    lastResultTime = Date.now();
+    listenStartTime = Date.now();
     pulseEl.classList.add('active');
     setStatus('Listening...', 'listening');
     resetWatchdog();
   };
 
   recognition.onresult = (event) => {
-    lastResultTime = Date.now();
     resetWatchdog();
 
     if (isBusy || isPlaying) return;
@@ -458,6 +458,9 @@ function setupSTT() {
     }
 
     if (newFinal.trim()) {
+      // Android sometimes sends a final immediately — but if the final
+      // is a partial word, that means the recognizer gave up early.
+      // Keep listening for the true final.
       clearTimeout(silenceTimer);
       silenceTimer = null;
       interimText = '';
@@ -470,19 +473,13 @@ function setupSTT() {
 
     if (newInterim.trim()) {
       interimText = newInterim.trim();
+      lastInterimAt = Date.now();
       showTranscript(interimText);
 
+      // Reset silence timer only if we've listened long enough AND
+      // the interim text has stopped changing for SILENCE_MS.
       clearTimeout(silenceTimer);
-      silenceTimer = setTimeout(() => {
-        if (!interimText) return;
-        if (isBusy || isPlaying) return;
-        if (Date.now() < muteMicUntil) return;
-
-        const text = interimText;
-        interimText = '';
-        console.log('&#127908; Silent-finalize:', text);
-        handleUserInput(text);
-      }, 900);
+      silenceTimer = setTimeout(maybeFinalize, SILENCE_MS);
     }
   };
 
@@ -521,6 +518,40 @@ function setupSTT() {
   return true;
 }
 
+/**
+ * Called by the silence timer. Guards against finalizing too early.
+ * Only fires when:
+ *   - we've been listening for at least MIN_SPEECH_MS
+ *   - we have interim text
+ *   - the last interim hasn't changed for SILENCE_MS
+ */
+function maybeFinalize() {
+  if (!interimText) return;
+  if (isBusy || isPlaying) return;
+  if (Date.now() < muteMicUntil) return;
+
+  const elapsed = Date.now() - listenStartTime;
+  if (elapsed < MIN_SPEECH_MS) {
+    // Not enough time has passed to be sure the user is done
+    clearTimeout(silenceTimer);
+    silenceTimer = setTimeout(maybeFinalize, MIN_SPEECH_MS - elapsed);
+    return;
+  }
+
+  const sinceLast = Date.now() - lastInterimAt;
+  if (sinceLast < SILENCE_MS - 50) {
+    // Interim changed recently — wait a bit more
+    clearTimeout(silenceTimer);
+    silenceTimer = setTimeout(maybeFinalize, SILENCE_MS - sinceLast);
+    return;
+  }
+
+  const text = interimText;
+  interimText = '';
+  console.log('&#127908; Silent-finalize:', text);
+  handleUserInput(text);
+}
+
 function tryStartRecognition() {
   if (!recognition) return;
   if (!sessionActive) return;
@@ -539,7 +570,7 @@ function resetWatchdog() {
   clearTimeout(watchdogTimer);
   watchdogTimer = setTimeout(() => {
     if (!sessionActive || isBusy || isPlaying) return;
-    console.log('Watchdog: no result in 10s — restarting');
+    console.log('Watchdog: no result in 15s — restarting');
     try { recognition.abort(); } catch (e) {}
     setTimeout(tryStartRecognition, 300);
   }, 10000);
@@ -644,9 +675,7 @@ function onImagesReady() {
   }
 }
 
-// Handle mobile viewport changes (address bar show/hide, rotation)
 function fixViewportHeight() {
-  // Set --app-height CSS variable to the actual visible height
   document.documentElement.style.setProperty(
     '--app-height',
     window.innerHeight + 'px'
