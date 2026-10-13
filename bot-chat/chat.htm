@@ -203,9 +203,8 @@ console.log('&#129302; Chat | face:', faceId, '| API:', chatApiUrl);
 
 const IS_ANDROID = /Android/i.test(navigator.userAgent);
 
-// How long to wait after the last STT result before we process it.
-// Android's recognizer sends premature "final" results on pauses —
-// we need a longer silence window so we capture the full sentence.
+// Time of silence before we consider the utterance done.
+// Android splits sentences; needs a longer window.
 const SILENCE_MS = IS_ANDROID ? 2200 : 1000;
 
 // ================= FACE CONTROLLER =================
@@ -402,12 +401,11 @@ let isBusy         = false;
 let sessionActive  = false;
 let muteMicUntil   = 0;
 
-// Accumulator: all confirmed finals + current interim
-let finalText         = '';
-let interimText       = '';
-let silenceTimer      = null;
-let watchdogTimer     = null;
-let firstResultAt     = 0;
+// Accumulator state — reset per utterance
+let finalizedParts = [];       // deduped final fragments
+let interimText    = '';
+let silenceTimer   = null;
+let watchdogTimer  = null;
 
 function setStatus(text, cls) {
   statusEl.textContent = text;
@@ -422,11 +420,38 @@ function showTranscript(text) {
 }
 
 function resetAccumulator() {
-  finalText = '';
+  finalizedParts = [];
   interimText = '';
-  firstResultAt = 0;
   clearTimeout(silenceTimer);
   silenceTimer = null;
+}
+
+/**
+ * Dedup-aware final accumulator.
+ * If a new final contains an earlier one, replace instead of append.
+ * This is what fixes Android's "hello" + "hello there" duplication.
+ */
+function addFinal(text) {
+  const t = (text || '').trim();
+  if (!t) return;
+
+  for (let i = 0; i < finalizedParts.length; i++) {
+    if (t.includes(finalizedParts[i])) {
+      // New final supersedes an earlier one
+      finalizedParts[i] = t;
+      return;
+    }
+    if (finalizedParts[i].includes(t)) {
+      // Already covered by a longer existing final
+      return;
+    }
+  }
+  finalizedParts.push(t);
+}
+
+function getCombinedText() {
+  const finalText = finalizedParts.join(' ').trim();
+  return (finalText + ' ' + interimText).trim();
 }
 
 function setupSTT() {
@@ -457,25 +482,25 @@ function setupSTT() {
     if (isBusy || isPlaying) return;
     if (Date.now() < muteMicUntil) return;
 
-    // Accumulate finals; replace interim
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const transcript = event.results[i][0].transcript;
-      if (event.results[i].isFinal) {
-        finalText += transcript + ' ';
-        interimText = '';
+    // Iterate over ALL results (not just resultIndex onward) so we always
+    // see the full current utterance. Dedup happens in addFinal().
+    let latestInterim = '';
+    for (let i = 0; i < event.results.length; i++) {
+      const r = event.results[i];
+      const transcript = r[0].transcript;
+      if (r.isFinal) {
+        addFinal(transcript);
       } else {
-        interimText = transcript;
+        latestInterim = transcript;
       }
     }
+    if (latestInterim) interimText = latestInterim;
 
-    const combined = (finalText + interimText).trim();
+    const combined = getCombinedText();
     if (!combined) return;
 
-    if (firstResultAt === 0) firstResultAt = Date.now();
     showTranscript(combined);
 
-    // KEY CHANGE: don't process on isFinal. Just reset the silence timer.
-    // The silence timer is the ONLY thing that triggers processing.
     clearTimeout(silenceTimer);
     silenceTimer = setTimeout(maybeFinalize, SILENCE_MS);
   };
@@ -515,26 +540,19 @@ function setupSTT() {
   return true;
 }
 
-/**
- * The single place that decides "the user is done speaking".
- * Called only by the silence timer.
- */
 function maybeFinalize() {
   silenceTimer = null;
 
   if (isBusy || isPlaying) return;
   if (Date.now() < muteMicUntil) return;
 
-  const combined = (finalText + interimText).trim();
+  const combined = getCombinedText();
   if (!combined) {
     resetAccumulator();
     return;
   }
 
-  // Reset accumulator BEFORE processing so any new speech
-  // that arrives during bot response is captured fresh.
   resetAccumulator();
-
   console.log('&#127908; Finalized:', combined);
   handleUserInput(combined);
 }
@@ -545,7 +563,6 @@ function tryStartRecognition() {
   if (isBusy || isPlaying) return;
   if (isListening) return;
 
-  // Clear any leftover text from previous session
   resetAccumulator();
 
   try {
@@ -581,6 +598,7 @@ async function handleUserInput(text) {
   isBusy = true;
   setStatus('Thinking...', 'thinking');
 
+  let ok = false;
   try {
     const url = chatApiUrl + '?text=' + encodeURIComponent(text);
     const res = await fetch(url, { cache: 'no-store' });
@@ -589,17 +607,16 @@ async function handleUserInput(text) {
 
     if (!data.ok) {
       setStatus('Hmm, something went wrong');
-      isBusy = false;
-      if (sessionActive && !isListening) tryStartRecognition();
+      ok = true;
       return;
     }
 
     const speechMs = Math.max(1000, data.response.length * 95) + (IS_ANDROID ? 500 : 200);
     muteMicUntil = Date.now() + speechMs;
 
-    resetAccumulator();
-
     setStatus('Speaking...', 'speaking');
+    ok = true;
+
     window.robotSay(data.response, () => {
       isBusy = false;
       if (sessionActive) {
@@ -614,8 +631,18 @@ async function handleUserInput(text) {
   } catch (err) {
     console.error('Fetch error:', err);
     setStatus('Connection error');
-    isBusy = false;
-    if (sessionActive && !isListening) tryStartRecognition();
+  } finally {
+    if (!ok) {
+      // Error path — always reset and try listening again
+      isBusy = false;
+      if (sessionActive) {
+        setStatus('Listening...', 'listening');
+        if (!isListening) tryStartRecognition();
+        resetWatchdog();
+      } else {
+        setStatus('Tap to talk', 'idle');
+      }
+    }
   }
 }
 
