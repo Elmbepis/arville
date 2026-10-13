@@ -8,10 +8,7 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    html {
-      height: 100%;
-      overflow: hidden;
-    }
+    html { height: 100%; overflow: hidden; }
 
     body {
       background: #000;
@@ -28,10 +25,7 @@
 
     #faceContainer {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -96,17 +90,8 @@
     #micBtn.hidden { opacity: 0; pointer-events: none; }
 
     @media (max-width: 500px) {
-      #micBtn {
-        width: 80px;
-        height: 80px;
-        font-size: 15px;
-        bottom: 30px;
-      }
-      #pulse {
-        width: 105px;
-        height: 105px;
-        bottom: 70px;
-      }
+      #micBtn { width: 80px; height: 80px; font-size: 15px; bottom: 30px; }
+      #pulse  { width: 105px; height: 105px; bottom: 70px; }
     }
 
     #pulse {
@@ -122,9 +107,7 @@
       pointer-events: none;
       z-index: 8;
     }
-    #pulse.active {
-      animation: pulseAnim 1.4s infinite;
-    }
+    #pulse.active { animation: pulseAnim 1.4s infinite; }
     @keyframes pulseAnim {
       0%   { opacity: 0.9; transform: translateX(-50%) scale(0.7); }
       100% { opacity: 0;   transform: translateX(-50%) scale(1.3); }
@@ -169,9 +152,7 @@
     }
     #hint.hidden { opacity: 0; }
 
-    @media (max-width: 500px) {
-      #hint { display: none; }
-    }
+    @media (max-width: 500px) { #hint { display: none; } }
   </style>
 </head>
 <body>
@@ -202,9 +183,6 @@ const chatApiUrl = isLocal
 console.log('&#129302; Chat | face:', faceId, '| API:', chatApiUrl);
 
 const IS_ANDROID = /Android/i.test(navigator.userAgent);
-
-// Time of silence before we consider the utterance done.
-// Android splits sentences; needs a longer window.
 const SILENCE_MS = IS_ANDROID ? 2200 : 1000;
 
 // ================= FACE CONTROLLER =================
@@ -342,11 +320,11 @@ function findVoice() {
 window.robotSay = function(text, onDone) {
   if (!window.speechSynthesis) { onDone && onDone(); return; }
 
-  if (window.speechSynthesis.speaking) {
-    window.speechSynthesis.cancel();
-    stopVisemeAnimation();
-    isPlaying = false;
-  }
+  // Always cancel first — Android Chrome sometimes ignores speak()
+  // if there's any lingering utterance state.
+  try { window.speechSynthesis.cancel(); } catch (e) {}
+  stopVisemeAnimation();
+  isPlaying = false;
 
   const startDelay = IS_ANDROID ? 300 : 0;
   const tailDelay  = IS_ANDROID ? 250 : 0;
@@ -358,6 +336,20 @@ window.robotSay = function(text, onDone) {
   if (preferredVoice) utt.voice = preferredVoice;
 
   const seq = generateVisemeSequence(text);
+  let finished = false;
+
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    setTimeout(() => {
+      isPlaying = false;
+      stopVisemeAnimation();
+      setMouthShape(VISEME.CLOSED);
+      currentEyeState = 'open';
+      updateFaceImage();
+      onDone && onDone();
+    }, tailDelay);
+  };
 
   utt.onstart = () => {
     isPlaying = true;
@@ -370,21 +362,26 @@ window.robotSay = function(text, onDone) {
     }, startDelay);
   };
 
-  const finish = () => {
-    setTimeout(() => {
-      isPlaying = false;
-      stopVisemeAnimation();
-      setMouthShape(VISEME.CLOSED);
-      currentEyeState = 'open';
-      updateFaceImage();
-      onDone && onDone();
-    }, tailDelay);
-  };
-
   utt.onend   = finish;
   utt.onerror = finish;
 
-  window.speechSynthesis.speak(utt);
+  // Safety net: if onend/onerror never fire (Android TTS silent-fail),
+  // force the callback after a reasonable timeout.
+  const estimatedMs = Math.max(1500, text.length * 95) + (IS_ANDROID ? 800 : 300);
+  setTimeout(() => {
+    if (!finished) {
+      console.warn('TTS watchdog fired — onend never came');
+      finish();
+    }
+  }, estimatedMs + 4000);
+
+  try {
+    window.speechSynthesis.speak(utt);
+    console.log('&#128266; Speaking:', text.substring(0, 60));
+  } catch (e) {
+    console.error('speak() threw:', e);
+    finish();
+  }
 };
 
 // ================= CONVERSATION LOOP =================
@@ -401,8 +398,7 @@ let isBusy         = false;
 let sessionActive  = false;
 let muteMicUntil   = 0;
 
-// Accumulator state — reset per utterance
-let finalizedParts = [];       // deduped final fragments
+let finalizedParts = [];
 let interimText    = '';
 let silenceTimer   = null;
 let watchdogTimer  = null;
@@ -419,30 +415,29 @@ function showTranscript(text) {
   showTranscript._t = setTimeout(() => transcriptEl.classList.remove('visible'), 6000);
 }
 
-function resetAccumulator() {
+// Reset ONLY the text buffers — do NOT touch the silence timer here
+function clearTextBuffers() {
   finalizedParts = [];
   interimText = '';
+}
+
+// Full reset — clears buffers AND timers
+function resetAccumulator() {
+  clearTextBuffers();
   clearTimeout(silenceTimer);
   silenceTimer = null;
 }
 
-/**
- * Dedup-aware final accumulator.
- * If a new final contains an earlier one, replace instead of append.
- * This is what fixes Android's "hello" + "hello there" duplication.
- */
 function addFinal(text) {
   const t = (text || '').trim();
   if (!t) return;
 
   for (let i = 0; i < finalizedParts.length; i++) {
     if (t.includes(finalizedParts[i])) {
-      // New final supersedes an earlier one
       finalizedParts[i] = t;
       return;
     }
     if (finalizedParts[i].includes(t)) {
-      // Already covered by a longer existing final
       return;
     }
   }
@@ -474,6 +469,7 @@ function setupSTT() {
     pulseEl.classList.add('active');
     setStatus('Listening...', 'listening');
     resetWatchdog();
+    console.log('&#127897;&#65039; Listening started');
   };
 
   recognition.onresult = (event) => {
@@ -482,8 +478,6 @@ function setupSTT() {
     if (isBusy || isPlaying) return;
     if (Date.now() < muteMicUntil) return;
 
-    // Iterate over ALL results (not just resultIndex onward) so we always
-    // see the full current utterance. Dedup happens in addFinal().
     let latestInterim = '';
     for (let i = 0; i < event.results.length; i++) {
       const r = event.results[i];
@@ -500,7 +494,9 @@ function setupSTT() {
     if (!combined) return;
 
     showTranscript(combined);
+    console.log('&#128221; STT:', combined);
 
+    // Always reset the silence timer — it's the ONLY trigger for processing
     clearTimeout(silenceTimer);
     silenceTimer = setTimeout(maybeFinalize, SILENCE_MS);
   };
@@ -531,7 +527,11 @@ function setupSTT() {
     isListening = false;
     pulseEl.classList.remove('active');
     clearTimeout(watchdogTimer);
+    console.log('&#127897;&#65039; Listening ended');
 
+    // CRITICAL: do NOT reset the accumulator here.
+    // Android often fires onend mid-utterance. If we reset, we lose
+    // the pending text and the silence timer never gets to fire.
     if (sessionActive && !isBusy && !isPlaying) {
       setTimeout(tryStartRecognition, 300);
     }
@@ -543,16 +543,28 @@ function setupSTT() {
 function maybeFinalize() {
   silenceTimer = null;
 
-  if (isBusy || isPlaying) return;
-  if (Date.now() < muteMicUntil) return;
-
-  const combined = getCombinedText();
-  if (!combined) {
-    resetAccumulator();
+  if (isBusy || isPlaying) {
+    console.log('maybeFinalize: busy or playing — skipping');
+    // Re-arm the timer in case we were blocked
+    if (interimText || finalizedParts.length) {
+      silenceTimer = setTimeout(maybeFinalize, 500);
+    }
+    return;
+  }
+  if (Date.now() < muteMicUntil) {
+    const wait = muteMicUntil - Date.now();
+    console.log('maybeFinalize: muted — retry in', wait, 'ms');
+    silenceTimer = setTimeout(maybeFinalize, wait + 100);
     return;
   }
 
-  resetAccumulator();
+  const combined = getCombinedText();
+  if (!combined) {
+    clearTextBuffers();
+    return;
+  }
+
+  clearTextBuffers();
   console.log('&#127908; Finalized:', combined);
   handleUserInput(combined);
 }
@@ -563,8 +575,7 @@ function tryStartRecognition() {
   if (isBusy || isPlaying) return;
   if (isListening) return;
 
-  resetAccumulator();
-
+  // NOTE: do NOT resetAccumulator() here. Just start recognition.
   try {
     recognition.start();
   } catch (e) {
@@ -597,8 +608,19 @@ function stopListening() {
 async function handleUserInput(text) {
   isBusy = true;
   setStatus('Thinking...', 'thinking');
+  console.log('&#10145;&#65039; Sending:', text);
 
-  let ok = false;
+  const resetBusy = () => {
+    isBusy = false;
+    if (sessionActive) {
+      setStatus('Listening...', 'listening');
+      if (!isListening) tryStartRecognition();
+      resetWatchdog();
+    } else {
+      setStatus('Tap to talk', 'idle');
+    }
+  };
+
   try {
     const url = chatApiUrl + '?text=' + encodeURIComponent(text);
     const res = await fetch(url, { cache: 'no-store' });
@@ -607,7 +629,7 @@ async function handleUserInput(text) {
 
     if (!data.ok) {
       setStatus('Hmm, something went wrong');
-      ok = true;
+      resetBusy();
       return;
     }
 
@@ -615,34 +637,14 @@ async function handleUserInput(text) {
     muteMicUntil = Date.now() + speechMs;
 
     setStatus('Speaking...', 'speaking');
-    ok = true;
-
     window.robotSay(data.response, () => {
-      isBusy = false;
-      if (sessionActive) {
-        setStatus('Listening...', 'listening');
-        if (!isListening) tryStartRecognition();
-        resetWatchdog();
-      } else {
-        setStatus('Tap to talk', 'idle');
-      }
+      resetBusy();
     });
 
   } catch (err) {
     console.error('Fetch error:', err);
     setStatus('Connection error');
-  } finally {
-    if (!ok) {
-      // Error path — always reset and try listening again
-      isBusy = false;
-      if (sessionActive) {
-        setStatus('Listening...', 'listening');
-        if (!isListening) tryStartRecognition();
-        resetWatchdog();
-      } else {
-        setStatus('Tap to talk', 'idle');
-      }
-    }
+    resetBusy();
   }
 }
 
@@ -693,15 +695,10 @@ function onImagesReady() {
 }
 
 function fixViewportHeight() {
-  document.documentElement.style.setProperty(
-    '--app-height',
-    window.innerHeight + 'px'
-  );
+  document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
 }
 window.addEventListener('resize', fixViewportHeight);
-window.addEventListener('orientationchange', () => {
-  setTimeout(fixViewportHeight, 200);
-});
+window.addEventListener('orientationchange', () => setTimeout(fixViewportHeight, 200));
 
 preloadImages();
 fixViewportHeight();
