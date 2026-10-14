@@ -320,8 +320,6 @@ function findVoice() {
 window.robotSay = function(text, onDone) {
   if (!window.speechSynthesis) { onDone && onDone(); return; }
 
-  // Always cancel first — Android Chrome sometimes ignores speak()
-  // if there's any lingering utterance state.
   try { window.speechSynthesis.cancel(); } catch (e) {}
   stopVisemeAnimation();
   isPlaying = false;
@@ -365,8 +363,6 @@ window.robotSay = function(text, onDone) {
   utt.onend   = finish;
   utt.onerror = finish;
 
-  // Safety net: if onend/onerror never fire (Android TTS silent-fail),
-  // force the callback after a reasonable timeout.
   const estimatedMs = Math.max(1500, text.length * 95) + (IS_ANDROID ? 800 : 300);
   setTimeout(() => {
     if (!finished) {
@@ -403,6 +399,9 @@ let interimText    = '';
 let silenceTimer   = null;
 let watchdogTimer  = null;
 
+const recentlyProcessed = new Map();
+const REPLAY_GUARD_MS = 20000;
+
 function setStatus(text, cls) {
   statusEl.textContent = text;
   statusEl.className = cls || '';
@@ -415,19 +414,25 @@ function showTranscript(text) {
   showTranscript._t = setTimeout(() => transcriptEl.classList.remove('visible'), 6000);
 }
 
-// Reset ONLY the text buffers — do NOT touch the silence timer here
+function hideTranscript() {
+  transcriptText.textContent = '';
+  transcriptEl.classList.remove('visible');
+}
+
 function clearTextBuffers() {
   finalizedParts = [];
   interimText = '';
 }
 
-// Full reset — clears buffers AND timers
 function resetAccumulator() {
   clearTextBuffers();
   clearTimeout(silenceTimer);
   silenceTimer = null;
 }
 
+/**
+ * Add a final fragment, replacing any earlier fragment it supersedes.
+ */
 function addFinal(text) {
   const t = (text || '').trim();
   if (!t) return;
@@ -447,6 +452,13 @@ function addFinal(text) {
 function getCombinedText() {
   const finalText = finalizedParts.join(' ').trim();
   return (finalText + ' ' + interimText).trim();
+}
+
+function normalizeForGuard(s) {
+  return (s || '').toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function setupSTT() {
@@ -478,25 +490,33 @@ function setupSTT() {
     if (isBusy || isPlaying) return;
     if (Date.now() < muteMicUntil) return;
 
+    // 1. Add any NEW finals (from resultIndex onward).
+    //    addFinal dedupes, so re-reads are harmless.
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const r = event.results[i];
+      if (r.isFinal) {
+        addFinal(r[0].transcript);
+      }
+    }
+
+    // 2. Re-derive the interim from the CURRENT state of event.results.
+    //    The KEY FIX: always set interimText (even to '') so a stale
+    //    interim from an earlier event doesn't linger and duplicate
+    //    the text that just became final.
     let latestInterim = '';
     for (let i = 0; i < event.results.length; i++) {
       const r = event.results[i];
-      const transcript = r[0].transcript;
-      if (r.isFinal) {
-        addFinal(transcript);
-      } else {
-        latestInterim = transcript;
+      if (!r.isFinal) {
+        latestInterim = r[0].transcript;
       }
     }
-    if (latestInterim) interimText = latestInterim;
+    interimText = latestInterim;
 
     const combined = getCombinedText();
     if (!combined) return;
 
-    showTranscript(combined);
     console.log('&#128221; STT:', combined);
 
-    // Always reset the silence timer — it's the ONLY trigger for processing
     clearTimeout(silenceTimer);
     silenceTimer = setTimeout(maybeFinalize, SILENCE_MS);
   };
@@ -529,9 +549,6 @@ function setupSTT() {
     clearTimeout(watchdogTimer);
     console.log('&#127897;&#65039; Listening ended');
 
-    // CRITICAL: do NOT reset the accumulator here.
-    // Android often fires onend mid-utterance. If we reset, we lose
-    // the pending text and the silence timer never gets to fire.
     if (sessionActive && !isBusy && !isPlaying) {
       setTimeout(tryStartRecognition, 300);
     }
@@ -544,8 +561,6 @@ function maybeFinalize() {
   silenceTimer = null;
 
   if (isBusy || isPlaying) {
-    console.log('maybeFinalize: busy or playing — skipping');
-    // Re-arm the timer in case we were blocked
     if (interimText || finalizedParts.length) {
       silenceTimer = setTimeout(maybeFinalize, 500);
     }
@@ -553,7 +568,6 @@ function maybeFinalize() {
   }
   if (Date.now() < muteMicUntil) {
     const wait = muteMicUntil - Date.now();
-    console.log('maybeFinalize: muted — retry in', wait, 'ms');
     silenceTimer = setTimeout(maybeFinalize, wait + 100);
     return;
   }
@@ -563,6 +577,24 @@ function maybeFinalize() {
     clearTextBuffers();
     return;
   }
+
+  const now = Date.now();
+  const key = normalizeForGuard(combined);
+
+  for (const [k, t] of recentlyProcessed) {
+    if (now - t > REPLAY_GUARD_MS) recentlyProcessed.delete(k);
+  }
+
+  if (recentlyProcessed.has(key)) {
+    console.log('&#9197;&#65039; Replay guard blocked:', combined);
+    clearTextBuffers();
+    if (sessionActive && !isListening) tryStartRecognition();
+    return;
+  }
+
+  recentlyProcessed.set(key, now);
+
+  showTranscript(combined);
 
   clearTextBuffers();
   console.log('&#127908; Finalized:', combined);
@@ -575,7 +607,6 @@ function tryStartRecognition() {
   if (isBusy || isPlaying) return;
   if (isListening) return;
 
-  // NOTE: do NOT resetAccumulator() here. Just start recognition.
   try {
     recognition.start();
   } catch (e) {
@@ -600,6 +631,7 @@ function stopListening() {
   silenceTimer = null;
   watchdogTimer = null;
   resetAccumulator();
+  hideTranscript();
   if (recognition && isListening) {
     try { recognition.stop(); } catch (e) {}
   }
@@ -607,11 +639,13 @@ function stopListening() {
 
 async function handleUserInput(text) {
   isBusy = true;
+  clearTextBuffers();
   setStatus('Thinking...', 'thinking');
   console.log('&#10145;&#65039; Sending:', text);
 
   const resetBusy = () => {
     isBusy = false;
+    clearTextBuffers();
     if (sessionActive) {
       setStatus('Listening...', 'listening');
       if (!isListening) tryStartRecognition();
@@ -668,6 +702,8 @@ micBtn.addEventListener('click', async () => {
   } catch (e) {}
 
   window.speechSynthesis.cancel();
+
+  recentlyProcessed.clear();
 
   setStatus('Listening...', 'listening');
   tryStartRecognition();
