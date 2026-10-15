@@ -183,7 +183,11 @@ const chatApiUrl = isLocal
 console.log('&#129302; Chat | face:', faceId, '| API:', chatApiUrl);
 
 const IS_ANDROID = /Android/i.test(navigator.userAgent);
-const SILENCE_MS = IS_ANDROID ? 2200 : 1000;
+
+// Tighter silence window. We now reset the timer only when text
+// actually changes, so we don't need a huge buffer for Android's
+// duplicate results.
+const SILENCE_MS = IS_ANDROID ? 1200 : 900;
 
 // ================= FACE CONTROLLER =================
 const VISEME = { CLOSED: 'smile', A: 'a', E: 'e', I: 'i' };
@@ -399,6 +403,10 @@ let interimText    = '';
 let silenceTimer   = null;
 let watchdogTimer  = null;
 
+// Track the last time the combined text actually changed
+let lastCombinedSnapshot = '';
+let lastTextChangeAt     = 0;
+
 const recentlyProcessed = new Map();
 const REPLAY_GUARD_MS = 20000;
 
@@ -422,6 +430,7 @@ function hideTranscript() {
 function clearTextBuffers() {
   finalizedParts = [];
   interimText = '';
+  lastCombinedSnapshot = '';
 }
 
 function resetAccumulator() {
@@ -430,9 +439,6 @@ function resetAccumulator() {
   silenceTimer = null;
 }
 
-/**
- * Add a final fragment, replacing any earlier fragment it supersedes.
- */
 function addFinal(text) {
   const t = (text || '').trim();
   if (!t) return;
@@ -491,7 +497,6 @@ function setupSTT() {
     if (Date.now() < muteMicUntil) return;
 
     // 1. Add any NEW finals (from resultIndex onward).
-    //    addFinal dedupes, so re-reads are harmless.
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const r = event.results[i];
       if (r.isFinal) {
@@ -499,10 +504,8 @@ function setupSTT() {
       }
     }
 
-    // 2. Re-derive the interim from the CURRENT state of event.results.
-    //    The KEY FIX: always set interimText (even to '') so a stale
-    //    interim from an earlier event doesn't linger and duplicate
-    //    the text that just became final.
+    // 2. Re-derive interim from the CURRENT state of event.results.
+    //    Always assign — even to '' — so stale interim doesn't linger.
     let latestInterim = '';
     for (let i = 0; i < event.results.length; i++) {
       const r = event.results[i];
@@ -517,8 +520,15 @@ function setupSTT() {
 
     console.log('&#128221; STT:', combined);
 
-    clearTimeout(silenceTimer);
-    silenceTimer = setTimeout(maybeFinalize, SILENCE_MS);
+    // Reset the silence timer only when the text actually changes.
+    // Android re-emits finals; without this guard the timer keeps
+    // resetting and every utterance waits the full window again.
+    if (combined !== lastCombinedSnapshot) {
+      lastCombinedSnapshot = combined;
+      lastTextChangeAt = Date.now();
+      clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(maybeFinalize, SILENCE_MS);
+    }
   };
 
   recognition.onerror = (event) => {
