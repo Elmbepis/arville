@@ -820,6 +820,14 @@
       "file_path": "rmats/Chemistry 1/Q2_LE3.pdf",
       "description": "Chemical Bonds and Properties of Chemical Compounds"
     },
+    {
+      "id": 326,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": "Chemistry 2",
+      "lesson": "Q3 Lesson 1",
+      "file_path": "rmats/Chemistry 2/Q3_LE1.pdf",
+      "description": "Intermolecular Forces and Their Effect on Physical Properties"
+    },
 
     {
       "id": 350,

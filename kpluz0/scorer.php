@@ -1,5 +1,6 @@
 <?php
-// scorer.php – uses session variables for user identification, accepts module URL
+// scorer.php — uses session variables for user identification, accepts module URL
+// Multi-attempt module lookup: exact match, legacy pattern, substring, module_key
 
 class Scorer {
     private $db;
@@ -23,12 +24,12 @@ class Scorer {
     }
 
     /**
-     * Resolve module ID from modules table using the provided URL or auto-detection
+     * Resolve module ID from modules table.
+     * Tries multiple match strategies to support both new and legacy URL formats.
      * @param string|null $moduleUrl
      * @return int
      */
     private function resolveModuleId($moduleUrl = null) {
-        // If no URL provided, try to auto-detect from script name
         if (empty($moduleUrl)) {
             $moduleUrl = $_SERVER['SCRIPT_NAME'];
             $this->addDebug("Auto-detected module URL: '$moduleUrl'");
@@ -36,11 +37,10 @@ class Scorer {
             $this->addDebug("Received module URL: '$moduleUrl'");
         }
 
-        // Extract the base filename (e.g., "colors.php" from a full path)
         $filename = basename($moduleUrl);
         $this->addDebug("Extracted filename: '$filename'");
 
-        // Try to match by URL (which should contain just the filename)
+        // Attempt 1: exact match on url (works for new modules: 'colors.php')
         $stmt = $this->db->prepare("SELECT id FROM modules WHERE url = ? LIMIT 1");
         if ($stmt) {
             $stmt->bind_param("s", $filename);
@@ -49,31 +49,62 @@ class Scorer {
             if ($row = $result->fetch_assoc()) {
                 $id = $row['id'];
                 $stmt->close();
-                $this->addDebug("Found module ID: $id by filename '$filename'.");
+                $this->addDebug("Found module ID $id by exact url match '$filename'.");
                 return $id;
             }
             $stmt->close();
         }
 
-        // If not found, try by module_key (filename without .php)
+        // Attempt 2: legacy format 'q-display.php?mfile=tiwala-sarili1.php'
+        $likePattern = '%mfile=' . $filename;
+        $stmt = $this->db->prepare("SELECT id FROM modules WHERE url LIKE ? LIMIT 1");
+        if ($stmt) {
+            $stmt->bind_param("s", $likePattern);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($row = $result->fetch_assoc()) {
+                $id = $row['id'];
+                $stmt->close();
+                $this->addDebug("Found module ID $id by legacy pattern '$likePattern'.");
+                return $id;
+            }
+            $stmt->close();
+        }
+
+        // Attempt 3: substring match anywhere in url
+        $likePattern = '%' . $filename . '%';
+        $stmt = $this->db->prepare("SELECT id FROM modules WHERE url LIKE ? LIMIT 1");
+        if ($stmt) {
+            $stmt->bind_param("s", $likePattern);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($row = $result->fetch_assoc()) {
+                $id = $row['id'];
+                $stmt->close();
+                $this->addDebug("Found module ID $id by substring '$likePattern'.");
+                return $id;
+            }
+            $stmt->close();
+        }
+
+        // Attempt 4: module_key (filename without .php)
         $moduleKey = basename($moduleUrl, '.php');
         if (!empty($moduleKey)) {
-            $stmt2 = $this->db->prepare("SELECT id FROM modules WHERE module_key = ? LIMIT 1");
-            if ($stmt2) {
-                $stmt2->bind_param("s", $moduleKey);
-                $stmt2->execute();
-                $result2 = $stmt2->get_result();
-                if ($row2 = $result2->fetch_assoc()) {
-                    $id = $row2['id'];
-                    $stmt2->close();
+            $stmt = $this->db->prepare("SELECT id FROM modules WHERE module_key = ? LIMIT 1");
+            if ($stmt) {
+                $stmt->bind_param("s", $moduleKey);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if ($row = $result->fetch_assoc()) {
+                    $id = $row['id'];
+                    $stmt->close();
                     $this->addDebug("Found module ID $id by module_key '$moduleKey'.");
                     return $id;
                 }
-                $stmt2->close();
+                $stmt->close();
             }
         }
 
-        // Fallback to ID 1 with warning
         $this->addDebug("WARNING: Module not found for filename '$filename'. Using fallback ID 1.");
         return 1;
     }
