@@ -7,7 +7,6 @@ $_SESSION['title'] = "Pagpapahalaga sa Aking Pamilya";
 
 $questions = array(
 
-    // === T/F: statement is WRONG (answer is mali) ===
     "Hindi mahalaga ang mabuting pakikitungo sa ibang pamilya.=mali>tama",
     "Ang pagiging matatag ng isang pamilya ay hindi maganda.=mali>tama",
     "Hindi mahalaga ang pagkakaisa sa isang pamilya.=mali>tama",
@@ -21,8 +20,6 @@ $questions = array(
     "Dapat makaramdam ng inggit sa ibang pamilya.=mali>tama",
     "Dapat makaramdam ng galit sa ibang pamilya.=mali>tama",
     "Hindi mo dapat ipagdasal ang ibang pamilya.=mali>tama",
-
-    // === T/F: statement is TRUE (answer is tama) ===
     "Ang bawat pamilya ay may mga mabubuting katangian.=tama>mali",
     "Dapat mong ipagmalaki ang iyong pamilya.=tama>mali",
     "Magandang katangian ng isang pamilya ang pagiging matulungin sa kapwa.=tama>mali",
@@ -35,8 +32,6 @@ $questions = array(
     "Dapat mong igalang ang mga ibang pamilya sa inyong komunidad.=tama>mali",
     "Dapat nating ipagdasal ang kaligtasan ng ating pamilya.=tama>mali",
     "Hindi ka dapat magkalat sa tapat ng inyong kapitbahay.=tama>mali",
-
-    // === Fill-in-the-blank (4 choices) ===
     "____ ang isang lugar kung walang mga pamilyang magkakagalit dito.=Payapa>Magulo+Malungkot<Nakakatakot",
     "Dapat ____ ang iba't ibang pamilya sa isang pook.=magtulungan>maglaban+magyabangan<mag-away",
     "____ ang isang lugar kung maganda ang ugnayan ng mga pamilya rito.=Masaya>Magulo+Nakakatakot<Malungkot",

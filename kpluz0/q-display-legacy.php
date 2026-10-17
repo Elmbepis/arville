@@ -228,7 +228,7 @@ window.onload=function(){FP_preloadImgs(
                 <p style="margin-top: -5px; margin-bottom: 0">
                     <span style="font-weight: 700">
                         <font face="Verdana" style="font-size: 15pt" color="#B9005C">
-                            <?php echo htmlspecialchars($moduleTitle); ?>
+                            <?php echo nl2br(htmlspecialchars($moduleTitle)); ?>
                         </font>
                     </span>
                 </p>
@@ -273,7 +273,7 @@ if ($result !== null):
     <table border="0" width="466" cellspacing="0" cellpadding="0" align="center"
            style="margin:15px auto; background:<?php echo $theme['question_bg']; ?>; border:1px solid <?php echo $theme['question_border']; ?>;">
         <tr><td align="center" style="padding:20px;">
-            <font face="Arial" style="font-size:13pt; font-weight:700; color:#330033;">
+            <font face="Arial" style="font-size:16pt; font-weight:700; color:#330033;">
                 Tanong:<br>
                 <?php echo htmlspecialchars($result['prompt']); ?><br><br>
                 Sagot: <span style="color:#CC0066;"><?php echo htmlspecialchars($result['answer']); ?></span>

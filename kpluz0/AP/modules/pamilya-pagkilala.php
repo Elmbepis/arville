@@ -10,13 +10,10 @@ $questions = array(
     "Mas matanda ako sa aking ate.=mali>tama",
     "Mas bata sa akin ang aking kuya.=mali>tama",
     "Mas una akong ipinanganak kaysa kuya ko.=mali>tama",
-
     "Ang aking mga magulang ay sina Tatay at Nanay.=tama>mali",
     "Mas matanda ang ate kaysa bunso.=tama>mali",
     "Ang ama ng aking tatay ay aking lolo.=tama>mali",
     "Ang ina ng aking nanay ay aking lola.=tama>mali",
-    
-    // === Original fill-in-the-blank (type 1) ===
     "Ang ____ ay ang nakatatandang kapatid na babae.=ate>kuya+bunso<pinsan",
     "Ang ____ ay ang nakatatandang kapatid na lalaki.=kuya>ate+bunso<pinsan",
     "Ang ate at kuya ay mas ____ kaysa bunso.=matanda>bata+maliit<magaan",
