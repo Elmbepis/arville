@@ -398,7 +398,30 @@ $videosHover = $iconBase . 'videosb.jpg';
                                                         ?>
                                                             <td width="221" align="center" valign="top" style="padding:0; margin:0;">
                                                                 <p style="margin:0 0 40px 0; padding:0; line-height:normal;">
-                                                                    <a href="<?= htmlspecialchars($mod['url']) ?>">
+                                                                    <?php
+                                                                    // ============================================================
+                                                                    // Resolve module URL from DB &#8594; loader URL
+                                                                    // Accepts: "q-display.php?mfile=xxx.php"
+                                                                    //          "xxx.php"
+                                                                    //          "AP/modules/xxx.php"
+                                                                    // ============================================================
+                                                                    $rawUrl = trim($mod['url']);
+
+                                                                    // Step 1: extract the module name
+                                                                    if (preg_match('/mfile=([^&]+)/', $rawUrl, $m)) {
+                                                                        $moduleName = urldecode($m[1]);       // from "mfile=xxx.php"
+                                                                    } else {
+                                                                        $moduleName = $rawUrl;                 // bare filename or path
+                                                                    }
+
+                                                                    // Step 2: strip path and .php
+                                                                    $moduleName = basename($moduleName);       // "AP/modules/xxx.php" &#8594; "xxx.php"
+                                                                    $moduleName = preg_replace('/\.php$/i', '', $moduleName); // &#8594; "xxx"
+
+                                                                    // Step 3: build loader URL
+                                                                    $modUrl = '/arville/kpluz0/q-display-legacy.php?m=AP/modules/' . urlencode($moduleName);
+                                                                    ?>
+                                                                    <a href="<?= htmlspecialchars($modUrl) ?>">
                                                                         <img border="0" id="<?= $imgId ?>" 
                                                                              src="<?= htmlspecialchars($mod['image_normal']) ?>" 
                                                                              onmouseover="FP_swapImg(1,0,'<?= $imgId ?>','<?= htmlspecialchars($mod['image_hover']) ?>')" 

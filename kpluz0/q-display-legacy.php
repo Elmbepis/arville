@@ -1,14 +1,15 @@
 <?php
 // q-display-legacy.php — displays modules in the OLD question-set format
-// Auth: KPLUZ_SESSION (same as migrated modules)
-// Layout: legacy table-based header/footer matching old q-display.php
-// URL: q-display-legacy.php?m=gmrc/modules/tiwala-sarili1
+// Auth: KPLUZ_SESSION
+// Theme: shared banner/side/score images; per-subject question-box colors
+// Path handling: preserves folder case for file paths (AP, English, Filipino),
+//                lowercases only for theme lookup and session routing.
+// URL: q-display-legacy.php?m=AP/modules/tiwala-sarili1
 
-// ============================================================
-// AUTH — session-based
-// ============================================================
 session_name('KPLUZ_SESSION');
-session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 
 $base = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 
@@ -23,33 +24,36 @@ require_once __DIR__ . '/scorer.php';
 require_once __DIR__ . '/q-engine.php';
 
 // ============================================================
-// SUBJECT THEME MAP
+// THEME — shared image filenames + per-subject question colors
 // ============================================================
 function theme_for_subject($subject) {
-    $themes = [
-        'gmrc' => [
-            'top'      => 'shs-top.jpg',
-            'title'    => 'shs-title.jpg',
-            'left'     => 'shs-left.jpg',
-            'right'    => 'shs-right.jpg',
-            'spacer'   => 'shs-spacer.jpg',
-            'bottom'   => 'shs-bottom.jpg',
-            'score_top'=> 'score-top-wbg.jpg',
-            'score_bot'=> 'score-bottom-wbg.jpg',
-        ],
-        'english' => [
-            'top'      => 'ex-23-top.jpg',
-            'title'    => 'ex-23-top2.jpg',
-            'left'     => 'ex-23-left.jpg',
-            'right'    => 'ex-23-right.jpg',
-            'spacer'   => 'ex-23-content.jpg',
-            'bottom'   => 'ex-23-bottom.jpg',
-            'score_top'=> 'score-top-3.jpg',
-            'score_bot'=> 'score-bottom-3.jpg',
-        ],
-        // TODO: araling-panlipunan, filipino, mapeh, science, tle
+    $theme = [
+        'top'       => 'shs-top.jpg',
+        'title'     => 'shs-title.jpg',
+        'left'      => 'shs-left.jpg',
+        'right'     => 'shs-right.jpg',
+        'spacer'    => 'shs-spacer.jpg',
+        'bottom'    => 'shs-bottom.jpg',
+        'score_top' => 'score-top-wbg.jpg',
+        'score_bot' => 'score-bottom-wbg.jpg',
     ];
-    return $themes[$subject] ?? $themes['english'];
+
+    $colors = [
+        'gmrc'               => ['bg' => '#fdeeef', 'border' => '#fba0a5'],
+        'araling-panlipunan' => ['bg' => '#fdeeef', 'border' => '#fba0a5'],
+        'ap'                 => ['bg' => '#fdeeef', 'border' => '#fba0a5'],
+        'science'            => ['bg' => '#ebfdea', 'border' => '#91faca'],
+        'filipino'           => ['bg' => '#FDF0D6', 'border' => '#FBBB91'],
+        'mapeh'              => ['bg' => '#f8eefd', 'border' => '#eac5fd'],
+        'tle'                => ['bg' => '#e8fefe', 'border' => '#90f1e2'],
+        'english'            => ['bg' => '#FFFFF0', 'border' => '#FEDB9A'],
+        'math'               => ['bg' => '#EBF4FD', 'border' => '#A8D3FE'],
+    ];
+
+    $c = $colors[$subject] ?? ['bg' => '#fdeeef', 'border' => '#fba0a5'];
+    $theme['question_bg']     = $c['bg'];
+    $theme['question_border'] = $c['border'];
+    return $theme;
 }
 
 // ============================================================
@@ -66,11 +70,14 @@ if (!file_exists($modulePath)) {
     die("Module not found: " . htmlspecialchars($moduleKey));
 }
 
-$parts = explode('/', $moduleKey);
-$subject = $parts[0];
-$_SESSION['last_subject'] = $subject;   // &#8592; remember for the logo link
-$theme = theme_for_subject($subject);
-$subjectImages = $base . '/' . $subject . '/images';
+$parts         = explode('/', $moduleKey);
+$subjectFolder = $parts[0];                    // 'AP', 'English', 'Filipino', 'gmrc'
+$subject       = strtolower($subjectFolder);   // 'ap', 'english', 'filipino', 'gmrc'
+
+$_SESSION['last_subject'] = $subject;          // lowercase for home-subj routing
+
+$theme         = theme_for_subject($subject);
+$subjectImages = $base . '/' . $subjectFolder . '/images';   // real case for path
 
 // ============================================================
 // LOAD LEGACY QUESTION SET (buffered, output discarded)
@@ -90,7 +97,7 @@ if (!is_array($questions) || empty($questions)) {
 }
 
 // ============================================================
-// BUILD TEMPLATE
+// BUILD TEMPLATE + RUN ENGINE
 // ============================================================
 $template = [
     'title'             => $moduleTitle,
@@ -98,7 +105,7 @@ $template = [
     'module_identifier' => basename($modulePath),
     'type'              => 'static',
     'levels'            => ['Easy'],
-    'image_base'        => $base . '/' . $subject . '/modules/qimages/',
+    'image_base'        => $base . '/' . $subjectFolder . '/modules/qimages/',
     'questions'         => $questions,
 ];
 
@@ -117,7 +124,7 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current'])) {
     $q = $_SESSION[$sessionKey]['current'];
     $selected = $_GET['ansclick'];
 
-    $scorer = new Scorer($conn, $template['module_identifier']);
+    $scorer  = new Scorer($conn, $template['module_identifier']);
     $correct = $scorer->processAnswer($selected, $q['answer'], 'Easy');
 
     $result = [
@@ -132,7 +139,9 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current'])) {
 
 if ($result === null || isset($_POST['Submit2'])) {
     $q = $engine->generate($sessionKey);
-    if ($q === null) die("Could not generate question.");
+    if ($q === null) {
+        die("Could not generate question from this module.");
+    }
     $_SESSION[$sessionKey]['current'] = $q;
 }
 
@@ -213,7 +222,7 @@ window.onload=function(){FP_preloadImgs(
 
 <div align="center">
     <table border="0" width="800" cellspacing="0" cellpadding="0">
-        <tr><td style="font-size:0; line-height:0;"><img border="0" src="<?php echo $subjectImages; ?>/<?php echo $theme['top']; ?>" width="800" height="41" style="display:block;"></td></tr>
+        <tr><td style="font-size:0; line-height:0;"><img border="0" src="<?php echo $subjectImages; ?>/<?php echo $theme['top']; ?>" style="display:block;"></td></tr>
         <tr>
             <td background="<?php echo $subjectImages; ?>/<?php echo $theme['title']; ?>" height="56" width="800" align="center">
                 <p style="margin-top: -5px; margin-bottom: 0">
@@ -261,10 +270,12 @@ if ($result !== null):
             <tr><td align="center"><br><img border="1" src="<?php echo htmlspecialchars($result['image']); ?>" style="margin-bottom:35px;"></td></tr>
         </table>
     <?php endif; ?>
-    <table border="0" width="466" cellspacing="0" cellpadding="0" align="center">
-        <tr><td width="100%" align="center" style="padding-top:15px; padding-bottom:23px; padding-left:38px; padding-right:38px;">
-            <font face="Arial" style="font-size:15pt; font-weight:700; color:#330033;">
-                Tanong:<br><?php echo htmlspecialchars($result['prompt']); ?><br><br>
+    <table border="0" width="466" cellspacing="0" cellpadding="0" align="center"
+           style="margin:15px auto; background:<?php echo $theme['question_bg']; ?>; border:1px solid <?php echo $theme['question_border']; ?>;">
+        <tr><td align="center" style="padding:20px;">
+            <font face="Arial" style="font-size:13pt; font-weight:700; color:#330033;">
+                Tanong:<br>
+                <?php echo htmlspecialchars($result['prompt']); ?><br><br>
                 Sagot: <span style="color:#CC0066;"><?php echo htmlspecialchars($result['answer']); ?></span>
             </font>
         </td></tr>
@@ -278,7 +289,7 @@ if ($result !== null):
     <table border="0" width="90%" align="center" cellspacing="0" cellpadding="0">
         <tr><td align="center">
             <br>
-            <table align="center" bgcolor="#fdeeef" bordercolor="#fba0a5" style="border-style:solid; border-width:1px;">
+            <table align="center" style="background:<?php echo $theme['question_bg']; ?>; border:1px solid <?php echo $theme['question_border']; ?>;">
                 <tr><td style="<?php echo $qstyle; ?>" width="350" height="50" align="center">
                     <font face="Arial" style="font-size:17pt; font-weight:600; color:#800080;">
                         <?php echo htmlspecialchars($q['prompt']); ?>
@@ -292,7 +303,6 @@ if ($result !== null):
                 Click on your answer below.<br><br><br>
             </font>
 <?php
-    // Compute width from longest choice — same width for all buttons
     $maxlen = 0;
     foreach ($q['choices'] as $c) { $maxlen = max($maxlen, strlen($c)); }
     $wt = 300;
@@ -301,10 +311,9 @@ if ($result !== null):
     if ($maxlen > 26) $wt = 440;
     if ($maxlen > 30) $wt = 485;
 
-    // Compact padding — vertical padding small, width enforced inline
-    $bstyle = "border-style:solid; border-width:1px; border-color:#EEEEEE; padding:10px 25px; background:#DDDDDD;";
+    $bstyle = "border-style:solid; border-width:1px; border-color:#EEEEEE; padding:20px 25px; background:#DDDDDD;";
 ?>
-            <table align="center" cellspacing="0" cellpadding="0" style="border-collapse:separate; border-spacing:0 8px;">
+            <table align="center" cellspacing="0" cellpadding="0" style="border-collapse:separate; border-spacing:0 8px; margin:30px auto;">
                 <?php foreach ($q['choices'] as $c): ?>
                     <tr>
                         <td align="center" style="<?php echo $bstyle; ?> width:<?php echo $wt; ?>px;">
@@ -319,7 +328,8 @@ if ($result !== null):
         </td></tr>
     </table>
 <?php endif; ?>
-    <div style="text-align:center; margin:60px 0;">
+    <?php $newQMargin = ($result !== null) ? '80px' : '40px'; ?>
+    <div style="text-align:center; margin:<?php echo $newQMargin; ?> 0;">
         <form method="post" action="?m=<?php echo $moduleParam; ?>" style="display:inline;">
             <input type="submit" name="Submit2" value="New Question">
         </form>
@@ -337,7 +347,8 @@ if ($result !== null):
                                             </table>
                                         </div>
                                     </td>
-<tr><td style="font-size:0; line-height:0;"><img border="0" src="<?php echo $subjectImages; ?>/<?php echo $theme['bottom']; ?>" style="display:block;"></td></tr>
+                                </tr>
+                                <tr><td style="font-size:0; line-height:0;"><img border="0" src="<?php echo $subjectImages; ?>/<?php echo $theme['bottom']; ?>" style="display:block;"></td></tr>
                             </table>
                         </td>
                         <td width="90" valign="top" height="34" background="<?php echo $subjectImages; ?>/<?php echo $theme['right']; ?>">&nbsp;</td>
@@ -350,7 +361,7 @@ if ($result !== null):
                 <p align="center" style="margin-top:5px; margin-bottom:5px">
                     <font style="font-size:10pt">
                         <font face="Arial" color="#FFFFFF">Copyright&nbsp; 2010</font>
-                        <b><font face="Arial" color="#365669"><a href="<?php echo $base; ?>/home-gmrc.php"><font color="#FFFFFF">KPluz.com</font></a></font></b>
+                        <b><font face="Arial" color="#365669"><a href="<?php echo $base; ?>/home-subj.php"><font color="#FFFFFF">KPluz.com</font></a></font></b>
                         <font face="Arial" color="#FFFFFF">. All Rights Reserved.</font>
                     </font>
                 </p>

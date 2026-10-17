@@ -1,6 +1,7 @@
 <?php
 // q-engine.php — generic question engine
 // Two modes: 'procedural' (randomized params) and 'static' (fixed bank)
+// Static mode supports 2-, 3-, or 4-choice questions (T/F and MCQ)
 
 class QEngine {
     private $template;
@@ -73,35 +74,39 @@ class QEngine {
             $parsed['image'] = $img;
         }
 
-        $this->debug[] = "Static question picked: idx=$idx";
+        $this->debug[] = "Static question picked: idx=$idx, choices=" . count($parsed['choices']);
         return $parsed;
     }
 
     private function parseMCQ($raw) {
-        // Format: prompt=correct>wrong1+wrong2<wrong3[**image.jpg]
+        // Formats supported (all with optional **image.jpg suffix):
+        //   4 choices:  prompt.=correct>wrong1+wrong2<wrong3
+        //   3 choices:  prompt.=correct>wrong1+wrong2
+        //   2 choices:  prompt.=correct>wrong   (T/F — answer is "tama" or "mali")
         $image = null;
         if (($imgPos = strpos($raw, '**')) !== false) {
             $image = substr($raw, $imgPos + 2);
             $raw = substr($raw, 0, $imgPos);
         }
 
-        $p1 = strpos($raw, '=');
-        $p2 = strpos($raw, '>');
-        $p3 = strpos($raw, '+');
-        $p4 = strpos($raw, '<');
+        $p1 = strpos($raw, '=');              // prompt | answer
+        $p2 = ($p1 === false) ? false : strpos($raw, '>', $p1);
 
-        if ($p1 === false || $p2 === false || $p3 === false || $p4 === false) {
+        if ($p1 === false || $p2 === false) {
             $this->debug[] = "parseMCQ: malformed question: $raw";
             return null;
         }
 
         $prompt  = trim(substr($raw, 0, $p1));
         $correct = trim(substr($raw, $p1 + 1, $p2 - $p1 - 1));
-        $w1      = trim(substr($raw, $p2 + 1, $p3 - $p2 - 1));
-        $w2      = trim(substr($raw, $p3 + 1, $p4 - $p3 - 1));
-        $w3      = trim(substr($raw, $p4 + 1));
 
-        $choices = [$correct, $w1, $w2, $w3];
+        // Everything after '>' is the distractor list (split on + and <)
+        $distractorSection = substr($raw, $p2 + 1);
+        $distractors = preg_split('/[+<]/', $distractorSection);
+        $distractors = array_map('trim', $distractors);
+        $distractors = array_values(array_filter($distractors, fn($d) => $d !== ''));
+
+        $choices = array_merge([$correct], $distractors);
         shuffle($choices);
 
         return [
