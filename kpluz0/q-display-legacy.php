@@ -2,8 +2,6 @@
 // q-display-legacy.php — displays modules in the OLD question-set format
 // Auth: KPLUZ_SESSION
 // Theme: shared banner/side/score images; per-subject question-box colors
-// Path handling: preserves folder case for file paths (AP, English, Filipino),
-//                lowercases only for theme lookup and session routing.
 // URL: q-display-legacy.php?m=AP/modules/tiwala-sarili1
 
 session_name('KPLUZ_SESSION');
@@ -18,7 +16,21 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     exit();
 }
 
-$grd = $_SESSION['grade'] ?? 1;
+// ============================================================
+// RESOLVE GRADE — robust fallbacks
+//   1. $_SESSION['grade']       (canonical, set by login.php)
+//   2. $_SESSION['user_grade']  (legacy key, still respected)
+//   3. DB users.grade by user_id (final fallback)
+//   4. default 1
+// The DB lookup requires the connection below, so $grd stays null
+// until resolved; modules that read $grd get the final value.
+// ============================================================
+$grd = null;
+if (isset($_SESSION['grade']) && is_numeric($_SESSION['grade'])) {
+    $grd = (int)$_SESSION['grade'];
+} elseif (isset($_SESSION['user_grade']) && is_numeric($_SESSION['user_grade'])) {
+    $grd = (int)$_SESSION['user_grade'];
+}
 
 require_once __DIR__ . '/scorer.php';
 require_once __DIR__ . '/q-engine.php';
@@ -71,13 +83,36 @@ if (!file_exists($modulePath)) {
 }
 
 $parts         = explode('/', $moduleKey);
-$subjectFolder = $parts[0];                    // 'AP', 'English', 'Filipino', 'gmrc'
-$subject       = strtolower($subjectFolder);   // 'ap', 'english', 'filipino', 'gmrc'
+$subjectFolder = $parts[0];
+$subject       = strtolower($subjectFolder);
 
-$_SESSION['last_subject'] = $subject;          // lowercase for home-subj routing
+$_SESSION['last_subject'] = $subject;
 
 $theme         = theme_for_subject($subject);
-$subjectImages = $base . '/' . $subjectFolder . '/images';   // real case for path
+$subjectImages = $base . '/' . $subjectFolder . '/images';
+
+// ============================================================
+// DB CONNECTION — opened BEFORE require $modulePath
+// so that we can resolve $grd from the DB if needed,
+// and so the module always sees the correct $grd.
+// ============================================================
+$conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz0");
+if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
+
+if ($grd === null && !empty($_SESSION['user_id'])) {
+    $stmt = $conn->prepare("SELECT grade FROM users WHERE id = ? LIMIT 1");
+    $stmt->bind_param("i", $_SESSION['user_id']);
+    $stmt->execute();
+    $r = $stmt->get_result()->fetch_assoc();
+    if ($r && is_numeric($r['grade'])) {
+        $grd = (int)$r['grade'];
+        $_SESSION['grade'] = $grd; // cache for subsequent requests
+    }
+    $stmt->close();
+}
+if ($grd === null) {
+    $grd = 1;
+}
 
 // ============================================================
 // LOAD LEGACY QUESTION SET (buffered, output discarded)
@@ -85,7 +120,7 @@ $subjectImages = $base . '/' . $subjectFolder . '/images';   // real case for pa
 ob_start();
 $questions = [];
 unset($_SESSION['title'], $_SESSION['tnum']);
-require $modulePath;
+require $modulePath;   // module reads $grd from this scope
 ob_end_clean();
 
 header_remove();
@@ -108,9 +143,6 @@ $template = [
     'image_base'        => $base . '/' . $subjectFolder . '/modules/qimages/',
     'questions'         => $questions,
 ];
-
-$conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz0");
-if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
 
 $engine = new QEngine($template, $template['module_identifier']);
 $engine->setLevel('Easy');

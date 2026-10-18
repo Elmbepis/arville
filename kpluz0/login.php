@@ -91,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['login'])) {
         // EMAIL LOGIN - only check hashed password
         $email = $email_or_username;
         
-        $stmt = $conn->prepare("SELECT id, name, password, role, first_login, expiration FROM users WHERE email = ?");
+        $stmt = $conn->prepare("SELECT id, name, password, role, grade, first_login, expiration FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -108,6 +108,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['login'])) {
                 $_SESSION['user_name'] = $user['name'];
                 $_SESSION['user_role'] = $user['role'];
                 $_SESSION['logged_in'] = true;
+                $_SESSION['grade'] = is_numeric($user['grade']) ? (int)$user['grade'] : 1;
+                $_SESSION['user_grade'] = $_SESSION['grade'];
                 
                 // Set first login if null
                 if (is_null($user['first_login'])) {
@@ -169,12 +171,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['login'])) {
                     $_SESSION['logged_in'] = true;
                     if (!is_null($matched_grade)) {
                         $_SESSION['user_grade'] = $matched_grade;
+                        $_SESSION['grade'] = (int)$matched_grade;
                         // Update the user's grade in DB if it's not set
                         if (is_null($user['grade'])) {
                             $update_grade = $conn->prepare("UPDATE users SET grade = ? WHERE id = ?");
                             $update_grade->bind_param("si", $matched_grade, $user['id']);
                             $update_grade->execute();
                         }
+                    } else {
+                        $_SESSION['grade'] = is_numeric($user['grade']) ? (int)$user['grade'] : 1;
+                        $_SESSION['user_grade'] = $_SESSION['grade'];
                     }
                     
                     // Set first login if null
@@ -222,6 +228,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['login'])) {
                     $_SESSION['user_role'] = $role;
                     $_SESSION['logged_in'] = true;
                     $_SESSION['user_grade'] = $matched_grade;
+                    $_SESSION['grade'] = (int)$matched_grade;
                     
                     header("Location: app/menu.php");
                     exit();
