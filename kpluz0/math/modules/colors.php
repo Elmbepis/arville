@@ -1,5 +1,5 @@
 <?php
-// colors2.php — template-driven version of colors.php
+// colors.php — template-driven version of colors.php
 // Uses q-engine to generate questions from a declarative template.
 
 session_name('KPLUZ_SESSION');
