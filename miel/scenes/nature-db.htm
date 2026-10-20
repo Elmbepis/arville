@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARville Virtual Ecosystem</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #87CEEB; font-family: Arial, sans-serif; }
+    #info, #instructions {
+      position: absolute; width: 100%; text-align: center; color: white; z-index: 10;
+    }
+    #info { top: 10px; background: rgba(0,0,0,0.5); padding: 5px; }
+    #instructions { bottom: 20px; background: rgba(0,0,0,0.7); padding: 10px; }
+    #loading {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8); color: white; padding: 20px;
+      border-radius: 10px; z-index: 100;
+    }
+    #mobile-controls {
+      display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 5;
+    }
+    #joystick-container {
+      position: absolute; bottom: 100px; left: 20px; width: 120px; height: 120px;
+      pointer-events: auto;
+    }
+    #joystick-base {
+      width: 80px; height: 80px; background: rgba(255,255,255,0.2);
+      border-radius: 50%; position: absolute; border: 2px solid rgba(255,255,255,0.5);
+      top: 20px; left: 20px;
+    }
+    #joystick-handle {
+      width: 40px; height: 40px; background: rgba(255,255,255,0.7);
+      border-radius: 50%; position: absolute; top: 40px; left: 40px;
+      transition: transform 0.1s;
+    }
+    #camera-control-area {
+      position: absolute; top: 0; right: 0; width: 40%; height: 100%;
+      pointer-events: auto;
+    }
+    #center-tap-area {
+      position: absolute; top: 0; left: 40%; width: 20%; height: 100%;
+      pointer-events: auto;
+    }
+    #ride-controls { position: absolute; top: 60px; right: 10px; z-index: 100; }
+    #start-ride {
+      display: block; margin: 5px; padding: 10px 20px;
+      background: rgba(0,150,0,0.7); color: white; border: none;
+      border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold;
+    }
+    #start-ride:hover { background: rgba(0,180,0,0.9); }
+    #start-ride.riding { background: rgba(150,0,0,0.7); }
+    #start-ride.riding:hover { background: rgba(180,0,0,0.9); }
+  </style>
+</head>
+<body>
+  <div id="info">Virtual World | WASD: Move | Mouse: Look | Q/E: Fly Up/Down | R: Reset | H: Home</div>
+  <div id="loading">Loading scene...</div>
+
+  <div id="ride-controls">
+    <button id="start-ride">Start Ride</button>
+  </div>
+
+  <div id="mobile-controls">
+    <div id="joystick-container">
+      <div id="joystick-base"></div>
+      <div id="joystick-handle"></div>
+    </div>
+    <div id="camera-control-area"></div>
+    <div id="center-tap-area"></div>
+  </div>
+
+  <!-- Core libs -->
+  <script src="../../universe/js/three.min.js"></script>
+  <script src="../../universe/js/GLTFLoader.js"></script>
+  <script src="../../universe/js/audio-mappings.js"></script>
+  <script src="../../universe/js/animation-controller.js"></script>
+  <script src="../../universe/js/navigation.js"></script>
+
+  <!-- Object creators -->
+  <script src="../../universe/obj_create_park.js"></script>
+  <script src="../../universe/obj_create_house.js"></script>
+  <script src="../../universe/obj_create_room.js"></script>
+  <script src="../../universe/obj_create_toyland.js"></script>
+  <script src="../../universe/obj_create_robotcity.js"></script>
+  <script src="../../universe/obj_create_nature.js"></script>
+
+  <!-- DB-safe texture override -->
+  <script src="../../universe/obj_create_db.js"></script>
+
+  <!-- Effects -->
+  <script src="../../universe/js/sky-effect.js"></script>
+  <script src="../../universe/js/brightenGLB.js"></script>
+  <script src="../../universe/js/darkenGLB.js"></script>
+  <script src="../../universe/js/aquatic-atmosphere.js"></script>
+  <script src="../../universe/js/modelPath.js"></script>
+
+  <!-- Path movement (used by fishPath) -->
+  <script src="../../universe/js/GLB-movements.js"></script>
+
+  <!-- Quiz click detection -->
+  <script src="../../universe/js/clickedObject.js"></script>
+
+  <script>
+    // =================================================================
+    // Config from URL
+    // =================================================================
+    const URL_PARAMS = new URLSearchParams(window.location.search);
+    const TYPE = URL_PARAMS.get('type') || 'nature';
+    const ID   = URL_PARAMS.get('id')   || '3';
+    const SLUG = URL_PARAMS.get('slug');
+
+    // Asset helper — DB stores 'universe/...'; this file sits at miel/scenes/
+    const ASSET_ROOT = '../../';
+    function assetPath(p) {
+        if (!p) return p;
+        if (p.startsWith('http') || p.startsWith('/') || p.startsWith('../')) return p;
+        return ASSET_ROOT + p;
+    }
+
+    // =================================================================
+    // State
+    // =================================================================
+    let scene, camera, renderer;
+    const clock = new THREE.Clock();
+    let EYE_HEIGHT  = 5;
+    let PLACE_WIDTH = 200;
+    let PLACE_DEPTH = 400;
+    let worldConfig = null;
+    let isRiding = false;
+    let ridePath = [];
+    let currentRidePoint = 0;
+    let ambientAudio = null;
+
+    // Per-frame custom updaters (used by animalPath)
+    window.sceneUpdaters = window.sceneUpdaters || [];
+
+    // =================================================================
+    // Boot
+    // =================================================================
+    (async function boot() {
+      const loading = document.getElementById('loading');
+
+      let url = `scene.php?type=${encodeURIComponent(TYPE)}&id=${encodeURIComponent(ID)}`;
+      if (SLUG) url = `scene.php?slug=${encodeURIComponent(SLUG)}`;
+
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        worldConfig = await res.json();
+      } catch (err) {
+        console.error('Failed to load scene:', err);
+        loading.textContent = 'Failed to load scene: ' + err.message;
+        return;
+      }
+
+      if (worldConfig.error) {
+        loading.textContent = 'API error: ' + worldConfig.error;
+        return;
+      }
+
+      EYE_HEIGHT  = worldConfig.world.eye_height  ?? 5;
+      PLACE_WIDTH = worldConfig.world.place_width ?? 200;
+      PLACE_DEPTH = worldConfig.world.place_depth ?? 400;
+
+      document.title = worldConfig.world.title || 'ARville Virtual World';
+      document.getElementById('info').textContent =
+        (worldConfig.world.title || 'Virtual World') +
+        ' | WASD: Move | Mouse: Look | Q/E: Fly | R: Reset | H: Home';
+
+      initScene();
+      buildGroundAndPaths();
+      await buildAreas();
+
+      loading.style.display = 'none';
+      animate();
+    })();
+
+    // =================================================================
+    // Scene setup
+    // =================================================================
+    function initScene() {
+      // Initialize the shared texture loader BEFORE anything uses it
+      if (!window.textureLoader) {
+        window.textureLoader = new THREE.TextureLoader();
+      }
+
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const sx = worldConfig.world.start_x ?? 0;
+      const sy = worldConfig.world.start_y ?? EYE_HEIGHT;
+      const sz = worldConfig.world.start_z ?? 60;
+      camera.position.set(sx, sy, sz);
+      camera.rotation.set(0, 0, 0);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      const bg = worldConfig.world.background_color || '#87CEEB';
+      renderer.setClearColor(new THREE.Color(bg));
+      document.body.appendChild(renderer.domElement);
+
+      window.ROOM_INITIAL_POSITION = camera.position.clone();
+      window.ROOM_INITIAL_ROTATION = camera.rotation.clone();
+      window.isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'h') window.location.href = '../../index.php';
+      });
+
+      setTimeout(() => {
+        if (typeof initMobileControls === 'function') initMobileControls();
+      }, 100);
+
+      // Lighting
+      const hemi = new THREE.HemisphereLight(0x88CCFF, 0x228822, 1.2);
+      hemi.position.set(0, 50, 0);
+      scene.add(hemi);
+
+      const sun = new THREE.DirectionalLight(0xFFFFDD, 0.9);
+      sun.position.set(30, 40, 20);
+      sun.castShadow = true;
+      sun.shadow.mapSize.width = 1024;
+      sun.shadow.mapSize.height = 1024;
+      sun.shadow.camera.near = 0.5;
+      sun.shadow.camera.far = 500;
+      sun.shadow.camera.left = -150;
+      sun.shadow.camera.right = 150;
+      sun.shadow.camera.top = 150;
+      sun.shadow.camera.bottom = -150;
+      scene.add(sun);
+
+      const sky = new THREE.DirectionalLight(0x4488FF, 0.5);
+      sky.position.set(0, 30, 0);
+      scene.add(sky);
+
+      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+      for (const [x, y, z] of [[0,15,30],[0,15,-30],[30,15,0],[-30,15,0]]) {
+        const l = new THREE.DirectionalLight(0xFFFFFF, 0.4);
+        l.position.set(x, y, z);
+        scene.add(l);
+      }
+
+      const overhead = new THREE.DirectionalLight(0xFFFFFF, 0.3);
+      overhead.position.set(0, 25, 0);
+      scene.add(overhead);
+
+      if (typeof setupControls === 'function') {
+        setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.8);
+      }
+
+      ridePath = createRidePath();
+      document.getElementById('start-ride').addEventListener('click', toggleRide);
+
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    // =================================================================
+    // Ground + pathway
+    // =================================================================
+    function buildGroundAndPaths() {
+      const groundTex = worldConfig.world.ground_tex || 'universe/textures/grass1.jpg';
+      const roadTex   = worldConfig.world.road_tex   || 'universe/textures/concrete2.jpg';
+
+      const groundMat = new THREE.MeshLambertMaterial({ color: 0x888888 });
+      const ground = new THREE.Mesh(new THREE.PlaneGeometry(PLACE_WIDTH, PLACE_DEPTH), groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      scene.add(ground);
+
+      if (window.textureLoader) {
+        const t = window.textureLoader.load(
+          assetPath(groundTex),
+          () => console.log('&#9989; Ground texture loaded:', groundTex),
+          undefined,
+          (err) => console.error('&#10060; Ground texture failed:', groundTex, err)
+        );
+        t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        t.repeat.set(PLACE_WIDTH, PLACE_DEPTH / 2);
+        groundMat.map = t;
+        groundMat.needsUpdate = true;
+      }
+
+      const pathWidth = 6;
+      const pathHeight = 0.05;
+      const rectWidth = PLACE_WIDTH - 90;
+      const rectDepth = PLACE_DEPTH - 90;
+
+      const roadMat = new THREE.MeshLambertMaterial({ color: 0x666666 });
+      if (window.textureLoader) {
+        const rt = window.textureLoader.load(
+          assetPath(roadTex),
+          () => console.log('&#9989; Road texture loaded:', roadTex),
+          undefined,
+          (err) => console.error('&#10060; Road texture failed:', roadTex, err)
+        );
+        rt.wrapS = rt.wrapT = THREE.RepeatWrapping;
+        rt.repeat.set(4, 4);
+        roadMat.map = rt;
+      }
+
+      const halfRW = rectWidth / 2;
+      const halfRD = rectDepth / 2;
+      const adjW = halfRW - pathWidth / 2;
+      const adjD = halfRD - pathWidth / 2;
+
+      function seg(w, d) {
+        const g = new THREE.PlaneGeometry(w, d);
+        const uv = g.attributes.uv;
+        const rx = w / pathWidth, ry = d / pathWidth;
+        for (let i = 0; i < uv.count; i++) {
+          uv.setXY(i, uv.getX(i) * rx, uv.getY(i) * ry);
+        }
+        uv.needsUpdate = true;
+        return g;
+      }
+
+      const mk = (geo, x, z) => {
+        const m = new THREE.Mesh(geo, roadMat);
+        m.rotation.x = -Math.PI / 2;
+        m.position.set(x, pathHeight, z);
+        scene.add(m);
+      };
+      mk(seg(rectWidth, pathWidth), 0, adjD);
+      mk(seg(rectWidth, pathWidth), 0, -adjD);
+      mk(seg(pathWidth, rectDepth - 6), -adjW, 0);
+      mk(seg(pathWidth, rectDepth - 6), adjW, 0);
+
+      const spacing = (rectDepth - 6) / 6;
+      mk(seg(rectWidth - 6, pathWidth), 0, spacing + 0.001);
+      mk(seg(rectWidth - 6, pathWidth), 0, -spacing + 0.001);
+    }
+
+    // =================================================================
+    // Build areas — recursive through children
+    // =================================================================
+    async function buildAreas() {
+      const loading = document.getElementById('loading');
+      const areas = worldConfig.areas || [];
+
+      async function buildTree(objects, parentThreeObject) {
+        for (const o of objects) {
+          let node;
+          try {
+            node = await instantiateAreaObject(o);
+          } catch (err) {
+            console.error(`Failed to build ${o.creator} (${o.label}):`, err);
+            continue;
+          }
+          if (!node) continue;
+
+          parentThreeObject.add(node);
+
+          if (o.children && o.children.length > 0) {
+            await buildTree(o.children, node);
+          }
+        }
+      }
+
+      for (const area of areas) {
+        loading.style.display = 'block';
+        loading.textContent = `Building ${area.label || area.area_key}...`;
+
+        const areaGroup = new THREE.Group();
+        areaGroup.name = `eco-area-${area.area_key}`;
+        areaGroup.position.set(area.pos_x, area.pos_y, area.pos_z);
+        areaGroup.rotation.y = area.rot_y;
+
+        await buildTree(area.objects || [], areaGroup);
+
+        scene.add(areaGroup);
+
+        if (area.ambient_audio) {
+          setupAmbientAudio(area);
+        }
+      }
+    }
+
+    function setupAmbientAudio(area) {
+      if (ambientAudio) {
+        try { ambientAudio.pause(); } catch (e) {}
+      }
+      const audio = new Audio(assetPath(area.ambient_audio));
+      audio.volume = Math.max(0, Math.min(1, area.audio_volume ?? 0.7));
+      audio.loop   = (area.audio_loop !== 0);
+      ambientAudio = audio;
+
+      audio.play().catch(() => {
+        console.log('&#128263; Autoplay blocked — audio starts on first interaction');
+        const kick = () => {
+          audio.play().catch(() => {});
+          document.removeEventListener('click', kick);
+          document.removeEventListener('keydown', kick);
+        };
+        document.addEventListener('click', kick, { once: true });
+        document.addEventListener('keydown', kick, { once: true });
+      });
+    }
+
+    // =================================================================
+    // Dispatcher
+    // =================================================================
+    async function instantiateAreaObject(o) {
+      const p = o.params || {};
+
+      switch (o.creator) {
+
+        case 'group': {
+          const g = new THREE.Group();
+          g.position.set(o.pos_x, o.pos_y, o.pos_z);
+          g.rotation.set(o.rot_x, o.rot_y, o.rot_z);
+          g.scale.set(
+            o.scale_x ?? o.scale,
+            o.scale_y ?? o.scale,
+            o.scale_z ?? o.scale
+          );
+          if (o.name) g.name = o.name;
+          return g;
+        }
+
+        case 'glb': {
+          const g = await createStaticGLBModel(
+            assetPath(o.model_path),
+            o.pos_x, o.pos_y, o.pos_z,
+            o.rot_x, o.rot_y, o.rot_z,
+            o.scale
+          );
+
+          // Per-axis group scale if any of scale_x/y/z is set
+          if (o.scale_x !== null || o.scale_y !== null || o.scale_z !== null) {
+            g.scale.set(
+              o.scale_x ?? 1,
+              o.scale_y ?? 1,
+              o.scale_z ?? 1
+            );
+          }
+
+          if (o.texture && typeof window.changeGLBTextureDB === 'function' && g.children[0]) {
+            const inner = g.children[0];
+            const posC = inner.position.clone();
+            const rotC = inner.rotation.clone();
+            const sclC = inner.scale.clone();
+            const textured = await window.changeGLBTextureDB(inner, assetPath(o.texture));
+            textured.position.copy(posC);
+            textured.rotation.copy(rotC);
+            textured.scale.copy(sclC);
+            textured.updateMatrixWorld(true);
+            g.remove(inner);
+            g.add(textured);
+
+            if (p.materialColor !== undefined) {
+              const colorVal = typeof p.materialColor === 'string'
+                ? parseInt(p.materialColor.replace(/^0x/i, ''), 16)
+                : p.materialColor;
+              const color = new THREE.Color(colorVal);
+              textured.traverse((child) => {
+                if (!child.isMesh || !child.material) return;
+                const mats = Array.isArray(child.material) ? child.material : [child.material];
+                mats.forEach(m => {
+                  m.color = color.clone();
+                  if (p.roughness !== undefined) m.roughness = p.roughness;
+                  if (p.metalness !== undefined) m.metalness = p.metalness;
+                  m.needsUpdate = true;
+                });
+              });
+            }
+          }
+
+          if (o.name) g.name = o.name;
+          return g;
+        }
+
+        case 'fishPath': {
+          const g = createGLBModel(assetPath(o.model_path), 0, 0, 0, 0);
+          if (!g) { console.warn(`createGLBModel failed: ${o.model_path}`); return null; }
+          g.scale.setScalar(o.scale);
+          if (o.name) g.name = o.name;
+          const cfg = {
+            centerX:         p.centerX         ?? o.pos_x,
+            centerY:         p.centerY         ?? o.pos_y,
+            centerZ:         p.centerZ         ?? o.pos_z,
+            pathLength:      p.pathLength      ?? 100,
+            pathWidth:       p.pathWidth       ?? 70,
+            speed:           p.speed           ?? 0.03,
+            direction:       p.direction       ?? 'cw',
+            pathType:        p.pathType        ?? 'elliptical',
+            startAngle:      p.startAngle      ?? (Math.PI / 3),
+            initialRotation: p.initialRotation ?? 0,
+          };
+          createPathMovement(g, cfg);
+          return g;
+        }
+
+        case 'animalPath': {
+          // Animated animal following eco5a's custom elliptical path movement
+          const loaded = await new Promise((resolve) => {
+            const loader = new THREE.GLTFLoader();
+            loader.load(
+              assetPath(o.model_path),
+              (gltf) => resolve(gltf),
+              undefined,
+              (err) => { console.error(`Failed to load animal ${o.model_path}:`, err); resolve(null); }
+            );
+          });
+          if (!loaded) return null;
+
+          const container = new THREE.Group();
+          const model = loaded.scene;
+          model.scale.setScalar(o.scale ?? 1);
+          if (o.name) container.name = o.name;
+          container.add(model);
+
+          // Animation setup
+          if (loaded.animations && loaded.animations.length > 0) {
+            const mixer = new THREE.AnimationMixer(model);
+
+            let walkAnim;
+            const preferredName = (p.animName || '').toLowerCase();
+            if (preferredName) {
+              walkAnim = loaded.animations.find(a => a.name.toLowerCase().includes(preferredName));
+            }
+            if (!walkAnim) {
+              walkAnim = loaded.animations.find(a => {
+                const n = a.name.toLowerCase();
+                return n.includes('walk') || n.includes('run');
+              }) || loaded.animations[0];
+            }
+
+            // Filter root translation tracks to prevent drift
+            const filtered = walkAnim.tracks.filter(track => {
+              const tn = track.name.toLowerCase();
+              const hasPos = tn.includes('.position') || tn.includes('.translation');
+              if (!hasPos) return true;
+              const isRoot = tn.includes('hips') || tn.includes('root') || tn.includes('spine');
+              return !isRoot;
+            });
+
+            const clip = filtered.length > 0
+              ? new THREE.AnimationClip(walkAnim.name + '_fixed', walkAnim.duration, filtered)
+              : walkAnim;
+
+            const action = mixer.clipAction(clip);
+            action.setLoop(THREE.LoopRepeat, Infinity);
+            action.timeScale = p.animationSpeed ?? 1.0;
+            action.play();
+
+            if (!window.glbModelMixers) window.glbModelMixers = [];
+            window.glbModelMixers.push(mixer);
+          }
+
+          // Custom elliptical path (matches eco5a's math)
+          const cfg = {
+            centerX:         p.centerX         ?? 0,
+            centerY:         p.centerY         ?? 0,
+            centerZ:         p.centerZ         ?? 0,
+            pathLength:      p.pathLength      ?? 40,
+            pathWidth:       p.pathWidth       ?? 40,
+            speed:           p.speed           ?? 0.001,
+            direction:       p.direction       ?? 'cw',
+            startAngle:      p.startAngle      ?? 0,
+            initialRotation: p.initialRotation ?? 0,
+          };
+          const a = cfg.pathWidth / 2;
+          const b = cfg.pathLength / 2;
+          const dir = cfg.direction === 'cw' ? -1 : 1;
+          let angle = cfg.startAngle;
+
+          function tick(deltaTime) {
+            angle += dir * cfg.speed * deltaTime * 60;
+            const x = cfg.centerX + Math.cos(angle) * a;
+            const z = cfg.centerZ + Math.sin(angle) * b;
+            container.position.set(x, cfg.centerY, z);
+            const dx = -a * Math.sin(angle);
+            const dz = b * Math.cos(angle);
+            container.rotation.y = Math.atan2(dx, dz) + cfg.initialRotation;
+          }
+          tick(0);
+
+          window.sceneUpdaters.push(tick);
+
+          return container;
+        }
+
+        case 'grassPatch': {
+          // 6-grass cluster matching grass1Group from eco5b
+          const g = new THREE.Group();
+          g.position.set(o.pos_x, o.pos_y, o.pos_z);
+          g.rotation.set(o.rot_x, o.rot_y, o.rot_z);
+          if (o.name) g.name = o.name;
+
+          const offsets = [
+            { x:  2, z: -11, scale: 1.2 },
+            { x: -3, z:   0, scale: 0.8 },
+            { x: -7, z:  -3, scale: 0.6 },
+            { x: -5, z:  -4, scale: 1.5 },
+            { x: -2, z: -10, scale: 1.0 },
+            { x:  2, z:  -6, scale: 1.3 },
+          ];
+
+          for (const off of offsets) {
+            const grass = await createStaticGLBModel(
+              assetPath('universe/models/tall-grass.glb'),
+              off.x, 0, off.z, 0, 0, 0, off.scale
+            );
+            if (o.texture && window.changeGLBTextureDB && grass.children[0]) {
+              const inner = grass.children[0];
+              const posC = inner.position.clone();
+              const rotC = inner.rotation.clone();
+              const sclC = inner.scale.clone();
+              const textured = await window.changeGLBTextureDB(inner, assetPath(o.texture));
+              textured.position.copy(posC);
+              textured.rotation.copy(rotC);
+              textured.scale.copy(sclC);
+              textured.updateMatrixWorld(true);
+              grass.remove(inner);
+              grass.add(textured);
+            }
+            g.add(grass);
+          }
+
+          return g;
+        }
+
+        case 'boulder': {
+          const size = p.size ?? 1.0;
+          const b = createBoulder(assetPath(o.texture), size);
+          b.position.set(o.pos_x, o.pos_y, o.pos_z);
+          b.rotation.set(o.rot_x, o.rot_y, o.rot_z);
+          b.scale.set(
+            o.scale_x ?? o.scale,
+            o.scale_y ?? o.scale,
+            o.scale_z ?? o.scale
+          );
+          if (o.name) b.name = o.name;
+          return b;
+        }
+
+        default:
+          console.warn('Unknown creator:', o.creator, o);
+          return null;
+      }
+    }
+
+    // =================================================================
+    // Ride system
+    // =================================================================
+    function createRidePath() {
+      const rectWidth = PLACE_WIDTH - 90;
+      const rectDepth = PLACE_DEPTH - 90;
+      const hw = rectWidth / 2;
+      const hd = rectDepth / 2;
+      return [
+        new THREE.Vector3(0, EYE_HEIGHT, -hd),
+        new THREE.Vector3(hw, EYE_HEIGHT, -hd),
+        new THREE.Vector3(hw, EYE_HEIGHT, 0),
+        new THREE.Vector3(hw, EYE_HEIGHT, hd),
+        new THREE.Vector3(0, EYE_HEIGHT, hd),
+        new THREE.Vector3(-hw, EYE_HEIGHT, hd),
+        new THREE.Vector3(-hw, EYE_HEIGHT, 0),
+        new THREE.Vector3(-hw, EYE_HEIGHT, -hd),
+        new THREE.Vector3(0, EYE_HEIGHT, -hd),
+      ];
+    }
+
+    function findClosestRidePoint() {
+      let closest = 0, minDist = Infinity;
+      for (let i = 0; i < ridePath.length; i++) {
+        const d = camera.position.distanceTo(ridePath[i]);
+        if (d < minDist) { minDist = d; closest = i; }
+      }
+      return closest;
+    }
+
+    function updateRide() {
+      if (!isRiding) return;
+      const target = ridePath[currentRidePoint];
+      const next   = ridePath[(currentRidePoint + 1) % ridePath.length];
+      const dir    = new THREE.Vector3().subVectors(target, camera.position);
+      const distance = dir.length();
+      const blend = Math.max(0, 1 - distance / 15.0);
+      const curDir  = new THREE.Vector3().subVectors(target, camera.position).normalize();
+      const nextDir = new THREE.Vector3().subVectors(next, target).normalize();
+      const blended = new THREE.Vector3().copy(curDir).lerp(nextDir, blend);
+      const fwd = new THREE.Vector3(-blended.x, -blended.y, -blended.z);
+      let targetRot = Math.atan2(fwd.x, fwd.z) - Math.PI / 2;
+      let diff = targetRot - camera.rotation.y;
+      if (diff >  Math.PI) diff -= 2 * Math.PI;
+      if (diff < -Math.PI) diff += 2 * Math.PI;
+      const maxRot = 0.05;
+      if (Math.abs(diff) > maxRot) diff = Math.sign(diff) * maxRot;
+      camera.rotation.y += diff * 0.3;
+      if (distance < 5.0) {
+        currentRidePoint = (currentRidePoint + 1) % ridePath.length;
+      } else {
+        dir.normalize();
+        camera.position.add(dir.multiplyScalar(0.1));
+      }
+    }
+
+    function toggleRide() {
+      isRiding = !isRiding;
+      const btn = document.getElementById('start-ride');
+      if (isRiding) {
+        btn.textContent = 'Stop Ride';
+        btn.classList.add('riding');
+        currentRidePoint = findClosestRidePoint();
+        if (camera.userData.controls) {
+          const c = camera.userData.controls;
+          c.moveForward = c.moveBackward = c.moveLeft = c.moveRight = false;
+          c.enabled = true;
+        }
+        document.getElementById('info').textContent =
+          'Auto Ride Mode | Mouse: Look | Click Stop Ride to regain control';
+      } else {
+        btn.textContent = 'Start Ride';
+        btn.classList.remove('riding');
+        if (camera.userData.controls) {
+          const c = camera.userData.controls;
+          c.moveForward = c.moveBackward = c.moveLeft = c.moveRight = true;
+          c.enabled = true;
+        }
+        document.getElementById('info').textContent =
+          (worldConfig.world.title || 'Virtual World') +
+          ' | WASD: Move | Mouse: Look | Q/E: Fly | R: Reset | H: Home';
+      }
+    }
+
+    // =================================================================
+    // Resize + animate
+    // =================================================================
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+
+      if (isRiding) updateRide();
+      if (camera.userData.update) camera.userData.update();
+
+      // Custom per-frame updates (animalPath)
+      if (window.sceneUpdaters) {
+        window.sceneUpdaters.forEach(fn => fn(delta));
+      }
+
+      if (window.animationController) window.animationController.update(camera);
+      if (window.updateAllAnimations)  window.updateAllAnimations(delta);
+
+      if (window.batModels) {
+        window.batModels.forEach((bat) => {
+          if (bat.userData && bat.userData.applyZRotation) {
+            bat.userData.applyZRotation.call(bat);
+          }
+        });
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    // =================================================================
+    // Expose for quiz system
+    // =================================================================
+    Object.defineProperty(window, 'threeScene',    { get: () => scene });
+    Object.defineProperty(window, 'threeCamera',   { get: () => camera });
+    Object.defineProperty(window, 'threeRenderer', { get: () => renderer });
+  </script>
+</body>
+</html>

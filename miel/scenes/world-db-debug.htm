@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World DB Debug</title>
+  <style>
+    body { font-family: monospace; background: #111; color: #ddd; padding: 20px; font-size: 13px; line-height: 1.5; }
+    h1 { color: #4AF; border-bottom: 1px solid #333; padding-bottom: 8px; }
+    h2 { color: #4AF; margin-top: 24px; border-bottom: 1px dashed #333; padding-bottom: 4px; }
+    h3 { color: #7CF; margin-top: 16px; font-size: 14px; }
+    .obj { background: #1a1a1a; border-left: 3px solid #666; padding: 8px 12px; margin: 8px 0; }
+    .obj.glub { border-left-color: #4A4; }
+    .obj.group { border-left-color: #AA4; }
+    .obj.animalPath { border-left-color: #A4A; }
+    .obj.fishPath { border-left-color: #4AA; }
+    .obj.boulder { border-left-color: #A44; }
+    .obj.grassPatch { border-left-color: #4A4; }
+    .label { color: #888; font-weight: bold; }
+    .good { color: #4F4; }
+    .warn { color: #FF4; }
+    .bad { color: #F44; }
+    .hint { color: #666; font-style: italic; }
+    .num { color: #FC6; }
+    pre { margin: 4px 0; }
+    #summary { background: #1a2a1a; padding: 12px; border-radius: 4px; margin: 16px 0; border: 1px solid #444; }
+  </style>
+</head>
+<body>
+<h1>World DB Debug — Layout Inspector</h1>
+<div id="status">Loading scene...</div>
+<div id="output"></div>
+
+<script>
+(async function boot() {
+  const params = new URLSearchParams(window.location.search);
+  const TYPE = params.get('type') || 'nature';
+  const ID   = params.get('id')   || '3';
+
+  const url = `scene.php?type=${encodeURIComponent(TYPE)}&id=${encodeURIComponent(ID)}`;
+  let data;
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    data = await res.json();
+  } catch (err) {
+    document.getElementById('status').innerHTML =
+      `<span class="bad">FAILED: ${err.message}</span>`;
+    return;
+  }
+
+  if (data.error) {
+    document.getElementById('status').innerHTML =
+      `<span class="bad">API ERROR: ${data.error}</span>`;
+    return;
+  }
+
+  renderReport(data);
+  document.getElementById('status').innerHTML =
+    `<span class="good">&#9989; Loaded ${data.areas.length} areas from ${url}</span>`;
+})();
+
+// -------- helpers --------
+function fmt(n) {
+  if (n === null || n === undefined) return 'null';
+  return (typeof n === 'number') ? n.toFixed(2) : String(n);
+}
+function fmtV(x, y, z) { return `(${fmt(x)}, ${fmt(y)}, ${fmt(z)})`; }
+
+function walkObjects(objects, parentWorldPos, parentWorldScale, areaOffset, depth) {
+  const rows = [];
+  for (const o of objects) {
+    const px = parentWorldPos[0] + o.pos_x;
+    const py = parentWorldPos[1] + o.pos_y;
+    const pz = parentWorldPos[2] + o.pos_z;
+
+    // effective world scale = parent_scale * (scale_x ?? scale), etc.
+    const localSX = o.scale_x ?? o.scale ?? 1;
+    const localSY = o.scale_y ?? o.scale ?? 1;
+    const localSZ = o.scale_z ?? o.scale ?? 1;
+    const wsx = parentWorldScale[0] * localSX;
+    const wsy = parentWorldScale[1] * localSY;
+    const wsz = parentWorldScale[2] * localSZ;
+
+    rows.push({ obj: o, worldPos: [px, py, pz], worldScale: [wsx, wsy, wsz], depth });
+
+    if (o.children && o.children.length > 0) {
+      rows.push(...walkObjects(o.children, [px, py, pz], [wsx, wsy, wsz], areaOffset, depth + 1));
+    }
+  }
+  return rows;
+}
+
+// Compute orbit extent for a path-mover
+function orbitExtent(o) {
+  const p = o.params || {};
+  const cx = p.centerX ?? 0;
+  const cy = p.centerY ?? 0;
+  const cz = p.centerZ ?? 0;
+  const pl = p.pathLength ?? 40;
+  const pw = p.pathWidth ?? 40;
+  return {
+    center: [cx, cy, cz],
+    // pathLength is the Z axis (semi-major/minor confusion aside,
+    // eco files use: x = cx + cos(angle)*(pathWidth/2),
+    //                z = cz + sin(angle)*(pathLength/2))
+    xRange: [cx - pw/2, cx + pw/2],
+    zRange: [cz - pl/2, cz + pl/2]
+  };
+}
+
+function renderReport(data) {
+  const out = document.getElementById('output');
+  const world = data.world;
+  const areas = data.areas || [];
+
+  const halfW = (world.place_width ?? 200) / 2;
+  const halfD = (world.place_depth ?? 400) / 2;
+
+  // ===== SUMMARY =====
+  let html = '';
+  html += `<div id="summary">`;
+  html += `<div><span class="label">World:</span> <b>${world.title}</b> `;
+  html += `(id=${world.id}, slug=${world.slug}, type=${world.world_type}, ecosystem=${world.ecosystem_id})</div>`;
+  html += `<div><span class="label">Ground:</span> ${world.place_width} × ${world.place_depth} `;
+  html += `(bounds x ±${halfW}, z ±${halfD})</div>`;
+  html += `<div><span class="label">Eye height:</span> ${fmt(world.eye_height)}, `;
+  html += `<span class="label">Start:</span> ${fmtV(world.start_x, world.start_y, world.start_z)}</div>`;
+  html += `<div><span class="label">Ground tex:</span> ${world.ground_tex || '(none)'}</div>`;
+  html += `<div><span class="label">Road tex:</span> ${world.road_tex || '(none)'}</div>`;
+  html += `</div>`;
+
+  // ===== AREAS =====
+  html += `<h2>AREAS (${areas.length})</h2>`;
+  html += `<table style="border-collapse:collapse; font-family:monospace;">
+    <tr style="border-bottom:1px solid #444;">
+      <th style="text-align:left; padding:4px 12px 4px 0;">key</th>
+      <th style="text-align:left; padding:4px 12px 4px 0;">label</th>
+      <th style="text-align:left; padding:4px 12px 4px 0;">world pos</th>
+      <th style="text-align:left; padding:4px 12px 4px 0;">rot_y</th>
+      <th style="text-align:left; padding:4px 12px 4px 0;">objects</th>
+      <th style="text-align:left; padding:4px 12px 4px 0;">in bounds?</th>
+    </tr>`;
+  for (const a of areas) {
+    const inX = Math.abs(a.pos_x) <= halfW + 20;
+    const inZ = Math.abs(a.pos_z) <= halfD + 20;
+    const inBounds = inX && inZ;
+    html += `<tr style="border-bottom:1px solid #222;">
+      <td style="padding:4px 12px 4px 0; color:#4AF;"><b>${a.area_key}</b></td>
+      <td style="padding:4px 12px 4px 0;">${a.label || ''}</td>
+      <td style="padding:4px 12px 4px 0; color:#FC6;">${fmtV(a.pos_x, a.pos_y, a.pos_z)}</td>
+      <td style="padding:4px 12px 4px 0;">${fmt(a.rot_y)}</td>
+      <td style="padding:4px 12px 4px 0;">${(a.objects||[]).length} top-level</td>
+      <td style="padding:4px 12px 4px 0;">${inBounds ? '<span class="good">yes</span>' : '<span class="bad">NO</span>'}</td>
+    </tr>`;
+  }
+  html += `</table>`;
+
+  // ===== AREA DETAIL =====
+  for (const a of areas) {
+    html += `<h2>AREA ${a.area_key}: "${a.label}" @ world ${fmtV(a.pos_x, a.pos_y, a.pos_z)}</h2>`;
+    if (a.ambient_audio) {
+      html += `<div class="hint">&#127925; audio: ${a.ambient_audio} (vol ${fmt(a.audio_volume)})</div>`;
+    }
+
+    const rows = walkObjects(a.objects || [], [a.pos_x, a.pos_y, a.pos_z], [1, 1, 1], [a.pos_x, a.pos_y, a.pos_z], 0);
+
+    for (const r of rows) {
+      const o = r.obj;
+      const indent = '&nbsp;'.repeat(r.depth * 4);
+      const creator = o.creator || '?';
+      const label = o.label || o.name || o.model_path || '(no label)';
+      const [wx, wy, wz] = r.worldPos;
+      const [wsx, wsy, wsz] = r.worldScale;
+
+      const inX = Math.abs(wx) <= halfW + 20;
+      const inZ = Math.abs(wz) <= halfD + 20;
+      const inBounds = inX && inZ;
+
+      html += `<div class="obj ${creator}">`;
+      html += `${indent}<span class="label">[${creator}]</span> <b>${label}</b>`;
+      if (o.name) html += ` <span style="color:#A4A">name="${o.name}"</span>`;
+      html += `<br>`;
+
+      html += `${indent}<span class="hint">local:</span> pos=${fmtV(o.pos_x, o.pos_y, o.pos_z)} `;
+      html += `rot=(${fmt(o.rot_x)}, ${fmt(o.rot_y)}, ${fmt(o.rot_z)}) `;
+      html += `scale=(sx:${fmt(o.scale_x)}, sy:${fmt(o.scale_y)}, sz:${fmt(o.scale_z)}, uniform:${fmt(o.scale)})<br>`;
+
+      html += `${indent}<span class="hint">world:</span> `;
+      html += `<span style="color:${inBounds?'#4F4':'#F44'};">pos=${fmtV(wx, wy, wz)}</span> `;
+      html += `scale=${fmtV(wsx, wsy, wsz)}`;
+      if (!inBounds) html += ` <span class="bad">&#9888; OUT OF BOUNDS</span>`;
+      html += `<br>`;
+
+      if (o.model_path) {
+        html += `${indent}<span class="hint">model:</span> ${o.model_path}`;
+        if (o.texture) html += ` <span class="hint">tex:</span> ${o.texture}`;
+        html += `<br>`;
+      }
+
+      // Orbit analysis for path-movers
+      if (creator === 'animalPath' || creator === 'fishPath') {
+        const oExt = orbitExtent(o);
+        const wcx = wx + oExt.center[0];
+        const wcy = wy + oExt.center[1];
+        const wcz = wz + oExt.center[2];
+        const wXRange = [wx + oExt.xRange[0], wx + oExt.xRange[1]];
+        const wZRange = [wz + oExt.zRange[0], wz + oExt.zRange[1]];
+
+        const orbitInZ = (wZRange[0] >= -halfD) && (wZRange[1] <= halfD);
+        const orbitInX = (wXRange[0] >= -halfW) && (wXRange[1] <= halfW);
+        const orbitClass = (orbitInX && orbitInZ) ? 'good' : 'warn';
+
+        html += `${indent}<span class="hint">orbit center world:</span> `;
+        html += `<span class="${orbitClass}">${fmtV(wcx, wcy, wcz)}</span><br>`;
+        html += `${indent}<span class="hint">orbit extent world:</span> `;
+        html += `x=[${fmt(wXRange[0])}, ${fmt(wXRange[1])}] `;
+        html += `z=[${fmt(wZRange[0])}, ${fmt(wZRange[1])}]`;
+        if (!orbitInX || !orbitInZ) html += ` <span class="warn">&#9888; crosses boundary</span>`;
+        html += `<br>`;
+        html += `${indent}<span class="hint">path params:</span> `;
+        html += `pathLength=${fmt(o.params.pathLength)} pathWidth=${fmt(o.params.pathWidth)} `;
+        html += `speed=${fmt(o.params.speed)} direction=${o.params.direction || '?'}<br>`;
+      }
+
+      html += `</div>`;
+    }
+  }
+
+  // ===== ORIGINAL LAYOUT REFERENCE =====
+  html += `<h2>REFERENCE — Original generateAreaPositions()</h2>`;
+  html += `<div class="hint">From <code>nature.htm</code> / <code>village2.htm</code>:</div>`;
+  html += `<pre style="background:#1a1a1a; padding:8px; color:#FC6;">
+  a: (0, 0, -167)
+  b: (0, 0, -100)
+  c: (0, 0,  -33)
+  d: (0, 0,   33)
+  e: (0, 0,  100)
+  f: (0, 0,  167)
+  </pre>`;
+  html += `<div class="hint">Compare with the AREAS table above. Any area not matching this table has a different pos_z in the DB.</div>`;
+
+  out.innerHTML = html;
+
+  // Also dump to console for copy-paste
+  console.log('===== AREA POSITIONS =====');
+  for (const a of areas) console.log(`${a.area_key}: (${a.pos_x}, ${a.pos_y}, ${a.pos_z})`);
+}
+
+// Orbit helper needs to be defined before use in renderReport
+function orbitExtent(o) {
+  const p = o.params || {};
+  const cx = p.centerX ?? 0;
+  const cy = p.centerY ?? 0;
+  const cz = p.centerZ ?? 0;
+  const pl = p.pathLength ?? 40;
+  const pw = p.pathWidth ?? 40;
+  return {
+    center: [cx, cy, cz],
+    xRange: [cx - pw/2, cx + pw/2],
+    zRange: [cz - pl/2, cz + pl/2]
+  };
+}
+</script>
+</body>
+</html>
