@@ -2,6 +2,8 @@
 // q-engine.php — generic question engine
 // Two modes: 'procedural' (randomized params) and 'static' (fixed bank)
 // Static mode supports 2-, 3-, or 4-choice questions (T/F and MCQ)
+// HTML entities (e.g. &ntilde;) in stems/answers/distractors are decoded
+// on output so the renderer's htmlspecialchars() emits them correctly.
 
 class QEngine {
     private $template;
@@ -27,10 +29,15 @@ class QEngine {
 
     public function generate($sessionKey) {
         $type = $this->template['type'] ?? 'procedural';
-        if ($type === 'static') {
-            return $this->pickStatic($sessionKey);
-        }
-        return $this->generateProcedural($sessionKey);
+        $result = ($type === 'static')
+            ? $this->pickStatic($sessionKey)
+            : $this->generateProcedural($sessionKey);
+
+        // &#9472;&#9472;&#9472; DECODE HTML ENTITIES &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+        // Applied here so both modes get it uniformly, and AFTER all
+        // structural parsing (so &lt;/&gt;/&amp; never alias the
+        // delimiters = > + < ** that we split on above).
+        return $this->decodeResult($result);
     }
 
     // ============ STATIC (fixed bank) ============
@@ -293,5 +300,41 @@ class QEngine {
             }
             return (string)$val;
         }, $str);
+    }
+
+    // ============ HTML ENTITY HANDLING ============
+    //
+    // A single, uniform pass over the final result object. Decoding here
+    // (rather than inside parseMCQ / generateProcedural) guarantees:
+    //   1. Delimiters ( = > + < ** ) are matched against the RAW form,
+    //      so entity-encoded text like `&lt;` can never alias a real `<`.
+    //   2. Both static and procedural modes are handled identically.
+    //   3. Unknown/invalid entities pass through untouched.
+    //   4. Double-encoded entities ( `&amp;ntilde;` ) are preserved as
+    //      literal text (single decode), so intentional escapes still work.
+    //
+    // After decoding, q-display-legacy.php's htmlspecialchars() call
+    // re-encodes only genuine markup chars ( < > & " ' ), leaving UTF-8
+    // characters like ñ, á, é intact for the browser to render normally.
+
+    private function decodeResult($result) {
+        if ($result === null) return null;
+
+        $result['prompt'] = $this->decodeEntities($result['prompt']);
+        $result['answer'] = $this->decodeEntities($result['answer']);
+
+        if (isset($result['image']) && $result['image'] !== null) {
+            $result['image'] = $this->decodeEntities($result['image']);
+        }
+
+        if (isset($result['choices']) && is_array($result['choices'])) {
+            $result['choices'] = array_map([$this, 'decodeEntities'], $result['choices']);
+        }
+
+        return $result;
+    }
+
+    private function decodeEntities($str) {
+        return html_entity_decode((string)$str, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 }
