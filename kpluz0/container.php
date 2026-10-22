@@ -2,7 +2,6 @@
 // container.php – shared layout, no session handling
 
 function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_images = []) {
-    // Session must be started by the caller – we just ensure score exists
     if (isset($_SESSION) && !isset($_SESSION['score'])) {
         $_SESSION['score'] = 0;
     }
@@ -29,7 +28,6 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
         <title><?php echo htmlspecialchars($page_title); ?></title>
         <style>
         <?php
-        // ===== CSS as a double&#8209;quoted string (no heredoc) =====
         echo "
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -57,12 +55,13 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
         .top-banner img { display: block; margin: 0; border: 0; }
         .title-area {
             background: url('{$theme['title_bg']}') repeat-x top;
+            background-size: 100% 100%;
             height: 80px;
         }
         .title-area table { width: 100%; height: 100%; }
         .title-area .title-text {
             text-align: center;
-            font-size: 22pt;
+            font-size: 17pt;
             font-weight: 700;
             color: #CC0066;
             font-family: Verdana;
@@ -98,7 +97,236 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
         .difficulty { text-align: center; margin: 15px 0; }
         .difficulty label { margin: 0 10px; font-weight: bold; cursor: pointer; font-size: 10pt; color: #000080; }
         .difficulty input[type='radio'] { margin-right: 4px; }
-        .score-box { text-align: center; margin: 0 auto; }
+
+        /* ===== UNIFORM TEXT CHOICE BUTTONS ===== */
+        .choices-row {
+            --choice-width: 12em;
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin: 20px 0;
+        }
+        .choice-btn {
+            width: var(--choice-width);
+            max-width: 100%;
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            padding: 15px 25px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #0000BB;
+            text-decoration: none;
+            text-align: center;
+            white-space: nowrap;
+            box-sizing: border-box;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .choice-btn:hover {
+            background: #f8f8ff;
+            border-color: #8080ff;
+        }
+
+        /* ===== FREE-TEXT MODULE ANSWER BUTTONS =====
+           Vertical spacing around the Submit1/Submit2 button pair.
+           Applies ONLY on modules that render both buttons. The ~ selector
+           handles an optional spacer element between the two inputs. */
+        input[name='Submit1'],
+        input[name='Submit1'] ~ input[name='Submit2'] {
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* ===== IMAGE CHOICE BUTTONS (visual comparison modules) ===== */
+        .image-choices-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .image-choice {
+            display: inline-block;
+            padding: 5px;
+            border-radius: 8px;
+            transition: background 0.15s;
+            text-decoration: none;
+        }
+        .image-choice:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .image-choice img {
+            display: block;
+            border: 0;
+            max-width: 100%;
+            height: auto;
+        }
+        .feedback-arrow {
+            height: 40px;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        /* ===== FREE-TEXT ANSWER INPUT ===== */
+        .answer-input {
+            display: inline-block;
+            text-align: center;
+            height: 38px;
+            font-weight: bold;
+            font-size: 24px;
+            padding: 2px 10px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            background: #fff;
+            box-sizing: border-box;
+            margin: 10px 0;
+        }
+        .answer-input:focus {
+            outline: none;
+            border-color: #8080ff;
+            background: #f8f8ff;
+        }
+
+        /* ===== ARITHMETIC EQUATION DISPLAY (addition / subtraction) ===== */
+        .equation-card {
+            display: inline-block;
+            background: linear-gradient(135deg, #fafaff 0%, #f0f0ff 100%);
+            border: 2px solid #d0d0e8;
+            border-radius: 16px;
+            padding: 25px 40px;
+            margin: 15px auto 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+        }
+        .equation-card.correct {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #f4fbf4 0%, #e8f5e9 100%);
+        }
+        .equation-card.wrong {
+            border-color: #e53935;
+            background: linear-gradient(135deg, #fdf5f5 0%, #fde8e8 100%);
+        }
+        .equation-inline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
+            font-size: 32pt;
+            font-weight: 700;
+            color: #800080;
+            flex-wrap: wrap;
+        }
+        .equation-inline .op {
+            color: #CC0066;
+        }
+        .equation-inline input {
+            font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
+            font-size: 28pt;
+            font-weight: 700;
+            text-align: center;
+            color: #0000CC;
+            height: 62px;
+            padding: 0 8px;
+            border: 2px solid #b0b0d8;
+            border-radius: 10px;
+            background: #fff;
+            box-sizing: border-box;
+            vertical-align: middle;
+        }
+        .equation-inline input:focus {
+            outline: none;
+            border-color: #8080ff;
+            background: #f8f8ff;
+        }
+        .equation-vertical {
+            border-collapse: collapse;
+            margin: 0 auto;
+            font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
+            font-size: 28pt;
+            font-weight: 700;
+            color: #800080;
+        }
+        .equation-vertical td {
+            padding: 3px 8px;
+            line-height: 1.15;
+            vertical-align: middle;
+        }
+        .equation-vertical .num {
+            text-align: right;
+            white-space: nowrap;
+        }
+        .equation-vertical .op {
+            text-align: left;
+            color: #CC0066;
+            white-space: nowrap;
+        }
+        .equation-vertical .rule {
+            border-top: 3px solid #800080;
+            padding: 0;
+            height: 0;
+            line-height: 0;
+        }
+        .equation-vertical input {
+            font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
+            font-size: 26pt;
+            font-weight: 700;
+            text-align: right;
+            color: #0000CC;
+            height: 52px;
+            padding: 0 8px;
+            border: 2px solid #b0b0d8;
+            border-radius: 8px;
+            background: #fff;
+            box-sizing: border-box;
+        }
+        .equation-vertical input:focus {
+            outline: none;
+            border-color: #8080ff;
+            background: #f8f8ff;
+        }
+
+        /* ===== IMAGE GRID (counting-style displays) ===== */
+        .image-grid {
+            text-align: center;
+            margin: 20px 0;
+            line-height: 1.1;
+        }
+        .image-grid img {
+            display: inline-block;
+            vertical-align: middle;
+            border: 0;
+            max-width: 100%;
+            height: auto;
+            margin: 1px;
+        }
+
+        /* ===== PATTERN DISPLAY (inline images within text) ===== */
+        .pattern-display {
+            text-align: center;
+            margin: 15px 0;
+            line-height: 1.4;
+        }
+        .pattern-display img {
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0 2px;
+            border: 0;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* ===== SCORE BOX ===== */
+        .score-box {
+            text-align: center;
+            margin: 0 auto 40px auto;
+        }
         .score-box table { margin: 0 auto; border-collapse: collapse; }
         .score-box .score-top {
             background: url('{$theme['score_top']}') no-repeat center;
@@ -139,7 +367,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             .content-wrapper .side-right { width: 20px; }
             .content-wrapper .content-bg { width: auto; padding: 0; }
             .module-output { padding: 10px; }
-            .title-area .title-text { font-size: 18pt; }
+            .title-area .title-text { font-size: 14pt; }
             .score-box .score-top { width: 80px; height: 60px; background-size: contain; }
             .score-box .score-bottom { width: 80px; height: 45px; font-size: 18pt; background-size: contain; }
         }
@@ -147,7 +375,6 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
         ?>
         </style>
         <script>
-            // FP_* functions (identical to original)
             function FP_swapImg() {
                 var doc = document, args = arguments, elm, n;
                 doc.$imgSwaps = new Array();
@@ -218,7 +445,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
         <table class="header-table" cellspacing="0" cellpadding="0">
             <tr>
                 <td width="193" height="100" valign="top">
-                    <a href="/arville/kpluz0/app/menu.php">
+                    <a href="/arville/kpluz0/math/modules/math-menu.php">
                         <img src="/arville/kpluz0/images/header-logo.jpg" alt="KPluz Logo">
                     </a>
                 </td>
@@ -307,7 +534,6 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
                             <td class="content-bg" valign="top">
                                 <div class="module-output">
     <?php
-    // Module content goes here
 }
 // =========== END OF render_header() ===========
 
@@ -357,4 +583,71 @@ function render_score_box($score_top_img = null, $score_bottom_img = null) {
         </table>
     </div>
     <?php
+}
+
+
+function render_choices($choices, $param = 'ansclick', $format = 'ucwords') {
+    if (empty($choices) || !is_array($choices)) return;
+
+    $maxLen = 0;
+    foreach ($choices as $c) {
+        $len = function_exists('mb_strlen')
+            ? mb_strlen((string)$c, 'UTF-8')
+            : strlen((string)$c);
+        if ($len > $maxLen) $maxLen = $len;
+    }
+    $widthEm = round(0.62 * $maxLen + 3.2, 2);
+
+    echo '<div class="choices-row" style="--choice-width: ' . $widthEm . 'em;">';
+    foreach ($choices as $c) {
+        $label = ($format === 'ucwords') ? ucwords($c) : $c;
+        echo '<a href="?' . htmlspecialchars($param) . '=' . urlencode($c) . '" class="choice-btn">'
+           . htmlspecialchars($label)
+           . '</a>';
+    }
+    echo '</div>';
+}
+
+
+function render_image_choices($items, $param = 'ansclick') {
+    if (empty($items) || !is_array($items)) return;
+    echo '<div class="image-choices-row">';
+    foreach ($items as $item) {
+        $value = (string)($item['value'] ?? '');
+        $image = htmlspecialchars((string)($item['image'] ?? ''));
+        $alt   = htmlspecialchars((string)($item['alt'] ?? ''));
+        echo '<a href="?' . htmlspecialchars($param) . '=' . urlencode($value) . '" class="image-choice">'
+           . '<img src="' . $image . '" alt="' . $alt . '">'
+           . '</a>';
+    }
+    echo '</div>';
+}
+
+
+function render_image_feedback($items, $arrowImage, $correctValue) {
+    if (empty($items) || !is_array($items)) return;
+    $correctValue = (string)$correctValue;
+    echo '<div class="image-choices-row">';
+    foreach ($items as $item) {
+        $value = (string)($item['value'] ?? '');
+        $image = htmlspecialchars((string)($item['image'] ?? ''));
+        $alt   = htmlspecialchars((string)($item['alt'] ?? ''));
+        if ($value === $correctValue) {
+            echo '<img src="' . htmlspecialchars($arrowImage) . '" class="feedback-arrow" alt="correct">';
+        }
+        echo '<img src="' . $image . '" alt="' . $alt . '">';
+    }
+    echo '</div>';
+}
+
+
+function render_image_grid($imagePaths, $perRow = 5) {
+    if (empty($imagePaths) || !is_array($imagePaths)) return;
+    $perRow = max(1, (int)$perRow);
+    echo '<div class="image-grid">';
+    foreach ($imagePaths as $i => $path) {
+        echo '<img src="' . htmlspecialchars($path) . '" alt="">';
+        if (($i + 1) % $perRow === 0) echo '<br>';
+    }
+    echo '</div>';
 }

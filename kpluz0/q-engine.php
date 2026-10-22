@@ -27,19 +27,29 @@ class QEngine {
     public function getLevels() { return $this->template['levels']; }
     public function getDebug()  { return $this->debug; }
 
-    public function generate($sessionKey) {
-        $type = $this->template['type'] ?? 'procedural';
-        $result = ($type === 'static')
-            ? $this->pickStatic($sessionKey)
-            : $this->generateProcedural($sessionKey);
+public function generate($sessionKey) {
+    $type = $this->template['type'] ?? 'procedural';
+    $result = ($type === 'static')
+        ? $this->pickStatic($sessionKey)
+        : $this->generateProcedural($sessionKey);
 
-        // &#9472;&#9472;&#9472; DECODE HTML ENTITIES &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
-        // Applied here so both modes get it uniformly, and AFTER all
-        // structural parsing (so &lt;/&gt;/&amp; never alias the
-        // delimiters = > + < ** that we split on above).
-        return $this->decodeResult($result);
+    // Decode HTML entities (applied after structural parsing)
+    $result = $this->decodeResult($result);
+
+    // ===== UNIFORM CHOICE WIDTH HINT =====
+    // Length (in chars) of the longest choice. Consumed by modules to
+    // size all choice buttons equally via CSS variable --choice-min-width.
+    if ($result !== null && !empty($result['choices'])) {
+        $maxLen = 0;
+        foreach ($result['choices'] as $c) {
+            $len = strlen((string)$c);
+            if ($len > $maxLen) $maxLen = $len;
+        }
+        $result['max_choice_len'] = $maxLen;
     }
 
+    return $result;
+}
     // ============ STATIC (fixed bank) ============
 
     private function pickStatic($sessionKey) {

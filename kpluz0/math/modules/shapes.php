@@ -175,16 +175,7 @@ render_header($template['title'], $template['title'], $template['theme']);
             <?php echo htmlspecialchars($q['prompt']); ?>
         </p>
         <br>
-        <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin:20px 0;">
-            <?php foreach ($q['choices'] as $shape): ?>
-                <a href="?ansclick=<?php echo urlencode($shape); ?>"
-                   style="display:inline-block; background:#f0f0f0; border:2px solid #ccc; border-radius:12px; padding:15px 25px; font-size:1.3rem; font-weight:bold; color:#0000BB; text-decoration:none; min-width:120px; text-align:center;"
-                   onmouseover="this.style.background='#e0e0ff'; this.style.borderColor='#0000CC';"
-                   onmouseout="this.style.background='#f0f0f0'; this.style.borderColor='#ccc';">
-                    <?php echo htmlspecialchars($shape); ?>
-                </a>
-            <?php endforeach; ?>
-        </div>
+        <?php render_choices($q['choices'], 'ansclick', 'raw'); ?>
     <?php endif; ?>
 
     <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">

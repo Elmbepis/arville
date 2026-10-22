@@ -1,0 +1,77 @@
+<?php
+
+$grd=$grd;
+$title="Adding Fractions";
+
+$article="
+Every student of math must learn to do basic math operations on fractions.
+In this lesson, we will discuss how to add fractions.
+<br/><br/>
+As you know by now, adding fractions with the same denominators is very straightforward.
+The numerator of their sum is simply the sum of their numerators.
+The denominator of their sum, on the other hand, is just the same as their denominator.   
+<br/><br/>
+Unfortunately, adding fractions with different denominators can be quite tricky. 
+Before you can add two fractions with different denominators, you need to make their denominators the same. 
+<br/><br/>
+One way to make different denominators the same is to find their least common multiple (LCM). 
+You can then use this number as your fractions' common denominator.  
+<br/><br/>
+By the way, you can actually use any common multiple of the original denominators (other than their LCM) as your common denominator.
+It will still give you the same sum, but it won't be in lowest terms.
+<br/><br/>
+To change the original denominator of a fraction into the common denominator, you need to multiply it by a certain integer.  
+<br/><br/>
+You must then also multiply the numerator of the fraction by the same integer so as not to change the value of the fraction. 
+<br/><br/>
+Once you've made the denominators of the fractions the same, you can add them just like any pair of similar fractions.
+<br/><br/>
+For example, if you want to add 1/2 to 1/3, you have to give them a common denominator, such as the LCM of 2 and 3, 6. 
+<br/><br/>
+To turn the denominator of 1/2 into 6, you need to multiply it by 3. 
+Thus, you also need to multiply the numerator by 3.  
+You'll end up with the fraction 3/6, which is still equal to 1/2. 
+<br/><br/>
+To turn the denominator of 1/3 into 6, you need to multiply it by 2. 
+Thus, you also need to multiply the numerator by 2.  
+You'll end up with the fraction 2/6, which is still equal to 1/3. 
+<br/><br/>
+Now that both of them have the same denominator, you can add them to get the sum 5/6. 
+<br/><br/>
+After adding two fractions, it is good practice to reduce the sum in lowest terms to make it neater and simpler. 
+<br/><br/>
+Let's look at some more examples to really understand fraction addition. 
+<br/><br/><br/>
+@blue
+Examples of<br/>Fraction Addition
+@nblue
+<br/>
+@php1fractions-add.php@
+<br/>
+If you refresh this page, it will give new examples of how to add two fractions. 
+You can therefore have as many examples as you want for this lesson! 
+<br/><br/>
+You can use this feature to practice fraction addition. 
+";
+
+?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
