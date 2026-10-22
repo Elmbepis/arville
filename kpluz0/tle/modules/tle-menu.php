@@ -32,7 +32,7 @@ while ($row = $result->fetch_assoc()) {
 $db->close();
 
 // &#9472;&#9472; Theme images: paths for URLs, __DIR__ for filesystem checks &#9472;&#9472;
-$imageBase   = $base . '/TLE/images/';
+$imageBase   = $base . '/tle/images/';
 $imgDirFs    = __DIR__ . '/../images/';
 
 $topBanner   = $imageBase . 'grd' . $queryGrade . '-top.jpg';
@@ -46,7 +46,7 @@ $contentBg = $imageBase . 'grd-content.jpg';
 $rightBg   = $imageBase . 'grd-right.jpg';
 $bottomImg = $imageBase . 'grd-bottom.jpg';
 
-$iconBase = $base . '/TLE/modules/icons/';
+$iconBase = $base . '/tle/modules/icons/';
 
 $sectionHeaders = [
     'ict-entrep'          => $iconBase . 'note-ict-ent.jpg',
@@ -158,7 +158,7 @@ $videosHover = $iconBase . 'videosb.jpg';
                                     <table border="0" width="100%" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
                                         <tr><td colspan="3" style="padding:0; margin:0;">
                                             <div align="center" style="padding:0; margin:0;">
-                                                <p style="margin:0; padding:0; line-height:normal; display:inline-block;"><a href="<?= $base ?>/TLE/TLE-report-card.php"><img border="0" id="reportcardh-home1" src="<?= $reportCard ?>" onmouseover="FP_swapImg(1,0,'reportcardh-home1','<?= $reportCardHover ?>')" onmouseout="FP_swapImg(0,0,'reportcardh-home1','<?= $reportCard ?>')" style="display:inline-block; margin-right:30px;"></a><a href="<?= $base ?>/videos/kpluz-vids-epp.php"><img border="0" id="videos-home4" src="<?= $videos ?>" onmouseover="FP_swapImg(1,0,'videos-home4','<?= $videosHover ?>')" onmouseout="FP_swapImg(0,0,'videos-home4','<?= $videos ?>')" style="display:inline-block; margin-left:30px;"></a></p>
+                                                <p style="margin:0; padding:0; line-height:normal; display:inline-block;"><a href="<?= $base ?>/tle/TLE-report-card.php"><img border="0" id="reportcardh-home1" src="<?= $reportCard ?>" onmouseover="FP_swapImg(1,0,'reportcardh-home1','<?= $reportCardHover ?>')" onmouseout="FP_swapImg(0,0,'reportcardh-home1','<?= $reportCard ?>')" style="display:inline-block; margin-right:30px;"></a><a href="<?= $base ?>/videos/kpluz-vids-epp.php"><img border="0" id="videos-home4" src="<?= $videos ?>" onmouseover="FP_swapImg(1,0,'videos-home4','<?= $videosHover ?>')" onmouseout="FP_swapImg(0,0,'videos-home4','<?= $videos ?>')" style="display:inline-block; margin-left:30px;"></a></p>
                                                 <div style="height:20px;"></div>
                                             </div>
                                         </td></tr>

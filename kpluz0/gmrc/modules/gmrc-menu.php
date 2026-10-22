@@ -31,7 +31,7 @@ while ($row = $result->fetch_assoc()) {
 $db->close();
 
 // &#9472;&#9472; Theme images: paths for URLs, __DIR__ for filesystem checks &#9472;&#9472;
-$imageBase   = $base . '/GMRC/images/';
+$imageBase   = $base . '/gmrc/images/';
 $imgDirFs    = __DIR__ . '/../images/';
 
 $topBanner   = $imageBase . 'grd' . $grade . '-gmrcmenu-top.jpg';
@@ -45,7 +45,7 @@ $contentBg = $imageBase . 'gmrcmenu-content.jpg';
 $rightBg   = $imageBase . 'gmrcmenu-right.jpg';
 $bottomImg = $imageBase . 'gmrcmenu-bottom.jpg';
 
-$iconBase = $base . '/GMRC/modules/icons/';
+$iconBase = $base . '/gmrc/modules/icons/';
 
 $sectionHeaders = [
     'markahan1' => $iconBase . 'note-markahan1.jpg',
@@ -142,7 +142,7 @@ $bookHover = $iconBase . 'bookb.jpg';
                                     <table border="0" width="100%" cellspacing="0" cellpadding="0" style="margin:0; padding:0; border-collapse:collapse;">
                                         <tr><td colspan="3" style="padding:0; margin:0;">
                                             <div align="center" style="padding:0; margin:0;">
-                                                <p style="margin:0; padding:0; line-height:normal; display:inline-block;"><a href="<?= $base ?>/GMRC/GMRC-report-card.php"><img border="0" id="reportcardh-home1" src="<?= $reportCard ?>" onmouseover="FP_swapImg(1,0,'reportcardh-home1','<?= $reportCardHover ?>')" onmouseout="FP_swapImg(0,0,'reportcardh-home1','<?= $reportCard ?>')" style="display:inline-block; vertical-align:middle; margin-right:30px;"></a><a href="<?= $base ?>/GMRC/books/g<?= $grade ?>/<?= $grade ?>toc.php"><img border="0" id="book-home2" src="<?= $book ?>" onmouseover="FP_swapImg(1,0,'book-home2','<?= $bookHover ?>')" onmouseout="FP_swapImg(0,0,'book-home2','<?= $book ?>')" style="display:inline-block; vertical-align:middle; margin-left:30px; margin-top:-4px;"></a></p>
+                                                <p style="margin:0; padding:0; line-height:normal; display:inline-block;"><a href="<?= $base ?>/gmrc/GMRC-report-card.php"><img border="0" id="reportcardh-home1" src="<?= $reportCard ?>" onmouseover="FP_swapImg(1,0,'reportcardh-home1','<?= $reportCardHover ?>')" onmouseout="FP_swapImg(0,0,'reportcardh-home1','<?= $reportCard ?>')" style="display:inline-block; vertical-align:middle; margin-right:30px;"></a><a href="<?= $base ?>/gmrc/books/g<?= $grade ?>/<?= $grade ?>toc.php"><img border="0" id="book-home2" src="<?= $book ?>" onmouseover="FP_swapImg(1,0,'book-home2','<?= $bookHover ?>')" onmouseout="FP_swapImg(0,0,'book-home2','<?= $book ?>')" style="display:inline-block; vertical-align:middle; margin-left:30px; margin-top:-4px;"></a></p>
                                                 <div style="height:20px;"></div>
                                             </div>
                                         </td></tr>

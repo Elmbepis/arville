@@ -31,7 +31,7 @@ while ($row = $result->fetch_assoc()) {
 $db->close();
 
 // &#9472;&#9472; Theme images: paths for URLs, __DIR__ for filesystem checks &#9472;&#9472;
-$imageBase   = $base . '/MAPEH/images/';
+$imageBase   = $base . '/mapeh/images/';
 $imgDirFs    = __DIR__ . '/../images/';
 
 $topBanner = $imageBase . 'grd' . $grade . '-top.jpg';
@@ -45,7 +45,7 @@ $contentBg = $imageBase . 'grd-content.jpg';
 $rightBg   = $imageBase . 'grd-right.jpg';
 $bottomImg = $imageBase . 'grd-bottom.jpg';
 
-$iconBase = $base . '/MAPEH/modules/icons/';
+$iconBase = $base . '/mapeh/modules/icons/';
 
 $sectionHeaders = [
     'music'  => $iconBase . 'note-music.jpg',
@@ -140,7 +140,7 @@ $videosHover = $iconBase . 'videosb.jpg';
                                         <tr><td colspan="3" style="padding:0; margin:0;">
                                             <div align="center" style="padding:0; margin:0;">
                                                 <table border="0" cellspacing="0" cellpadding="0" style="margin:0 auto; padding:0; border-collapse:collapse;">
-                                                    <tr><td align="center" style="padding:0; margin:0;"><p style="margin:0; padding:0; line-height:normal; display:inline-block;"><a href="<?= $base ?>/MAPEH/MAPEH-report-card.php"><img border="0" id="reportcardh-home1" src="<?= $reportCard ?>" onmouseover="FP_swapImg(1,0,'reportcardh-home1','<?= $reportCardHover ?>')" onmouseout="FP_swapImg(0,0,'reportcardh-home1','<?= $reportCard ?>')" style="display:inline-block; margin-right:30px;"></a><a href="<?= $base ?>/videos/kpluz-vids-mapeh-<?= $grade >= 3 ? '3-10' : '1-2' ?>.php"><img border="0" id="videos-home3" src="<?= $videos ?>" onmouseover="FP_swapImg(1,0,'videos-home3','<?= $videosHover ?>')" onmouseout="FP_swapImg(0,0,'videos-home3','<?= $videos ?>')" style="display:inline-block; margin-left:30px;"></a></p></td></tr>
+                                                    <tr><td align="center" style="padding:0; margin:0;"><p style="margin:0; padding:0; line-height:normal; display:inline-block;"><a href="<?= $base ?>/mapeh/MAPEH-report-card.php"><img border="0" id="reportcardh-home1" src="<?= $reportCard ?>" onmouseover="FP_swapImg(1,0,'reportcardh-home1','<?= $reportCardHover ?>')" onmouseout="FP_swapImg(0,0,'reportcardh-home1','<?= $reportCard ?>')" style="display:inline-block; margin-right:30px;"></a><a href="<?= $base ?>/videos/kpluz-vids-mapeh-<?= $grade >= 3 ? '3-10' : '1-2' ?>.php"><img border="0" id="videos-home3" src="<?= $videos ?>" onmouseover="FP_swapImg(1,0,'videos-home3','<?= $videosHover ?>')" onmouseout="FP_swapImg(0,0,'videos-home3','<?= $videos ?>')" style="display:inline-block; margin-left:30px;"></a></p></td></tr>
                                                     <tr><td>&nbsp;</td></tr>
                                                 </table>
                                             </div>
