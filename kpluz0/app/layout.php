@@ -4,8 +4,6 @@ kpluz_validate_login();
 // No redirects – just display the menu
 
 // Compute base URL path — works in dev (/arville/kpluz0) and prod (/kpluz0).
-// layout.php is always included from a file under <kpluz0-root>/app/,
-// so everything before the last '/app/' is the kpluz0 root.
 $base = '';
 $sn   = $_SERVER['SCRIPT_NAME'] ?? '';
 $pos  = strrpos($sn, '/app/');
@@ -33,6 +31,72 @@ if ($pos !== false) $base = substr($sn, 0, $pos);
     <script src="<?php echo $base; ?>/app/js/lib/react-js/react.js"></script>
     <script src="<?php echo $base; ?>/app/js/lib/react-js/react-dom.js"></script>
     <script src="<?php echo $base; ?>/app/js/lib/scrollmagic/minified/ScrollMagic.min.js"></script>
+
+    <script>window.KPLUZ_BASE = '<?php echo $base; ?>';</script>
+
+    <?php /* Runtime path shim:
+             1) Rewrites legacy /arville/kpluz0/ base &#8594; $base (dev == no-op)
+             2) Routes subject-menu links through home-subj.php?subj=X so
+                case/fallback logic applies. Path rewriting only. */ ?>
+    <script>
+    (function() {
+        var OLD = '/arville/kpluz0';
+        var NEW = window.KPLUZ_BASE || '';
+
+        function rewriteValue(name, value) {
+            if (typeof value !== 'string') return value;
+
+            // 1) Base rewrite (dev: OLD === NEW, so no-op)
+            if (OLD && OLD !== NEW && value.indexOf(OLD + '/') === 0) {
+                value = NEW + value.substring(OLD.length);
+            }
+
+            // 2) Route subject menu links through home-subj.php
+            if (name === 'href') {
+                var m = value.match(/^(.*?)\/([A-Za-z]+)\/modules\/([A-Za-z]+)-menu\.php$/);
+                if (m && m[2].toLowerCase() === m[3].toLowerCase()) {
+                    value = m[1] + '/home-subj.php?subj=' + m[3].toLowerCase();
+                }
+            }
+            return value;
+        }
+
+        // Patch setAttribute (catches JS-created elements before insertion)
+        var origSet = Element.prototype.setAttribute;
+        Element.prototype.setAttribute = function(name, value) {
+            return origSet.call(this, name, rewriteValue(name, value));
+        };
+
+        // Backstop for property-setters (.src, .href) and style attrs
+        function fixEl(el) {
+            if (!el || el.nodeType !== 1) return;
+            ['src', 'href'].forEach(function(a) {
+                var v = el.getAttribute && el.getAttribute(a);
+                var w = rewriteValue(a, v);
+                if (w !== v) el.setAttribute(a, w);
+            });
+            var s = el.getAttribute && el.getAttribute('style');
+            if (s && OLD && OLD !== NEW && s.indexOf(OLD + '/') !== -1) {
+                el.setAttribute('style', s.split(OLD + '/').join(NEW + '/'));
+            }
+        }
+        new MutationObserver(function(ms) {
+            ms.forEach(function(m) {
+                if (m.type === 'childList') {
+                    m.addedNodes.forEach(function(n) {
+                        if (n.nodeType === 1) {
+                            fixEl(n);
+                            if (n.querySelectorAll) {
+                                var els = n.querySelectorAll('[src], [href], [style]');
+                                for (var i = 0; i < els.length; i++) fixEl(els[i]);
+                            }
+                        }
+                    });
+                }
+            });
+        }).observe(document.documentElement, { childList: true, subtree: true });
+    })();
+    </script>
 
     <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
