@@ -6,15 +6,19 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
         $_SESSION['score'] = 0;
     }
 
+    // &#9472;&#9472; Dynamic base path — works in dev (/arville/kpluz0) and prod (/kpluz0) &#9472;&#9472;
+    // Assumes calling script is at /<subject>/modules/<file>.php
+    $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
+
     $defaults = [
-        'top_banner'    => '/arville/kpluz0/English/images/ex-23-top.jpg',
-        'title_bg'      => '/arville/kpluz0/English/images/ex-23-top2.jpg',
-        'left_side'     => '/arville/kpluz0/English/images/ex-23-left.jpg',
-        'right_side'    => '/arville/kpluz0/English/images/ex-23-right.jpg',
-        'content_bg'    => '/arville/kpluz0/English/images/ex-23-content.jpg',
-        'bottom_banner' => '/arville/kpluz0/English/images/ex-23-bottom.jpg',
-        'score_top'     => '/arville/kpluz0/English/images/score-top-3.jpg',
-        'score_bottom'  => '/arville/kpluz0/English/images/score-bottom-3.jpg',
+        'top_banner'    => $base . '/English/images/ex-23-top.jpg',
+        'title_bg'      => $base . '/English/images/ex-23-top2.jpg',
+        'left_side'     => $base . '/English/images/ex-23-left.jpg',
+        'right_side'    => $base . '/English/images/ex-23-right.jpg',
+        'content_bg'    => $base . '/English/images/ex-23-content.jpg',
+        'bottom_banner' => $base . '/English/images/ex-23-bottom.jpg',
+        'score_top'     => $base . '/English/images/score-top-3.jpg',
+        'score_bottom'  => $base . '/English/images/score-bottom-3.jpg',
     ];
     $theme = array_merge($defaults, $theme_images);
     $GLOBALS['_theme'] = $theme;
@@ -32,7 +36,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: Arial, sans-serif;
-            background: url('/arville/kpluz0/images/bluetop-bg.jpg') repeat-x top left !important;
+            background: url('{$base}/images/bluetop-bg.jpg') repeat-x top left !important;
             padding-top: 15px;
             line-height: 1.4;
         }
@@ -133,17 +137,14 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             border-color: #8080ff;
         }
 
-        /* ===== FREE-TEXT MODULE ANSWER BUTTONS =====
-           Vertical spacing around the Submit1/Submit2 button pair.
-           Applies ONLY on modules that render both buttons. The ~ selector
-           handles an optional spacer element between the two inputs. */
+        /* ===== FREE-TEXT MODULE ANSWER BUTTONS ===== */
         input[name='Submit1'],
         input[name='Submit1'] ~ input[name='Submit2'] {
             margin-top: 30px;
             margin-bottom: 30px;
         }
 
-        /* ===== IMAGE CHOICE BUTTONS (visual comparison modules) ===== */
+        /* ===== IMAGE CHOICE BUTTONS ===== */
         .image-choices-row {
             display: flex;
             justify-content: center;
@@ -194,7 +195,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             background: #f8f8ff;
         }
 
-        /* ===== ARITHMETIC EQUATION DISPLAY (addition / subtraction) ===== */
+        /* ===== ARITHMETIC EQUATION DISPLAY ===== */
         .equation-card {
             display: inline-block;
             background: linear-gradient(135deg, #fafaff 0%, #f0f0ff 100%);
@@ -292,7 +293,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             background: #f8f8ff;
         }
 
-        /* ===== IMAGE GRID (counting-style displays) ===== */
+        /* ===== IMAGE GRID ===== */
         .image-grid {
             text-align: center;
             margin: 20px 0;
@@ -307,7 +308,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             margin: 1px;
         }
 
-        /* ===== PATTERN DISPLAY (inline images within text) ===== */
+        /* ===== PATTERN DISPLAY ===== */
         .pattern-display {
             text-align: center;
             margin: 15px 0;
@@ -422,18 +423,18 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             }
             window.onload = function() {
                 FP_preloadImgs(
-                    '/arville/kpluz0/images/header1c.jpg',
-                    '/arville/kpluz0/images/header1b.jpg',
-                    '/arville/kpluz0/images/header2c.jpg',
-                    '/arville/kpluz0/images/header2b.jpg',
-                    '/arville/kpluz0/images/header3c.jpg',
-                    '/arville/kpluz0/images/header3b.jpg',
-                    '/arville/kpluz0/images/header4c.jpg',
-                    '/arville/kpluz0/images/header4b.jpg',
-                    '/arville/kpluz0/images/header5c.jpg',
-                    '/arville/kpluz0/images/header5b.jpg',
-                    '/arville/kpluz0/images/header6c.jpg',
-                    '/arville/kpluz0/images/header6b.jpg'
+                    '<?php echo $base; ?>/images/header1c.jpg',
+                    '<?php echo $base; ?>/images/header1b.jpg',
+                    '<?php echo $base; ?>/images/header2c.jpg',
+                    '<?php echo $base; ?>/images/header2b.jpg',
+                    '<?php echo $base; ?>/images/header3c.jpg',
+                    '<?php echo $base; ?>/images/header3b.jpg',
+                    '<?php echo $base; ?>/images/header4c.jpg',
+                    '<?php echo $base; ?>/images/header4b.jpg',
+                    '<?php echo $base; ?>/images/header5c.jpg',
+                    '<?php echo $base; ?>/images/header5b.jpg',
+                    '<?php echo $base; ?>/images/header6c.jpg',
+                    '<?php echo $base; ?>/images/header6b.jpg'
                 );
             };
         </script>
@@ -445,62 +446,62 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
         <table class="header-table" cellspacing="0" cellpadding="0">
             <tr>
                 <td width="193" height="100" valign="top">
-                    <a href="/arville/kpluz0/math/modules/math-menu.php">
-                        <img src="/arville/kpluz0/images/header-logo.jpg" alt="KPluz Logo">
+                    <a href="<?php echo $base; ?>/math/modules/math-menu.php">
+                        <img src="<?php echo $base; ?>/images/header-logo.jpg" alt="KPluz Logo">
                     </a>
                 </td>
                 <td width="133" valign="top">
-                    <a href="/arville/kpluz0/how-to-use-kpluz.php">
-                        <img id="img1" src="/arville/kpluz0/images/header1a.jpg"
-                             onmouseover="FP_swapImg(1,0,'img1','/arville/kpluz0/images/header1b.jpg')"
-                             onmouseout="FP_swapImg(0,0,'img1','/arville/kpluz0/images/header1a.jpg')"
-                             onmousedown="FP_swapImg(1,0,'img1','/arville/kpluz0/images/header1c.jpg')"
-                             onmouseup="FP_swapImg(0,0,'img1','/arville/kpluz0/images/header1b.jpg')">
+                    <a href="<?php echo $base; ?>/how-to-use-kpluz.php">
+                        <img id="img1" src="<?php echo $base; ?>/images/header1a.jpg"
+                             onmouseover="FP_swapImg(1,0,'img1','<?php echo $base; ?>/images/header1b.jpg')"
+                             onmouseout="FP_swapImg(0,0,'img1','<?php echo $base; ?>/images/header1a.jpg')"
+                             onmousedown="FP_swapImg(1,0,'img1','<?php echo $base; ?>/images/header1c.jpg')"
+                             onmouseup="FP_swapImg(0,0,'img1','<?php echo $base; ?>/images/header1b.jpg')">
                     </a>
                 </td>
                 <td width="133" valign="top">
-                    <a href="/arville/kpluz0/bluebars_student.php">
-                        <img id="img2" src="/arville/kpluz0/images/header2a.jpg"
-                             onmouseover="FP_swapImg(1,0,'img2','/arville/kpluz0/images/header2b.jpg')"
-                             onmouseout="FP_swapImg(0,0,'img2','/arville/kpluz0/images/header2a.jpg')"
-                             onmousedown="FP_swapImg(1,0,'img2','/arville/kpluz0/images/header2c.jpg')"
-                             onmouseup="FP_swapImg(0,0,'img2','/arville/kpluz0/images/header2b.jpg')">
+                    <a href="<?php echo $base; ?>/bluebars_student.php">
+                        <img id="img2" src="<?php echo $base; ?>/images/header2a.jpg"
+                             onmouseover="FP_swapImg(1,0,'img2','<?php echo $base; ?>/images/header2b.jpg')"
+                             onmouseout="FP_swapImg(0,0,'img2','<?php echo $base; ?>/images/header2a.jpg')"
+                             onmousedown="FP_swapImg(1,0,'img2','<?php echo $base; ?>/images/header2c.jpg')"
+                             onmouseup="FP_swapImg(0,0,'img2','<?php echo $base; ?>/images/header2b.jpg')">
                     </a>
                 </td>
                 <td width="133" valign="top">
-                    <a href="/arville/kpluz0/programs.php">
-                        <img id="img3" src="/arville/kpluz0/images/header3a.jpg"
-                             onmouseover="FP_swapImg(1,0,'img3','/arville/kpluz0/images/header3b.jpg')"
-                             onmouseout="FP_swapImg(0,0,'img3','/arville/kpluz0/images/header3a.jpg')"
-                             onmousedown="FP_swapImg(1,0,'img3','/arville/kpluz0/images/header3c.jpg')"
-                             onmouseup="FP_swapImg(0,0,'img3','/arville/kpluz0/images/header3b.jpg')">
+                    <a href="<?php echo $base; ?>/programs.php">
+                        <img id="img3" src="<?php echo $base; ?>/images/header3a.jpg"
+                             onmouseover="FP_swapImg(1,0,'img3','<?php echo $base; ?>/images/header3b.jpg')"
+                             onmouseout="FP_swapImg(0,0,'img3','<?php echo $base; ?>/images/header3a.jpg')"
+                             onmousedown="FP_swapImg(1,0,'img3','<?php echo $base; ?>/images/header3c.jpg')"
+                             onmouseup="FP_swapImg(0,0,'img3','<?php echo $base; ?>/images/header3b.jpg')">
                     </a>
                 </td>
                 <td width="134" valign="top">
-                    <a href="/arville/kpluz0/community.php">
-                        <img id="img4" src="/arville/kpluz0/images/header4a.jpg"
-                             onmouseover="FP_swapImg(1,0,'img4','/arville/kpluz0/images/header4b.jpg')"
-                             onmouseout="FP_swapImg(0,0,'img4','/arville/kpluz0/images/header4a.jpg')"
-                             onmousedown="FP_swapImg(1,0,'img4','/arville/kpluz0/images/header4c.jpg')"
-                             onmouseup="FP_swapImg(0,0,'img4','/arville/kpluz0/images/header4b.jpg')">
+                    <a href="<?php echo $base; ?>/community.php">
+                        <img id="img4" src="<?php echo $base; ?>/images/header4a.jpg"
+                             onmouseover="FP_swapImg(1,0,'img4','<?php echo $base; ?>/images/header4b.jpg')"
+                             onmouseout="FP_swapImg(0,0,'img4','<?php echo $base; ?>/images/header4a.jpg')"
+                             onmousedown="FP_swapImg(1,0,'img4','<?php echo $base; ?>/images/header4c.jpg')"
+                             onmouseup="FP_swapImg(0,0,'img4','<?php echo $base; ?>/images/header4b.jpg')">
                     </a>
                 </td>
                 <td width="134" valign="top">
-                    <a href="/arville/kpluz0/contact.php">
-                        <img id="img5" src="/arville/kpluz0/images/header5a.jpg"
-                             onmouseover="FP_swapImg(1,0,'img5','/arville/kpluz0/images/header5b.jpg')"
-                             onmouseout="FP_swapImg(0,0,'img5','/arville/kpluz0/images/header5a.jpg')"
-                             onmousedown="FP_swapImg(1,0,'img5','/arville/kpluz0/images/header5c.jpg')"
-                             onmouseup="FP_swapImg(0,0,'img5','/arville/kpluz0/images/header5b.jpg')">
+                    <a href="<?php echo $base; ?>/contact.php">
+                        <img id="img5" src="<?php echo $base; ?>/images/header5a.jpg"
+                             onmouseover="FP_swapImg(1,0,'img5','<?php echo $base; ?>/images/header5b.jpg')"
+                             onmouseout="FP_swapImg(0,0,'img5','<?php echo $base; ?>/images/header5a.jpg')"
+                             onmousedown="FP_swapImg(1,0,'img5','<?php echo $base; ?>/images/header5c.jpg')"
+                             onmouseup="FP_swapImg(0,0,'img5','<?php echo $base; ?>/images/header5b.jpg')">
                     </a>
                 </td>
                 <td width="134" valign="top">
-                    <a href="/arville/kpluz0/logout.php">
-                        <img id="img6" src="/arville/kpluz0/images/header6a.jpg"
-                             onmouseover="FP_swapImg(1,0,'img6','/arville/kpluz0/images/header6b.jpg')"
-                             onmouseout="FP_swapImg(0,0,'img6','/arville/kpluz0/images/header6a.jpg')"
-                             onmousedown="FP_swapImg(1,0,'img6','/arville/kpluz0/images/header6c.jpg')"
-                             onmouseup="FP_swapImg(0,0,'img6','/arville/kpluz0/images/header6b.jpg')">
+                    <a href="<?php echo $base; ?>/logout.php">
+                        <img id="img6" src="<?php echo $base; ?>/images/header6a.jpg"
+                             onmouseover="FP_swapImg(1,0,'img6','<?php echo $base; ?>/images/header6b.jpg')"
+                             onmouseout="FP_swapImg(0,0,'img6','<?php echo $base; ?>/images/header6a.jpg')"
+                             onmousedown="FP_swapImg(1,0,'img6','<?php echo $base; ?>/images/header6c.jpg')"
+                             onmouseup="FP_swapImg(0,0,'img6','<?php echo $base; ?>/images/header6b.jpg')">
                     </a>
                 </td>
             </tr>
@@ -539,6 +540,8 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
 
 
 function render_footer() {
+    // Compute base dynamically (footer may be called without header in edge cases)
+    $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
     ?>
                                 </div> <!-- /.module-output -->
 
@@ -557,7 +560,7 @@ function render_footer() {
         <div class="footer">
             <font style="font-size:10pt; color:#FFFFFF; font-family:Arial;">
                 Copyright&nbsp; 2010
-                <b><a href="/arville/kpluz0/home-english.php" style="color:#FFFFFF; text-decoration:none;">KPluz.com</a></b>
+                <b><a href="<?php echo $base; ?>/home-english.php" style="color:#FFFFFF; text-decoration:none;">KPluz.com</a></b>
                 . All Rights Reserved.
             </font>
         </div>
@@ -571,8 +574,9 @@ function render_footer() {
 
 function render_score_box($score_top_img = null, $score_bottom_img = null) {
     $theme = $GLOBALS['_theme'] ?? [];
-    $top = $score_top_img ?? ($theme['score_top'] ?? '/arville/kpluz0/English/images/score-top-3.jpg');
-    $bottom = $score_bottom_img ?? ($theme['score_bottom'] ?? '/arville/kpluz0/English/images/score-bottom-3.jpg');
+    $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
+    $top = $score_top_img ?? ($theme['score_top'] ?? $base . '/English/images/score-top-3.jpg');
+    $bottom = $score_bottom_img ?? ($theme['score_bottom'] ?? $base . '/English/images/score-bottom-3.jpg');
     ?>
     <div class="score-box">
         <table cellspacing="0" cellpadding="0">
@@ -588,22 +592,17 @@ function render_score_box($score_top_img = null, $score_bottom_img = null) {
 
 function render_choices($choices, $param = 'ansclick', $format = 'ucwords') {
     if (empty($choices) || !is_array($choices)) return;
-
     $maxLen = 0;
     foreach ($choices as $c) {
-        $len = function_exists('mb_strlen')
-            ? mb_strlen((string)$c, 'UTF-8')
-            : strlen((string)$c);
+        $len = function_exists('mb_strlen') ? mb_strlen((string)$c, 'UTF-8') : strlen((string)$c);
         if ($len > $maxLen) $maxLen = $len;
     }
     $widthEm = round(0.62 * $maxLen + 3.2, 2);
-
     echo '<div class="choices-row" style="--choice-width: ' . $widthEm . 'em;">';
     foreach ($choices as $c) {
         $label = ($format === 'ucwords') ? ucwords($c) : $c;
         echo '<a href="?' . htmlspecialchars($param) . '=' . urlencode($c) . '" class="choice-btn">'
-           . htmlspecialchars($label)
-           . '</a>';
+           . htmlspecialchars($label) . '</a>';
     }
     echo '</div>';
 }
@@ -617,8 +616,7 @@ function render_image_choices($items, $param = 'ansclick') {
         $image = htmlspecialchars((string)($item['image'] ?? ''));
         $alt   = htmlspecialchars((string)($item['alt'] ?? ''));
         echo '<a href="?' . htmlspecialchars($param) . '=' . urlencode($value) . '" class="image-choice">'
-           . '<img src="' . $image . '" alt="' . $alt . '">'
-           . '</a>';
+           . '<img src="' . $image . '" alt="' . $alt . '"></a>';
     }
     echo '</div>';
 }
