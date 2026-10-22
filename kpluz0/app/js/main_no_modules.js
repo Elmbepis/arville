@@ -14,16 +14,18 @@ var MenuNavigation;
 
 // Use absolute paths, now point to home.php with subject parameter
 // Mandarin is now included for all grade levels – points directly to mandarin-menu.php
+var BASE = window.KPLUZ_BASE || '';
+
 var _subjectsSetup = [
-    { title: "English", image: "/arville/kpluz0/images/subjects/png/1x/english.png", url: "/arville/kpluz0/home.php?subject=English" },
-    { title: "Math", image: "/arville/kpluz0/images/subjects/png/1x/math.png", url: "/arville/kpluz0/home.php?subject=math" },
-    { title: "Science", image: "/arville/kpluz0/images/subjects/png/1x/science.png", url: "/arville/kpluz0/home.php?subject=science" },
-    { title: "Araling Panlipunan", image: "/arville/kpluz0/images/subjects/png/1x/ap.png", url: "/arville/kpluz0/home.php?subject=AP" },
-    { title: "Filipino", image: "/arville/kpluz0/images/subjects/png/1x/filipino.png", url: "/arville/kpluz0/home.php?subject=Filipino" },
-    { title: "MAPEH", image: "/arville/kpluz0/images/subjects/png/1x/mapeh.png", url: "/arville/kpluz0/home.php?subject=mapeh" },
-    { title: "TLE", image: "/arville/kpluz0/images/subjects/png/1x/tle.png", url: "/arville/kpluz0/home.php?subject=tle" },
-    { title: "GMRC", image: "/arville/kpluz0/images/subjects/png/1x/gmrc.png", url: "/arville/kpluz0/home.php?subject=gmrc" },
-    { title: "Mandarin", image: "/arville/kpluz0/images/subjects/png/1x/mandarin.png", url: "/arville/kpluz0/mandarin/modules/mandarin-menu.php" }
+    { title: "English",            image: BASE + "/images/subjects/png/1x/english.png",  url: BASE + "/home-subj.php?subj=english"  },
+    { title: "Math",               image: BASE + "/images/subjects/png/1x/math.png",     url: BASE + "/home-subj.php?subj=math"     },
+    { title: "Science",            image: BASE + "/images/subjects/png/1x/science.png",  url: BASE + "/home-subj.php?subj=science"  },
+    { title: "Araling Panlipunan", image: BASE + "/images/subjects/png/1x/ap.png",       url: BASE + "/home-subj.php?subj=ap"       },
+    { title: "Filipino",           image: BASE + "/images/subjects/png/1x/filipino.png", url: BASE + "/home-subj.php?subj=filipino" },
+    { title: "MAPEH",              image: BASE + "/images/subjects/png/1x/mapeh.png",    url: BASE + "/home-subj.php?subj=mapeh"    },
+    { title: "TLE",                image: BASE + "/images/subjects/png/1x/tle.png",      url: BASE + "/home-subj.php?subj=tle"      },
+    { title: "GMRC",               image: BASE + "/images/subjects/png/1x/gmrc.png",     url: BASE + "/home-subj.php?subj=gmrc"     },
+    { title: "Mandarin",           image: BASE + "/images/subjects/png/1x/mandarin.png", url: BASE + "/home-subj.php?subj=mandarin" }
 ];
 
 function initReactDOM() {
