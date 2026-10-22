@@ -30,9 +30,14 @@ while ($row = $result->fetch_assoc()) {
 }
 $db->close();
 
-$imageBase = $base . '/GMRC/images/';
-$topBanner = $imageBase . 'grd' . $grade . '-gmrcmenu-top.jpg';
-if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
+// &#9472;&#9472; Theme images: paths for URLs, __DIR__ for filesystem checks &#9472;&#9472;
+$imageBase   = $base . '/GMRC/images/';
+$imgDirFs    = __DIR__ . '/../images/';
+
+$topBanner   = $imageBase . 'grd' . $grade . '-gmrcmenu-top.jpg';
+$topBannerFs = $imgDirFs . 'grd' . $grade . '-gmrcmenu-top.jpg';
+clearstatcache(true, $topBannerFs);
+if (!is_file($topBannerFs)) {
     $topBanner = $imageBase . 'grd-gmrcmenu-top.jpg';
 }
 $leftBg    = $imageBase . 'gmrcmenu-left.jpg';

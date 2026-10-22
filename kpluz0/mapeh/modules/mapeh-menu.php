@@ -30,9 +30,14 @@ while ($row = $result->fetch_assoc()) {
 }
 $db->close();
 
-$imageBase = $base . '/MAPEH/images/';
+// &#9472;&#9472; Theme images: paths for URLs, __DIR__ for filesystem checks &#9472;&#9472;
+$imageBase   = $base . '/MAPEH/images/';
+$imgDirFs    = __DIR__ . '/../images/';
+
 $topBanner = $imageBase . 'grd' . $grade . '-top.jpg';
-if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $topBanner)) {
+$topBannerFs = $imgDirFs . 'grd' . $grade . '-top.jpg';
+clearstatcache(true, $topBannerFs);
+if (!is_file($topBannerFs)) {
     $topBanner = $imageBase . 'grd-top.jpg';
 }
 $leftBg    = $imageBase . 'grd-left.jpg';
