@@ -1,919 +1,425 @@
-<?php 
-require '../../pass-chk.php';
-?>
-
 <?php
-//No Medium Level
-if ($_SESSION['level']=="Medium"){$_SESSION['level']="Easy";}
-?>
+// math/modules/ordinal0.php
+//
+// MULTI-MODE module:
+//
+//   EASY — two variants, randomly chosen per question:
+//     (a) Ordinal: "What is the ordinal position of letter 'C'?"
+//     (b) Letter:  "Which letter is in the 3rd position?"
+//     Both variants: 10 unique letters split 2 rows of 5, right arrows at
+//     each wrap edge (no vertical arrow), no highlight, 4 unique choices.
+//
+//   HARD — Sentence from word banks; student types the Nth non-space letter.
+//
+// Answer path:
+//   Easy  &#8594; GET ?ansclick=<value>  (render_choices)
+//   Hard  &#8594; POST Submit1 (free-text)
 
+session_name('KPLUZ_SESSION');
+session_start();
 
-<html>
-
-<head>
-<meta http-equiv="Content-Language" content="en-us">
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Ordinal Numbers 1 - MathPluz.com</title>
-<script language="JavaScript">
-<!--
-function FP_swapImg() {//v1.0
- var doc=document,args=arguments,elm,n; doc.$imgSwaps=new Array(); for(n=2; n<args.length;
- n+=2) { elm=FP_getObjectByID(args[n]); if(elm) { doc.$imgSwaps[doc.$imgSwaps.length]=elm;
- elm.$src=elm.src; elm.src=args[n+1]; } }
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: /arville/kpluz0/login.php");
+    exit();
 }
 
-function FP_preloadImgs() {//v1.0
- var d=document,a=arguments; if(!d.FP_imgs) d.FP_imgs=new Array();
- for(var i=0; i<a.length; i++) { d.FP_imgs[i]=new Image; d.FP_imgs[i].src=a[i]; }
-}
+require_once __DIR__ . '/../../container.php';
+require_once __DIR__ . '/../../scorer.php';
 
-function FP_getObjectByID(id,o) {//v1.0
- var c,el,els,f,m,n; if(!o)o=document; if(o.getElementById) el=o.getElementById(id);
- else if(o.layers) c=o.layers; else if(o.all) el=o.all[id]; if(el) return el;
- if(o.id==id || o.name==id) return o; if(o.childNodes) c=o.childNodes; if(c)
- for(n=0; n<c.length; n++) { el=FP_getObjectByID(id,c[n]); if(el) return el; }
- f=o.forms; if(f) for(n=0; n<f.length; n++) { els=f[n].elements;
- for(m=0; m<els.length; m++){ el=FP_getObjectByID(id,els[n]); if(el) return el; } }
- return null;
-}
-// -->
-</script>
-</head>
+$conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz0");
+if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
 
-<body background="../../images/bluetop-bg.jpg" onload="FP_preloadImgs(/*url*/'../../images/header1c.jpg', /*url*/'../../images/header1b.jpg', /*url*/'../../images/header2c.jpg', /*url*/'../../images/header2b.jpg', /*url*/'../../images/header3c.jpg', /*url*/'../../images/header3b.jpg', /*url*/'../../images/header4c.jpg', /*url*/'../../images/header4b.jpg', /*url*/'../../images/header5c.jpg', /*url*/'../../images/header5b.jpg', /*url*/'../../images/header6c.jpg', /*url*/'../../images/header6b.jpg')">
+$base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 
-<div align="center">
+$moduleTitle = 'Ordinal Numbers';
+$moduleId    = basename(__FILE__);
+$sessionKey  = 'mod_' . md5($moduleId);
+$levels      = ['Easy', 'Hard'];
 
-<table width="900"><tr><td height="100">
-	<div align="center">
-		<table border="0" width="900" cellspacing="0" cellpadding="0">
-			<tr>
-				<td width="193" height="100" valign="top">
-				<a href="/home-math.php">
-				<img border="0" src="../../images/header-logo.jpg"></a></td>
-				<td width="133" valign="top">
-										<a href="/how-to-use-kpluz.php">
-										<img border="0" id="img1" src="../../images/header1a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img1',/*url*/'../../images/header1b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img1',/*url*/'../../images/header1a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img1',/*url*/'../../images/header1c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img1',/*url*/'../../images/header1b.jpg')"></a></td>
-				<td width="133" valign="top">
-										<a href="/bluebars_student.php">
-										<img border="0" id="img2" src="../../images/header2a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img2',/*url*/'../../images/header2b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img2',/*url*/'../../images/header2a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img2',/*url*/'../../images/header2c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img2',/*url*/'../../images/header2b.jpg')"></a></td>
-				<td width="133" valign="top">
-										<a href="/programs.php">
-										<img border="0" id="img3" src="../../images/header3a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img3',/*url*/'../../images/header3b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img3',/*url*/'../../images/header3a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img3',/*url*/'../../images/header3c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img3',/*url*/'../../images/header3b.jpg')"></a></td>
-				<td width="134" valign="top">
-										<a href="/community.php">
-										<img border="0" id="img4" src="../../images/header4a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img4',/*url*/'../../images/header4b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img4',/*url*/'../../images/header4a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img4',/*url*/'../../images/header4c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img4',/*url*/'../../images/header4b.jpg')"></a></td>
-				<td width="134" valign="top">
-										<a href="/contact.php">
-										<img border="0" id="img5" src="../../images/header5a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img5',/*url*/'../../images/header5b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img5',/*url*/'../../images/header5a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img5',/*url*/'../../images/header5c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img5',/*url*/'../../images/header5b.jpg')"></a></td>
-				<td width="134" valign="top">
-										<a href="/logout.php">
-										<img border="0" id="img6" src="../../images/header6a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img6',/*url*/'../../images/header6b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img6',/*url*/'../../images/header6a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img6',/*url*/'../../images/header6c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img6',/*url*/'../../images/header6b.jpg')"></a></td>
-			</tr>
-		</table>
-	</div>
-	</td></tr></table>
+if (isset($_POST['level'])) $_SESSION['level'] = $_POST['level'];
+if (!isset($_SESSION['level']) || !in_array($_SESSION['level'], $levels)) $_SESSION['level'] = 'Easy';
+$lvl = $_SESSION['level'];
+$grd = (int)($_SESSION['grade'] ?? 0);
 
-</div>
+// &#9472;&#9472; Hard-mode phrase templates &#9472;&#9472;
+$phraseTemplates = [
+    1 => [
+        'prefixes' => ['a large box of','a big basket of','is collecting','got a gift of','showed me some'],
+        'items' => ['bouncy balls','walking dolls','thick books','action figures','magic pencils',
+                    'toy cars','toy trucks','nice crayons','color pens','sweet candies',
+                    'sports cards','magazines','toy robots','fancy shirts','cool shoes'],
+    ],
+    2 => [
+        'prefixes' => ['is taking care of some','will be really afraid of','inside a cage full of',
+                       'was watching a bunch of','in the zoo with lots of'],
+        'items' => ['crocodiles','snakes','lions','zebras','alligators','giraffes','monkeys',
+                    'iguanas','tigers','elephants','birds','bears','turtles','wild pigs','wolves'],
+    ],
+    3 => [
+        'prefixes' => ['talking to a lot of','working hard with many','will meet a group of',
+                       'party for a bunch of','got a big surprise from'],
+        'items' => ['lawyers','teachers','doctors','nurses','mayors','actors','priests','soldiers',
+                    'writers','singers','cooks','traders','artists','bakers','drivers'],
+    ],
+    4 => [
+        'prefixes' => ['eating lots of','a plate of','shared some','satisfied with','will cook some'],
+        'items' => ['toasted bread','fried chicken','baked macaroni','vegetable soup',
+                    'chocolate cake','spaghetti','fruit salad','grilled fish','roasted duck',
+                    'sweet corn','crispy shrimps','tender ribs','chewy cookies',
+                    'cold drinks','juicy steak'],
+    ],
+    5 => [
+        'prefixes' => ['am really fond of','would like to see','great moments with',
+                       'thankful for','might find some'],
+        'items' => ['red roses','wooden toys','coloring books','cute puppies','big goldfish',
+                    'nice paintings','butterflies','lollipops','old photos','greeting cards',
+                    'great movies','sweet songs','rare stamps','little kittens','ice cream'],
+    ],
+];
 
-	<div align="center">
-		<table border="0" width="800" cellspacing="0" cellpadding="0" id="table7">
-			<tr>
-				<td>
-				<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table32">
-					<tr>
-						<td>
-				<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table42">
-					<tr>
-						<td>
-						<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table43">
-							<tr>
-								<td background="../images/images/test21c-top-left.jpg" valign="top" width="136" height="130">&nbsp;</td>
-								<td width="664">
-								<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table44">
-									<tr>
-										<td>
-										<img border="0" src="../images/images/test21c-top.jpg"></td>
-									</tr>
-									<tr>
-										<td>
-										<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table45">
-											<tr>
-												<td background="../images/images/test21c-title.jpg" height="58" width="566">
-												<p align="center" style="margin-top: 3px">&nbsp;
-												</font><b><font face="Verdana" style="font-size: 14pt" color="#B00058">
-												<?php
-												echo "Ordinal Numbers";
-												?>
-												&nbsp;
-												
-												</td>
-												<td>
-												<img border="0" src="../images/images/test21c-title-spacer.jpg" width="117" height="58"></td>
-											</tr>
-										</table>
-										</td>
-									</tr>
-								</table>
-								</td>
-							</tr>
-						</table>
-						</td>
-					</tr>
-					<tr>
-						<td>
-						<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table46">
-							<tr>
-								<td width="136" valign="top" height="34">
-								<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table47">
-									<tr>
-										<td>
-								<img border="0" src="../images/images/test21c-left.jpg"></td>
-									</tr>
-									</table>
-								</td>
-								<td valign="top">
-												
-								<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table48" >
-									<tr>
-										<td background="../images/images/test21c-spacer.jpg" height="617" valign="top" width="547">
-										<div align="center">
-										<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table49" align="center">
-											<tr>
-												<td>
-		
+$phraseTemplatesSimple = [
+    1 => ['a box of','a basket of','collecting','a gift of','showed me some'],
+    2 => ['taking care of','really afraid of','a cage full of','a bunch of','in the zoo with'],
+    3 => ['talking to some','working hard with','will meet more','party for a bunch of','got a big surprise from'],
+    4 => ['eating lots of','a plate of','shared some','pleased with','will cook some'],
+    5 => ['am fond of','like to see','great moments with','thankful for','might find'],
+];
 
-	
-	
-<?PHP
-if (isset($_POST['level'])){$selected_radio = $_POST['level'];}
-if (!isset($selected_radio)){$selected_radio = $_SESSION['level'];}
-if (isset($selected_radio)){$_SESSION['level'] = $selected_radio;}
-
-$Easy_status = "";
-$Hard_status = "";
-if ($selected_radio == 'Easy') {$Easy_status = 'checked';}
-if ($selected_radio == 'Hard') {$Hard_status = 'checked';}
-
-if (empty($_POST['Submit1']))
-{
-if ($_SESSION['level']=="Easy"){$points=1;}
-if ($_SESSION['level']=="Hard"){$points=2;}
-$_SESSION['points'] = $points;
-}
-?>
-
-												
-												</td>
-											</tr>
-											<tr>
-												<td align='center'>
-													<font face="Verdana" style="font-size: 12pt">&nbsp;
-													</font>
-													
-													
-<?php 
- 
-
-
-echo "<FORM name ='form1' method ='post' action ='ordinal0.php'>";
-	
-if ($_SESSION['level']=="Easy"){
-if(isset($_SESSION['let1'])){$letter1=$_SESSION['let1'];}
-if(isset($_SESSION['let2'])){$letter2=$_SESSION['let2'];}
-if(isset($_SESSION['let3'])){$letter3=$_SESSION['let3'];}
-if(isset($_SESSION['let4'])){$letter4=$_SESSION['let4'];}
-if(isset($_SESSION['let5'])){$letter5=$_SESSION['let5'];}
-if(isset($_SESSION['let6'])){$letter6=$_SESSION['let6'];}
-if(isset($_SESSION['let7'])){$letter7=$_SESSION['let7'];}
-if(isset($_SESSION['let8'])){$letter8=$_SESSION['let8'];}
-if(isset($_SESSION['let9'])){$letter9=$_SESSION['let9'];}
-if(isset($_SESSION['leta'])){$lettera=$_SESSION['leta'];}
-if(isset($_SESSION['objimg1'])){$objimg=$_SESSION['objimg1'];}
-if(isset($_SESSION['objname1'])){$objname=$_SESSION['objname1'];}
-if(isset($_SESSION['onum'])){$ordnum=$_SESSION['onum'];}
-$ans=$_SESSION['answer'];
-if(isset($_POST['answer'])){$postans=$_POST['answer'];}
-if (isset($postans) and ord($postans)>96 and ord($postans)<123){
-$postans=chr((ord($postans))-32);}
-}
-else{
-if(isset($_SESSION['phr1'])){$phrase1=$_SESSION['phr1'];}
-if(isset($_SESSION['phr2'])){$phrase2=$_SESSION['phr2'];}
-if(isset($_SESSION['phr3'])){$phrase3=$_SESSION['phr3'];}
-if(isset($_SESSION['onum1'])){$ordnum1=$_SESSION['onum1'];}
-if(isset($_SESSION['onum2'])){$ordnum2=$_SESSION['onum2'];}
-if(isset($_SESSION['charpos'])){$cpos=$_SESSION['charpos']-1;}
-if ($ordnum2=="first"){$phrase=$phrase1;}
-if ($ordnum2=="second"){$phrase=$phrase2;}
-if ($ordnum2=="third"){$phrase=$phrase3;}
-if(isset($phrase)){$phrase0 = str_replace(' ', '', $phrase);}
-$ans=substr($phrase0,$cpos,1); 
-if(isset($_POST['answer'])){$postans=$_POST['answer'];}
-if (isset($postans) and ord($postans)>64 and ord($postans)<91){
-$postans=chr((ord($postans))+32);}
-}
-
-$tnum="*09";
-
-
-if (isset($_POST['Submit1']))
-{
-	echo "<p align='center'>";
-	echo "<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#800080'>";
-	echo "Your answer is '".$postans."'.<br/>";
-
-	if ($ans == $postans)
-	{
-	echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 700' color='#CC0066'>";	
-	echo "You are correct!<br />";	
-	 
-	$_SESSION['score']=	$_SESSION['score']+$_SESSION['points'];	
-	
-	//Update Database
-	if ($_SESSION['pageload']!="old"){
-	$con = mysql_connect("localhost","xigega65_EE","XigFanims1989");
-	if (!$con){die('Could not connect: ' . mysql_error());}
-	mysql_select_db("kpluz");
-	$schooler=$_COOKIE['KPluzID_my_site'];
-    $result = mysql_query("SELECT * FROM MPluz_accounts
- 	WHERE Cardholder = '$schooler' ");
-	$rec = mysql_fetch_array( $result );
-	$easy=$rec['Easy'];
-	$medium=$rec['Medium'];
-	$hard=$rec['Hard'];
-	
-	$newtnum=$tnum;
-	if ($_SESSION['level']=="Easy"){
-		if (strlen($easy)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE MPluz_accounts SET Easy = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($easy,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($easy,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct+1;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($easy,0,$pos1).$newgrade.substr($easy,($pos1+9));
-				mysql_query("UPDATE MPluz_accounts SET Easy = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$easy.$tnum."001001";
-				mysql_query("UPDATE MPluz_accounts SET Easy = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	if ($_SESSION['level']=="Medium"){
-		if (strlen($medium)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE MPluz_accounts SET Medium = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($medium,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($medium,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct+1;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($medium,0,$pos1).$newgrade.substr($medium,($pos1+9));
-				mysql_query("UPDATE MPluz_accounts SET Medium = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$medium.$tnum."001001";
-				mysql_query("UPDATE MPluz_accounts SET Medium = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	if ($_SESSION['level']=="Hard"){
-		if (strlen($hard)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE MPluz_accounts SET Hard = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($hard,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($hard,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct+1;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($hard,0,$pos1).$newgrade.substr($hard,($pos1+9));
-				mysql_query("UPDATE MPluz_accounts SET Hard = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$hard.$tnum."001001";
-				mysql_query("UPDATE MPluz_accounts SET Hard = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	mysql_close($con);
-	
-$_SESSION['pageload']="old";}
-	$_SESSION['points']=0;	
-	}
-	
-	
-	
-	else
-	{
-	  
-	echo "Sorry, that is not correct.<br />";
- 
-	//Update Database
-	if ($_SESSION['pageload']!="old"){
-	$con = mysql_connect("localhost","xigega65_EE","XigFanims1989");
-	if (!$con){die('Could not connect: ' . mysql_error());}
-	mysql_select_db("kpluz");
-	$schooler=$_COOKIE['KPluzID_my_site'];
-    $result = mysql_query("SELECT * FROM MPluz_accounts
- 	WHERE Cardholder = '$schooler' ");
-	$rec = mysql_fetch_array( $result );
-	$easy=$rec['Easy'];
-	$medium=$rec['Medium'];
-	$hard=$rec['Hard'];	
-	
-	$newtnum=$tnum;
-	if ($_SESSION['level']=="Easy"){
-		if (strlen($easy)<2){
-			$newgrades="*".$newtnum."000001";
-			mysql_query("UPDATE MPluz_accounts SET Easy = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($easy,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($easy,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($easy,0,$pos1).$newgrade.substr($easy,($pos1+9));
-				mysql_query("UPDATE MPluz_accounts SET Easy = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$easy.$tnum."000001";
-				mysql_query("UPDATE MPluz_accounts SET Easy = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	if ($_SESSION['level']=="Medium"){
-		if (strlen($medium)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE MPluz_accounts SET Medium = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($medium,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($medium,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($medium,0,$pos1).$newgrade.substr($medium,($pos1+9));
-				mysql_query("UPDATE MPluz_accounts SET Medium = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$medium.$tnum."000001";
-				mysql_query("UPDATE MPluz_accounts SET Medium = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	if ($_SESSION['level']=="Hard"){
-		if (strlen($hard)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE MPluz_accounts SET Hard = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($hard,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($hard,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($hard,0,$pos1).$newgrade.substr($hard,($pos1+9));
-				mysql_query("UPDATE MPluz_accounts SET Hard = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$hard.$tnum."000001";
-				mysql_query("UPDATE MPluz_accounts SET Hard = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	mysql_close($con);
-	
-
-	
-$_SESSION['pageload']="old";}
-	$_SESSION['points']=0;	
+/** 1 &#8594; "1st", 22 &#8594; "22nd", etc. */
+function ordinalSuffix($n) {
+    $n = (int)$n;
+    $mod100 = $n % 100;
+    if ($mod100 >= 11 && $mod100 <= 13) return $n . 'th';
+    switch ($n % 10) {
+        case 1: return $n . 'st';
+        case 2: return $n . 'nd';
+        case 3: return $n . 'rd';
+        default: return $n . 'th';
     }
-    
-if ($_SESSION['level']=="Easy"){
-	echo "<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#800080'>";
-echo "The letter on the ".$ordnum."<br/>".$objname." is '";
-echo $ans."'.<br /><br />";
-	
-echo "<table border='0' width='505' cellspacing='0' cellpadding='0' id='table78'>";
-echo "<tr><td height='82' width='101' align='center'><img border='0' src='../images/objects/ord-arrow.jpg' width='101' height='50'></td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter1."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter2."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter3."</td>";
-echo "<td width='101' height='164' align='center' rowspan='2'>";
-echo "<img border='0' src='../images/objects/ord-arrow1.jpg' width='101' height='111' align='left'></td></tr>";
-echo "<tr><td height='164' width='101' align='center' rowspan='2'><p align='right' style='margin-right: 5px'>";
-echo "<img border='0' src='../images/objects/ord-arrow2.jpg' width='101' height='111'></td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter6."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter5."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter4."</td>";
-echo "<tr><td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter7."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter8."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter9."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $lettera."</td>";
-echo "</tr></table><br/>";
-}
-else{
-echo "<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#800080'>";
-echo "The ".$ordnum1." letter in the phrase<br/>";
-echo "<font face='Comic Sans MS' style='font-size: 15pt; font-weight: 500' color='#000080'>";
-echo "'".(substr($phrase,0,-1))."'";
-echo "<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#800080'>";
-echo "<br/>is '";
-echo "<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#CC0066'>";
-echo $ans;
-echo "<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#800080'>";
-echo "'.<br /><br />";
-}
-				
-
-//Check Streaks
-	//end of Streak Check		
-
-				
 }
 
-if (empty($_POST['Submit1']))
-{
-$page=substr($_SERVER["PHP_SELF"],1);
-if (isset($_SESSION['curpage'])){if ($page != $_SESSION['curpage']){$_SESSION['curpage']=$page; $_SESSION['score']=0;}}
-else{$_SESSION['curpage']=$page; $_SESSION['score']=0;}
-$_SESSION['pageload']="new";
+// ============================================================
+// HANDLE ANSWER
+// ============================================================
+$result = null;
+$scorer = null;
 
-if ($_SESSION['level']=="Easy"){
-$asc1=rand(65,90);
-$asc2=rand(65,90);
-while ($asc2==$asc1){
-$asc2=rand(65,90);}
-$asc3=rand(65,90);
-while ($asc3==$asc2 or $asc3==$asc1){
-$asc3=rand(65,90);}
-$asc4=rand(65,90);
-while ($asc4==$asc3 or $asc4==$asc2 or $asc4==$asc1){
-$asc4=rand(65,90);}
-$asc5=rand(65,90);
-while ($asc5==$asc4 or $asc5==$asc3 or $asc5==$asc2 or $asc5==$asc1){
-$asc5=rand(65,90);}
-$asc6=rand(65,90);
-while ($asc6==$asc5 or $asc6==$asc4 or $asc6==$asc3 or $asc6==$asc2 or $asc6==$asc1){
-$asc6=rand(65,90);}
-$asc7=rand(65,90);
-while ($asc7==$asc6 or $asc7==$asc5 or $asc7==$asc4 or $asc7==$asc3 or $asc7==$asc2 or $asc7==$asc1){
-$asc7=rand(65,90);}
-$asc8=rand(65,90);
-while ($asc8==$asc7 or $asc8==$asc6 or $asc8==$asc5 or $asc8==$asc4 or $asc8==$asc3 or $asc8==$asc2 or $asc8==$asc1){
-$asc8=rand(65,90);}
-$asc9=rand(65,90);
-while ($asc9==$asc8 or $asc9==$asc7 or $asc9==$asc6 or $asc9==$asc5 or $asc9==$asc4 or $asc9==$asc3 or $asc9==$asc2 or $asc9==$asc1){
-$asc9=rand(65,90);}
-$asca=rand(65,90);
-while ($asca==$asc9 or $asca==$asc8 or $asca==$asc7 or $asca==$asc6 or $asca==$asc5 or $asca==$asc4 or $asca==$asc3 or $asca==$asc2 or $asca==$asc1){
-$asca=rand(65,90);}
+$curMode = $_SESSION[$sessionKey]['current']['mode'] ?? null;
 
-$letter1=chr($asc1);
-$letter2=chr($asc2);
-$letter3=chr($asc3);
-$letter4=chr($asc4);
-$letter5=chr($asc5);
-$letter6=chr($asc6);
-$letter7=chr($asc7);
-$letter8=chr($asc8);
-$letter9=chr($asc9);
-$lettera=chr($asca);
+if ($curMode === 'letters' && isset($_GET['ansclick'])) {
+    $cur      = $_SESSION[$sessionKey]['current'];
+    $selected = (string)$_GET['ansclick'];
 
-$ordnum1=rand(1,10);
-if ($ordnum1==1){$ordnum="first (1st)";
-$ans=$letter1;}
-if ($ordnum1==2){$ordnum="second (2nd)";
-$ans=$letter2;}
-if ($ordnum1==3){$ordnum="third (3rd)";
-$ans=$letter3;}
-if ($ordnum1==4){$ordnum="fourth (4th)";
-$ans=$letter4;}
-if ($ordnum1==5){$ordnum="fifth (5th)";
-$ans=$letter5;}
-if ($ordnum1==6){$ordnum="sixth (6th)";
-$ans=$letter6;}
-if ($ordnum1==7){$ordnum="seventh (7th)";
-$ans=$letter7;}
-if ($ordnum1==8){$ordnum="eighth (8th)";
-$ans=$letter8;}
-if ($ordnum1==9){$ordnum="ninth (9th)";
-$ans=$letter9;}
-if ($ordnum1==10){$ordnum="tenth (10th)";
-$ans=$lettera;}
+    $scorer  = new Scorer($conn, $moduleId);
+    $correct = $scorer->processAnswer($selected, $cur['answer'], $cur['lvl']);
 
-$_SESSION['let1']=$letter1;
-$_SESSION['let2']=$letter2;
-$_SESSION['let3']=$letter3;
-$_SESSION['let4']=$letter4;
-$_SESSION['let5']=$letter5;
-$_SESSION['let6']=$letter6;
-$_SESSION['let7']=$letter7;
-$_SESSION['let8']=$letter8;
-$_SESSION['let9']=$letter9;
-$_SESSION['leta']=$lettera;
-$_SESSION['onum']=$ordnum;
-$_SESSION['answer']=$ans;
-
-
-$randobj=rand(1,5);
-if ($randobj==1){
-$objimg="../images/objects/ord-bb.jpg";
-$objname="blackboard";}
-if ($randobj==2){
-$objimg="../images/objects/ord-note.jpg";
-$objname="note";}
-if ($randobj==3){
-$objimg="../images/objects/ord-monitor.jpg";
-$objname="screen";}
-if ($randobj==4){
-$objimg="../images/objects/ord-frame.jpg";
-$objname="frame";}
-if ($randobj==5){
-$objimg="../images/objects/ord-notebook.jpg";
-$objname="notebook";}
-
-$_SESSION['objimg1']=$objimg;
-$_SESSION['objname1']=$objname;
-
-echo "<table border='0' width='505' cellspacing='0' cellpadding='0' id='table78'>";
-echo "<tr><td height='82' width='101' align='center'><img border='0' src='../images/objects/ord-arrow.jpg' width='101' height='50'></td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter1."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter2."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter3."</td>";
-echo "<td width='101' height='164' align='center' rowspan='2'>";
-echo "<img border='0' src='../images/objects/ord-arrow1.jpg' width='101' height='111' align='left'></td></tr>";
-echo "<tr><td height='164' width='101' align='center' rowspan='2'><p align='right' style='margin-right: 5px'>";
-echo "<img border='0' src='../images/objects/ord-arrow2.jpg' width='101' height='111'></td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter6."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter5."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter4."</td>";
-echo "<tr><td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter7."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter8."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $letter9."</td>";
-echo "<td background='$objimg' width='101' height='82' align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#FFFFFF'>";
-echo $lettera."</td>";
-echo "</tr></table>";
-
-echo "<font face='Comic Sans MS' style='font-size: 15pt; font-weight: 600' color='#444444'>";
-echo "<br/>The letter on the ";
-echo "<font face='Comic Sans MS' style='font-size: 18pt; font-weight: 700' color='#CC0066'>";
-echo $ordnum."<br/>";
-echo "<font face='Comic Sans MS' style='font-size: 15pt; font-weight: 600' color='#444444'>";
-echo $objname;
-echo " is <input type='text' name='answer' size='1' maxlength='1' style='text-align: center; height: 34px; font-face: FONT-WEIGHT: bold; FONT-SIZE: 28px; text-transform: uppercase;'>.";
-
-echo "<br /><br/>";
+    $result = [
+        'correct'      => $correct,
+        'selected'     => $selected,
+        'mode'         => 'letters',
+        'variant'      => $cur['variant'],
+        'answer'       => $cur['answer'],
+        'targetPos'    => $cur['targetPos'],
+        'targetIdx'    => $cur['targetIdx'],
+        'targetLetter' => $cur['targetLetter'],
+        'letters'      => $cur['letters'],
+    ];
+    unset($_SESSION[$sessionKey]['current']);
 }
-else{
-$words=array();
-$words2=array();
+elseif ($curMode === 'phrase' && isset($_POST['Submit1'])) {
+    $cur = $_SESSION[$sessionKey]['current'];
 
-if ($grd>=1){
-$words[1] = array(1 => "a large box of", 2 => "a big basket of", 3 => "is collecting", 4 => "got a gift of", 5 => "showed me some");
-$words2[1] = array(1 => " bouncy balls ", 2 => " walking dolls ", 3 => " thick books ", 4 => " action figures ", 5 => " magic pencils ", 6 => " toy cars ", 7 => " toy trucks ", 
-8 => " nice crayons ", 9 => " color pens ", 10 => " sweet candies ", 11 => " sports cards ", 12 => " magazines ", 13 => " toy robots ", 14 => " fancy shirts ", 15 => " cool shoes ");
+    $raw = trim((string)($_POST['answer'] ?? ''));
+    $userInput = strtolower($raw);
 
-$words[2] = array(1 => "is taking care of some", 2 => "will be really afraid of", 3 => "inside a cage full of", 4 => "was watching a bunch of", 5 => "in the zoo with lots of");
-$words2[2] = array(1 => " crocodiles ", 2 => " snakes ", 3 => " lions ", 4 => " zebras ", 5 => " alligators ", 6 => " giraffes ", 7 => " monkeys ", 8 => " iguanas ", 9 => " tigers ",
-10 => " elephants ", 11 => " birds ", 12 => " bears ", 13 => " turtles ", 14 => " wild pigs ", 15 => " wolves ");
+    $scorer  = new Scorer($conn, $moduleId);
+    $correct = $scorer->processAnswer($userInput, $cur['answer'], $cur['lvl']);
 
-$words[3] = array(1 => "talking to a lot of", 2 => "working hard with many", 3 => "will meet a group of", 4 => "party for a bunch of", 5 => "got a big surprise from");
-$words2[3] = array(1 => " lawyers ", 2 => " teachers ", 3 => " doctors ", 4 => " nurses ", 5 => " mayors ", 6 => " actors ", 7 => " priests ", 8 => " soldiers ", 9 => " writers ",
-10 => " singers ", 11 => " cooks ", 12 => " traders ", 13 => " artists ", 14 => " bakers ", 15 => " drivers ");
-
-$words[4] = array(1 => "eating lots of", 2 => "a plate of", 3 => "shared some", 4 => "satisfied with", 5 => "will cook some");
-$words2[4] = array(1 => " toasted bread ", 2 => " fried chicken ", 3 => " baked macaroni ", 4 => " vegetable soup ", 5 => " chocolate cake ", 6 => " spaghetti ", 7 => " fruit salad ", 
-8 => " grilled fish ", 9 => " roasted duck ", 10 => " sweet corn ", 11 => " crispy shrimps ", 12 => " tender ribs ", 13 => " chewy cookies ", 14 => " cold drinks ", 15 => " juicy steak ");
-
-$words[5] = array(1 => "am really fond of", 2 => "would like to see", 3 => "great moments with", 4 => "thankful for", 5 => "might find some");
-$words2[5] = array(1 => " red roses ", 2 => " wooden toys ", 3 => " coloring books ", 4 => " cute puppies ", 5 => " big goldfish ", 6 => " nice paintings ", 7 => " butterflies ", 
-8 => " lollipops ", 9 => " old photos ", 10 => " greeting cards ", 11 => " great movies ", 12 => " sweet songs ", 13 => " rare stamps ", 14 => " little kittens ", 15 => " ice cream ");
+    $result = [
+        'correct'   => $correct,
+        'userInput' => $raw,
+        'mode'      => 'phrase',
+        'answer'    => $cur['answer'],
+        'targetPos' => $cur['targetPos'],
+        'phrase'    => $cur['phrase'],
+    ];
+    unset($_SESSION[$sessionKey]['current']);
 }
 
-else{
+// ============================================================
+// GENERATE NEW QUESTION
+// ============================================================
+if ($result === null || isset($_POST['Submit2'])) {
+    if ($lvl === 'Easy') {
+        $letters = [];
+        $tries = 0;
+        while (count($letters) < 10 && $tries < 100) {
+            $c = chr(rand(65, 90));
+            if (!in_array($c, $letters, true)) $letters[] = $c;
+            $tries++;
+        }
+        while (count($letters) < 10) $letters[] = chr(rand(65, 90));
 
-$words[1] = array(1 => "a box of", 2 => "a basket of", 3 => "collecting", 4 => "a gift of", 5 => "showed me some");
-$words2[1] = array(1 => " bouncy balls ", 2 => " walking dolls ", 3 => " thick books ", 4 => " action figures ", 5 => " magic pencils ", 6 => " toy cars ", 7 => " toy trucks ", 
-8 => " nice crayons ", 9 => " color pens ", 10 => " sweet candies ", 11 => " sports cards ", 12 => " magazines ", 13 => " toy robots ", 14 => " fancy shirts ", 15 => " cool shoes ");
+        $targetPos    = rand(1, 10);
+        $targetIdx    = $targetPos - 1;
+        $targetLetter = $letters[$targetIdx];
 
-$words[2] = array(1 => "taking care of", 2 => "really afraid of", 3 => "a cage full of", 4 => "a bunch of", 5 => "in the zoo with");
-$words2[2] = array(1 => " crocodiles ", 2 => " snakes ", 3 => " lions ", 4 => " zebras ", 5 => " alligators ", 6 => " giraffes ", 7 => " monkeys ", 8 => " iguanas ", 9 => " tigers ",
-10 => " elephants ", 11 => " birds ", 12 => " bears ", 13 => " turtles ", 14 => " wild pigs ", 15 => " wolves ");
+        $variant = (rand(0, 1) === 0) ? 'ordinal' : 'letter';
 
-$words[3] = array(1 => "talking to some", 2 => "working hard with", 3 => "will meet more", 4 => "party for a bunch of", 5 => "got a big surprise from");
-$words2[3] = array(1 => " lawyers ", 2 => " teachers ", 3 => " doctors ", 4 => " nurses ", 5 => " mayors ", 6 => " actors ", 7 => " priests ", 8 => " soldiers ", 9 => " writers ",
-10 => " singers ", 11 => " cooks ", 12 => " traders ", 13 => " artists ", 14 => " bakers ", 15 => " drivers ");
+        if ($variant === 'ordinal') {
+            // Pool of 9 wrong positions — array_diff compares by VALUE
+            $otherPositions = array_values(array_diff(range(1, 10), [$targetPos]));
+            shuffle($otherPositions);
+            $choiceNums = array_slice($otherPositions, 0, 3);
+            $choiceNums[] = $targetPos;
+            shuffle($choiceNums);
+            $choices = array_map('ordinalSuffix', $choiceNums);
+            $answer  = ordinalSuffix($targetPos);
+        } else {
+            // Pool of 9 wrong letters from the same row
+            $otherLetters = array_values(array_diff($letters, [$targetLetter]));
+            shuffle($otherLetters);
+            $choiceLetters = array_slice($otherLetters, 0, 3);
+            $choiceLetters[] = $targetLetter;
+            shuffle($choiceLetters);
+            $choices = $choiceLetters;
+            $answer  = $targetLetter;
+        }
 
-$words[4] = array(1 => "eating lots of", 2 => "a plate of", 3 => "shared some", 4 => "pleased with", 5 => "will cook some");
-$words2[4] = array(1 => " toasted bread ", 2 => " fried chicken ", 3 => " baked macaroni ", 4 => " vegetable soup ", 5 => " chocolate cake ", 6 => " spaghetti ", 7 => " fruit salad ", 
-8 => " grilled fish ", 9 => " roasted duck ", 10 => " sweet corn ", 11 => " crispy shrimps ", 12 => " tender ribs ", 13 => " chewy cookies ", 14 => " cold drinks ", 15 => " juicy steak ");
+        $_SESSION[$sessionKey]['current'] = [
+            'mode'         => 'letters',
+            'variant'      => $variant,
+            'letters'      => $letters,
+            'targetIdx'    => $targetIdx,
+            'targetPos'    => $targetPos,
+            'targetLetter' => $targetLetter,
+            'answer'       => $answer,
+            'choices'      => $choices,
+            'lvl'          => $lvl,
+        ];
+    } else {
+        $simple = ($grd < 1);
+        $group  = rand(1, 5);
 
-$words[5] = array(1 => "am fond of", 2 => "like to see", 3 => "great moments with", 4 => "thankful for", 5 => "might find");
-$words2[5] = array(1 => " red roses ", 2 => " wooden toys ", 3 => " coloring books ", 4 => " cute puppies ", 5 => " big goldfish ", 6 => " nice paintings ", 7 => " butterflies ", 
-8 => " lollipops ", 9 => " old photos ", 10 => " greeting cards ", 11 => " great movies ", 12 => " sweet songs ", 13 => " rare stamps ", 14 => " little kittens ", 15 => " ice cream ");
+        if ($simple) {
+            $prefix = $phraseTemplatesSimple[$group][rand(0, 4)];
+        } else {
+            $pfx = $phraseTemplates[$group]['prefixes'];
+            $prefix = $pfx[rand(0, count($pfx) - 1)];
+        }
+        $items = $phraseTemplates[$group]['items'];
+        $i1 = rand(0, count($items) - 1);
+        do { $i2 = rand(0, count($items) - 1); } while ($i2 === $i1);
+
+        $phrase     = $prefix . ' ' . $items[$i1] . ' and ' . $items[$i2];
+        $phraseNoSp = preg_replace('/\s+/', '', $phrase);
+        $maxPos     = min(30, strlen($phraseNoSp));
+        $targetPos  = rand(1, $maxPos);
+        $answer     = strtolower($phraseNoSp[$targetPos - 1]);
+
+        $_SESSION[$sessionKey]['current'] = [
+            'mode'      => 'phrase',
+            'phrase'    => $phrase,
+            'targetPos' => $targetPos,
+            'answer'    => $answer,
+            'lvl'       => $lvl,
+        ];
+    }
+    $q = $_SESSION[$sessionKey]['current'];
 }
 
-$qnum=array();
-$phrase=array();
-$qnum[1]=rand(1,5);
-$qnum[2]=rand(1,5);
-while ($qnum[2]==$qnum[1]){
-$qnum[2]=rand(1,5);}
-$qnum[3]=rand(1,5);
-while ($qnum[3]==$qnum[1] or $qnum[3]==$qnum[2]){
-$qnum[3]=rand(1,5);}
+/**
+ * Render 10 letters in 2 rows of 5.
+ * Row 1 ends with a right arrow; row 2 starts with a right arrow.
+ * No vertical/down arrow between rows.
+ */
+function renderLettersRow($letters) {
+    $perRow    = 5;
+    $rows      = array_chunk($letters, $perRow);
+    $totalRows = count($rows);
 
-for ($i=1; $i<=3; $i+=1){
-$j=rand(1,5);
-$k=rand(1,15);
-$m=rand(1,15);
-while ($k==$m){$m=rand(1,15);}
-$phrase[$i]=$words[$qnum[$i]][$j].$words2[$qnum[$i]][$k]." and ".$words2[$qnum[$i]][$m];
+    $arrowStyle = "color:#CC0066; font-size:25pt; font-weight:900;"
+                . " line-height:1; padding:0 4px;"
+                . " -webkit-text-stroke:1px #CC0066;"
+                . " text-shadow:0 0 1px #CC0066, 0 0 1px #CC0066;";
 
+    echo '<div style="text-align:center; margin:20px auto;">';
+
+    foreach ($rows as $rowIdx => $rowLetters) {
+        echo '<div style="display:inline-flex; justify-content:center; align-items:center;'
+           . ' gap:2px; margin:4px 0; flex-wrap:nowrap;">';
+
+        if ($rowIdx > 0) {
+            echo '<span style="' . $arrowStyle . '">&rarr;</span>';
+        }
+
+        foreach ($rowLetters as $i => $letter) {
+            if ($i > 0) {
+                echo '<span style="' . $arrowStyle . '">&rarr;</span>';
+            }
+            echo '<div style="width:60px; height:74px; display:inline-flex;'
+               . ' align-items:center; justify-content:center; background:#f8f8ff;'
+               . ' border:3px solid #b0b0d8; border-radius:12px;'
+               . ' font-family:\'Comic Sans MS\',sans-serif;'
+               . ' font-size:25pt; font-weight:700; color:#800080;'
+               . ' box-sizing:border-box;">'
+               . htmlspecialchars($letter)
+               . '</div>';
+        }
+
+        if ($rowIdx < $totalRows - 1) {
+            echo '<span style="' . $arrowStyle . '">&rarr;</span>';
+        }
+
+        echo '</div>';
+    }
+
+    echo '</div>';
 }
 
-$ordnum2=1;
-if ($ordnum2==1){$ordnum2="first";}
-if ($ordnum2==2){$ordnum2="second";}
-if ($ordnum2==3){$ordnum2="third";}
-
-$ordnum1=rand(1,30);
-$_SESSION['charpos']=$ordnum1;
-if ($ordnum1==1){$ordnum1="first (1st)";}
-if ($ordnum1==2){$ordnum1="second (2nd)";}
-if ($ordnum1==3){$ordnum1="third (3rd)";}
-if ($ordnum1==4){$ordnum1="fourth (4th)";}
-if ($ordnum1==5){$ordnum1="fifth (5th)";}
-if ($ordnum1==6){$ordnum1="sixth (6th)";}
-if ($ordnum1==7){$ordnum1="seventh (7th)";}
-if ($ordnum1==8){$ordnum1="eighth (8th)";}
-if ($ordnum1==9){$ordnum1="ninth (9th)";}
-if ($ordnum1==10){$ordnum1="tenth (10th)";}
-if ($ordnum1==11){$ordnum1="eleventh (11th)";}
-if ($ordnum1==12){$ordnum1="twelfth (12th)";}
-if ($ordnum1==13){$ordnum1="thirteenth (13th)";}
-if ($ordnum1==14){$ordnum1="fourteenth (14th)";}
-if ($ordnum1==15){$ordnum1="fifteenth (15th)";}
-if ($ordnum1==16){$ordnum1="sixteenth (16th)";}
-if ($ordnum1==17){$ordnum1="seventeenth (17th)";}
-if ($ordnum1==18){$ordnum1="eighteenth (18th)";}
-if ($ordnum1==19){$ordnum1="nineteenth (19th)";}
-if ($ordnum1==20){$ordnum1="twentieth (20th)";}
-if ($ordnum1==21){$ordnum1="twenty-first (21st)";}
-if ($ordnum1==22){$ordnum1="twenty-second (22nd)";}
-if ($ordnum1==23){$ordnum1="twenty-third (23rd)";}
-if ($ordnum1==24){$ordnum1="twenty-fourth (24th)";}
-if ($ordnum1==25){$ordnum1="twenty-fifth (25th)";}
-if ($ordnum1==26){$ordnum1="twenty-sixth (26th)";}
-if ($ordnum1==27){$ordnum1="twenty-seventh (27th)";}
-if ($ordnum1==28){$ordnum1="twenty-eighth (28th)";}
-if ($ordnum1==29){$ordnum1="twenty-ninth (29th)";}
-if ($ordnum1==30){$ordnum1="thirtieth (30th)";}
-
-$_SESSION['phr1']=$phrase[1];
-$_SESSION['phr2']=$phrase[2];
-$_SESSION['phr3']=$phrase[3];
-$_SESSION['onum1']=$ordnum1;
-$_SESSION['onum2']=$ordnum2;
-$_SESSION['answer']=$ans;
-
-echo "<font face='Comic Sans MS' style='font-size: 15pt; font-weight: 600' color='#444444'>";
-echo "What is the ";
-echo "<font face='Comic Sans MS' style='font-size: 18pt; font-weight: 700' color='#CC0066'>";
-echo $ordnum1."<br/>";
-echo "<font face='Comic Sans MS' style='font-size: 15pt; font-weight: 600' color='#444444'>";
-echo " letter in the phrase below?<br/><br/>";
-echo "<font face='Comic Sans MS' style='font-size: 15pt; font-weight: 500' color='#800080'>";
-echo $phrase[1]."<br/>";
-echo "<font face='Comic Sans MS' style='font-size: 13pt; font-weight: 500' color='#444444'>";
-echo "<br/>Note: don't count the spaces.<br/>";
-echo "<font face='Comic Sans MS' style='font-size: 15pt; font-weight: 600' color='#CC0066'>";
-echo "<br/>Answer:&nbsp;&nbsp;<input type='text' name='answer' size='1' maxlength='1' style='text-align: center; height: 34px; font-face: FONT-WEIGHT: bold; FONT-SIZE: 24px; text-transform: lowercase;'>";
-echo "<br /><br/>";
+/**
+ * Render the phrase. $highlight=true highlights the target character.
+ */
+function renderPhrase($phrase, $targetPos, $highlight) {
+    $out = '<p style="font-family:\'Comic Sans MS\',sans-serif;'
+         . ' font-size:16pt; font-weight:500; color:#800080;'
+         . ' text-align:center; line-height:1.6; margin:15px auto; max-width:600px;">';
+    if (!$highlight) {
+        $out .= htmlspecialchars($phrase);
+    } else {
+        $nonSpaceCount = 0;
+        foreach (preg_split('//u', $phrase, -1, PREG_SPLIT_NO_EMPTY) as $c) {
+            if ($c !== ' ') {
+                $nonSpaceCount++;
+                if ($nonSpaceCount === $targetPos) {
+                    $out .= '<strong style="color:#CC0066; background:#fff3f8;'
+                          . ' padding:2px 6px; border-radius:6px;">'
+                          . htmlspecialchars($c) . '</strong>';
+                    continue;
+                }
+            }
+            $out .= htmlspecialchars($c);
+        }
+    }
+    $out .= '</p>';
+    return $out;
 }
 
-echo "<P align='center'><Input type = 'Submit' Name = 'Submit1' VALUE = 'Submit'>";
-}
-echo "<P align='center'><Input type = 'Submit' Name = 'Submit2' VALUE = 'New Question'>";
-
-echo "</font>";
-
-echo "</font>";
-
-
+// ============================================================
+// RENDER
+// ============================================================
+render_header($moduleTitle, $moduleTitle);
 ?>
-													
-					
+<div style="padding: 0 10px; text-align: center;">
+<form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 
-												
-												
-												</td>
-											</tr>
-											<tr>
-												<td>
-												&nbsp;</td>
-											</tr>
-											<tr>
-												<td>
-												<div align="center">
-													<p style="margin-top: 5px; margin-bottom: 0">
-													<font face="Verdana" style="font-size: 10pt; " color="#000080">
-													Select difficulty level for 
-													next question:</font></p>
-												<table border="0" width="377" cellspacing="0" cellpadding="0" id="table78">
-													<tr>
+    <?php if ($result !== null): ?>
+        <br>
+        <?php if ($result['mode'] === 'letters'): ?>
+            <p style="font-size:14pt; color:#666;">
+                Your answer:
+                <strong style="color:#0000CC; font-size:18pt;">'<?php echo htmlspecialchars($result['selected']); ?>'</strong>
+            </p>
+        <?php else: ?>
+            <p style="font-size:14pt; color:#666;">
+                Your answer:
+                <strong style="color:#0000CC;">'<?php echo htmlspecialchars($result['userInput']); ?>'</strong>
+            </p>
+        <?php endif; ?>
+        <p style="font-size:16pt; font-weight:700; color:<?php echo $result['correct'] ? '#006600' : '#CC0000'; ?>;">
+            <?php echo $result['correct'] ? '&#9989; You are correct!' : '&#10060; Sorry, that is not correct.'; ?>
+        </p>
 
+        <?php if ($result['mode'] === 'letters'): ?>
+            <p style="font-size:15pt; font-weight:700; color:#800080;">
+                Counting from the left, the letter
+                <strong style="color:#CC0066;">'<?php echo htmlspecialchars($result['targetLetter']); ?>'</strong>
+                is at the
+                <strong style="color:#CC0066;"><?php echo htmlspecialchars(ordinalSuffix($result['targetPos'])); ?></strong>
+                position.
+            </p>
+            <?php renderLettersRow($result['letters']); ?>
+        <?php else: ?>
+            <p style="font-size:15pt; font-weight:700; color:#800080;">
+                The <?php echo ordinalSuffix($result['targetPos']); ?>
+                letter in the phrase is
+                <strong style="color:#CC0066;">'<?php echo htmlspecialchars($result['answer']); ?>'</strong>.
+            </p>
+            <?php echo renderPhrase($result['phrase'], $result['targetPos'], true); ?>
+        <?php endif; ?>
 
-														<td align="center" width="188">														
-														
-														
+    <?php else: ?>
+        <br>
+        <?php if ($q['mode'] === 'letters'): ?>
 
-														<p style="margin-bottom: 4px">														
-														
-														
+            <?php if ($q['variant'] === 'ordinal'): ?>
+                <p style="font-size:15pt; font-weight:700; color:#CC0066; line-height:1.5;">
+                    Counting from the left, what is the<br>
+                    ordinal position of the letter
+                    <span style="color:#CC0066; font-size:20pt;">'<?php echo htmlspecialchars($q['targetLetter']); ?>'</span>?
+                </p>
+            <?php else: ?>
+                <p style="font-size:15pt; font-weight:700; color:#CC0066;">
+                    Counting from the left, which letter<br/>is in the
+                    <span style="color:#CC0066; font-size:20pt;"><?php echo ordinalSuffix($q['targetPos']); ?></span>
+                    position?
+                </p>
+            <?php endif; ?>
 
-														<font face="Verdana">
-														<span style="font-size: 9pt">
-														<font color="#800080">														
-														<Input type = 'Radio' Name ='level' value= 'Easy' style="font-weight: 700"
-														<?PHP print $Easy_status; ?> 
-														><b>&nbsp;Easy														
-														</b></font></span>
-														</font>														
-														</td>
-														
-														<td align="center" width="189">														
-														<p style="margin-bottom: 4px">														
-														<font face="Verdana">
-														<span style="font-size: 9pt">
-														<font color="#800080">														
-														<Input type = 'Radio' Name ='level' value= 'Hard' style="font-weight: 700"
-														<?PHP print $Hard_status; ?>  
-														><b>&nbsp;Hard
-														</b></font></span>
-														</font>
-														</td>
-														
+            <?php renderLettersRow($q['letters']); ?>
+            <p style="font-size:13pt; color:#666; margin-top:10px;">
+                Follow the arrows: left-to-right, then continue on the next row.
+            </p>
+            <?php render_choices($q['choices'], 'ansclick', 'raw'); ?>
 
-													</tr>
-												</table>
-												</div>
-												</td>
-											</tr>
-											<tr>
-												<td>
-												</td>
-											</tr>
-											<tr>
-												<td>
-												</td>
-											</tr>
-											</table>
-										</div>
-										<p align="center">&nbsp;</td>
-									</tr>
-									<tr>
-										<td>
-										<img border="0" src="../images/images/test21c-bottom.jpg"></td>
-									</tr>
-								</table>
-								</td>
-								<td width="136" valign="top" height="34">
-								<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table51">
-									<tr>
-										<td>
-										<img border="0" src="../images/images/test21c-right.jpg"></td>
-									</tr>
-									<tr>
-										<td background="../images/images/test21c-score.jpg" height="51" valign="top">
-										
-										
-												<p align="center" style="margin-left: 5px; margin-top:2px">
-<?php
-echo "<font face='Comic Sans MS' style='font-size: 22pt; font-weight: 700' color='#800080'>";
-if(isset($_SESSION['score'])){echo $_SESSION['score'];}
-?>						
-										
-										
-										
-										</td>
-									</tr>
-									<tr>
-										<td>
-										<img border="0" src="../images/images/test21c-bottom-right.jpg"></td>
-									</tr>
-								</table>
-								</td>
-							</tr>
-						</table>
-						</td>
-					</tr>
-				</table>
-						</td>
-					</tr>
-					</table>
-				</td>
-			</tr>
-			<tr>
-				<td bgcolor="#0086CE">
-			<p align="center" style="margin-top: 5px; margin-bottom: 5px">
-            <font style="font-size: 10pt"><span style="mso-spacerun: yes">
-			<font face="Arial" color="#FFFFFF">
-            Copyright&nbsp; 2010
-        </font><b><font face="Arial" color="#365669">
-        	<a href="/home-math.php"><font color="#FFFFFF">KPluz.com</font></a></font></b><font face="Arial" color="#FFFFFF">. All Rights Reserved.</font></span></font></p>
-				</td>
-			</tr>
-			</table>
-	</div>
+        <?php else: ?>
+            <p style="font-size:15pt; font-weight:700; color:#CC0066;">
+                What is the <?php echo ordinalSuffix($q['targetPos']); ?> letter in the phrase below?
+            </p>
+            <?php echo renderPhrase($q['phrase'], $q['targetPos'], false); ?>
+            <p style="font-size:12pt; color:#666;">Note: don't count the spaces.</p>
+            <p style="font-size:15pt; font-weight:700; color:#0000AA; margin:15px 0;">
+                Answer:
+                <input type="text" name="answer" class="answer-input"
+                       style="width:70px; height:44px; font-size:26px; text-transform:lowercase;"
+                       maxlength="1" autocomplete="off" autofocus>
+            </p>
+        <?php endif; ?>
+    <?php endif; ?>
+
+    <div>
+        <?php if ($result === null && $q['mode'] === 'phrase'): ?>
+            <input type="submit" name="Submit1" value="Submit">
+            <span style="display:inline-block; width: 20px;"></span>
+        <?php endif; ?>
+        <br/><input type="submit" name="Submit2" value="New Question"<?php if ($result !== null): ?> style="margin: 30px 0;"<?php endif; ?>>
+    </div>
+
+    <div align="center" style="margin-top: 20px;">
+        <p style="margin-top: 5px; margin-bottom: 0">
+            <font face="Verdana" style="font-size: 10pt;" color="#000080">
+                Select difficulty level for next question:
+            </font>
+        </p>
+        <table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>
+            <?php foreach ($levels as $l): ?>
+                <td align="center">
+                    <font face="Verdana" style="font-size: 9pt;">
+                        <font color="#800080">
+                            <input type="radio" name="level" value="<?php echo $l; ?>"
+                                <?php echo $lvl === $l ? 'checked' : ''; ?>>
+                            <b>&nbsp;<?php echo $l; ?></b>
+                        </font>
+                    </font>
+                </td>
+            <?php endforeach; ?>
+        </tr></table>
+    </div>
+</form>
+<br>
+<?php render_score_box(); ?>
 </div>
-
-</body>
-
-</html>
+<?php
+if ($scorer !== null) $scorer->outputConsoleDebug();
+$conn->close();
+render_footer();

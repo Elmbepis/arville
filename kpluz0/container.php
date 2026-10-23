@@ -1,5 +1,68 @@
 <?php
 // container.php – shared layout, no session handling
+// VERSION 9 — pick theme on menu-entry; keep for same-module requests
+
+define('KPLUZ_CONTAINER_VERSION', '9');
+
+function _math_theme_file_exists($fileName) {
+    $fsPath = __DIR__ . '/math/images/images/' . $fileName;
+    return is_file($fsPath) || file_exists($fsPath);
+}
+
+/**
+ * Resolve a theme prefix to the actual filename prefix on disk.
+ * Tries the dashed form (paper-69, wquiz-03) first, then the no-dash form
+ * (paper69, wquiz03) as a fallback for themes that were uploaded without
+ * the separator.
+ */
+function _math_theme_resolve_prefix($prefix, $slots) {
+    $allOk = true;
+    foreach ($slots as $slot) {
+        if (!_math_theme_file_exists($prefix . '-' . $slot . '.jpg')) { $allOk = false; break; }
+    }
+    if ($allOk) return $prefix;
+
+    if (preg_match('/^([A-Za-z]+)-(\d+)$/', $prefix, $m)) {
+        $nodash = $m[1] . $m[2];
+        $allOk = true;
+        foreach ($slots as $slot) {
+            if (!_math_theme_file_exists($nodash . '-' . $slot . '.jpg')) { $allOk = false; break; }
+        }
+        if ($allOk) return $nodash;
+    }
+
+    return null;
+}
+
+function _math_theme_missing($prefix, $slots) {
+    $missing = [];
+    foreach ($slots as $slot) {
+        $fn = $prefix . '-' . $slot . '.jpg';
+        if (!_math_theme_file_exists($fn)) $missing[] = $fn;
+    }
+    return $missing;
+}
+
+function _math_theme_build($prefix, $base) {
+    return [
+        'top_banner'    => $base . '/math/images/images/' . $prefix . '-top.jpg',
+        'title_bg'      => $base . '/math/images/images/' . $prefix . '-top2.jpg',
+        'left_side'     => $base . '/math/images/images/' . $prefix . '-left.jpg',
+        'right_side'    => $base . '/math/images/images/' . $prefix . '-right.jpg',
+        'content_bg'    => $base . '/math/images/images/' . $prefix . '-content.jpg',
+        'bottom_banner' => $base . '/math/images/images/' . $prefix . '-bottom.jpg',
+        'score_top'     => $base . '/math/images/score-top-1.jpg',
+        'score_bottom'  => $base . '/math/images/score-bottom-1.jpg',
+    ];
+}
+
+function _math_theme_pool() {
+    $prefixes = ['paper-69', 'paper-70'];
+    for ($i = 1; $i <= 15; $i++) {
+        $prefixes[] = 'wquiz-' . str_pad($i, 2, '0', STR_PAD_LEFT);
+    }
+    return $prefixes;
+}
 
 function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_images = []) {
     if (isset($_SESSION) && !isset($_SESSION['score'])) {
@@ -7,20 +70,195 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
     }
 
     // &#9472;&#9472; Dynamic base path — works in dev (/arville/kpluz0) and prod (/kpluz0) &#9472;&#9472;
-    // Assumes calling script is at /<subject>/modules/<file>.php
     $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 
-    $defaults = [
-        'top_banner'    => $base . '/English/images/ex-23-top.jpg',
-        'title_bg'      => $base . '/English/images/ex-23-top2.jpg',
-        'left_side'     => $base . '/English/images/ex-23-left.jpg',
-        'right_side'    => $base . '/English/images/ex-23-right.jpg',
-        'content_bg'    => $base . '/English/images/ex-23-content.jpg',
-        'bottom_banner' => $base . '/English/images/ex-23-bottom.jpg',
-        'score_top'     => $base . '/English/images/score-top-3.jpg',
-        'score_bottom'  => $base . '/English/images/score-bottom-3.jpg',
-    ];
-    $theme = array_merge($defaults, $theme_images);
+    // &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
+    // SUBJECT-AWARE THEME RESOLUTION
+    // &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
+    // Math modules: theme picked when navigating from the menu (or any page
+    // other than the current module). F5, Submit, New Question, and choice
+    // clicks keep the theme because their referer points back to this module.
+    //
+    //   - Max 2 consecutive same-theme appearances across fresh picks.
+    //   - Themes with missing files are excluded from the pool.
+    //   - Version marker forces existing sessions to re-pick when logic changes.
+    //
+    // Non-Math: existing behaviour — passed $theme_images merged over defaults.
+    // &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
+    $scriptPath = $_SERVER['SCRIPT_NAME'] ?? '';
+    $isMath     = (bool)preg_match('#/math/#i', $scriptPath);
+
+    if ($isMath) {
+        if (!headers_sent()) {
+            header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+        }
+
+        $themeSlots = ['top', 'top2', 'left', 'right', 'content', 'bottom'];
+        $themePool  = _math_theme_pool();
+
+        // &#9472;&#9472; ?theme_probe=1 — plain-text diagnostic dump, exits early &#9472;&#9472;
+        if (isset($_GET['theme_probe'])) {
+            while (ob_get_level()) ob_end_clean();
+            header('Content-Type: text/plain; charset=utf-8');
+            echo "=== THEME PROBE v" . KPLUZ_CONTAINER_VERSION . " ===\n\n";
+            echo "Container file:  " . __FILE__ . "\n";
+            echo "Request URI:     " . ($_SERVER['REQUEST_URI'] ?? '?') . "\n";
+            echo "Referer:         " . ($_SERVER['HTTP_REFERER'] ?? '(none)') . "\n";
+            echo "Base URL:        " . $base . "\n\n";
+            echo "--- Pool (" . count($themePool) . " prefixes) ---\n";
+            foreach ($themePool as $prefix) {
+                $resolved = _math_theme_resolve_prefix($prefix, $themeSlots);
+                if ($resolved !== null) {
+                    echo sprintf("  %-12s &#8594; %-12s OK\n", $prefix, $resolved);
+                } else {
+                    $missing = _math_theme_missing($prefix, $themeSlots);
+                    echo sprintf("  %-12s &#8594; MISSING %d: %s\n",
+                        $prefix, count($missing), implode(',', $missing));
+                }
+            }
+            echo "\n--- Session state ---\n";
+            echo "Version:    " . ($_SESSION['math_theme_version'] ?? 'none') . "\n";
+            echo "Themes:     " . json_encode($_SESSION['math_themes'] ?? []) . "\n";
+            echo "History:    " . json_encode($_SESSION['math_theme_history'] ?? []) . "\n";
+            echo "LastModule: " . ($_SESSION['math_last_module'] ?? 'none') . "\n";
+            echo "\n=== END PROBE ===\n";
+            exit;
+        }
+
+        // &#9472;&#9472; Resolve the pool to valid, usable prefixes &#9472;&#9472;
+        $validPrefixes = [];
+        $debugProbes   = [];
+        foreach ($themePool as $orig) {
+            $resolved = _math_theme_resolve_prefix($orig, $themeSlots);
+            if ($resolved !== null) {
+                $validPrefixes[]    = $resolved;
+                $debugProbes[$orig] = $resolved;
+            } else {
+                $debugProbes[$orig] = 'MISSING';
+            }
+        }
+
+        // &#9472;&#9472; English fallback if nothing is usable &#9472;&#9472;
+        if (empty($validPrefixes)) {
+            $theme = [
+                'top_banner'    => $base . '/English/images/ex-23-top.jpg',
+                'title_bg'      => $base . '/English/images/ex-23-top2.jpg',
+                'left_side'     => $base . '/English/images/ex-23-left.jpg',
+                'right_side'    => $base . '/English/images/ex-23-right.jpg',
+                'content_bg'    => $base . '/English/images/ex-23-content.jpg',
+                'bottom_banner' => $base . '/English/images/ex-23-bottom.jpg',
+                'score_top'     => $base . '/English/images/score-top-3.jpg',
+                'score_bottom'  => $base . '/English/images/score-bottom-3.jpg',
+            ];
+            if (!headers_sent()) {
+                header('X-Container-Version: ' . KPLUZ_CONTAINER_VERSION);
+                header('X-Theme: ENGLISH-FALLBACK');
+            }
+            error_log(sprintf(
+                '[KPLUZ THEME v%s] %s | FALLBACK | pool empty',
+                KPLUZ_CONTAINER_VERSION, $_SERVER['REQUEST_URI'] ?? '?'
+            ));
+        } else {
+            // &#9472;&#9472; Version marker — clears stale picks on first request &#9472;&#9472;
+            $currentVersion = 9;
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                if (($_SESSION['math_theme_version'] ?? 0) !== $currentVersion) {
+                    $_SESSION['math_themes']        = [];
+                    $_SESSION['math_theme_history'] = [];
+                    $_SESSION['math_last_module']   = null;
+                    $_SESSION['math_theme_version'] = $currentVersion;
+                }
+            }
+
+            $moduleKey = basename($scriptPath);
+            $history   = $_SESSION['math_theme_history'] ?? [];
+            $stored    = $_SESSION['math_themes'][$moduleKey] ?? null;
+
+            // &#9472;&#9472; Fresh-navigation detection via HTTP_REFERER &#9472;&#9472;
+            // Arriving from ANY page whose basename != this module (e.g. the
+            // menu) &#8594; fresh navigation. Same-module reloads (F5, Submit,
+            // ?ansclick=) keep their theme because the referer is this module.
+            $refererPath       = $_SERVER['HTTP_REFERER'] ?? '';
+            $refererPath       = $refererPath ? (parse_url($refererPath, PHP_URL_PATH) ?? '') : '';
+            $refererSelf       = ($refererPath !== '' && basename($refererPath) === $moduleKey);
+            $isFreshNavigation = ($refererPath !== '' && !$refererSelf);
+
+            // Drop stored theme if it's no longer valid
+            if ($stored !== null && !in_array($stored, $validPrefixes, true)) {
+                $stored = null;
+            }
+
+            if ($isFreshNavigation || $stored === null) {
+                // &#9472;&#9472; Fresh pick &#9472;&#9472;
+                // Max-2-consecutive rule: if the last two history entries are
+                // the same theme, exclude it from this pick.
+                $lastTwo     = array_slice($history, -2);
+                $lastTwoSame = (count($lastTwo) === 2 && $lastTwo[0] === $lastTwo[1]);
+                $excluded    = $lastTwoSame ? [$lastTwo[0]] : [];
+                $available   = array_values(array_diff($validPrefixes, $excluded));
+                if (empty($available)) $available = $validPrefixes;
+
+                $pickedPrefix = $available[array_rand($available)];
+
+                $_SESSION['math_themes'][$moduleKey] = $pickedPrefix;
+
+                $history[] = $pickedPrefix;
+                if (count($history) > 20) $history = array_slice($history, -20);
+                $_SESSION['math_theme_history'] = $history;
+            } else {
+                // &#9472;&#9472; Same-module reload — keep stored theme &#9472;&#9472;
+                $pickedPrefix = $stored;
+            }
+
+            $_SESSION['math_last_module'] = $moduleKey;
+
+            $theme = _math_theme_build($pickedPrefix, $base);
+
+            // &#9472;&#9472; Response headers (visible in DevTools Network tab) &#9472;&#9472;
+            if (!headers_sent()) {
+                header('X-Container-Version: ' . KPLUZ_CONTAINER_VERSION);
+                header('X-Theme: ' . $pickedPrefix);
+                header('X-Theme-Fresh: ' . ($isFreshNavigation ? '1' : '0'));
+                header('X-Theme-Pool-Count: ' . count($validPrefixes));
+            }
+
+            // &#9472;&#9472; Server log &#9472;&#9472;
+            error_log(sprintf(
+                '[KPLUZ THEME v%s] %s | picked=%s | fresh=%s | pool=%d',
+                KPLUZ_CONTAINER_VERSION,
+                $_SERVER['REQUEST_URI'] ?? '?',
+                $pickedPrefix,
+                $isFreshNavigation ? 'yes' : 'no',
+                count($validPrefixes)
+            ));
+
+            // &#9472;&#9472; HTML comment debug (?theme_debug=1) &#9472;&#9472;
+            if (isset($_GET['theme_debug'])) {
+                echo "\n<!-- THEME DEBUG v" . KPLUZ_CONTAINER_VERSION . ":"
+                   . "\n  picked=" . $pickedPrefix
+                   . "\n  fresh=" . ($isFreshNavigation ? 'yes' : 'no')
+                   . "\n  referer=" . ($refererPath !== '' ? $refererPath : '(none)')
+                   . "\n  valid=[" . implode(',', $validPrefixes) . "]"
+                   . "\n  stored=" . ($stored ?? 'none')
+                   . "\n  history=[" . implode(',', $history) . "]"
+                   . "\n-->\n";
+            }
+        }
+    } else {
+        $defaults = [
+            'top_banner'    => $base . '/English/images/ex-23-top.jpg',
+            'title_bg'      => $base . '/English/images/ex-23-top2.jpg',
+            'left_side'     => $base . '/English/images/ex-23-left.jpg',
+            'right_side'    => $base . '/English/images/ex-23-right.jpg',
+            'content_bg'    => $base . '/English/images/ex-23-content.jpg',
+            'bottom_banner' => $base . '/English/images/ex-23-bottom.jpg',
+            'score_top'     => $base . '/English/images/score-top-3.jpg',
+            'score_bottom'  => $base . '/English/images/score-bottom-3.jpg',
+        ];
+        $theme = array_merge($defaults, $theme_images);
+    }
     $GLOBALS['_theme'] = $theme;
 
     ?>
@@ -102,7 +340,6 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
         .difficulty label { margin: 0 10px; font-weight: bold; cursor: pointer; font-size: 10pt; color: #000080; }
         .difficulty input[type='radio'] { margin-right: 4px; }
 
-        /* ===== UNIFORM TEXT CHOICE BUTTONS ===== */
         .choices-row {
             --choice-width: 12em;
             display: flex;
@@ -137,14 +374,12 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             border-color: #8080ff;
         }
 
-        /* ===== FREE-TEXT MODULE ANSWER BUTTONS ===== */
         input[name='Submit1'],
         input[name='Submit1'] ~ input[name='Submit2'] {
             margin-top: 30px;
             margin-bottom: 30px;
         }
 
-        /* ===== IMAGE CHOICE BUTTONS ===== */
         .image-choices-row {
             display: flex;
             justify-content: center;
@@ -175,7 +410,6 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             vertical-align: middle;
         }
 
-        /* ===== FREE-TEXT ANSWER INPUT ===== */
         .answer-input {
             display: inline-block;
             text-align: center;
@@ -195,7 +429,6 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             background: #f8f8ff;
         }
 
-        /* ===== ARITHMETIC EQUATION DISPLAY ===== */
         .equation-card {
             display: inline-block;
             background: linear-gradient(135deg, #fafaff 0%, #f0f0ff 100%);
@@ -224,9 +457,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             color: #800080;
             flex-wrap: wrap;
         }
-        .equation-inline .op {
-            color: #CC0066;
-        }
+        .equation-inline .op { color: #CC0066; }
         .equation-inline input {
             font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
             font-size: 28pt;
@@ -254,26 +485,10 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             font-weight: 700;
             color: #800080;
         }
-        .equation-vertical td {
-            padding: 3px 8px;
-            line-height: 1.15;
-            vertical-align: middle;
-        }
-        .equation-vertical .num {
-            text-align: right;
-            white-space: nowrap;
-        }
-        .equation-vertical .op {
-            text-align: left;
-            color: #CC0066;
-            white-space: nowrap;
-        }
-        .equation-vertical .rule {
-            border-top: 3px solid #800080;
-            padding: 0;
-            height: 0;
-            line-height: 0;
-        }
+        .equation-vertical td { padding: 3px 8px; line-height: 1.15; vertical-align: middle; }
+        .equation-vertical .num { text-align: right; white-space: nowrap; }
+        .equation-vertical .op { text-align: left; color: #CC0066; white-space: nowrap; }
+        .equation-vertical .rule { border-top: 3px solid #800080; padding: 0; height: 0; line-height: 0; }
         .equation-vertical input {
             font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
             font-size: 26pt;
@@ -293,12 +508,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             background: #f8f8ff;
         }
 
-        /* ===== IMAGE GRID ===== */
-        .image-grid {
-            text-align: center;
-            margin: 20px 0;
-            line-height: 1.1;
-        }
+        .image-grid { text-align: center; margin: 20px 0; line-height: 1.1; }
         .image-grid img {
             display: inline-block;
             vertical-align: middle;
@@ -308,12 +518,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             margin: 1px;
         }
 
-        /* ===== PATTERN DISPLAY ===== */
-        .pattern-display {
-            text-align: center;
-            margin: 15px 0;
-            line-height: 1.4;
-        }
+        .pattern-display { text-align: center; margin: 15px 0; line-height: 1.4; }
         .pattern-display img {
             display: inline-block;
             vertical-align: middle;
@@ -323,11 +528,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             height: auto;
         }
 
-        /* ===== SCORE BOX ===== */
-        .score-box {
-            text-align: center;
-            margin: 0 auto 40px auto;
-        }
+        .score-box { text-align: center; margin: 0 auto 40px auto; }
         .score-box table { margin: 0 auto; border-collapse: collapse; }
         .score-box .score-top {
             background: url('{$theme['score_top']}') no-repeat center;
@@ -442,7 +643,6 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
     <body>
     <div class="main-wrapper">
 
-        <!-- ===== HEADER ===== -->
         <table class="header-table" cellspacing="0" cellpadding="0">
             <tr>
                 <td width="193" height="100" valign="top">
@@ -507,7 +707,6 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             </tr>
         </table>
 
-        <!-- ===== MODULE THEME ===== -->
         <table class="module-theme" cellspacing="0" cellpadding="0">
             <tr>
                 <td>
@@ -540,7 +739,6 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
 
 
 function render_footer() {
-    // Compute base dynamically (footer may be called without header in edge cases)
     $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
     ?>
                                 </div> <!-- /.module-output -->
