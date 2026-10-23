@@ -42,6 +42,21 @@ if (!$world) {
     exit;
 }
 
+// ---------------------------------------------------------
+// Decode hall_textures JSON column
+// Safe if the column doesn't exist yet (returns null).
+// ---------------------------------------------------------
+$rawTex = $world['hall_textures'] ?? null;
+if (is_string($rawTex) && $rawTex !== '') {
+    $decoded = json_decode($rawTex, true);
+    $world['hall_textures'] = is_array($decoded) ? $decoded : null;
+} else {
+    $world['hall_textures'] = null;
+}
+
+// ---------------------------------------------------------
+// Areas
+// ---------------------------------------------------------
 $stmt = $pdo->prepare(
     "SELECT id, slot, vendor_name, vendor_slug, active,
             pos_x, pos_y, pos_z, rot_y, notes
@@ -52,6 +67,9 @@ $stmt = $pdo->prepare(
 $stmt->execute([$world['id']]);
 $areas = $stmt->fetchAll();
 
+// ---------------------------------------------------------
+// Objects per area
+// ---------------------------------------------------------
 $objStmt = $pdo->prepare(
     "SELECT id, creator, model_path, texture,
             pos_x, pos_y, pos_z,
@@ -73,7 +91,7 @@ foreach ($areas as &$a) {
         }
         $o['id'] = (int)$o['id'];
 
-        // Ensure texture is either a string or null (never an empty string)
+        // Normalize empty string texture to null
         if (isset($o['texture']) && $o['texture'] === '') {
             $o['texture'] = null;
         }
@@ -92,7 +110,9 @@ unset($a);
 
 foreach (['place_width','place_depth','start_x','start_y','start_z',
           'start_rot_y','eye_height','fog_density'] as $k) {
-    $world[$k] = (float)$world[$k];
+    if (isset($world[$k]) && $world[$k] !== null) {
+        $world[$k] = (float)$world[$k];
+    }
 }
 $world['id'] = (int)$world['id'];
 

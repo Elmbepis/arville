@@ -134,12 +134,12 @@
         // -----------------------------------------------------------------
         // Fallback titles (used until the API responds)
         // -----------------------------------------------------------------
-        const TITLE_CONFIG = {
-            'default': 'ARville Virtual Trade Expo',
-            '1': 'ARville Snack and Beverage Expo',
-            '2': 'ARville Breakfast Cereal Expo',
-            '3': 'ARville Health and Wellness Expo'
-        };
+		const TITLE_CONFIG = {
+		    'default': 'ARville Virtual Trade Expo',
+		    '1': 'ARville Snack and Beverage Expo',
+		    '2': 'ARville Real Estate Expo',
+		    '3': 'ARville Health and Wellness Expo'
+		};
         document.title = TITLE_CONFIG[hallId] || TITLE_CONFIG['default'];
 
         // -----------------------------------------------------------------
@@ -168,6 +168,12 @@
             '11': new THREE.Vector3( 10, 0,  18),
             '12': new THREE.Vector3( 10, 0,  30)
         };
+
+        // -----------------------------------------------------------------
+        // Cached API payload — set by fetchHallPayload()
+        // Used by both createRoom (for hall_textures) and renderBooths
+        // -----------------------------------------------------------------
+        let HALL_PAYLOAD = null;
 
         init();
         animate();
@@ -220,15 +226,18 @@
             dirLight4.position.set(0, 12, 30);
             scene.add(dirLight4);
 
-            // Load resources, then build the room + booths from the DB
-            loadResources().then(() => {
-                createRoom();
-                loadBooths();
-            }).catch((error) => {
-                console.error('Failed to load resources:', error);
-                createRoom();
-                loadBooths();
-            });
+            // Load resources &#8594; fetch payload &#8594; build room &#8594; render booths
+            loadResources()
+                .then(async () => {
+                    await fetchHallPayload();
+                    createRoom();
+                    renderBooths();
+                })
+                .catch((error) => {
+                    console.error('Failed to load resources:', error);
+                    createRoom();
+                    loadBooths();
+                });
 
             if (typeof setupControls === 'function') {
                 setupControls(camera, EYE_HEIGHT, PLACE_WIDTH, PLACE_DEPTH, 0.3);
@@ -237,35 +246,10 @@
         }
 
         // =================================================================
-        // Resource loading (textures + obj_create.js + obj_create_db.js)
+        // Resource loading (obj_create.js + obj_create_db.js)
         // =================================================================
         async function loadResources() {
-            await loadHallTextureConfig();
             await loadObjectCreator();
-        }
-
-        function loadHallTextureConfig() {
-            return new Promise((resolve) => {
-                const script = document.createElement('script');
-                script.src = `universe/hall-sections/${hallId}/main-textures.js`;
-
-                script.onload = function () {
-                    console.log(`&#9989; main-textures.js loaded for hall ${hallId}`);
-                    if (window.HALL_TEXTURES) {
-                        console.log('&#128203; Texture config:', window.HALL_TEXTURES);
-                    } else {
-                        console.warn(`&#9888;&#65039; No HALL_TEXTURES found for hall ${hallId}`);
-                    }
-                    resolve();
-                };
-
-                script.onerror = function () {
-                    console.error(`&#10060; Failed to load main-textures.js for hall ${hallId}`);
-                    resolve();
-                };
-
-                document.head.appendChild(script);
-            });
         }
 
         function loadObjectCreator() {
@@ -282,7 +266,6 @@
                         window.initObjectTextures(window.textureLoader);
                     }
 
-                    // Load the DB variant next
                     const dbScript = document.createElement('script');
                     dbScript.src = 'universe/obj_create_db.js?v=' + Date.now();
 
@@ -293,7 +276,7 @@
 
                     dbScript.onerror = function () {
                         console.warn('&#9888;&#65039; Failed to load obj_create_db.js — DB texture override unavailable');
-                        resolve();   // don't fail the whole load
+                        resolve();
                     };
 
                     document.head.appendChild(dbScript);
@@ -309,7 +292,49 @@
         }
 
         // =================================================================
-        // Room shell (floor, walls, ceiling) — unchanged
+        // Fetch hall payload (world + areas + objects + hall_textures)
+        // Populates HALL_PAYLOAD and window.HALL_TEXTURES before room creation.
+        // =================================================================
+        async function fetchHallPayload() {
+            const urlId = new URLSearchParams(location.search).get('id') || 'tradehall';
+
+            try {
+                const res = await fetch(
+                    `api/hall.php?id=${encodeURIComponent(urlId)}`,
+                    { cache: 'no-store' }
+                );
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                HALL_PAYLOAD = await res.json();
+            } catch (err) {
+                console.error('Failed to fetch hall payload:', err);
+                HALL_PAYLOAD = null;
+                return;
+            }
+
+            if (HALL_PAYLOAD.error) {
+                console.error('API error:', HALL_PAYLOAD.error);
+                HALL_PAYLOAD = null;
+                return;
+            }
+
+            // Populate hall shell textures from DB
+            if (HALL_PAYLOAD.world && HALL_PAYLOAD.world.hall_textures) {
+                window.HALL_TEXTURES = HALL_PAYLOAD.world.hall_textures;
+                console.log('&#128203; Hall textures from DB:', window.HALL_TEXTURES);
+            } else {
+                console.log('&#8505;&#65039; No hall_textures in DB — using fallback textures');
+            }
+
+            // Update title from DB (if present)
+            if (HALL_PAYLOAD.world && HALL_PAYLOAD.world.title) {
+                document.title = HALL_PAYLOAD.world.title;
+                document.getElementById('info').textContent =
+                    `${HALL_PAYLOAD.world.title} | WASD: Move | Mouse: Look | R: Reset | H: Home`;
+            }
+        }
+
+        // =================================================================
+        // Room shell
         // =================================================================
         async function createRoom() {
             try {
@@ -325,11 +350,11 @@
             const materials = {};
 
             if (!window.HALL_TEXTURES) {
-                console.warn('&#9888;&#65039; No HALL_TEXTURES — using defaults');
+                console.warn('&#9888;&#65039; No HALL_TEXTURES — using fallback paths');
                 window.HALL_TEXTURES = {
-                    floor:   { path: 'universe/textures/hall-floor.jpg',     repeat: { x: 9,  y: 18 } },
-                    walls:   { path: 'universe/textures/hall-walls1.jpg',    repeat: { x: 32, y: 4  } },
-                    ceiling: { path: 'universe/textures/expo1_ceiling.jpg',  repeat: { x: 16, y: 32 } }
+                    floor:   { path: 'universe/textures/halls/floors/hall-floor.jpg',      repeat: { x: 9,  y: 18 } },
+                    walls:   { path: 'universe/textures/halls/walls/hall-walls1.jpg',      repeat: { x: 32, y: 4  } },
+                    ceiling: { path: 'universe/textures/halls/ceilings/expo1_ceiling.jpg', repeat: { x: 16, y: 32 } }
                 };
             }
 
@@ -340,7 +365,7 @@
                 t.wrapS = t.wrapT = THREE.RepeatWrapping;
                 t.repeat.set(cfg.floor.repeat.x, cfg.floor.repeat.y);
                 materials.floor = new THREE.MeshLambertMaterial({ map: t });
-                console.log('&#9989; Floor texture loaded');
+                console.log('&#9989; Floor texture loaded:', cfg.floor.path);
             } catch (e) {
                 console.error('&#10060; Floor texture failed:', e);
                 materials.floor = new THREE.MeshLambertMaterial({ color: 0x888888 });
@@ -354,7 +379,7 @@
                 materials.walls = new THREE.MeshStandardMaterial({
                     map: t, roughness: 0.8, side: THREE.DoubleSide
                 });
-                console.log('&#9989; Wall texture loaded');
+                console.log('&#9989; Wall texture loaded:', cfg.walls.path);
             } catch (e) {
                 console.error('&#10060; Wall texture failed:', e);
                 materials.walls = new THREE.MeshStandardMaterial({
@@ -369,7 +394,7 @@
                 materials.ceiling = new THREE.MeshStandardMaterial({
                     map: t, roughness: 0.9
                 });
-                console.log('&#9989; Ceiling texture loaded');
+                console.log('&#9989; Ceiling texture loaded:', cfg.ceiling.path);
             } catch (e) {
                 console.error('&#10060; Ceiling texture failed:', e);
                 materials.ceiling = new THREE.MeshStandardMaterial({
@@ -437,50 +462,27 @@
         }
 
         // =================================================================
-        // DATA-DRIVEN BOOTH LOADING
+        // Render booths from cached payload
         // =================================================================
-
-        async function loadBooths() {
+        async function renderBooths() {
             const loadingDiv = document.getElementById('loading');
+
+            if (!HALL_PAYLOAD) {
+                loadingDiv.style.display = 'none';
+                console.error('No hall payload — cannot render booths');
+                return;
+            }
+
             loadingDiv.style.display = 'block';
-            loadingDiv.textContent = 'Loading expo data...';
+            loadingDiv.textContent = 'Building booths...';
 
-            const urlId = new URLSearchParams(location.search).get('id') || 'tradehall';
-
-            let payload;
-            try {
-                const res = await fetch(
-                    `api/hall.php?id=${encodeURIComponent(urlId)}`,
-                    { cache: 'no-store' }
-                );
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                payload = await res.json();
-            } catch (err) {
-                console.error('Failed to load hall data:', err);
-                loadingDiv.textContent = 'Failed to load hall data.';
-                return;
-            }
-
-            if (payload.error) {
-                console.error('API error:', payload.error);
-                loadingDiv.textContent = 'API error: ' + payload.error;
-                return;
-            }
-
-            // If API returned a world title, prefer it over the hardcoded fallback
-            if (payload.world && payload.world.title) {
-                document.title = payload.world.title;
-                document.getElementById('info').textContent =
-                    `${payload.world.title} | WASD: Move | Mouse: Look | R: Reset | H: Home`;
-            }
-
-            const bySlot = Object.fromEntries(payload.areas.map(a => [a.slot, a]));
+            const bySlot = Object.fromEntries(HALL_PAYLOAD.areas.map(a => [a.slot, a]));
 
             let loaded = 0;
             for (const slotStr of Object.keys(BOOTH_POSITIONS)) {
                 const slot = Number(slotStr);
                 const area = bySlot[slot];
-                if (!area) continue;   // empty slot — skip
+                if (!area) continue;
 
                 loadingDiv.textContent =
                     `Building booth ${slot} (${area.vendor_name || ''})...`;
@@ -511,6 +513,14 @@
             }
         }
 
+        // =================================================================
+        // Fallback loader — used only if loadResources() fails
+        // =================================================================
+        async function loadBooths() {
+            await fetchHallPayload();
+            await renderBooths();
+        }
+
         async function buildBoothGroup(area) {
             const group = new THREE.Group();
             for (const obj of area.objects) {
@@ -525,7 +535,7 @@
         }
 
         // =================================================================
-        // Dispatcher: maps a row's `creator` value to a createX() call
+        // Dispatcher
         // =================================================================
         async function instantiateAreaObject(o) {
             const p = o.params || {};
@@ -586,20 +596,15 @@
                         p.width, p.depth, p.texture,
                         p.repeats || { x: 2, y: 2 });
 
-                // ---------------------------------------------------------
-                // Static GLB — with optional texture override
-                // ---------------------------------------------------------
                 case 'glb': {
                     const m = await createStaticGLBModel(o.model_path,
                         o.pos_x, o.pos_y, o.pos_z,
                         o.rot_x, o.rot_y, o.rot_z, o.scale);
 
-                    // Prefer the DB-safe variant; fall back to the original
                     const overrideFn = window.changeGLBTextureDB || window.changeGLBTexture;
 
                     if (o.texture && typeof overrideFn === 'function' && m.children[0]) {
                         const original = m.children[0];
-
                         const posCopy   = original.position.clone();
                         const rotCopy   = original.rotation.clone();
                         const scaleCopy = original.scale.clone();
@@ -622,21 +627,16 @@
                     return m;
                 }
 
-                // ---------------------------------------------------------
-                // Rotating GLB — with optional texture override
-                // ---------------------------------------------------------
                 case 'rotatingGLB': {
                     const m = await createRotatingGLBModel(o.model_path,
                         o.pos_x, o.pos_y, o.pos_z,
                         o.rot_x, o.rot_y, o.rot_z, o.scale,
                         p.rotationSpeed ?? 1.0);
 
-                    // Prefer the DB-safe variant; fall back to the original
                     const overrideFn = window.changeGLBTextureDB || window.changeGLBTexture;
 
                     if (o.texture && typeof overrideFn === 'function' && m.children[0]) {
                         const original = m.children[0];
-
                         const posCopy   = original.position.clone();
                         const rotCopy   = original.rotation.clone();
                         const scaleCopy = original.scale.clone();
@@ -678,13 +678,11 @@
             requestAnimationFrame(animate);
             const delta = clock.getDelta();
 
-            // Enforce flight ceiling / floor
             const CEILING_HEIGHT = 10.0;
             const MIN_HEIGHT = 0.5;
             if (camera.position.y > CEILING_HEIGHT) camera.position.y = CEILING_HEIGHT;
             if (camera.position.y < MIN_HEIGHT)     camera.position.y = MIN_HEIGHT;
 
-            // Update rotating objects
             scene.traverse((object) => {
                 if (object.userData && object.update) {
                     const t = object.userData.type;
