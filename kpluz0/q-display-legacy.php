@@ -2,6 +2,7 @@
 // q-display-legacy.php — displays modules in the OLD question-set format
 // Auth: KPLUZ_SESSION
 // Theme: shared banner/side/score images; per-subject question-box colors
+// Language: English for English/Math/Science/TLE; Filipino for all others
 // URL: q-display-legacy.php?m=AP/modules/tiwala-sarili1
 
 session_name('KPLUZ_SESSION');
@@ -85,6 +86,36 @@ if (!file_exists($modulePath)) {
 $parts         = explode('/', $moduleKey);
 $subjectFolder = $parts[0];
 $subject       = strtolower($subjectFolder);
+
+// ============================================================
+// LANGUAGE — subject-driven UI strings
+// English subjects: english, math, science, tle
+// All other subjects (ap, filipino, gmrc, mapeh, …): Filipino
+// ============================================================
+$englishSubjects = ['english', 'math', 'science', 'tle'];
+$uiLang = in_array($subject, $englishSubjects, true) ? 'en' : 'fil';
+
+$uiStrings = [
+    'en' => [
+        'your_answer'     => 'Your answer is',
+        'correct'         => 'That is correct!',
+        'incorrect'       => 'That is incorrect.',
+        'question_label'  => 'Question:',
+        'answer_label'    => 'Answer:',
+        'click_to_answer' => 'Click on your answer below.',
+        'new_question'    => 'New Question',
+    ],
+    'fil' => [
+        'your_answer'     => 'Ang sagot mo ay',
+        'correct'         => 'Ito ay tumpak!',
+        'incorrect'       => 'Ito ay hindi tumpak.',
+        'question_label'  => 'Tanong:',
+        'answer_label'    => 'Sagot:',
+        'click_to_answer' => 'Pindutin ang iyong sagot sa ibaba.',
+        'new_question'    => 'Bagong Tanong',
+    ],
+];
+$t = $uiStrings[$uiLang];
 
 $_SESSION['last_subject'] = $subject;
 
@@ -288,12 +319,12 @@ if ($result !== null):
         <tr><td>&nbsp;</td></tr>
         <tr><td width="100%" align="center" style="padding-top:15px; padding-bottom:23px; padding-left:38px; padding-right:38px;">
             <font face="Arial" style="font-size:14pt; font-weight:700; color:#330033;">
-                Ang sagot mo ay
+                <?php echo htmlspecialchars($t['your_answer']); ?>
                 <span style="color:#0000BB;">'<?php echo htmlspecialchars($result['selected']); ?>'</span>.
             </font>
             <br>
             <font face="Arial" style="font-size:16pt; font-weight:700; color:<?php echo $result['correct'] ? '#006600' : '#CC0000'; ?>;">
-                <?php echo $result['correct'] ? 'Ito ay tumpak!' : 'Ito ay hindi tumpak.'; ?>
+                <?php echo $result['correct'] ? htmlspecialchars($t['correct']) : htmlspecialchars($t['incorrect']); ?>
             </font>
         </td></tr>
     </table>
@@ -306,9 +337,9 @@ if ($result !== null):
            style="margin:15px auto; background:<?php echo $theme['question_bg']; ?>; border:1px solid <?php echo $theme['question_border']; ?>;">
         <tr><td align="center" style="padding:20px;">
             <font face="Arial" style="font-size:16pt; font-weight:700; color:#330033;">
-                Tanong:<br>
+                <?php echo htmlspecialchars($t['question_label']); ?><br>
                 <?php echo htmlspecialchars($result['prompt']); ?><br><br>
-                Sagot: <span style="color:#CC0066;"><?php echo htmlspecialchars($result['answer']); ?></span>
+                <?php echo htmlspecialchars($t['answer_label']); ?> <span style="color:#CC0066;"><?php echo htmlspecialchars($result['answer']); ?></span>
             </font>
         </td></tr>
     </table>
@@ -332,7 +363,7 @@ if ($result !== null):
         <tr><td>&nbsp;</td></tr>
         <tr><td align="center">
             <font face="Arial" style="font-size:16pt; font-weight:600; color:#444444;">
-                Click on your answer below.<br><br><br>
+                <?php echo htmlspecialchars($t['click_to_answer']); ?><br><br><br>
             </font>
 <?php
     $maxlen = 0;
@@ -363,7 +394,7 @@ if ($result !== null):
     <?php $newQMargin = ($result !== null) ? '80px' : '40px'; ?>
     <div style="text-align:center; margin:<?php echo $newQMargin; ?> 0;">
         <form method="post" action="?m=<?php echo $moduleParam; ?>" style="display:inline;">
-            <input type="submit" name="Submit2" value="New Question">
+            <input type="submit" name="Submit2" value="<?php echo htmlspecialchars($t['new_question']); ?>">
         </form>
     </div>
     <table align="center" cellspacing="0" cellpadding="0">

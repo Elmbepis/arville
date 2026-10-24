@@ -1,6 +1,15 @@
 <?php
 // scorer.php — uses session variables for user identification, accepts module URL
 // Multi-attempt module lookup: exact match, legacy pattern, substring, module_key
+//
+// resolveModuleId() is filename-first: the PHP filename is the only invariant
+// across every URL format currently in use:
+//   ?mfile=<key>.php          (legacy q-display3)
+//   ?m=<subj>/modules/<key>   (q-display-legacy)
+//   <path>/<key>.php          (direct file)
+//   <key>.php                 (bare)
+// LIKE patterns are anchored at both ends so "<key>" and "<key>2" or
+// "<key>-home12" can never collide.
 
 class Scorer {
     private $db;
@@ -24,8 +33,18 @@ class Scorer {
     }
 
     /**
-     * Resolve module ID from modules table.
-     * Tries multiple match strategies to support both new and legacy URL formats.
+     * Resolve module ID from the modules table.
+     *
+     * Filename-first lookup — the PHP filename is the only invariant
+     * across every URL format:
+     *   ?mfile=<key>.php          (legacy q-display3)
+     *   ?m=<subj>/modules/<key>   (q-display-legacy)
+     *   <path>/<key>.php          (direct file)
+     *   <key>.php                 (bare)
+     *
+     * Patterns are anchored at both ends so "<key>" and "<key>2"
+     * (or "<key>-home12") can never collide.
+     *
      * @param string|null $moduleUrl
      * @return int
      */
@@ -37,76 +56,130 @@ class Scorer {
             $this->addDebug("Received module URL: '$moduleUrl'");
         }
 
-        $filename = basename($moduleUrl);
-        $this->addDebug("Extracted filename: '$filename'");
+        $filename  = basename($moduleUrl);           // e.g. 'measure-nonstd.php'
+        $moduleKey = basename($moduleUrl, '.php');   // e.g. 'measure-nonstd'
 
-        // Attempt 1: exact match on url (works for new modules: 'colors.php')
-        $stmt = $this->db->prepare("SELECT id FROM modules WHERE url = ? LIMIT 1");
-        if ($stmt) {
-            $stmt->bind_param("s", $filename);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            if ($row = $result->fetch_assoc()) {
-                $id = $row['id'];
-                $stmt->close();
-                $this->addDebug("Found module ID $id by exact url match '$filename'.");
-                return $id;
-            }
-            $stmt->close();
+        if (empty($moduleKey)) {
+            $this->addDebug("WARNING: Could not extract module key from '$moduleUrl'");
+            return 1;
         }
 
-        // Attempt 2: legacy format 'q-display.php?mfile=tiwala-sarili1.php'
-        $likePattern = '%mfile=' . $filename;
-        $stmt = $this->db->prepare("SELECT id FROM modules WHERE url LIKE ? LIMIT 1");
-        if ($stmt) {
-            $stmt->bind_param("s", $likePattern);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            if ($row = $result->fetch_assoc()) {
-                $id = $row['id'];
-                $stmt->close();
-                $this->addDebug("Found module ID $id by legacy pattern '$likePattern'.");
-                return $id;
-            }
-            $stmt->close();
+        // Escape LIKE wildcards in case a filename ever contains them
+        // (illegal on most filesystems, but defensive).
+        $escKey  = strtr($moduleKey, ['\\' => '\\\\', '%' => '\\%', '_' => '\\_']);
+        $escFile = strtr($filename,  ['\\' => '\\\\', '%' => '\\%', '_' => '\\_']);
+
+        $subject = $_SESSION['last_subject'] ?? null;
+        $this->addDebug(sprintf(
+            "Resolving module: key='%s', filename='%s', subject='%s'",
+            $moduleKey, $filename, $subject ?? '(any)'
+        ));
+
+        // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+        // Tier 1: exact module_key match — fastest path.
+        // Works when DB module_key == filesystem stem.
+        // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+        $id = $this->queryModuleId(
+            "SELECT id FROM modules WHERE module_key = ? LIMIT 1",
+            [$moduleKey],
+            "module_key = '$moduleKey'"
+        );
+        if ($id !== null) return $id;
+
+        // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+        // Tier 2: anchored URL-pattern match (the universal fix).
+        //
+        // Every pattern requires `<key>` to be bounded by a proper
+        // delimiter before and after, so no prefix/suffix collisions:
+        //
+        //   .../modules/<key>            (end)     q-display-legacy
+        //   .../modules/<key>.php        (end)     direct file
+        //   .../modules/<key>?<query>              q-display-legacy + query
+        //   .../modules/<key>&<query>              q-display-legacy + more params
+        //   .../modules/<key>.php?<q>              direct + query
+        //   .../modules/<key>.php&<q>              direct + more params
+        //   ?mfile=<key>.php             (end)     legacy q-display3
+        //   ?mfile=<key>.php&<query>               legacy + more params
+        //   <path>/<key>.php             (end)     any subdirectory
+        //   <key>.php                    (exact)   bare filename
+        // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+        $urlPatterns = [
+            '%/modules/' . $escKey,
+            '%/modules/' . $escFile,
+            '%/modules/' . $escKey  . '?%',
+            '%/modules/' . $escKey  . '&%',
+            '%/modules/' . $escFile . '?%',
+            '%/modules/' . $escFile . '&%',
+            '%='         . $escFile,
+            '%='         . $escFile . '&%',
+            '%/'         . $escFile,
+            $escFile,
+        ];
+
+        if ($subject) {
+            $orClause = implode(' OR ', array_fill(0, count($urlPatterns), 'url LIKE ?'));
+            $sql = "SELECT id FROM modules WHERE subject = ? AND ($orClause) LIMIT 1";
+            $params = array_merge([$subject], $urlPatterns);
+            $id = $this->queryModuleId($sql, $params, "subject='$subject' + URL pattern");
+            if ($id !== null) return $id;
         }
 
-        // Attempt 3: substring match anywhere in url
-        $likePattern = '%' . $filename . '%';
-        $stmt = $this->db->prepare("SELECT id FROM modules WHERE url LIKE ? LIMIT 1");
-        if ($stmt) {
-            $stmt->bind_param("s", $likePattern);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            if ($row = $result->fetch_assoc()) {
-                $id = $row['id'];
-                $stmt->close();
-                $this->addDebug("Found module ID $id by substring '$likePattern'.");
-                return $id;
-            }
-            $stmt->close();
-        }
+        // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+        // Tier 3: same URL patterns, no subject filter.
+        // Reached only if $_SESSION['last_subject'] was unavailable
+        // (e.g. a caller other than q-display-legacy).
+        // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+        $orClause = implode(' OR ', array_fill(0, count($urlPatterns), 'url LIKE ?'));
+        $sql = "SELECT id FROM modules WHERE ($orClause) LIMIT 1";
+        $id = $this->queryModuleId($sql, $urlPatterns, "URL pattern (any subject)");
+        if ($id !== null) return $id;
 
-        // Attempt 4: module_key (filename without .php)
-        $moduleKey = basename($moduleUrl, '.php');
-        if (!empty($moduleKey)) {
-            $stmt = $this->db->prepare("SELECT id FROM modules WHERE module_key = ? LIMIT 1");
-            if ($stmt) {
-                $stmt->bind_param("s", $moduleKey);
-                $stmt->execute();
-                $result = $stmt->get_result();
-                if ($row = $result->fetch_assoc()) {
-                    $id = $row['id'];
-                    $stmt->close();
-                    $this->addDebug("Found module ID $id by module_key '$moduleKey'.");
-                    return $id;
-                }
-                $stmt->close();
-            }
-        }
+        // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+        // Tier 4: module_key prefix — safety net for DB values like
+        // 'meas-nonstd-home12' when the file is 'measure-nonstd.php'.
+        // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+        $id = $this->queryModuleId(
+            "SELECT id FROM modules WHERE module_key LIKE ? LIMIT 1",
+            [$escKey . '%'],
+            "module_key LIKE '$moduleKey%'"
+        );
+        if ($id !== null) return $id;
 
-        $this->addDebug("WARNING: Module not found for filename '$filename'. Using fallback ID 1.");
+        // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+        // No match — log to error log (visible) AND to debug buffer.
+        // Score will still tick in $_SESSION, but DB persistence will
+        // land on the fallback ID. This is the original silent failure
+        // mode; now it's loud in the error log.
+        // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+        error_log(sprintf(
+            "Scorer CRITICAL: no module row matched filename='%s' key='%s' subject='%s'. "
+            . "Score will NOT persist to the correct module.",
+            $filename, $moduleKey, $subject ?? '(unknown)'
+        ));
+        $this->addDebug("WARNING: Module not found for key '$moduleKey'. Using fallback ID 1.");
         return 1;
+    }
+
+    /**
+     * Helper: prepare + execute a parameterised lookup and return the
+     * first row's `id`, or null on no match. All params are strings.
+     */
+    private function queryModuleId($sql, array $params, $description) {
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) {
+            $this->addDebug("Prepare failed ($description): " . $this->db->error);
+            return null;
+        }
+        $types = str_repeat('s', count($params));
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        if ($row) {
+            $this->addDebug("Found module ID {$row['id']} by $description");
+            return (int)$row['id'];
+        }
+        return null;
     }
 
     private function addDebug($msg) {
