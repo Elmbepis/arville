@@ -201,17 +201,17 @@ render_header($moduleTitle, $moduleTitle, $theme);
             <?php echo $result['correct'] ? '&#9989; You are correct!' : '&#10060; Sorry, that is not correct.'; ?>
         </p>
         <p style="font-size:15pt; font-weight:700; color:#800080; margin-top:15px;">
-            The numbers, arranged from
+            Here are the numbers, arranged<br/>from
             <strong><?php echo ($result['direction'] === 'desc' ? 'GREATEST to LEAST' : 'LEAST to GREATEST'); ?></strong>:
         </p>
         <?php renderArrangingNumbers($result['sorted']); ?>
     <?php else: ?>
         <br>
         <p style="font-size:16pt; font-weight:700; color:#800080;">
-            Arrange the following numbers from
+            Arrange the following numbers<br/>from
             <strong style="color:#CC0066;">
-                <?php echo ($q['direction'] === 'desc' ? 'GREATEST to LEAST' : 'LEAST to GREATEST'); ?>
-            </strong>:
+                <?php echo ($q['direction'] === 'desc' ? 'GREATEST to LEAST' :'LEAST to GREATEST')?>
+            </strong>:<br/><br/>
         </p>
         <?php renderArrangingNumbers($q['nums']); ?>
         <?php renderArrangingInputs($q['boxnum']); ?>

@@ -202,7 +202,7 @@ render_header($moduleTitle, $moduleTitle);
         <br>
         <?php if ($q['form'] === 1): ?>
             <p style="font-size:15pt; font-weight:700; color:#800080;">
-                Type the number:
+                Type the number for:
             </p>
             <p style="font-family:'Comic Sans MS',sans-serif;
                       font-size:32pt; font-weight:700; color:#CC0066;
@@ -217,7 +217,7 @@ render_header($moduleTitle, $moduleTitle);
             </p>
         <?php else: ?>
             <p style="font-size:15pt; font-weight:700; color:#800080;">
-                Type the word:
+                Type the word for:
             </p>
             <p style="font-family:'Comic Sans MS',sans-serif;
                       font-size:52pt; font-weight:700; color:#CC0066;
