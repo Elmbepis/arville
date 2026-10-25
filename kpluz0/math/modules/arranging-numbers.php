@@ -5,18 +5,11 @@
 // Student arranges N numbers from greatest&#8594;least or least&#8594;greatest.
 // Uses container.php + scorer.php only.
 //
-// THEME — bg01-* fits container exactly (75/655/70) &#8594; keep own theme.
+// LAYOUT — For 5-6 numbers, forces 3 per row (grid) so long numbers don't
+// produce awkward 4+1 / 4+2 wraps. 3-4 numbers stay on a single row.
 //
-// LEVEL — Hard = legacy Medium (recent calibration).
-//   boxnum:  Easy = 3+grade,  Hard = 3+grade+1   (capped at 6)
-//   ranges:  grade-keyed, Hard &#8776; next grade Easy (per range table)
-//
-// MULTI-INPUT SCORING — user's N values combined as "v1|v2|...|vN",
-// compared to the correctly sorted numbers. Canonicalised to ints so
-// "044" matches "44".
-//
-// Sorted direction is 50/50: greatest&#8594;least or least&#8594;greatest (preserved
-// from legacy — both appear in real curricula).
+// BOX SIZING — Display boxes and input boxes share identical dimensions
+// and font size, both derived from the digit count of the widest number.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -44,7 +37,6 @@ if (!isset($_SESSION['level']) || !in_array($_SESSION['level'], $levels)) $_SESS
 $lvl = $_SESSION['level'];
 $grd = (int)($_SESSION['grade'] ?? 0);
 
-// bg01-* fits container (75/655/70) — keep own theme
 $theme = [
     'top_banner'    => $base . '/math/modules/images/bg01-top.jpg',
     'title_bg'      => $base . '/math/modules/images/bg01-top2.jpg',
@@ -56,7 +48,6 @@ $theme = [
     'score_bottom'  => $base . '/math/images/score-bottom-1.jpg',
 ];
 
-// Range table: [min, max] per grade, per level. Hard = legacy Medium.
 $ranges = [
     0 => ['Easy' => [1, 10],     'Hard' => [1, 20]],
     1 => ['Easy' => [5, 29],     'Hard' => [5, 49]],
@@ -66,7 +57,6 @@ $ranges = [
 $gradeKey = min(3, max(0, $grd));
 [$nMin, $nMax] = $ranges[$gradeKey][$lvl];
 
-// Box count (number of items to sort)
 $boxnum = min(6, 3 + $gradeKey + ($lvl === 'Hard' ? 1 : 0));
 
 // ============================================================
@@ -78,7 +68,6 @@ $scorer = null;
 if (isset($_POST['Submit1']) && isset($_SESSION[$sessionKey]['current'])) {
     $cur = $_SESSION[$sessionKey]['current'];
 
-    // Collect N inputs
     $userParts = [];
     for ($i = 1; $i <= $cur['boxnum']; $i++) {
         $v = (int)trim((string)($_POST['answer' . $i] ?? '0'));
@@ -96,7 +85,7 @@ if (isset($_POST['Submit1']) && isset($_SESSION[$sessionKey]['current'])) {
         'sorted'    => $cur['sorted'],
         'userParts' => $userParts,
         'boxnum'    => $cur['boxnum'],
-        'direction' => $cur['direction'], // 'desc' or 'asc'
+        'direction' => $cur['direction'],
     ];
     unset($_SESSION[$sessionKey]['current']);
 }
@@ -105,7 +94,6 @@ if (isset($_POST['Submit1']) && isset($_SESSION[$sessionKey]['current'])) {
 // GENERATE NEW QUESTION
 // ============================================================
 if ($result === null || isset($_POST['Submit2'])) {
-    // Generate N distinct numbers
     $nums = [];
     $tries = 0;
     while (count($nums) < $boxnum && $tries < 100) {
@@ -113,10 +101,8 @@ if ($result === null || isset($_POST['Submit2'])) {
         if (!in_array($n, $nums, true)) $nums[] = $n;
         $tries++;
     }
-    // Safety: if range too tight, allow duplicates (won't happen with current configs)
     while (count($nums) < $boxnum) $nums[] = rand($nMin, $nMax);
 
-    // 50/50 direction
     $direction = (rand(1, 2) === 1) ? 'desc' : 'asc';
     $sorted = $nums;
     if ($direction === 'desc') {
@@ -136,10 +122,24 @@ if ($result === null || isset($_POST['Submit2'])) {
 }
 
 /**
- * Render a row of numbers as display boxes (not editable).
- * Highlights the "?" state if $isQuestion is true (not used here — display only).
+ * Container CSS for a set of N boxes. 3-4 items &#8594; single flex row; 5-6 &#8594; 3-col grid.
  */
-function renderArrangingNumbers($nums) {
+function arrangingContainerStyle($boxnum) {
+    if ($boxnum <= 4) {
+        return 'display:flex; justify-content:center; align-items:center;'
+             . ' gap:15px; flex-wrap:wrap; margin:15px 0;';
+    }
+    return 'display:grid; grid-template-columns:repeat(3, auto);'
+         . ' justify-content:center; justify-items:center; align-items:center;'
+         . ' gap:15px; margin:15px 0;';
+}
+
+/**
+ * Box metrics derived from the widest number.
+ * Returns [widthPx, fontPt] such that both display and input boxes
+ * look identical and comfortably fit the longest number.
+ */
+function boxMetrics($nums) {
     $maxDigits = 1;
     foreach ($nums as $n) {
         $maxDigits = max($maxDigits, strlen((string)$n));
@@ -148,15 +148,27 @@ function renderArrangingNumbers($nums) {
     if ($maxDigits >= 4) $fontPt = 28;
     if ($maxDigits >= 5) $fontPt = 24;
 
-    echo '<div style="display:flex; justify-content:center; gap:15px;'
-       . ' flex-wrap:wrap; margin:15px 0;">';
+    // Approximate: each digit &#8776; 0.6× font size in px, plus 40px of chrome
+    $charW = $fontPt * 0.6;
+    $boxW  = (int)max(90, ceil($maxDigits * $charW + 60));
+
+    return ['w' => $boxW, 'font' => $fontPt];
+}
+
+/**
+ * Render a row of numbers as display boxes.
+ */
+function renderArrangingNumbers($nums) {
+    $m = boxMetrics($nums);
+    $boxnum = count($nums);
+    echo '<div style="' . arrangingContainerStyle($boxnum) . '">';
     foreach ($nums as $n) {
-        echo '<div style="min-width:90px; min-height:90px; display:inline-flex;'
-           . ' align-items:center; justify-content:center;'
+        echo '<div style="width:' . $m['w'] . 'px; height:90px;'
+           . ' display:inline-flex; align-items:center; justify-content:center;'
            . ' background:#f8f8ff; border:3px solid #b0b0d8;'
-           . ' border-radius:16px; padding:10px 15px; box-sizing:border-box;'
+           . ' border-radius:16px; box-sizing:border-box; padding:0;'
            . ' font-family:\'Comic Sans MS\',sans-serif;'
-           . ' font-size:' . $fontPt . 'pt; font-weight:700; color:#800080;">'
+           . ' font-size:' . $m['font'] . 'pt; font-weight:700; color:#800080;">'
            . htmlspecialchars((string)$n)
            . '</div>';
     }
@@ -164,19 +176,20 @@ function renderArrangingNumbers($nums) {
 }
 
 /**
- * Render N input boxes side by side (for the student's arrangement).
- * $filled: array of values to prefill (empty array for blank).
+ * Render N input boxes sized identically to the display boxes.
+ * $nums is used to derive the same metrics; if empty, boxMetrics([1]) is used.
  */
-function renderArrangingInputs($boxnum, $filled = []) {
-    echo '<div style="display:flex; justify-content:center; gap:15px;'
-       . ' flex-wrap:wrap; margin:15px 0;">';
+function renderArrangingInputs($boxnum, $nums = [], $filled = []) {
+    $m = boxMetrics($nums ?: [1]);
+    echo '<div style="' . arrangingContainerStyle($boxnum) . '">';
     for ($i = 1; $i <= $boxnum; $i++) {
         $val = htmlspecialchars((string)($filled[$i - 1] ?? ''));
-        echo '<input type="text" name="answer' . $i . '" maxlength="5"'
-           . ' style="width:100px; height:90px; text-align:center;'
-           . ' font-family:\'Comic Sans MS\',sans-serif; font-size:28px;'
-           . ' font-weight:700; color:#0000CC; background:#fff;'
-           . ' border:3px solid #b0b0d8; border-radius:16px; box-sizing:border-box;"'
+        echo '<input type="text" name="answer' . $i . '" maxlength="6"'
+           . ' style="width:' . $m['w'] . 'px; height:90px; text-align:center;'
+           . ' font-family:\'Comic Sans MS\',sans-serif;'
+           . ' font-size:' . $m['font'] . 'pt; font-weight:700; color:#0000CC;'
+           . ' background:#fff; border:3px solid #b0b0d8;'
+           . ' border-radius:16px; box-sizing:border-box; padding:0;"'
            . ' value="' . $val . '" autocomplete="off"'
            . ($i === 1 ? ' autofocus' : '') . '>';
     }
@@ -210,11 +223,11 @@ render_header($moduleTitle, $moduleTitle, $theme);
         <p style="font-size:16pt; font-weight:700; color:#800080;">
             Arrange the following numbers<br/>from
             <strong style="color:#CC0066;">
-                <?php echo ($q['direction'] === 'desc' ? 'GREATEST to LEAST' :'LEAST to GREATEST')?>
-            </strong>:<br/><br/>
+                <?php echo ($q['direction'] === 'desc' ? 'GREATEST to LEAST' : 'LEAST to GREATEST'); ?>
+            </strong>:
         </p>
         <?php renderArrangingNumbers($q['nums']); ?>
-        <?php renderArrangingInputs($q['boxnum']); ?>
+        <?php renderArrangingInputs($q['boxnum'], $q['nums']); ?>
     <?php endif; ?>
 
     <div>
