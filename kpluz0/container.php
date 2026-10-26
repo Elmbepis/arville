@@ -1,8 +1,9 @@
 <?php
 // container.php – shared layout, no session handling
-// VERSION 10 — JS post-processor converts <br/> / \n tokens to real <br> elements
+// VERSION 12 — .frac-input.frac-single now defaults to 52px/30px
+//                (base .frac-input = 70/40 for stacked fraction fields).
 
-define('KPLUZ_CONTAINER_VERSION', '10');
+define('KPLUZ_CONTAINER_VERSION', '12');
 
 function _math_theme_file_exists($fileName) {
     $fsPath = __DIR__ . '/math/images/images/' . $fileName;
@@ -465,6 +466,68 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             background: #f8f8ff;
         }
 
+        /* ---- fraction / arithmetic answer inputs (v12) ----
+           base .frac-input = stacked fraction (numer/denom/whole) &#8594; 70px / 40px
+           .frac-single     = single-line answer (decimals, short ints) &#8594; 52px / 30px
+           --------------------------------------------------- */
+        .frac-input {
+            height: 70px;
+            font-size: 40px;
+            text-align: center;
+            border: 2px solid #888;
+            border-radius: 8px;
+            font-weight: 700;
+            color: #0000CC;
+            font-family: inherit;
+            box-sizing: border-box;
+            padding: 0 6px;
+            vertical-align: middle;
+            background: #fff;
+        }
+        .frac-input:focus {
+            outline: none;
+            border-color: #8080ff;
+            box-shadow: 0 0 0 3px rgba(128, 128, 255, 0.25);
+            background: #f8f8ff;
+        }
+        .frac-input.frac-whole  { width: 100px; }
+        .frac-input.frac-part   { width: 130px; }
+        .frac-input.frac-single {
+            height: 52px;
+            font-size: 30px;
+            width: auto;
+            min-width: 140px;
+            padding: 0 16px;
+        }
+
+        .frac-eq-row {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin: 30px auto;
+            flex-wrap: wrap;
+        }
+        .frac-display {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Comic Sans MS', 'Segoe UI', cursive;
+            font-weight: 700;
+            color: #800080;
+            font-size: 40px;
+            line-height: 1;
+        }
+        .frac-display .frac-bar {
+            align-self: stretch;
+            border-top: 4px solid #800080;
+            min-width: 90px;
+            margin: 4px 0;
+        }
+        .frac-op  { font-size: 40pt; color: #444; font-weight: 700; }
+        .frac-num { font-size: 40pt; font-weight: 700; color: #CC0066; }
+        .frac-of  { font-size: 28pt; font-weight: 700; color: #444; }
+
         .image-grid { text-align: center; margin: 20px 0; line-height: 1.1; }
         .image-grid img {
             display: inline-block;
@@ -529,6 +592,19 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             .title-area .title-text { font-size: 14pt; }
             .score-box .score-top { width: 80px; height: 60px; background-size: contain; }
             .score-box .score-bottom { width: 80px; height: 45px; font-size: 18pt; background-size: contain; }
+            .frac-input { height: 52px; font-size: 26px; }
+            .frac-input.frac-whole  { width: 70px; }
+            .frac-input.frac-part   { width: 90px; }
+            .frac-input.frac-single {
+                height: 42px;
+                font-size: 22px;
+                min-width: 110px;
+                padding: 0 12px;
+            }
+            .frac-display { font-size: 26px; }
+            .frac-display .frac-bar { border-top-width: 3px; min-width: 60px; }
+            .frac-op, .frac-num { font-size: 26pt; }
+            .frac-of { font-size: 18pt; }
         }
         ";
         ?>
@@ -661,7 +737,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
                              onmouseover="FP_swapImg(1,0,'img1','<?php echo $base; ?>/images/header1b.jpg')"
                              onmouseout="FP_swapImg(0,0,'img1','<?php echo $base; ?>/images/header1a.jpg')"
                              onmousedown="FP_swapImg(1,0,'img1','<?php echo $base; ?>/images/header1c.jpg')"
-                             onmouseup="FP_swapImg(0,0,'img1','<?php echo $base; ?>/images/header1b.jpg')">
+                             onmouseup="FP_swapImg(1,0,'img1','<?php echo $base; ?>/images/header1b.jpg')">
                     </a>
                 </td>
                 <td width="133" valign="top">
@@ -706,7 +782,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
                              onmouseover="FP_swapImg(1,0,'img6','<?php echo $base; ?>/images/header6b.jpg')"
                              onmouseout="FP_swapImg(0,0,'img6','<?php echo $base; ?>/images/header6a.jpg')"
                              onmousedown="FP_swapImg(1,0,'img6','<?php echo $base; ?>/images/header6c.jpg')"
-                             onmouseup="FP_swapImg(0,0,'img6','<?php echo $base; ?>/images/header6b.jpg')">
+                             onmouseup="FP_swapImg(1,0,'img6','<?php echo $base; ?>/images/header6b.jpg')">
                     </a>
                 </td>
             </tr>
