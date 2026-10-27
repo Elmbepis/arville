@@ -263,7 +263,7 @@ render_header($moduleTitle . ' - ' . $lvl, $moduleTitle . ' : Level ' . $grd . '
             echo "Area of a Triangle = (base x height)/2<br>= ($a cm)($b cm)/2 = $ansDisp sq.cm.";
         } elseif ($sh == 4) {
             $rsq = canon2dp(pow($r, 2));
-            echo "Area of a Circle = (pi)(r²)<br>= (3.14)($r cm)² = (3.14)($rsq) = $ansDisp sq.cm.";
+            echo "Area of a Circle = (pi)(r<sup>2</sup>)<br>= (3.14)($r cm)<sup>2</sup> = (3.14)($rsq) = $ansDisp sq.cm.";
         }
         ?>
     </p>
@@ -291,9 +291,15 @@ render_header($moduleTitle . ' - ' . $lvl, $moduleTitle . ' : Level ' . $grd . '
 
     <p style="font-size:13pt; font-weight:500; color:#444444;">
         <br/>Click on your answer (in sq.cm.).<br/>
-    </p>
-
-    <?php render_choices($q['choices'], 'ansclick', 'raw'); ?>
+    </p>    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px 30px; max-width:460px; margin:20px auto;">
+        <?php foreach ($q['choices'] as $c): ?>
+            <a href="?ansclick=<?php echo urlencode($c); ?>"
+               class="choice-btn"
+               style="width:100%; white-space:normal; padding:15px 20px; box-sizing:border-box;">
+                <?php echo htmlspecialchars($c); ?>
+            </a>
+        <?php endforeach; ?>
+    </div>
 
     <div style="margin-top:20px;">
         <br/><input type="submit" name="Submit2" value="New Question">

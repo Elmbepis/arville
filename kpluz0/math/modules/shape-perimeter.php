@@ -375,9 +375,15 @@ render_header($moduleTitle . ' - ' . $lvl, $moduleTitle . ' : Level ' . $grd . '
 
     <p style="font-size:13pt; font-weight:500; color:#444444;">
         <br/>Click on your answer (in cm).<br/>
-    </p>
-
-    <?php render_choices($q['choices'], 'ansclick', 'raw'); ?>
+    </p>    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px 30px; max-width:480px; margin:20px auto;">
+        <?php foreach ($q['choices'] as $c): ?>
+            <a href="?ansclick=<?php echo urlencode($c); ?>"
+               class="choice-btn"
+               style="width:100%; white-space:normal; padding:15px 20px; box-sizing:border-box;">
+                <?php echo htmlspecialchars($c); ?>
+            </a>
+        <?php endforeach; ?>
+    </div>
 
     <div style="margin-top:20px;">
         <br/><input type="submit" name="Submit2" value="New Question">
