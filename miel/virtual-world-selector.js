@@ -160,6 +160,11 @@ class VirtualWorldSelector {
                 image: 'vw-motor-stop.jpg',
                 link: '../village2.htm?id=7'
             },
+            'dogville': {
+                name: 'Dogville Delight',
+                image: 'vw-dogville.jpg',
+                link: '../nature.htm?id=12'
+            },
         };
         
         this.selectedWorld = this.options.selectedWorld;
