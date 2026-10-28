@@ -15,8 +15,11 @@
 // branches failed silently &#8594; no question ever generated for any grade. Now
 // reads $_SESSION['grade'] ?? 4.
 //
-// Sphere/cylinder answers are decimals rounded to 3 places. Choice strings
-// use the same fmt_num formatter so display matches scoring exactly.
+// Distractors: tight 15% band (see make_vol_distractors). Fixes outlier case
+// where structurally-wrong candidates (raw s×s×s value, or /1000 vs
+// /1000000 unit-conversion mistakes) appeared as choices when they happened
+// to be numerically far — e.g. answer 0.003 cu m next to raw 27000 cu cm.
+// Only in-band candidates survive.
 //
 // Theme: wquiz-15-* (75/655/70). Score box: score-*-1.
 // DB row required: modules.url = 'word-volume.php'
@@ -35,10 +38,10 @@ if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
 
 $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 
-$moduleTitle = 'Word Problems Involving Volumes of Solids';
+$moduleTitle = 'Word Problems Involving<br/>Volumes of Solids';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Easy';                                 // single-level module
+$lvl         = 'Easy';
 $grd         = min(8, max(1, (int)($_SESSION['grade'] ?? 4)));  // §H fix
 
 function hl($text) {
@@ -51,14 +54,38 @@ function fmt_num($v) {
     return rtrim(rtrim(number_format($v, 3, '.', ''), '0'), '.');
 }
 
+// ============================================================
+// Distractor builder — tight 15% band around answer.
+// Previously allowed raw s×s×s, /1000 vs /1000000 mistakes, etc. to appear
+// when numerically far from the answer (e.g. answer 0.003 next to 27000).
+// Band floor of 0.1 handles small cu-meter answers.
+// ============================================================
 function make_vol_distractors($ans, $candidates, $n = 3) {
+    $ans = round((float)$ans, 6);
     $ansStr = fmt_num($ans);
     $seen = [$ansStr => true];
     $out = [];
-    shuffle($candidates);
-    foreach ($candidates as $c) {
+
+    $band = max(0.1, abs($ans) * 0.15);
+    $absUnit = (abs($ans) > 0) ? pow(10, floor(log10(abs($ans))) - 1) : 0.1;
+    $absUnit = max(0.001, $absUnit);
+
+    $cands = [];
+    foreach ([1, 2, 3, 5, 8, 10, 15, 20, 30, 50] as $m) {
+        $cands[] = $ans + $m * $absUnit;
+        $cands[] = $ans - $m * $absUnit;
+    }
+    foreach ([0.03, 0.05, 0.08, 0.10, 0.12] as $pct) {
+        $cands[] = $ans * (1 + $pct);
+        $cands[] = $ans * (1 - $pct);
+    }
+    foreach ($candidates as $c) $cands[] = $c;
+
+    shuffle($cands);
+    foreach ($cands as $c) {
         $c = (float)$c;
         if ($c <= 0) continue;
+        if (abs($c - $ans) > $band) continue;
         $cs = fmt_num($c);
         if (isset($seen[$cs])) continue;
         $seen[$cs] = true;
@@ -67,7 +94,7 @@ function make_vol_distractors($ans, $candidates, $n = 3) {
     }
     $d = 1;
     while (count($out) < $n && $d <= 200) {
-        foreach ([$ans + $d, $ans - $d] as $c) {
+        foreach ([$ans + $d * $absUnit, $ans - $d * $absUnit] as $c) {
             if ($c <= 0) continue;
             $cs = fmt_num($c);
             if (isset($seen[$cs])) continue;
@@ -129,7 +156,7 @@ if ($result === null || isset($_POST['Submit2'])) {
             $ans_raw = $s * $s * $s;
             $soln = "volume of a cube = s x s x s<br>";
             $soln .= "volume of $obj = $s m x $s m x $s m = <strong>$ans_raw cu meters</strong>";
-            $candidates = [$s * $s, $s * 4, $ans_raw * 2, $ans_raw / 2, $s * 3];
+            $candidates = [$s * $s * $s * 1.05, $s * $s * $s * 0.95, $s * $s * $s + 100, $s * $s * $s - 100, $s * $s * $s * 1.1];
         } else {
             $s = rand(6, 12);
             $unit = 'coins';
@@ -138,7 +165,7 @@ if ($result === null || isset($_POST['Submit2'])) {
             $ans_raw = $s * $s * $s * $num;
             $soln = "volume of cube = s x s x s = $s x $s x $s = " . ($s * $s * $s) . " cu inches<br>";
             $soln .= "# of coins = " . ($s * $s * $s) . " cu in x $num coins/cu in = <strong>$ans_raw coins</strong>";
-            $candidates = [$s * $s * $s, $ans_raw * 2, $ans_raw / 2, $num * $s, $s * 3];
+            $candidates = [$ans_raw * 1.05, $ans_raw * 0.95, $ans_raw + 10, $ans_raw - 10, $ans_raw * 1.1];
         }
     } elseif ($qopt == 2) {
         $qnum = rand(1, 2);
@@ -153,7 +180,7 @@ if ($result === null || isset($_POST['Submit2'])) {
             $ans_raw = $l * $w * $h;
             $soln = "volume of a rectangular prism = L x W x H<br>";
             $soln .= "volume of $obj = $l in x $w in x $h in = <strong>$ans_raw cu inches</strong>";
-            $candidates = [$l + $w + $h, ($l + $w) * $h, $l * $w, $ans_raw * 2, $ans_raw / 2];
+            $candidates = [$ans_raw * 1.05, $ans_raw * 0.95, $ans_raw + 100, $ans_raw - 100, $ans_raw * 1.1];
         } else {
             $l = rand(15, 40);
             do { $w = rand(11, 25); } while ($w >= $l);
@@ -164,7 +191,7 @@ if ($result === null || isset($_POST['Submit2'])) {
             $ans_raw = $l * $w * $h * $num;
             $soln = "volume of a rectangular prism = L x W x H = $l x $w x $h = " . ($l * $w * $h) . " cu meters<br>";
             $soln .= "# of fingerlings = " . ($l * $w * $h) . " cu m x $num fingerlings/cu m = <strong>$ans_raw fingerlings</strong>";
-            $candidates = [$l * $w * $h, $ans_raw * 2, $ans_raw / 2, $l + $w + $h, $num * $h];
+            $candidates = [$ans_raw * 1.05, $ans_raw * 0.95, $ans_raw + 500, $ans_raw - 500, $ans_raw * 1.1];
         }
     } elseif ($qopt == 3) {
         $qnum = rand(1, 2);
@@ -178,7 +205,7 @@ if ($result === null || isset($_POST['Submit2'])) {
             $soln = "volume of a cube = s x s x s<br>";
             $soln .= "= $s cm x $s cm x $s cm = " . ($s * $s * $s) . " cu cm<br>";
             $soln .= "= " . ($s * $s * $s) . " cu cm x cu m / 1000000 cu cm = <strong>" . fmt_num($ans_raw) . " cu meters</strong>";
-            $candidates = [$s * $s * $s, $s * $s * $s / 1000, $s * $s * $s * 1000, $ans_raw * 2];
+            $candidates = [$ans_raw * 1.05, $ans_raw * 0.95, $ans_raw * 2, $ans_raw / 2];
         } else {
             $s = rand(101, 175) * 0.01;
             $unit = 'cu centimeters';
@@ -189,7 +216,7 @@ if ($result === null || isset($_POST['Submit2'])) {
             $soln = "volume of a cube = s x s x s<br>";
             $soln .= "= $s m x $s m x $s m = " . fmt_num($s * $s * $s) . " cu m<br>";
             $soln .= "= " . fmt_num($s * $s * $s) . " cu m x 1000000 cu cm/cu m = <strong>" . fmt_num($ans_raw) . " cu centimeters</strong>";
-            $candidates = [$s * $s * $s, $s * $s * $s * 1000, $ans_raw / 1000, $ans_raw * 2];
+            $candidates = [$ans_raw * 1.05, $ans_raw * 0.95, $ans_raw * 2, $ans_raw / 2];
         }
     } elseif ($qopt == 4) {
         $qnum = rand(1, 2);
@@ -205,7 +232,7 @@ if ($result === null || isset($_POST['Submit2'])) {
             $soln = "volume = L x W x H<br>";
             $soln .= "= $l cm x $w cm x $h cm = " . ($l * $w * $h) . " cu cm<br>";
             $soln .= "= " . ($l * $w * $h) . " cu cm x liter / 1000 cu cm = <strong>" . fmt_num($ans_raw) . " liters</strong>";
-            $candidates = [$l * $w * $h, $l * $w * $h / 10000, $ans_raw * 2, $ans_raw / 2];
+            $candidates = [$ans_raw * 1.05, $ans_raw * 0.95, $ans_raw * 2, $ans_raw / 2];
         } else {
             $l = rand(101, 175) * 0.01;
             do { $w = rand(75, 150) * 0.01; } while ($w >= $l);
@@ -218,7 +245,7 @@ if ($result === null || isset($_POST['Submit2'])) {
             $soln = "volume = L x W x H<br>";
             $soln .= "= $l m x $w m x $h m = " . fmt_num($l * $w * $h) . " cu m<br>";
             $soln .= "= " . fmt_num($l * $w * $h) . " cu m x 1000 liters / cu m = <strong>" . fmt_num($ans_raw) . " liters</strong>";
-            $candidates = [$l * $w * $h, $l * $w * $h * 100, $ans_raw / 10, $ans_raw * 2];
+            $candidates = [$ans_raw * 1.05, $ans_raw * 0.95, $ans_raw * 2, $ans_raw / 2];
         }
     } elseif ($qopt == 5) {
         $r = rand(100, 150);
@@ -232,11 +259,9 @@ if ($result === null || isset($_POST['Submit2'])) {
         $soln .= "= " . fmt_num(4.1867 * $r * $r * $r) . " cu cm x liter / 1000 cu cm<br>";
         $soln .= "= <strong>" . fmt_num($ans_raw) . " liters</strong>";
         $candidates = [
-            4.0 / 3.0 * 3.14 * $r * $r / 1000,
-            3.14 * $r * $r * $r / 1000,
-            4.0 / 3.0 * 3.14 * $r * $r * $r,
+            $ans_raw * 1.05, $ans_raw * 0.95,
+            $ans_raw * 1.08, $ans_raw * 0.92,
             $ans_raw * 2,
-            $ans_raw / 2,
         ];
     } else {
         $r = rand(65, 95);
@@ -251,10 +276,9 @@ if ($result === null || isset($_POST['Submit2'])) {
         $soln .= "= " . fmt_num(3.14 * $r * $r * $h) . " cu cm x liter / 1000 cu cm<br>";
         $soln .= "= <strong>" . fmt_num($ans_raw) . " liters</strong>";
         $candidates = [
-            3.14 * $r * $h / 1000,
-            3.14 * $r * $r * $r / 1000,
+            $ans_raw * 1.05, $ans_raw * 0.95,
+            $ans_raw * 1.08, $ans_raw * 0.92,
             $ans_raw * 2,
-            $ans_raw / 2,
         ];
     }
 
@@ -262,11 +286,12 @@ if ($result === null || isset($_POST['Submit2'])) {
     $distractors = make_vol_distractors($ans_raw, $candidates, 3);
     $allChoices = array_merge([$ansStr], $distractors);
     $allChoices = array_values(array_unique($allChoices));
+    $absUnitPad = max(0.001, pow(10, floor(log10(max(0.001, abs($ans_raw)))) - 1));
     $d = 1;
     while (count($allChoices) < 4) {
-        $c = fmt_num($ans_raw + $d);
+        $c = fmt_num($ans_raw + $d * $absUnitPad);
         if (!in_array($c, $allChoices, true)) $allChoices[] = $c;
-        $c = fmt_num($ans_raw - $d);
+        $c = fmt_num($ans_raw - $d * $absUnitPad);
         if ((float)$c > 0 && !in_array($c, $allChoices, true)) $allChoices[] = $c;
         $d++;
     }
