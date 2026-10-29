@@ -66,7 +66,9 @@ $elective_list = [
     "Social Sciences",
     "Creative Composition 1",
     "Chemistry 1",
-    "Biology 1"
+    "Chemistry 2",
+    "Biology 1",
+    "Biology 2"
 ];
 
 // We'll fetch all tests first, then filter and sort later.
