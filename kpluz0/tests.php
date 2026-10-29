@@ -68,7 +68,8 @@ $elective_list = [
     "Chemistry 1",
     "Chemistry 2",
     "Biology 1",
-    "Biology 2"
+    "Biology 2",
+    ".Net Technology" 
 ];
 
 // We'll fetch all tests first, then filter and sort later.
