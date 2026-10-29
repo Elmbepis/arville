@@ -66,8 +66,10 @@ $elective_list = [
     "Social Sciences",
     "Creative Composition 1",
     "Chemistry 1",
+    "Chemistry 2",
     "Biology 1",
-    ".Net Technology"
+    "Biology 2",
+    ".Net Technology" 
 ];
 
 // We'll fetch all tests first, then filter and sort later.
@@ -492,7 +494,7 @@ $conn->close();
 <body>
   <div class="dashboard-container">
     <div class="header">
-        <img src="images/kpluz_logo.png" alt="KPluz Logo" class="header-logo">
+        <img src="../kpluz0/images/kpluz_logo.png" alt="KPluz Logo" class="header-logo">
     </div>
 
     <div class="user-welcome">
