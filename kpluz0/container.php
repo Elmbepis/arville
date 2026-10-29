@@ -1,9 +1,12 @@
 <?php
 // container.php – shared layout, no session handling
+// VERSION 13 — logo anchor now routes via home-subj.php?subj=<subject>
+//                derived from the module's path segment (was hardcoded to
+//                math/modules/math-menu.php for every subject).
 // VERSION 12 — .frac-input.frac-single now defaults to 52px/30px
 //                (base .frac-input = 70/40 for stacked fraction fields).
 
-define('KPLUZ_CONTAINER_VERSION', '12');
+define('KPLUZ_CONTAINER_VERSION', '13');
 
 function _math_theme_file_exists($fileName) {
     $fsPath = __DIR__ . '/math/images/images/' . $fileName;
@@ -77,6 +80,14 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
 
     $scriptPath = $_SERVER['SCRIPT_NAME'] ?? '';
     $isMath     = (bool)preg_match('#/math/#i', $scriptPath);
+
+    // Derive calling subject from the module's path segment:
+    //   …/<subject>/modules/<file>.php  &#8594;  'math' | 'english' | 'ap' | …
+    // Explicit ?subj= overrides home-subj.php's stale-session fallback.
+    $subjectKey = 'gmrc';
+    if (preg_match('#/([^/]+)/modules/[^/]+\.php$#i', $scriptPath, $m)) {
+        $subjectKey = strtolower($m[1]);
+    }
 
     if ($isMath) {
         if (!headers_sent()) {
@@ -727,7 +738,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
         <table class="header-table" cellspacing="0" cellpadding="0">
             <tr>
                 <td width="193" height="100" valign="top">
-                    <a href="<?php echo $base; ?>/math/modules/math-menu.php">
+                    <a href="<?php echo $base; ?>/home-subj.php?subj=<?php echo urlencode($subjectKey); ?>">
                         <img src="<?php echo $base; ?>/images/header-logo.jpg" alt="KPluz Logo">
                     </a>
                 </td>
@@ -755,7 +766,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
                              onmouseover="FP_swapImg(1,0,'img3','<?php echo $base; ?>/images/header3b.jpg')"
                              onmouseout="FP_swapImg(0,0,'img3','<?php echo $base; ?>/images/header3a.jpg')"
                              onmousedown="FP_swapImg(1,0,'img3','<?php echo $base; ?>/images/header3c.jpg')"
-                             onmouseup="FP_swapImg(0,0,'img3','<?php echo $base; ?>/images/header3b.jpg')">
+                             onmouseup="FP_swapImg(1,0,'img3','<?php echo $base; ?>/images/header3b.jpg')">
                     </a>
                 </td>
                 <td width="134" valign="top">
@@ -764,7 +775,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
                              onmouseover="FP_swapImg(1,0,'img4','<?php echo $base; ?>/images/header4b.jpg')"
                              onmouseout="FP_swapImg(0,0,'img4','<?php echo $base; ?>/images/header4a.jpg')"
                              onmousedown="FP_swapImg(1,0,'img4','<?php echo $base; ?>/images/header4c.jpg')"
-                             onmouseup="FP_swapImg(0,0,'img4','<?php echo $base; ?>/images/header4b.jpg')">
+                             onmouseup="FP_swapImg(1,0,'img4','<?php echo $base; ?>/images/header4b.jpg')">
                     </a>
                 </td>
                 <td width="134" valign="top">
@@ -773,7 +784,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
                              onmouseover="FP_swapImg(1,0,'img5','<?php echo $base; ?>/images/header5b.jpg')"
                              onmouseout="FP_swapImg(0,0,'img5','<?php echo $base; ?>/images/header5a.jpg')"
                              onmousedown="FP_swapImg(1,0,'img5','<?php echo $base; ?>/images/header5c.jpg')"
-                             onmouseup="FP_swapImg(0,0,'img5','<?php echo $base; ?>/images/header5b.jpg')">
+                             onmouseup="FP_swapImg(1,0,'img5','<?php echo $base; ?>/images/header5b.jpg')">
                     </a>
                 </td>
                 <td width="134" valign="top">

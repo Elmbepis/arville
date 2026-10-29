@@ -85,7 +85,7 @@ $template = [
         ],
         'unique_key' => '{color0}{num:02}',
         'image'      => $base . '/math/images/colors/{type}/{color0}{num:02}.jpg',
-        'prompt'     => 'What colors would you mix to get the color that you see?',
+        'prompt'     => 'What colors would you mix to<br/>get the color that you see?',
         'answer'     => '{ans}',
         'distractors' => [
             'type'  => 'sample',
