@@ -1,0 +1,791 @@
+
+Purpose: Single reference for a fresh chat to continue migrating the KPluz modules from legacy inline PHP to the modern container.php + scorer.php + q-engine.php architecture. Supersedes both prior hand-over documents and incorporates every rule established through Module 33 in this session.
+
+1. Project Context
+System: KPluz academic excellence platform (PHP + MySQL, legacy code from ~2012).
+Goal: Migrate ~500 Math modules from inline procedural PHP (in math/modules/*.php) to the modern template architecture.
+Already complete: q-engine.php (procedural + static modes), scorer.php (writes to test_results), container.php (modern layout). All rules below are proven across 33 converted modules.
+
+Non-goals: MCQ subject modules (English, Science) — those go through q-display-legacy.php, a different loader. Do not touch.
+
+2. File Architecture
+Location: F:\xampp\htdocs\arville\kpluz0\ (dev) or /arville/kpluz0/ (URL path).
+
+File	Role
+container.php	Layout. Provides render_header($title, $heading, $theme), render_footer(), render_score_box(). Defaults to English theme — Math modules must pass their own theme array.
+scorer.php	new Scorer($conn, $moduleIdentifier) → processAnswer($selected, $correct, $level). Writes easy_score / easy_qnum / hard_score / hard_qnum to test_results.
+q-engine.php	new QEngine($template, $moduleIdentifier) → generate($sessionKey) returns ['prompt','answer','image','choices','params'].
+math/modules/colors.php	Reference #1 — procedural + choice
+math/modules/shapes.php	Reference #2 — procedural + conditional
+math/modules/*.php	Legacy modules to migrate
+Do not modify: container.php, scorer.php, q-engine.php, q-display-legacy.php.
+
+3. Module Categories — Formalized
+Five categories drive the conversion approach:
+
+Category	QEngine?	Container helpers	Notes
+Procedural + choice	✅ Yes	render_choices	colors, shapes, colors-mixing, colors-pri-sec-ter
+Computed free-text → MCQ	❌ Bypass	render_choices or manual	The majority. Includes arithmetic, algebra, word problems
+Computed image-choice	❌ Bypass	render_image_choices / render_image_feedback	comparing-*, visual-patterns, multiplication-pics
+Static bank + choice	❌ Bypass	render_choices	bar-graphs, line-graphs, pie-charts, simple-experiments, probability-expressions
+<sup> / HTML-bearing choices	❌ Bypass	manual rendering	sci-notation, alg-exp-eq, alg-exp, alg-add-subt-like-exp
+Rule: if the answer requires arithmetic, position-after-shuffle, free-text entry, or HTML-bearing formatting, bypass QEngine entirely. The bypass pattern:
+
+text
+session auth → DB connect → $base → $sessionKey → $moduleId
+        ↓
+Handle answer (if ansclick) → Scorer → set $result
+        ↓
+Generate new (if $result===null or Submit2) → store in $_SESSION[$sessionKey]['current']
+        ↓
+render_header(...) → HTML → render_score_box() → render_footer()
+4. Standard Setup Block
+Verbatim in every module (QEngine or bypass). Only $moduleTitle, $moduleId, $levels, and (QEngine-only) $template change:
+
+php
+session_name('KPLUZ_SESSION');
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: /arville/kpluz0/login.php");
+    exit();
+}
+require_once __DIR__ . '/../../container.php';
+require_once __DIR__ . '/../../scorer.php';
+
+$conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz0");
+if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
+
+$base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
+
+$moduleTitle = 'X';
+$moduleId    = basename(__FILE__);
+$sessionKey  = 'mod_' . md5($moduleId);
+$levels      = ['Easy', 'Hard'];    // or ['Easy'] for single-level
+
+if (isset($_POST['level'])) $_SESSION['level'] = $_POST['level'];
+if (!isset($_SESSION['level']) || !in_array($_SESSION['level'], $levels)) $_SESSION['level'] = 'Easy';
+$lvl = $_SESSION['level'];
+5. Single-Level Modules — Collapse Rule
+When legacy hardcodes $_SESSION['level']="Easy" and has no level radio in the HTML:
+
+Drop the $levels array entirely
+
+Do NOT write $_SESSION['level']
+
+Do NOT render a difficulty selector
+
+Fix $lvl = 'Easy' as a local variable
+
+When Easy/Hard exist but generation is identical (fake differentiation): collapse to single level. Same removal. Document the legacy quirk in the header comment.
+
+Modules already collapsed: word-volume, time-zones, number-patterns, pie-charts, probability-expressions, alg-exp-eq, word-dec-mult-div, word-dec-add-subt.
+
+6. Container Helpers
+Modules never compute widths, loops, or choice markup themselves. All choice rendering goes through container helpers except when choices contain <sup> or other HTML.
+
+Helper	Purpose	Modules
+render_choices($choices, $param='ansclick', $format='ucwords')	Text buttons, uniform width via --choice-width CSS var	Most
+render_image_choices($items, $param='ansclick')	Image buttons (each = ['value','image','alt'])	comparing-*, visual-patterns, multiplication-pics
+render_image_feedback($items, $arrowImage, $correctValue)	Image row with arrow before correct item	comparing-*
+render_image_grid($imagePaths, $perRow=5)	Flat image grid	counting, shapes-colors, multiplication-pics
+Uniform width: --choice-width: round(0.62 * maxLen + 3.2, 2)em uses width:, not min-width:.
+Casing: 'ucwords' for multi-word, 'raw' for term-keeping (e.g. lowercase "half circle").
+
+7. CSS Conventions
+Rule	Value
+Title font	.title-area .title-text { font-size: 17pt } + background-size: 100% 100%
+Score box bottom margin	.score-box { margin: 0 auto 40px auto }
+Free-text button spacing	input[name='Submit1'], input[name='Submit1'] ~ input[name='Submit2'] { margin: 30px 0; }
+Result-state button spacing	style="margin: 30px 0;" on Submit2 when $result !== null
+Choice hover	.choice-btn:hover { background: #f8f8ff; border-color: #8080ff; }
+Equation card	.equation-card, .equation-inline, .equation-vertical
+Vertical rule gap	<td style="padding-top: 14px"> on answer row
+Preference: CSS-only over module edits. If a spacing/style fix is achievable with a selector in container.php, do that.
+
+8. Theme Selection Policy
+Element	Rule
+score_top, score_bottom	Always use the module's own. Common: score-*-1, score-*-1b (visualizing-numbers), score-*-2 (add/subt-several, several others), score-*-4 (elapsed-time, time-zones)
+top_banner, title_bg, left_side, right_side, content_bg, bottom_banner	Use module's own iff legacy widths ≈ 75/655/70. Otherwise fall back to paper-69-*
+Themes known to fit (75/655/70): paper-69-*, paper-70-*, wquiz-05-*, wquiz-06-*, wquiz-14-*, wquiz-15-*
+Themes that do NOT fit: test4-*, test09b-*, test11b-*, test12b-*, test25-* through test38-*, test67-* (110/582/108), test52-*, test55-*, test56-*, test71-*, paper74-*, bg01-* (colors — accepted exception)
+
+Legacy theme → paper-69- fallback confirmed for:* test67-* (110/582/108), test52/55/56/73b-* (136/547/117 or 121/547/117), test09/test23b-* (136/547/117), test10-*.
+
+9. QEngine Template Schema (procedural-choice modules only)
+Top-level keys:
+
+Key	Notes
+title	Display header
+subject	'math'
+grade	Integer, informational
+module_identifier	Must equal basename(__FILE__)
+levels	['Easy','Hard']
+theme	All 8 keys
+template	Contains params, unique_key, image, prompt, answer, distractors
+Param types:
+
+Type	Fields
+choice	from (array), optionally weights
+int	min, max (int or ['by_param'=>'x','map'=>[...]])
+lookup	source (param name), map (assoc), optional default
+literal	value
+Interpolation: {param} = raw, {param:N} = zero-pad to width N, {color:3} = first 3 chars.
+
+Prompt: string, or array of ['when'=>[param,op,val], 'value'=>'...'] rules. Operators: >, >=, <, <=, ==, !=, in, not_in.
+
+Distractors:
+
+php
+[
+    'type' => 'sample',        // or 'formula'
+    'from' => [...],
+    'from_if_answer_in' => [...],  // optional override per answer
+    'count' => 3,              // or ['Easy'=>1, 'Hard'=>3]
+]
+QEngine limitation: no computed_answer mechanism. If answer is genuinely computed (a+b), bypass QEngine.
+
+10. Grade Progression (§E — Consolidated)
+The legacy tier system (0-8) is deprecated. Replace with grade-keyed $configs table:
+
+Shape 1 — simple ranges:
+
+php
+$configs = [
+    0 => ['Easy' => [min, max, ...], 'Hard' => [min, max, ...]],
+    1 => [...],
+];
+$gradeKey = min(N, max(0, $grd));
+$cfg = $configs[$gradeKey][$lvl];
+Shape 2 — option pools:
+
+php
+$configs = [
+    0 => ['Easy' => [[count, min, max]], 'Hard' => [[count, min, max], [count, min, max]]],
+];
+Calibration: For most arithmetic modules, Hard(grade N) = legacy Medium(grade N). Legacy Hard was calibrated too high. For graded-threshold modules (add/subt with distinct Easy/Hard pools), preserve real differentiation.
+
+Deprecated: $arrnum tier lookups, $arrnum == 8 clamping bug, per-tier range systems that disagree within one module, pickMultiplicationFactors() style switches.
+
+11. $grd Bug Fix (§H — Mandatory)
+Every module that references $grd must defensively read it:
+
+php
+$grd = (int)($_SESSION['grade'] ?? 5);          // or appropriate default
+Legacy pass-chk.php sometimes didn't assign $grd on certain paths, silently disabling every branch that depended on it. This affected: bar-graphs, elapsed-time, simple-experiments, conv-length/volume/weight, word-arithmetic1/2, word-fractions-mult-div, word-ratio, word-multiples-factors, word-volume, absolute-values, negative, sci-notation, word-percentage, word-percentage-business, word-circle, word-temperature, sq-root, alg-eval-exp, alg-exp, alg-solving-1-var.
+
+For modules with clamping requirements, use min(N, max(M, (int)($_SESSION['grade'] ?? D))).
+
+12. Answer Handling
+F.1 Free-text canonicalisation:
+
+php
+$userInput = (string)(int)trim((string)($_POST['answer'] ?? '0'));
+Handles "07"→"7", " 7abc"→"7", ""→"0".
+
+F.2 Dual-input scoring: "Q|R" compound → Scorer.
+
+F.3 Level routing: Always score with $cur['lvl'] (stored at generation), never $engine->getLevel().
+
+F.4 Input sizing: max(100, ($digitCount + 1) * 32 + 24) px.
+
+F.5 maxlength: strlen((string)$ans) + 1.
+
+F.6 Formatter consistency (new rule): The same formatter applied to the answer string MUST also be applied to each distractor. Otherwise click strings don't match stored answer. Common formatters:
+
+Name	Behavior	Used by
+fmt_raw($v)	strip trailing zeros (3.50 → 3.5)	word-dec-mult-div types 1,3,6; word-dec-add-subt type 2; word-circle
+fmt_dec($v)	2 decimals (3.5 → 3.50)	word-dec-mult-div types 2,4,5,7,8; word-dec-add-subt types 1,3; word-percentage-business
+fmt_num($v)	3 decimals, strip trailing	word-volume
+fmt_pct($v)	up to 4 decimals, strip	word-percentage
+fmt_bp($v)	up to 2 decimals, strip	word-percentage-business
+fmt_circle($v)	up to 2 decimals, strip	word-circle
+fmt_temp($v)	up to 2 decimals, strip	word-temperature
+fmt_sci($sig, $exp)	"3.45 x 10<sup>-3</sup>"	sci-notation
+13. Distractor Generation — CRITICAL RULES
+13.1 No Outliers (Band Rule)
+Every distractor must be numerically close to the correct answer. Raw operands ($num1, $num2), trivially-far values (percentage itself, num ± perc), or structurally-obvious wrong operations are excluded by a tight band filter:
+
+php
+$band = max(FLOOR, abs($ans) * PCT);
+// PCT = 0.10 (percentage), 0.15 (arithmetic/geometry), 0.20 (business)
+// FLOOR = 2 (percentage), 0.5–1 (arithmetic/distance), 0.1 (volume)
+Filter pattern: build a candidate pool → filter by abs($c - $ans) <= $band → take first 3 unique.
+
+Example failure this fixes: "Kirby bought 2900 dolls, gave 21% away, how many left?" — old choices were 2291, 21, 2879, 2921. 21 is 2270 away from the answer, trivially eliminable. New choices with 10% band: 2233, 2262, 2291, 2320 — all plausible "used wrong percentage" answers.
+
+Modules fixed: word-percentage, word-percentage-business, word-dec-mult-div, word-dec-add-subt, word-circle, word-temperature, word-volume, alg-eval-exp.
+
+13.2 Successive Powers-of-Ten (Metric Conversions)
+For metric conversion modules (conv-length, conv-volume, conv-weight), the four choices must be consecutive powers of ten with the same significand. This targets the decimal-shift misconception directly:
+
+php
+function split_sig_exp($v) { /* extract [sigStr, exp] with no trailing zeros */ }
+function make_metric_distractors($correct, $n = 3) {
+    [$sig, $p] = split_sig_exp($correct);
+    $o = rand(0, $n);           // random offset so correct isn't always lowest/highest
+    $s = $p - $o;
+    $choices = [];
+    for ($i = 0; $i <= $n; $i++) {
+        $choices[$i] = fmt_num((float)$sig * pow(10, $s + $i));
+    }
+    return distractors; // omit the slot at offset $o
+}
+Correct = 5000 with o=0 → {5000, 50000, 500000, 5000000}. Same set with o=2 → {50, 500, 5000, 50000}.
+
+English (non-metric) conversions stay as wrong-factor distractors (×2, ×3, ×4, ×0.5, ×0.25) — English factors (12, 3, 5280, 16) are not powers of ten.
+
+13.3 Shuffle-Slice Bug (NEVER DO THIS)
+Anti-pattern:
+
+php
+$allChoices = array_merge([$answer], $extra);   // correct + many
+shuffle($allChoices);
+$allChoices = array_slice($allChoices, 0, 4);   // ← drops correct ~50% of the time
+Fix:
+
+php
+$distractors = array_slice($extra, 0, 3);       // build 3 FIRST
+$allChoices = array_merge([$answer], $distractors); // append correct
+shuffle($allChoices);                            // shuffle once
+This bug existed in sci-notation (early version) — correct answer was silently dropped for "Express 406" and similar.
+
+13.4 Fraction Distractors
+All distractors reduced via gcd() + cross-multiply dedupe against the correct answer. Candidate mutations: numer±1/denom, numer/denom±1, sums-of-numerators over sums-of-denominators, swapped, off-by-two. Used in: word-fractions-mult-div.
+
+13.5 Algebraic Expression Distractors
+For expression/equation modules (alg-exp, alg-add-subt-like-exp), use mutate_alg_exp — change one number per candidate (coefficient, constant, or exponent), or flip one operator. All structurally similar to the correct answer.
+
+13.6 Structural Distractor Types
+Category	Technique
+Arithmetic	Combine operands, ±1/±10, ±5%/-10% of answer
+Percentage	perc±1..5 used instead of perc; ±5%/±10% shifts
+Business	+tax, −tax, base+rate vs base+rate×(sales−quota)
+Circle	15% band; wrong-operation candidates filtered in-band
+Volume	15% band; structurally-wrong candidates dropped if far
+Algebraic	mutate_alg_exp one-number-per-candidate
+14. Layout Rules — Choice Presentation
+Format decided at render time from maxLen of choices:
+
+maxLen	Layout	CSS class	Examples
+≤ 4	1 row (4-across)	(none, render_choices default)	82, 91, 76, 63; 50%, 54%, 52%, 48%; 3:20, 20:3, 1:23, 1:60
+5–20	2×2 grid	.choice-grid-2x2	71, 1175, 47, 53016; +/-14.1; 13/225
+> 20	4 rows (1 per row)	.choice-grid-1col	22.1% chance of rain; one in a thousand
+Threshold Calibration (per module type)
+Content type	<min2x2	<min1col
+Pure numeric / fraction / algebraic	5	21
+Text choices with comma/space (bar-graphs)	8	21
+Prose (probability, word problems)	5	16 (i.e. 4-row at >15)
+Universal rule: never let 3+1 wrap occur. If choices would render as 3-on-top + 1-below in default flex, force 2×2. If choices are long enough that two-across reads poorly, force 1-per-row.
+
+CSS Snippets
+css
+.choice-grid-2x2 {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 12px 24px;
+  justify-content: center;
+  margin: 20px auto;
+}
+.choice-grid-2x2 > div { display: contents; }
+
+.choice-grid-1col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 20px auto;
+}
+.choice-grid-1col > div { display: contents; }
+display: contents on the inner flex wrapper makes the <a> children participate directly in the outer grid — buttons keep their --choice-width sizing.
+
+Render pattern
+php
+<?php
+$maxLen = 0;
+foreach ($q['choices'] as $c) $maxLen = max($maxLen, strlen($c));
+$use1col = ($maxLen > 20);           // or >15 for prose
+$use2x2  = (!$use1col && $maxLen >= 5);  // or >=8 for spaced text
+?>
+<?php if ($use1col): ?>
+    <div class="choice-grid-1col"><?php render_choices($q['choices'], 'ansclick', 'raw'); ?></div>
+<?php elseif ($use2x2): ?>
+    <div class="choice-grid-2x2"><?php render_choices($q['choices'], 'ansclick', 'raw'); ?></div>
+<?php else: ?>
+    <?php render_choices($q['choices'], 'ansclick', 'raw'); ?>
+<?php endif; ?>
+15. Rendering <sup> and HTML-Bearing Choices
+render_choices htmlspecialchars choice text — a choice of "3.45 x 10<sup>-3</sup>" would render as literal <sup>-3</sup>. Bypass with manual rendering:
+
+php
+<?php
+$plainLens = [];
+foreach ($q['choices'] as $c) $plainLens[] = strlen(strip_tags($c));
+$maxLen = max($plainLens);
+$choiceWidthEm = round(0.62 * $maxLen + 3.2, 2);
+?>
+<div class="alg-grid-2x2">   <!-- or alg-flex / alg-grid-1col -->
+    <?php foreach ($q['choices'] as $c): ?>
+        <a href="?ansclick=<?php echo urlencode($c); ?>"
+           class="alg-choice"
+           style="width:<?php echo $choiceWidthEm; ?>em;">
+            <?php echo $c; ?>
+        </a>
+    <?php endforeach; ?>
+</div>
+strlen(strip_tags($c)) gives the visual length (excludes <sup>/</sup> chars), so the button is correctly sized.
+
+Trusted-display pattern (for <sup> modules)
+php
+// On ansclick:
+$clickedDisplay = htmlspecialchars($clicked);
+foreach ($cur['choices'] as $c) {
+    if ($c === $clicked) { $clickedDisplay = $c; break; }  // trusted HTML
+}
+If the click matches a server-generated choice, show the HTML. If not (URL tampering), htmlspecialchars fallback escapes it. No XSS surface.
+
+Modules using manual rendering
+sci-notation, alg-exp-eq, alg-exp, alg-add-subt-like-exp.
+
+16. Encoding Rules
+Never render raw × or ÷ glyphs — they display as ? in windows-1252 contexts.
+
+Symbol	Replacement	In which fields
+× (multiplication)	x (ASCII letter)	All displayed math
+÷ (division)	&divide; (HTML entity)	All displayed math
+^-3 (exponent)	<sup>-3</sup>	All displayed math (but bypass render_choices)
+₱ (peso)	P prefix or drop entirely	Currency problems (plain P in prompt text, plain numbers in choices)
++ in URL	urlencode() (never +→[ hack)	All ansclick URLs
+Legacy +→[ hack (used in alg-exp-eq): replaced with urlencode(). Clicking 3a+5b used to arrive as 3a 5b (space) and always score wrong.
+
+17. Feedback Layout Patterns
+Every module's feedback must follow one of these patterns:
+
+Pattern A — Verbatim prompt + Answer (static-bank modules)
+text
+Your answer: X
+✅/❌ correct/wrong indicator
+<original prompt verbatim, preserving punctuation>
+[gap]
+Answer: <correct>
+Used by: line-graphs, pie-charts, probability-expressions, bar-graphs (with restatement, see Pattern B).
+
+Pattern B — Natural-language restatement (bar-graphs, simple-experiments)
+Restate the question with the answer woven in. E.g.:
+
+"All in all, 25 students voted for the three MOST favorite pets in the graph."
+
+"If you spin this wheel 21 times, the probability you'll get either a green or a yellow color is 6."
+
+Uses a restate_question($prompt, $answer) helper with regex patterns + fallback.
+
+Pattern C — Verbatim prompt + Answer + Solution box (computed modules)
+text
+Your answer: X
+✅/❌
+<original prompt verbatim>
+Answer: <correct> [unit]
+
+Solution:
+<multi-line derivation>
+Used by: elapsed-time, word-arithmetic1/2, word-fractions-mult-div, word-ratio, word-multiples-factors, word-volume, word-percentage, word-percentage-business, word-circle, word-temperature, sq-root, geom-shapes-solids (with image), time-zones.
+
+Pattern D — Reason + Answer (alg-exp-eq)
+text
+Your answer: X
+✅/❌
+Because it has [no] equal sign, the algebraic [equation|expression] is:
+'<correct>'
+Pattern E — Using-variable sentence (alg-exp)
+text
+Your answer: X
+✅/❌
+Using '<var>' as the variable,&nbsp;the algebraic expression for <verbal> is '<answer>'.
+The &nbsp; prevents line break between "variable," and "the".
+
+Pattern F — Substitution step (alg-eval-exp, alg-solving-1-var)
+text
+Your answer: X
+✅/❌
+Given: j=4, m=2, ...
+(7j-9)(7m+13) = ((7)(4)-9)((7)(2)+13)
+= 513
+Pattern G — nth-term (number-patterns)
+text
+Your answer: X
+✅/❌
+<original prompt verbatim>
+nth term formula: <answer>
+Pattern H — No solution (negative, absolute-values)
+text
+Your answer: X
+✅/❌
+<original prompt verbatim>
+Answer: <correct>
+Used when user explicitly requested no solution display.
+
+18. Legacy Bug Checklist (§H — Expanded)
+Bug	Symptom	Fix
+if ($arrnum>8){$arrnum==8;}	== not = — never assigns	min(8, $arrnum)
+$grd never assigned	All branches fail silently	$_SESSION['grade'] ?? N
+$grd == 7 check	Misses grade 8+	$grd >= 7
+Tier 0 missing	Grade 0 Easy leaves vars undefined	Add explicit tier
+$arrnum == 8 repeated	Two ifs shadow each other	Fix branch values
+?ansclick=0 as "next"	0 scores as wrong if clicked	Use Submit2 button
+RecordHolders streak write	Table absent from modern schema	Drop entirely
+$fac/$num1 inversion (division.php)	$num1 is quotient, $fac is divisor	Rename to $quotient/$divisor
+Undefined $unit (word-dec-mult-div)	Warning on some questions	Set $unit = '' default + explicit per-branch
++→[ URL hack	+ becomes space in GET	Use urlencode()
+Shuffle-then-slice	Correct answer dropped ~50%	Distractors first, append correct, then shuffle
+Fake level differentiation	Easy/Hard identical content, different points	Collapse to single level
+Raw operands as choices	Trivial elimination	Band filter (§13.1)
+<sup> in choices with render_choices	Tags escaped as text	Manual rendering (§15)
+Duplicate questions in bank	array_unique not applied	Dedupe at build
+19. Retry Loops — Safety Rule
+Every while or do-while in generation must have a finite attempt counter:
+
+php
+$safety = 0;
+do {
+    // generate
+    $safety++;
+} while (condition && $safety < N);   // N in 20-100
+Applies to: repeat prevention, constraint satisfaction (min-difference), trend forcing, image validation.
+
+20. Repeat Prevention
+Pattern 1 — Value history (last2 / lastNum / used):
+
+php
+$last = $_SESSION[$sessionKey]['lastNum'] ?? 0;
+$tries = 0;
+do {
+    $n = rand($min, $max);
+    $tries++;
+} while ($n == $last && $tries < 20);
+$_SESSION[$sessionKey]['lastNum'] = $n;
+For static banks (pie-charts, etc.): $_SESSION[$sessionKey]['used'] array of indices. Reset at exhaustion.
+
+Pattern 2 — Trend constraint (trends): for sequence modules. Max 3 consecutive same-direction. Change the 3 in all four places to adjust.
+
+21. Image Validation
+For modules where a missing image breaks the question (image-choice, geom-shapes-solids):
+
+php
+$imgDirFs = __DIR__ . '/../../math/images/...';  // filesystem
+$imgDir   = $base . '/math/images/...';          // URL
+
+$chosen = null;
+for ($attempt = 0; $attempt < 30 && $chosen === null; $attempt++) {
+    // pick candidate params, validate via file_exists()
+    // if any required image missing → continue
+    // else → $chosen = [...]
+}
+
+if ($chosen === null) {
+    render_header(...); echo 'Temporarily unavailable.'; render_score_box(); render_footer(); exit;
+}
+Fallback: CSS-drawn content (e.g. visualizing-numbers blocks).
+
+Display safety: <img ... onerror="this.style.display='none';"> on all module images. geom-shapes-solids adds a hint: onerror="this.nextSibling.style.display='block';" on a hidden <p> showing path to check.
+
+22. Equation Display Card
+Standard structure:
+
+html
+<div class="equation-card">
+  <!-- inline (small operands ≤ threshold 10-20) -->
+  <div class="equation-inline">
+    <span>N1</span> <span class="op">+</span> <span>N2</span> <span class="op">=</span>
+    <input type="text" name="answer" ...>
+  </div>
+  <!-- OR vertical (multi-digit) -->
+  <table class="equation-vertical">
+    <tr><td></td><td class="num">N1</td></tr>
+    <tr><td class="op">+</td><td class="num">N2</td></tr>
+    <tr><td colspan="2" class="rule"></td></tr>
+    <tr><td></td><td style="padding-top: 14px;"> <input ...> </td></tr>
+  </table>
+</div>
+Result state: same structure, <input> replaced by colored <span>, plus .correct / .wrong modifier.
+
+23. Paths & Assets
+Asset	Path
+Theme images	math/images/images/paper-69-*.jpg (6 files)
+Score boxes	math/images/score-{top,bottom}-{1,1b,2,4}.jpg (114×85 / 114×60)
+Counting icons	math/images/objects/{1,2,3}{balls,...,birds}.jpg (36 files)
+Comparing icons	math/images/objects/comparing/{groupNum}/{num}.jpg
+Pattern icons	math/images/objects/patterns/{11-26,qmark}.jpg
+Place-value blocks	math/books/images/vis-num-{1,10,100,1000}.jpg
+Shapes (short)	math/images/shapes/{squ,cir,tri,rec,obl,hal,qua}{num}.jpg
+Shapes (geom-shapes-solids)	math/images/shapes/{fullname}-{1,2,3}.jpg
+Solids	math/images/solids/{fullname}-{1,2,3}.jpg
+Graphs (bar/line/pie/probability)	math/images/graphs/graph{N}.jpg
+Probability diagrams	math/images/others/probability{N}.jpg
+$base derivation (verbatim): rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/').
+
+24. Unusual Module Behaviors (Preserve)
+Module	Behavior
+counting.php?level=upto20	Dual mode via URL param — carry through Submit2
+tens-plus-ones.php	Adaptive tier via score → session progress counter
+visual-patterns.php	Two prompt styles based on grade × level
+number-next.php	50/50 ascending vs descending; trends array
+before-between-after.php	Three question types equal-weighted
+multiplication-pics.php	Image size prefix chosen by operand magnitude
+word-arithmetic2.php type 5	Remainder question — narrow distractors
+word-arithmetic2.php type 21	Times-as-many addition (Hard only)
+word-dec-mult-div.php type 3	Marathon fraction (girl runs fraction of boy's distance)
+25. Deployment Notes
+Pre-deploy checklist per module:
+
+DB row: modules.url exists for filename. Missing → Scorer falls back to module_id = 1.
+
+Theme images: resolve at http://<host>/<path>/math/images/images/<name>.
+
+Score box: exists at math/images/score-{top,bottom}-N.jpg.
+
+Module-specific assets: graphs, shapes, probability diagrams — spot-check at least 3 files per category.
+
+Test: correct answer + wrong answer + level switch (if applicable) + 5× New Question (no immediate repeats).
+
+Failure modes:
+
+Image path missing → <img> displays broken-image icon or onerror hides it.
+
+modules.url missing → scores go to module_id = 1.
+
+Character encoding mismatch → ×/÷ show as ? (fixed by encoding rules §16).
+
+26. Deprecated Patterns
+Delete on sight, do not migrate:
+
+Pattern	Reason
+$tnum = "*1a"	Replaced by module_identifier
+$_SESSION['points'] = 1/2/3	Scorer computes from level
+$_SESSION['score'] += ...	Scorer handles
+mysql_connect / mysql_query / mysql_close	Use $conn (mysqli) via Scorer
+require '../../pass-chk.php'	Use KPLUZ_SESSION + $_SESSION['logged_in']
+<html>, <head>, <body> wrappers	render_header / render_footer
+FP_swapImg / FP_preloadImgs in module file	Container includes globally
+Per-module <table background="..."> score box	render_score_box() handles
+Difficulty radios in module HTML	Standard block emits them
+$_SESSION['level'] = "Easy" at file top	Setup block normalises
+$arrnum tier system	Grade-keyed table
+$bar = "<br/>------" dash strings	CSS .rule border
+if ($_SESSION['level'] == "Medium") branches	2-level only; drop
+mysql_real_escape_string on generation params	No user input goes into queries
++→[ URL hack	Use urlencode()
+Block model solution with bar-{color}-1.jpg	Image paths unverifiable
+RecordHolders streak writes	Table absent from modern schema
+Fake level differentiation (identical Easy/Hard)	Collapse to single level
+Raw operands as distractor choices	Band filter
+27. Modules Converted This Session (Reference Implementations)
+Procedural + choice / Computed + choice:
+
+word-arithmetic1, word-arithmetic2 (8/11 types)
+
+word-fractions-mult-div (5 types)
+
+word-ratio (5 types)
+
+word-multiples-factors (LCM + GCF)
+
+word-volume (single-level, $grd-driven)
+
+word-percentage (5 types), word-percentage-business (12 types)
+
+word-circle (3 types), word-temperature (3 types)
+
+absolute-values (7 types), negative (8 types)
+
+sci-notation (2 forms), number-patterns (3 types)
+
+sq-root (formulas)
+
+alg-eval-exp (18 equation forms)
+
+alg-exp (34 verbal forms), alg-exp-eq (expression vs equation)
+
+alg-solving-1-var (3 forms), alg-add-subt-like-exp (varying groups)
+
+Static bank + choice:
+
+bar-graphs (30 questions, grade split)
+
+line-graphs (27 questions)
+
+pie-charts (27 questions)
+
+probability-expressions (27 questions)
+
+simple-experiments (grade split)
+
+Computed + image choice:
+
+geom-shapes-solids (15 shapes, 6 solids)
+
+Time / elapsed:
+
+elapsed-time (2 levels)
+
+time-zones (single-level)
+
+Conversions:
+
+conv-length, conv-volume, conv-weight (metric + English variants)
+
+<sup>-bearing (manual rendering):
+
+sci-notation, alg-exp-eq, alg-exp, alg-add-subt-like-exp
+
+28. Effort Calibration
+Module type	Effort
+Pure procedural (colors, shapes)	15 min
+Procedural + conditionals (colors-mixing)	20 min
+Simple computed (add/sub/mult)	20 min
+Multi-addend (addition-several)	25 min
+Image-choice with shuffle	30 min
+Pattern / sequence	25 min
+Custom display (visualizing-numbers)	40 min
+Dual-input (division)	35 min
+Static bank (pie-charts, etc.)	20 min
+<sup>-bearing	25 min
+Algebraic templates (18 forms)	45 min
+Word problem generators	25-40 min
+Once the $configs pattern and band-distractor rule are internalised, subsequent modules of the same category convert in ~15-20 min each.
+
+29. Stop and Ask
+Flag for user rather than guessing:
+
+Image paths that don't resolve — check with user before deploying
+
+$grd-dependent behavior when legacy $grd was never set (offer fix vs. preserve bug)
+
+RecordHolders / external-table writes — drop by default
+
+Modules with >3 levels — merge to 2, flag dropped range
+
+Legacy Medium ranges that don't fit Easy/Hard merge — check with user
+
+Block model solutions requiring unverified image paths
+
+Lookup-in-answer (e.g. 'answer' => '{ans}' where ans is lookup-derived) — risk of scoring failure; flag
+
+No need to ask for:
+
+Computed answers — bypass QEngine
+
+Dual-input — compound scoring
+
+Free-text vs choice ambiguity — use free-text pattern
+
+30. Standard "New Question" / "Submit" Flow
+For all bypass modules:
+
+php
+if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
+    // 1. Read $cur = current question state
+    // 2. $clicked = (string)$_GET['ansclick']
+    // 3. $scorer->processAnswer($clicked, $cur['answer'], $cur['lvl'])
+    // 4. $result = ['correct', 'clicked', 'cur']
+    // 5. unset($_SESSION[$sessionKey]['current'])   ← AT ANSWER TIME
+}
+
+if ($result === null || isset($_POST['Submit2'])) {
+    // generate new question, store in session, $q = current
+}
+
+render_header(...);
+// HTML: $result !== null ? show-feedback : show-question
+// Form: Submit2 always (Subsubmit1 only if FIB pattern, not for MCQ)
+Two rules that trip people up:
+
+if ($result === null || isset($_POST['Submit2'])) — the || is essential
+
+unset($_SESSION[$sessionKey]['current']) — must be at answer time, not generation time
+
+31. Verification Checklist (10-point)
+Load without error — no PHP warnings, no 500 errors
+
+Auth works — logged-out redirects to login
+
+First question renders — image loads, prompt shows, choices appear
+
+Correct answer — score increments, feedback shows correct
+
+Wrong answer — score does not increment, feedback shows correct answer
+
+Difficulty switch (if applicable) — Easy ↔ Hard changes behavior
+
+No repeats — 10× New Question produces 10 distinct questions
+
+DB write — test_results row has correct module_id, qnum incremented
+
+Console debug — if $scorer->outputConsoleDebug() is called, verify Resolved module ID: <expected>
+
+Visual match — layout matches reference modules (no broken CSS)
+
+Additional checks per-category:
+
+Band-distractor modules: verify all 4 choices are numerically close to the answer (no outlier)
+
+<sup> modules: verify <sup> renders (not literal tags)
+
+Prose modules: verify 1-per-row layout when choices are long
+
+Metric-conversion modules: verify choices are consecutive powers of ten with random offset
+
+32. First Actions for the New Chat
+Read math/modules/colors.php and math/modules/shapes.php — canonical QEngine references.
+
+Read any three of these as bypass references depending on module type:
+
+Static-bank: line-graphs.php, pie-charts.php
+
+Computed numeric: word-arithmetic1.php, negative.php
+
+<sup> manual render: alg-exp-eq.php, sci-notation.php
+
+Complex computed with substitution: alg-eval-exp.php
+
+Ask the user which legacy module to convert next.
+
+Read the legacy file. Identify the category (per §3).
+
+Identify:
+
+What is randomized per question (params)
+
+How the answer is computed
+
+How distractors are built (apply band rule §13.1)
+
+What images are used
+
+Whether the prompt changes by level/grade
+
+Whether $grd is referenced without assignment (§11)
+
+Whether legacy had fake levels (§5)
+
+Draft the full module file:
+
+Standard setup block (§4)
+
+Category-appropriate generation logic
+
+Band-rule distractors
+
+Layout rule (§14)
+
+Feedback pattern (§17)
+
+urlencode() for all URLs
+
+$grd defensive default
+
+Encoding rules (§16)
+
+Deprecated patterns removed (§26)
+
+Ask the user to confirm the modules.url DB row exists.
+
+Deploy and run the 10-point testing checklist (§31).
