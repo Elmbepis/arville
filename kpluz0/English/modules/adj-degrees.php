@@ -1,7 +1,7 @@
 <?php
 // english/modules/adj-degrees.php
 // Degrees of Adjectives — text-input exercise with derived answer checks.
-// Converted from legacy adj-degrees.php to the container.php / scorer.php pattern.
+// 6 tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -18,6 +18,12 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Degrees of Adjectives';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
+
+// ---- Grade resolution ------------------------------------------------------
+$grd = (int)($_SESSION['user_grade'] ?? 0);
+if ($grd < 0 || $grd > 10) $grd = 0;
+
+// ---- Level resolution ------------------------------------------------------
 $levels = ['Easy', 'Hard'];
 if (isset($_POST['level']) && in_array($_POST['level'], $levels, true)) $_SESSION['level'] = $_POST['level'];
 if (!isset($_SESSION['level'])) $_SESSION['level'] = 'Easy';
@@ -25,41 +31,64 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard'; // migrate leg
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// Easy = legacy tier 1.
-$adjsEasy = [
-    'r'      => ["blue","brave","fine","large","late","nice","safe","true","white","wide","wise"],
-    'er'     => ["bold","calm","cheap","clean","clear","cold","cool","dark","deaf","dear","deep","dull","fair","fast","few","hard","high","kind","long","loud","low","near","neat","new","poor","rich","sick","slow","short","small","smart","soft","tall","warm","weak","wild"],
-    'double' => ["dim","fat","fit","hot","mad","red","sad","wet"],
-    'y2ier'  => ["angry","bony","bumpy","busy","crazy","curly","dry","easy","funny","deadly","dirty","dusty","early","happy","hairy","holy","heavy","hungry","itchy","jolly","lazy","leafy","lonely","lovely","lucky","merry","messy","muddy","needy","noisy","nosy","nutty","pretty","ready","rocky","rosy","salty","sandy","scary","shiny","silly","sleepy","sunny","tasty","tidy","tiny","ugly","weary","windy","woody"],
-    'more'   => ["ahead","alike","alive","awake","eager","loyal","royal","silent","useful","upset","wicked"],
+// ---- Adjective tiers (1-6, from legacy) ------------------------------------
+// Style keys: 'r' = +r/+st, 'er' = +er/+est, 'double' = double final + er/est,
+//             'y2ier' = -y -> -ier/-iest, 'more' = more/most (also less/least)
+$adjsByTier = [
+    1 => [
+        'r'      => ["blue","brave","fine","large","late","nice","safe","true","white","wide","wise"],
+        'er'     => ["bold","calm","cheap","clean","clear","cold","cool","dark","deaf","dear","deep","dull","fair","fast","few","hard","high","kind","long","loud","low","near","neat","new","poor","rich","sick","slow","short","small","smart","soft","tall","warm","weak","wild"],
+        'double' => ["dim","fat","fit","hot","mad","red","sad","wet"],
+        'y2ier'  => ["angry","bony","bumpy","busy","crazy","curly","dry","easy","funny","deadly","dirty","dusty","early","happy","hairy","holy","heavy","hungry","itchy","jolly","lazy","leafy","lonely","lovely","lucky","merry","messy","muddy","needy","noisy","nosy","nutty","pretty","ready","rocky","rosy","salty","sandy","scary","shiny","silly","sleepy","sunny","tasty","tidy","tiny","ugly","weary","windy","woody"],
+        'more'   => ["ahead","alike","alive","awake","eager","loyal","royal","silent","useful","upset","wicked"],
+    ],
+    2 => [
+        'r'      => ["cute","lame","pure","rare","ripe","rude","sure","tame","untrue","unwise"],
+        'er'     => ["alert","black","bright","broad","brown","blind","dumb","fresh","full","grand","great","green","light","mean","odd","quick","raw","rough","round","sharp","mild","proud","quiet","soon","sour","strong","sweet","thick","vast","weird","yellow","young"],
+        'double' => ["flat","glad","slim","thin"],
+        'y2ier'  => ["baggy","bloody","beefy","bossy","brainy","bulky","bushy","chubby","cloudy","clumsy","corny","cozy","daffy","dizzy","drowsy","empty","fancy","foggy","fatty","fishy","friendly","furry","fuzzy","goofy","greedy","handy","hazy","healthy","icy","juicy","jumpy","likely","lively","lumpy","meaty","mighty","moody","nasty","oily","risky","roomy","rusty","showy","silky","skinny","snowy","sorry","spicy","sticky","stony","wacky","wary","waxy","wealthy","witty","wooly","unhappy"],
+        'more'   => ["afraid","aware","colorful","crooked","famous","fearful","helpful","rural","selfish","serious","sudden","uneven","useless"],
+    ],
+    3 => [
+        'r'      => ["dense","free","gentle","humble","loose","pale","simple","sore"],
+        'er'     => ["brief","clever","cruel","firm","fond","foul","gray","keen","meek","narrow","plain","smooth","sound","steep","tight","tough","unkind"],
+        'double' => ["grim","trim"],
+        'y2ier'  => ["ashy","breezy","buggy","cheery","cheesy","chewy","chilly","cocky","cranky","creepy","crunchy","cuddly","dandy","filthy","fluffy","foxy","fussy","gassy","godly","grassy","greasy","groovy","grumpy","guilty","gusty","hardy","hasty","hefty","hearty","homely","husky","leaky","lofty","lowly","loony","lousy","misty","moldy","mossy","murky","naughty","nifty","perky","petty","puffy","rowdy","shady","shaky","slimy","smoky","sneaky","soapy","spiky","spiny","steady","stormy","tardy","thirsty","thorny","wordy","worthy","zesty"],
+        'more'   => ["adorable","agile","aloof","awful","awesome","bashful","beautiful","bizarre","cautious","cheerful","elite","faithful","familiar","fearsome","graceful","grateful","legal","lethal","magical","modern","nervous","painful","peaceful","pleasant","precious","skillful","special","superb","thankful","tiresome","truthful","unique","unusual","valuable","wasteful"],
+    ],
+    4 => [
+        'r'      => ["fierce","grave","idle","noble","polite","purple","square","stale","strange"],
+        'er'     => ["faint","bland","blond","blunt","prompt","queer","sleek","slight","still","stout","strict","straight"],
+        'double' => ["hip","snug"],
+        'y2ier'  => ["batty","briny","burly","curvy","dewy","dusky","edgy","fiery","flaky","flashy","foamy","giddy","gory","gutsy","grubby","heady","flimsy","gabby","gaudy","gawky","jazzy","lacy","lossy","mucky","mushy","musky","nervy","puny","pushy","racy","raspy","ratty","ritzy","shaggy","shifty","soggy","steamy","sulky","tacky","testy","tinny","touchy","tricky","wiry","zany"],
+        'more'   => ["abundant","acceptable","anxious","attractive","available","courageous","delicious","difficult","doubtful","dramatic","elegant","enormous","forgetful","frequent","gigantic","gorgeous","gullible","hardworking","honorable","horrible","important","intelligent","likeable","merciful","numerous","obedient","obese","opposite","periodic","petite","powerful","probable","rabid","regular","righteous","rightful","romantic","tacit","terrible","terrific","thoughtful","tremendous","violent","wonderful","youthful"],
+    ],
+    5 => [
+        'r'      => ["able","ample","crude","dire","feeble","impolite","nimble","remote","sane","spare","sparse","tense"],
+        'er'     => ["curious","fleet","frail","frank","stern","stiff","stupid","swift"],
+        'double' => ["drab","glum","grum"],
+        'y2ier'  => ["balky","balmy","bawdy","beady","blotchy","canny","catty","dingy","gamy","gushy","haughty","hoary","hooky","hoppy","icky","pithy","quaky","ropy","scanty","skimpy","sloppy","smoggy","sooty","springy","stuffy","wily","wrinkly"],
+        'more'   => ["accidental","accurate","adventurous","ambitious","arrogant","changeable","confident","conscious","decisive","defective","delicate","delightful","diligent","energetic","excellent","exclusive","expensive","fantastic","fortunate","functional","glamorous","habitual","hospitable","humorous","ignorant","impossible","incredible","innocent","kindhearted","laughable","majestic","marvelous","mysterious","nutritious","parallel","political","productive","protective","quarrelsome","remarkable","respectable","responsible","successful","vigorous"],
+    ],
+    6 => [
+        'r'      => ["astute","coarse","severe","subtle","supple","trite","vague"],
+        'er'     => ["shrewd","staunch"],
+        'double' => ["glib","prim","squat"],
+        'y2ier'  => ["flighty","finicky","nitpicky","prickly","scrawny","stringy","slippery","stealthy","unsightly"],
+        'more'   => ["beneficial","efficient","elfin","enthusiastic","extravagant","fabulous","hesitant","hilarious","industrious","knowledgeable","magnificent","observant","panicky","panoramic","questionable","repulsive","scientific","spectacular","unthinkable"],
+    ],
 ];
 
-// Hard = legacy tier 2 merged with legacy tier 3 (per style).
-$adjsHard = [
-    'r' => array_merge(
-        ["cute","lame","pure","rare","ripe","rude","sure","tame","untrue","unwise"],
-        ["dense","free","gentle","humble","loose","pale","simple","sore"]
-    ),
-    'er' => array_merge(
-        ["alert","black","bright","broad","brown","blind","dumb","fresh","full","grand","great","green","light","mean","odd","quick","raw","rough","round","sharp","mild","proud","quiet","soon","sour","strong","sweet","thick","vast","weird","yellow","young"],
-        ["brief","clever","cruel","firm","fond","foul","gray","keen","meek","narrow","plain","smooth","sound","steep","tight","tough","unkind"]
-    ),
-    'double' => array_merge(
-        ["flat","glad","slim","thin"],
-        ["grim","trim"]
-    ),
-    'y2ier' => array_merge(
-        ["baggy","bloody","beefy","bossy","brainy","bulky","bushy","chubby","cloudy","clumsy","corny","cozy","daffy","dizzy","drowsy","empty","fancy","foggy","fatty","fishy","friendly","furry","fuzzy","goofy","greedy","handy","hazy","healthy","icy","juicy","jumpy","likely","lively","lumpy","meaty","mighty","moody","nasty","oily","risky","roomy","rusty","showy","silky","skinny","snowy","sorry","spicy","sticky","stony","wacky","wary","waxy","wealthy","witty","wooly","unhappy"],
-        ["ashy","breezy","buggy","cheery","cheesy","chewy","chilly","cocky","cranky","creepy","crunchy","cuddly","dandy","filthy","fluffy","foxy","fussy","gassy","godly","grassy","greasy","groovy","grumpy","guilty","gusty","hardy","hasty","hefty","hearty","homely","husky","leaky","lofty","lowly","loony","lousy","misty","moldy","mossy","murky","naughty","nifty","perky","petty","puffy","rowdy","shady","shaky","slimy","smoky","sneaky","soapy","spiky","spiny","steady","stormy","tardy","thirsty","thorny","wordy","worthy","zesty"]
-    ),
-    'more' => array_merge(
-        ["afraid","aware","colorful","crooked","famous","fearful","helpful","rural","selfish","serious","sudden","uneven","useless"],
-        ["adorable","agile","aloof","awful","awesome","bashful","beautiful","bizarre","cautious","cheerful","elite","faithful","familiar","fearsome","graceful","grateful","legal","lethal","magical","modern","nervous","painful","peaceful","pleasant","precious","skillful","special","superb","thankful","tiresome","truthful","unique","unusual","valuable","wasteful"]
-    ),
-];
+// ---- (level, grade) -> tier mapping ----------------------------------------
+function resolve_adj_tier(string $lvl, int $grd): int {
+    if ($grd <= 2)      $band = 1;
+    elseif ($grd <= 4)  $band = 2;
+    elseif ($grd <= 6)  $band = 3;
+    else                $band = 4;
+    return ($lvl === 'Easy') ? $band : $band + 2;
+}
 
-$poolByLevel = ['Easy' => $adjsEasy, 'Hard' => $adjsHard];
-
+// ---- Answer derivation -----------------------------------------------------
 function derive_adj_answer($adj, $styleKey, $degree) {
     $comp = $sup = $comp2 = $sup2 = '';
     switch ($styleKey) {
@@ -76,29 +105,34 @@ function derive_adj_answer($adj, $styleKey, $degree) {
     return ['adj' => $adj, 'degree' => 'superlative', 'answer' => $sup, 'answer2' => $sup2];
 }
 
-function make_adj_question($lvl, $pool, $sessionKey) {
+// ---- Question builder ------------------------------------------------------
+function make_adj_question(int $tier, array $pool, string $sessionKey): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
-    $build = function () use ($lvl, $pool) {
+    $build = function () use ($tier, $pool) {
         $out = [];
         foreach ($pool as $styleKey => $list) {
             foreach ($list as $adj) {
                 foreach ([2, 3] as $degree) {
-                    $key = "$lvl:$styleKey:$adj:$degree";
-                    $out[] = ['style' => $styleKey, 'adj' => $adj, 'degree' => $degree, 'key' => $key];
+                    $out[] = ['style' => $styleKey, 'adj' => $adj, 'degree' => $degree,
+                              'key' => "t$tier:$styleKey:$adj:$degree"];
                 }
             }
         }
         return $out;
     };
     $candidates = array_values(array_filter($build(), fn($c) => !in_array($c['key'], $used, true)));
-    if (empty($candidates)) { $used = []; $candidates = $build(); }
+    if (empty($candidates)) {
+        $used = array_values(array_filter($used, fn($k) => strpos($k, "t$tier:") !== 0));
+        $candidates = $build();
+    }
     $pick = $candidates[array_rand($candidates)];
     $used[] = $pick['key'];
-    if (count($used) > 500) $used = array_slice($used, -200);
+    if (count($used) > 800) $used = array_slice($used, -400);
     $_SESSION[$sessionKey]['used'] = $used;
     return derive_adj_answer($pick['adj'], $pick['style'], $pick['degree']);
 }
 
+// ---- Answer processing -----------------------------------------------------
 $result = null; $scorer = null;
 if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -110,13 +144,17 @@ if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     $result = ['correct' => $isCorrect, 'user' => $userAns, 'cur' => $cur];
     unset($_SESSION[$sessionKey]['current']);
 }
+
+// ---- Question generation ---------------------------------------------------
 if ($result === null || isset($_POST['Submit2'])) {
-    $pool = $poolByLevel[$lvl] ?? $poolByLevel['Easy'];
-    $gen  = make_adj_question($lvl, $pool, $sessionKey);
-    $_SESSION[$sessionKey]['current'] = array_merge($gen, ['lvl' => $lvl]);
+    $tier = resolve_adj_tier($lvl, $grd);
+    $pool = $adjsByTier[$tier];
+    $gen  = make_adj_question($tier, $pool, $sessionKey);
+    $_SESSION[$sessionKey]['current'] = array_merge($gen, ['lvl' => $lvl, 'tier' => $tier, 'grd' => $grd]);
     $q = $_SESSION[$sessionKey]['current'];
 }
 
+// ---- Render ----------------------------------------------------------------
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -127,7 +165,7 @@ $theme = [
     'score_top'=>$base.'/math/images/score-top-1.jpg',
     'score_bottom'=>$base.'/math/images/score-bottom-1.jpg',
 ];
-render_header($moduleTitle.' - '.$lvl, $moduleTitle.' - '.$lvl, $theme);
+render_header($moduleTitle.' - Grade '.$grd.' - '.$lvl, $moduleTitle.' - Grade '.$grd.' - '.$lvl, $theme);
 ?>
 
 <div style="padding:0 10px;text-align:center;">

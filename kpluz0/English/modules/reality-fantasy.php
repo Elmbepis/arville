@@ -1,7 +1,7 @@
 <?php
 // english/modules/reality-fantasy.php
 // Reality and Fantasy — static question bank + 2 MC choices (reality/fantasy).
-// Converted from legacy reality-fantasy.php to the container.php / scorer.php pattern.
+// 6 tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -18,6 +18,12 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Reality and Fantasy';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
+
+// ---- Grade resolution ------------------------------------------------------
+$grd = (int)($_SESSION['user_grade'] ?? 0);
+if ($grd < 0 || $grd > 10) $grd = 0;
+
+// ---- Level resolution ------------------------------------------------------
 $levels = ['Easy', 'Hard'];
 if (isset($_POST['level']) && in_array($_POST['level'], $levels, true)) $_SESSION['level'] = $_POST['level'];
 if (!isset($_SESSION['level'])) $_SESSION['level'] = 'Easy';
@@ -25,13 +31,20 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard'; // migrate leg
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// Easy draws from legacy tiers 1-3; Hard from legacy tiers 4-6.
-$tiersByLevel = [
-    'Easy' => [1, 2, 3],
-    'Hard' => [4, 5, 6],
-];
+// ---- (level, grade) -> tier mapping ----------------------------------------
+// Legacy formulas:
+//   Easy:   $arrnum = $grd          (clamp 4+)
+//   Medium: $arrnum = $grd + 1      (clamp 5+)
+//   Hard:   $arrnum = $grd + 2      (clamp 6+)
+// Modern uses Easy (legacy Easy) and Hard (merged Medium + Hard -> harder = Hard).
+function resolve_rf_tier(string $lvl, int $grd): int {
+    if ($lvl === 'Easy') {
+        return min(4, max(1, $grd));        // grade 0,1 -> 1 ; grade 2 -> 2 ; grade 3 -> 3 ; grade 4+ -> 4
+    }
+    return min(6, max(1, $grd + 2));        // grade 0 -> 2 ; grade 1 -> 3 ; grade 2 -> 4 ; grade 3 -> 5 ; grade 4+ -> 6
+}
 
-// Random pools (same as legacy)
+// ---- Random pools ----------------------------------------------------------
 $boys     = ["Alex","Ben","Carlos","Daniel","Diego","Gabriel","Isaac","Jaime","Jose","Juan","Jonathan","Lucas","Luis","Max","Roberto","Samuel","Tomas"];
 $girls    = ["Annie","Betty","Caring","Elisa","Emma","Eva","Evelyn","Grace","Josie","Julie","Katring","Laura","Lydia","Maring","Olive","Tina","Toyang"];
 $surnames = ["Cruz","de Guzman","Gomez","Padua","Santos","Reyes","Tolentino","Torres"];
@@ -181,6 +194,7 @@ function build_reality_fantasy_pool($tier, $name, $boy, $girl, $animal, $mcreatu
     return ['realities' => $realities, 'fantasies' => $fantasies];
 }
 
+// ---- Answer processing -----------------------------------------------------
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur = $_SESSION[$sessionKey]['current'];
@@ -190,35 +204,31 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     $result = ['correct' => $isCorrect, 'clicked' => $clicked, 'cur' => $cur];
     unset($_SESSION[$sessionKey]['current']);
 }
+
+// ---- Question generation ---------------------------------------------------
 if ($result === null || isset($_POST['Submit2'])) {
-    // Roll shared random substitutions once for the whole question
     $boy     = $boys[array_rand($boys)];
     $girl    = $girls[array_rand($girls)];
     $name    = (rand(1, 2) === 1) ? $boy : $girl;
     $surname = $surnames[array_rand($surnames)];
     $animal  = $animals[array_rand($animals)];
 
-    // Build candidate list from every tier in the level
-    $allCandidates = [];
-    foreach ($tiersByLevel[$lvl] as $t) {
-        $mcList = ($t < 3)
-            ? ["dragon", "fairy", "mermaid", "unicorn"]
-            : ["centaur", "dragon", "fairy", "hippogriff", "leprechaun", "mermaid", "unicorn", "werewolf"];
-        $mc = $mcList[array_rand($mcList)];
-        $tierPool = build_reality_fantasy_pool($t, $name, $boy, $girl, $animal, $mc, $surname);
-        foreach ($tierPool['realities'] as $i => $r) $allCandidates[] = ['type' => 'reality', 'text' => $r, 'key' => "$t-r$i"];
-        foreach ($tierPool['fantasies'] as $i => $f) $allCandidates[] = ['type' => 'fantasy', 'text' => $f, 'key' => "$t-f$i"];
-    }
+    $tier   = resolve_rf_tier($lvl, $grd);
+    $mcList = ($tier < 3)
+        ? ["dragon", "fairy", "mermaid", "unicorn"]
+        : ["centaur", "dragon", "fairy", "hippogriff", "leprechaun", "mermaid", "unicorn", "werewolf"];
+    $mc       = $mcList[array_rand($mcList)];
+    $tierPool = build_reality_fantasy_pool($tier, $name, $boy, $girl, $animal, $mc, $surname);
 
-    // No-repeat selection
+    $candidates = [];
+    foreach ($tierPool['realities'] as $i => $r) $candidates[] = ['type' => 'reality', 'text' => $r, 'key' => "t$tier-r$i"];
+    foreach ($tierPool['fantasies'] as $i => $f) $candidates[] = ['type' => 'fantasy', 'text' => $f, 'key' => "t$tier-f$i"];
+
     $used = $_SESSION[$sessionKey]['used'] ?? [];
-    $available = array_values(array_filter($allCandidates, fn($c) => !in_array($c['key'], $used, true)));
+    $available = array_values(array_filter($candidates, fn($c) => !in_array($c['key'], $used, true)));
     if (empty($available)) {
-        $levelTiers = $tiersByLevel[$lvl];
-        $used = array_values(array_filter($used, function ($k) use ($levelTiers) {
-            return !in_array((int)explode('-', $k)[0], $levelTiers, true);
-        }));
-        $available = $allCandidates;
+        $used = array_values(array_filter($used, fn($k) => strpos($k, "t$tier-") !== 0));
+        $available = $candidates;
     }
     $pick = $available[array_rand($available)];
     $used[] = $pick['key'];
@@ -227,11 +237,14 @@ if ($result === null || isset($_POST['Submit2'])) {
 
     $_SESSION[$sessionKey]['current'] = [
         'question' => $pick['text'] . '.',
-        'answer'   => $pick['type'],   // 'reality' or 'fantasy'
+        'answer'   => $pick['type'],
         'lvl'      => $lvl,
+        'tier'     => $tier,
+        'grd'      => $grd,
     ];
 }
 
+// ---- Render ----------------------------------------------------------------
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -242,7 +255,7 @@ $theme = [
     'score_top'=>$base.'/math/images/score-top-1.jpg',
     'score_bottom'=>$base.'/math/images/score-bottom-1.jpg',
 ];
-render_header($moduleTitle.' - '.$lvl, $moduleTitle.' - '.$lvl, $theme);
+render_header($moduleTitle.' - Grade '.$grd.' - '.$lvl, $moduleTitle.' - Grade '.$grd.' - '.$lvl, $theme);
 ?>
 
 <div style="padding:0 10px;text-align:center;">
@@ -250,7 +263,7 @@ render_header($moduleTitle.' - '.$lvl, $moduleTitle.' - '.$lvl, $theme);
 <?php if ($result !== null): $cur = $result['cur']; ?>
   <p style="font-family:Arial,sans-serif;font-size:14pt;color:#666;margin-top:20px;">You clicked on <strong style="color:#0000CC;font-size:16pt;">'<?php echo htmlspecialchars($result['clicked']); ?>'</strong>.</p>
   <p style="font-family:Arial,sans-serif;font-size:16pt;font-weight:700;color:<?php echo $result['correct'] ? '#006600' : '#CC0000'; ?>"><?php echo $result['correct'] ? '&#9989; You are correct!' : '&#10060; Sorry, that is not correct.'; ?></p>
-  <p style="font-family:Arial,sans-serif;font-size:16pt;font-weight:700;color:#800080;"><?php echo $cur['answer'] === 'fantasy' ? 'This is just fantasy.' : 'This is reality.'; ?></p>
+  <p style="font-family:Arial,sans-serif;font-size:16pt;font-weight:700;color:#800080;"><?php echo $cur['answer'] === 'fantasy' ? '<br/>This is just fantasy.' : '<br/>This is reality.'; ?></p>
   <div style="margin:30px auto;display:inline-block;padding:25px 40px;background:#FCFBE6;border:2px solid #DDD;border-radius:8px;font-family:Arial,sans-serif;font-size:18pt;font-weight:700;color:#333333;max-width:480px;"><?php echo htmlspecialchars($cur['question']); ?></div>
   <br><input type="submit" name="Submit2" value="New Question" style="margin:20px 0;font-family:Arial,sans-serif;">
 <?php else: $q = $_SESSION[$sessionKey]['current']; ?>
