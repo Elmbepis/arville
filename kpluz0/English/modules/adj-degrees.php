@@ -185,9 +185,12 @@ render_header($moduleTitle.' - Grade '.$grd.' - '.$lvl, $moduleTitle.' - Grade '
   <p style="font-family:Arial,sans-serif;font-size:16pt;font-weight:700;color:<?php echo $result['correct'] ? '#006600' : '#CC0000'; ?>"><?php echo $result['correct'] ? '&#9989; You are correct!' : '&#10060; Sorry, that is not correct.'; ?></p>
   <p style="font-family:Arial,sans-serif;font-size:15pt;color:#800080;"><br/>The simplest acceptable <strong><?php echo $cur['degree']; ?></strong> degree of the adjective<br/>'<strong><?php echo htmlspecialchars($cur['adj']); ?></strong>' is '<strong style="color:#CC0066;"><?php echo htmlspecialchars($cur['answer']); ?></strong>'<?php echo $altNote; ?>.</p>
   <input type="submit" name="Submit2" value="New Question" style="margin:30px 0;font-family:Arial,sans-serif;">
-<?php else:
-    $inputSize = max(strlen($q['answer']), strlen($q['answer2'])) + 5;
-    $maxLen    = $inputSize + 2;
+<?php else:    $answerLen = max(strlen($q['answer']), strlen($q['answer2']));
+    $inputSize = $answerLen + 2;                 // for size= fallback
+    $maxLen    = $answerLen + 4;                 // allows small typo edits
+    // ~14px per char at 26px Arial Bold + 24px breathing room
+    $inputWidthPx = max(160, $answerLen * 14 + 24);
+    
 ?>
   <div style="margin:50px auto 30px;display:inline-block;padding:18px 44px;background:#FFFBCC;border:2px solid #DDD;border-radius:8px;font-family:Arial,sans-serif;font-size:30pt;font-weight:700;color:#0000AA;"><?php echo htmlspecialchars($q['adj']); ?></div>
   <p style="font-family:Arial,sans-serif;font-size:15pt;font-weight:600;color:#800080;margin:20px 0 0;">Write the simplest acceptable <strong style="color:#CC0066;"><?php echo $q['degree']; ?></strong> degree<br/>of this adjective in the blank below.</p>

@@ -1,0 +1,762 @@
+HANDOVER DOCUMENT: Converting Legacy EnglishPluz Modules to Modern Format
+Purpose: This document captures every convention, rule, and pattern established across a series of conversions. Give this to a fresh chat, attach the legacy file, and say "convert this following the handover document." The new session should be able to produce a correct modern file without re-deriving any of these decisions.
+
+1. Environment prerequisites
+Every modern module runs on a stack with four key pieces:
+
+container.php — provides render_header($title, $heading, $theme), render_score_box(), render_footer(), render_choices(), render_statement(), etc.
+
+scorer.php — provides new Scorer($conn, $moduleId) with processAnswer($clicked, $correct, $level) returning bool, and outputConsoleDebug().
+
+MySQL kpluz0 database — modules registry (see §13).
+
+$_SESSION['user_grade'] — integer 0–10, set at login (source: english-menu.php).
+
+2. Standard file header
+Every modern module starts with exactly this:
+
+php
+<?php
+// english/modules/<module-name>.php
+// <Module Title> — <one-line description>.
+// <N> tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
+
+session_name('KPLUZ_SESSION');
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: /arville/kpluz0/login.php");
+    exit();
+}
+require_once __DIR__ . '/../../container.php';
+require_once __DIR__ . '/../../scorer.php';
+
+$conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz0");
+if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
+$base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
+$moduleTitle = '<Title>';
+$moduleId = basename(__FILE__);
+$sessionKey = 'mod_' . md5($moduleId);
+Do NOT include pass-chk.php. Do NOT use mysql_* functions. Do NOT rely on $_COOKIE['KPluzID_my_site'] or $grd being pre-set by an include.
+
+3. Grade & level resolution
+3.1 Read grade (always)
+php
+$grd = (int)($_SESSION['user_grade'] ?? 0);
+if ($grd < 0 || $grd > 10) $grd = 0;
+3.2 Two levels only
+Always two levels: Easy and Hard. Never three. Legacy Medium is folded into Hard (take the harder of the two formulas — see §4).
+
+php
+$levels = ['Easy', 'Hard'];
+if (isset($_POST['level']) && in_array($_POST['level'], $levels, true)) $_SESSION['level'] = $_POST['level'];
+if (!isset($_SESSION['level'])) $_SESSION['level'] = 'Easy';
+if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';  // migrate legacy
+if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
+$lvl = $_SESSION['level'];
+3.3 Header display
+php
+render_header($moduleTitle.' - Grade '.$grd.' - '.$lvl,
+              $moduleTitle.' - Grade '.$grd.' - '.$lvl,
+              $theme);
+Exception: If $moduleTitle is very long (over ~35 characters), drop the suffix to avoid wrapping in the title bar (e.g. Simple Past, Present, and Future Tenses — just use $moduleTitle alone).
+
+4. Tier mapping (the heart of grade-awareness)
+Legacy modules almost always had 3–6 content tiers gated by $grd. The formula determined which tier a student got. In every legacy file, $grd was never actually assigned (it defaulted to 0), so multi-tier branches never fired — the module was effectively single-tier in production. Modern versions restore the intended mapping.
+
+4.1 The universal pattern
+Write a resolve_<module>_tier($lvl, $grd) function:
+
+php
+function resolve_X_tier(string $lvl, int $grd): int {
+    // Easy branch: legacy's Easy formula
+    if ($lvl === 'Easy') {
+        if ($grd <= 2) return 1;
+        if ($grd <= 4) return 2;
+        return 3;
+    }
+    // Hard branch: legacy's Hard formula (harder of legacy Medium/Hard)
+    if ($grd <= 2) return 3;
+    if ($grd <= 4) return 4;
+    return 5;
+}
+4.2 Reading legacy formulas
+Look for this pattern in the legacy file:
+
+php
+if ($_SESSION['level']=="Easy"){
+    if ($grd<=2){$arrnum=1;}
+    if ($grd==3 or $grd==4){$arrnum=2;}
+    if ($grd>=5){$arrnum=3;}
+}
+if ($_SESSION['level']=="Medium"){
+    if ($grd<=2){$arrnum=2;}
+    if ($grd==3 or $grd==4){$arrnum=3;}
+    if ($grd>=5){$arrnum=4;}
+}
+if ($_SESSION['level']=="Hard"){
+    if ($grd<=2){$arrnum=3;}
+    if ($grd==3 or $grd==4){$arrnum=4;}
+    if ($grd>=5){$arrnum=5;}
+}
+Translation rules:
+
+Easy → use legacy Easy formula verbatim.
+
+Hard → use legacy Hard formula (it's the harder of Medium/Hard for any given grade).
+
+Add max(1, …) clamp if legacy arrays start at index 1 (grade 0 would otherwise be undefined).
+
+Add min(N, …) clamp matching the highest tier that actually exists.
+
+4.3 If legacy has only grade-based (no level) selection
+E.g., a-an.php had if ($grd<=1) { easy bank } else { hard bank } with no level radio. Map both levels to the same grade-based formula:
+
+php
+function resolve_X_tier(string $lvl, int $grd): int {
+    return ($grd <= 1) ? 1 : 2;   // both levels see the same grade-based bank
+}
+Or, if the split was genuinely about difficulty (not grade): assign Easy→easier bank, Hard→harder bank and ignore grade. Document whichever choice you make.
+
+4.4 Grade-aware pools ("bridge" pattern for modules with few stories)
+For modules with very few content items (e.g. 4 stories, 15 sentences), grade gates breadth rather than depth:
+
+php
+function story_indices_for(string $lvl, int $grd): array {
+    if ($lvl === 'Easy') return ($grd <= 2) ? [0] : [0, 1];
+    return ($grd <= 2) ? [1, 2] : [2, 3];
+}
+Or with flat pools:
+
+php
+function resolve_X_pool(string $lvl, int $grd, array $easyIdx, array $hardIdx): array {
+    if ($lvl === 'Easy') return $easyIdx;
+    if ($grd <= 2)       return array_merge($easyIdx, $hardIdx);   // young kids get variety
+    return $hardIdx;                                                // older kids get depth
+}
+5. Data restructuring (legacy → modern)
+5.1 Question formats you'll encounter
+Legacy format	Example	Modern structure
+Pipe-delimited	"Q=Correct+Wrong1*Wrong2[Wrong3"	['q' => 'Q', 'correct' => 'Correct', 'wrong' => ['Wrong1', 'Wrong2', 'Wrong3']]
+Heredoc story	$stories[0] = "<p>$red Title $black</p>…"	['title' => 'Title', 'paragraphs' => [...], 'source' => '...', 'questions' => [...]]
+Cause:effect pairs	"cause:effect"	['cause' => '...', 'effect' => '...']
+Marker-encoded	"John* car" (*='s, +=')	keep markers + parsing helpers
+Verb triple	"base-present-past"	['base'=>'...', 'present'=>'...', 'past'=>'...']
+Multi-part	"p1=DOGs[DOGS+dogs]dogS"	['q'=>'p1', 'correct'=>'DOGs', 'wrong'=>['DOGS','dogs','dogS']]
+Always parse at data-definition time, never at render time. The legacy often did strpos/substr in the render block — move that into a one-time transformation when building the pool.
+
+5.2 Names and random substitutions
+If legacy substituted names/items into templates (e.g. $name1* $item), keep that pattern but:
+
+Roll name/item variables once per question (not once per template sentence)
+
+Roll them before picking the sentence
+
+Use the same values consistently across all rendered content of that question
+
+php
+$name1 = $boys[array_rand($boys)];
+do { $name2 = $boys[array_rand($boys)]; } while ($name2 === $name1);
+// ...
+$item = $itemsSing[array_rand($itemsSing)];
+5.3 Dead code to strip
+These appeared repeatedly in legacy and were always unreachable:
+
+$_SESSION['picfile'] reads/render blocks — no bank item ever set it
+
+$grd>=3 / $grd>=4 etc. tier branches — $grd was never set
+
+$questions[4], $questions[5], $questions[6] — legacy had them but no if block ever loaded them
+
+$boys, $girls, $surnames, $animals, $mcreatures in modules where the sentences don't actually reference them (e.g. fact-opinion, speaker-id)
+
+5.4 Obvious typo fixes
+Fix typos in the source data:
+
+"Rot to Jay" → "Roy to Jay"
+
+"univeristy" → "university"
+
+"ther next ten years" → "the next ten years"
+
+"connect-connects-connectd" → "connect-connects-connected"
+
+"let water to be drawn" → "let water be drawn"
+
+"send-send-sent" → "send-sends-sent"
+
+"has a no choice" → "had no choice"
+
+"solve everyone in the forest" → "help everyone in the forest"
+
+"my feet* toes" → drop, since "feet's" isn't valid English
+
+Flag the typos you fixed in the conversion notes comment.
+
+6. Question generation
+6.1 Universal pattern
+php
+if ($result === null || isset($_POST['Submit2'])) {
+    $tier  = resolve_X_tier($lvl, $grd);
+    $pool  = $dataByTier[$tier];
+    // ... or
+    $poolIdxs = resolve_X_pool($lvl, $grd, $easyIdx, $hardIdx);
+
+    // Build candidates
+    $candidates = [];
+    foreach ($pool as $i => $item) {
+        $candidates[] = ['key' => "t$tier:$i", 'item' => $item];
+    }
+    
+    // No-repeat
+    $used = $_SESSION[$sessionKey]['used'] ?? [];
+    $available = array_values(array_filter($candidates, fn($c) => !in_array($c['key'], $used, true)));
+    if (empty($available)) {
+        $used = array_values(array_filter($used, fn($k) => strpos($k, "t$tier:") !== 0));
+        $available = $candidates;
+    }
+    $pick = $available[array_rand($available)];
+    $used[] = $pick['key'];
+    if (count($used) > 500) $used = array_slice($used, -300);
+    $_SESSION[$sessionKey]['used'] = $used;
+
+    // Build current question
+    $_SESSION[$sessionKey]['current'] = [...];
+}
+6.2 No-repeat key rules
+Key format: "t$tier:..." or "t$tier-s$sublist-p$pair" or "s$sid-q$qidx" — always includes tier/story ID.
+
+Never key by level alone — students switching grades must get a fresh set.
+
+On exhaustion: clear only the current tier's entries (strpos($k, "t$tier:") !== 0), preserving other tiers' progress.
+
+Trim to last ~300 entries when the array exceeds ~500 to prevent unbounded growth.
+
+6.3 Building choices
+Standard 4-choice:
+
+php
+$choices = array_merge($item['wrong'], [$item['correct']]);
+shuffle($choices);
+Variable-count (e.g. verb tenses where base==past):
+
+php
+$choices = array_values(array_unique($allForms));
+shuffle($choices);
+Distractors from same pool (cause-effect style):
+
+php
+$otherIdx = array_values(array_filter(array_keys($sublist), fn($i) => $i !== $pick['pair']));
+shuffle($otherIdx);
+$wrong = [];
+foreach (array_slice($otherIdx, 0, 3) as $wi) {
+    $wrong[] = $asked === 'effect' ? $sublist[$wi][1] : $sublist[$wi][0];
+}
+6.4 URL-safe values
+Always urlencode($c) in hrefs and (string)$_GET['ansclick'] for parsing. Never do the legacy 9 substitution for apostrophes — urlencode() handles apostrophes, quotes, ampersands, and non-ASCII natively.
+
+7. Answer processing
+php
+$result = null; $scorer = null;
+if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
+    $cur = $_SESSION[$sessionKey]['current'];
+    $clicked = (string)$_GET['ansclick'];
+    $scorer = new Scorer($conn, $moduleId);
+    $isCorrect = $scorer->processAnswer($clicked, $cur['correct'], $cur['lvl']);
+    $result = ['correct' => $isCorrect, 'clicked' => $clicked, 'cur' => $cur];
+    unset($_SESSION[$sessionKey]['current']);
+}
+Note the guards:
+
+Both $_GET['ansclick'] and $_SESSION[$sessionKey]['current'] must exist
+
+!isset($_POST['Submit2']) — New Question button must not be treated as an answer click
+
+Text-input modules
+For modules using <input type="text"> or <textarea>, the pattern shifts:
+
+php
+if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
+    $cur = $_SESSION[$sessionKey]['current'];
+    $userAns = strtolower(trim((string)($_POST['answer'] ?? '')));
+    // ... normalise and compare
+    $isCorrect = ($normalisedUser === $normalisedCorrect);
+    $scorer = new Scorer($conn, $moduleId);
+    $scorer->processAnswer($isCorrect ? $cur['correct'] : $userAns, $cur['correct'], $cur['lvl']);
+    // ...
+}
+For text inputs, always pass the canonical answer to the scorer when the user was correct (even if their input differed by case/whitespace), so the scorer registers a hit.
+
+Alternate correct answers
+Some modules accept two correct answers (e.g. adj-degrees "more X" or "less X"). Store both:
+
+php
+'correct' => $comp, 'answer2' => $comp2
+// ...
+$isCorrect = ($user === $cur['correct']) || ($cur['answer2'] !== '' && $user === $cur['answer2']);
+For the scorer call, pass the canonical answer when correct, the user's actual input when wrong.
+
+8. Rendering rules — THE FORMATTING GOLDEN RULES
+These rules apply to every converted module. Apply them proactively to future modules without being asked.
+
+8.1 Font
+Arial only. Never use Comic Sans MS, Verdana, or any other font for body content. The title bar in container.php still uses Verdana for the page heading — that's outside the module's control and stays.
+
+css
+font-family: Arial, sans-serif;
+8.2 Colors — exact hex values
+Purpose	Hex
+Target / correct answer / pink highlight	#CC0066
+Labels / prompts / non-target purple	#800080
+User choices / links	#0000CC
+Correct feedback (✅)	#006600
+Wrong feedback (❌)	#CC0000
+Body text	#333
+Metainfo / secondary	#666
+Score blue	#000080
+8.3 Bordered content boxes — "the box" spec
+Every bordered content box (question, story card, cause-effect display, feedback result) follows this exact pattern:
+
+css
+max-width: 480px;
+min-height: 130–160px;           /* short content doesn't float */
+margin: 20px auto;                /* horizontally centered, breathing room */
+padding: 20–22px 26–28px;
+background: #FCFBE6;              /* warm cream */
+border: 2px solid #DDD;           /* subtle outline */
+border-radius: 10px;
+display: flex;
+flex-direction: column;
+justify-content: center;          /* vertical centering */
+align-items: center;              /* horizontal centering */
+text-align: center;               /* text centered */
+font-family: Arial, sans-serif;
+box-sizing: border-box;
+Why flexbox: justify-content:center on a column distributes extra vertical space evenly, giving true vertical centering. min-height guarantees short content doesn't look floating. align-items:center + text-align:center handles horizontal centering.
+
+8.4 The reusable box helper
+Every module that renders bordered content boxes should define (or reuse) this helper:
+
+php
+function module_box(string $html, int $minHeight = 140): void {
+    echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
+       . 'margin:20px auto;padding:20px 26px;'
+       . 'background:#FCFBE6;border:2px solid #DDD;border-radius:10px;'
+       . 'display:flex;flex-direction:column;justify-content:center;align-items:center;'
+       . 'text-align:center;font-family:Arial,sans-serif;box-sizing:border-box;">'
+       . $html . '</div>';
+}
+The caller passes HTML content; the helper wraps it in the standard box. Name it X_box() where X is the module prefix (e.g. ce_box, dir_box, ps_box) to avoid collision if two modules end up in the same scope.
+
+8.5 Font sizes
+Element	Size
+Question heading / prompt (What is your name?)	15–17 pt
+Box label (Effect:, Cause:)	15–16 pt
+Box body (sentence, single-line)	18–19 pt
+Box body (multi-part display, feedback)	15 pt
+Choice button text	16–18 pt
+Feedback heading (✅ / ❌)	16 pt
+"Your answer:" line	14 pt
+Metainfo / help text	10–13 pt
+8.6 Anti-orphan treatment
+Apply to every wrapping text line (questions, feedback, answers, story sentences). Three layers:
+
+max-width: 480px — forces predictable wrap
+
+text-wrap: balance — modern browsers distribute lines evenly
+
+&nbsp; binding between last two words — hard guarantee against single-word orphan
+
+php
+function bind_last_words(string $text, int $words = 2): string {
+    $esc = htmlspecialchars($text);
+    $pat = '/\s+(\S+(?:\s+\S+){' . ($words - 1) . '})$/u';
+    return preg_replace_callback($pat, function ($m) {
+        return '&nbsp;' . preg_replace('/\s+/u', '&nbsp;', $m[1]);
+    }, $esc, 1);
+}
+Usage:
+
+html
+<p style="max-width:480px;margin:20px auto;line-height:1.55;text-wrap:balance;">
+    <?php echo bind_last_words($question); ?>
+</p>
+Apply to: question paragraphs, feedback question paragraphs, correct-answer paragraphs, given cause/effect lines, story-sentence lines. Not to: choice buttons (short), story paragraphs (long prose — orphan-binding would distort layout).
+
+8.7 Page wrapper
+html
+<div style="padding:0 10px;text-align:center;">
+<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+    ...
+</form><br>
+<?php render_score_box(); ?>
+</div>
+Everything inside the <div> is text-align:center. Individual elements override with text-align:left where needed (rare).
+
+9. Presenting choices — THE CHOICE RULES
+9.1 Choice count determines layout
+Choice count	Layout	Implementation
+2	1 row × 2 columns, horizontal	<tr><td>…</td><td>…</td></tr>
+3	1 row × 3 columns	array_chunk($choices, 3)
+4	2 rows × 2 columns	array_chunk($choices, 2)
+4 (long sentences)	Vertical stack, one per row, full width	foreach with block-level <a>
+Variable (2, 3, or 4)	Auto by count	$chunks = count($choices) <= 3 ? [$choices] : array_chunk($choices, 2);
+9.2 Standard choice button style
+css
+display: flex;
+align-items: center;             /* vertical center */
+justify-content: center;         /* horizontal center */
+min-width: 150–200px;            /* wider for longer answers */
+min-height: 60–64px;             /* consistent height */
+padding: 14–16px 24–32px;
+border: 2px solid #888888;
+border-radius: 8px;
+background: #fff;
+text-decoration: none;
+color: #0000CC;
+font-family: Arial, sans-serif;
+font-size: 16–18pt;
+font-weight: 700;
+text-align: center;
+box-sizing: border-box;
+For long-sentence choices (cause-effect style), the button becomes block-level with wrapping:
+
+css
+display: block;
+margin: 10px 0;
+padding: 14px 20px;
+border: 2px solid #888888;
+border-radius: 8px;
+background: #fff;
+text-decoration: none;
+color: #0000CC;
+font-family: Arial, sans-serif;
+font-size: 13pt;
+font-weight: 600;
+text-align: center;
+line-height: 1.5;
+box-sizing: border-box;
+9.3 Choice rendering — canonical pattern
+php
+<table border="0" cellspacing="14–20" cellpadding="0" style="margin:0 auto;">
+<?php foreach (array_chunk($q['choices'], 2) as $row): ?>
+  <tr>
+  <?php foreach ($row as $c): ?>
+    <td align="center" valign="middle">
+      <a href="?ansclick=<?php echo urlencode($c); ?>"
+         style="display:flex;align-items:center;justify-content:center;min-width:160px;min-height:64px;max-width:260px;padding:12px 18px;border:2px solid #888888;border-radius:8px;background:#fff;text-decoration:none;color:#0000CC;font-family:Arial,sans-serif;font-size:18pt;font-weight:700;text-align:center;word-break:break-word;box-sizing:border-box;line-height:1.3;">
+        <?php echo htmlspecialchars($c); ?>
+      </a>
+    </td>
+  <?php endforeach; ?>
+  </tr>
+<?php endforeach; ?>
+</table>
+Key details:
+
+cellspacing="14–20" gives gap between cells
+
+align="center" valign="middle" on <td> — prevents misaligned buttons when heights differ
+
+display:flex; align-items:center; justify-content:center on the <a> ensures short answers (pup) and long answers (will understand) center vertically in same-height buttons
+
+word-break:break-word prevents overflow on very long single-token answers
+
+urlencode($c) for URLs (handles apostrophes, symbols)
+
+9.4 Choice buttons vs New Question button
+Choice buttons are <a href="?ansclick=..."> links inside a <form> (the <form> exists only so Submit2 = New Question can submit).
+
+New Question is <input type="submit" name="Submit2" value="New Question">
+
+Submit (for text-input modules only) is <input type="submit" name="Submit1" value="Submit">
+
+On the question screen: choice links + New Question (and Submit for text modules)
+
+On the feedback screen: only New Question (Submit is meaningless — the answer is already processed)
+
+For "Submit + New Question side by side":
+
+html
+<div style="margin:20px 0;">
+  <input type="submit" name="Submit1" value="Submit" style="margin-right:12px;font-family:Arial,sans-serif;">
+  <input type="submit" name="Submit2" value="New Question" style="margin-left:12px;font-family:Arial,sans-serif;">
+</div>
+10. Feedback page pattern
+10.1 Structure
+text
+Your answer: '<clicked>'                              [14 pt, #666]
+✅ You are correct! / ❌ Sorry, that is not correct.  [16 pt, bold, green/red]
+                                                       [blank line]
+[Box: question with answer highlighted]                [the box helper]
+                                                       [blank line]
+Correct answer: <strong>...</strong>                   [14 pt, #800080 with pink answer]
+                                                       [blank line]
+[New Question button]
+10.2 Complete feedback block template
+php
+<?php if ($result !== null):
+    $cur = $result['cur'];
+    $fbQ = htmlspecialchars($cur['question']);
+    $fbQ = preg_replace('/\s+(\S+)(\s+\S+)$/u', '&nbsp;$1$2', $fbQ, 1);
+    $fbA = htmlspecialchars($cur['correct']);
+    $fbA = preg_replace('/\s+(\S+)(\s+\S+)$/u', '&nbsp;$1$2', $fbA, 1);
+?>
+  <p style="font-family:Arial,sans-serif;font-size:14pt;color:#666;margin-top:20px;max-width:480px;margin-left:auto;margin-right:auto;">
+    Your answer: <strong style="color:#0000CC;font-size:14pt;">'<?php echo htmlspecialchars($result['clicked']); ?>'</strong>
+  </p>
+  <p style="font-family:Arial,sans-serif;font-size:16pt;font-weight:700;color:<?php echo $result['correct'] ? '#006600' : '#CC0000'; ?>;max-width:480px;margin:10px auto;">
+    <?php echo $result['correct'] ? '&#9989; You are correct!' : '&#10060; Sorry, that is not correct.'; ?>
+  </p>
+  <?php module_box(
+      '<div style="width:100%;font-size:15pt;color:#333;line-height:1.55;text-wrap:balance;">'
+    . $fbQ
+    . '</div>'
+  ); ?>
+  <p style="font-family:Arial,sans-serif;font-size:14pt;color:#800080;max-width:480px;margin:10px auto;line-height:1.55;text-wrap:balance;">
+    Correct answer: <strong style="color:#CC0066;font-size:15pt;"><?php echo $fbA; ?></strong>
+  </p>
+  <input type="submit" name="Submit2" value="New Question" style="margin:20px 0;font-family:Arial,sans-serif;">
+<?php else: /* question branch */ ?>
+Never put multiple feedback fragments on one line — the requested presentation is single continuous text per line, no source-code <br/> or newlines between fragments.
+
+10.3 Question page structure
+text
+[Box: question prompt]                                 [the box helper]
+                                                       [blank line]
+What is your name?                                     [15–17 pt, bold, #800080]
+                                                       [blank line]
+Click on your answer.                                  [13–14 pt, #800080]
+                                                       [blank line]
+[Choice buttons]                                        [per §9]
+                                                       [blank line]
+[Submit + New Question] OR [New Question only]
+                                                       [blank line]
+Difficulty radios                                      [see §11]
+10.4 Difficulty radio block (always at the bottom)
+php
+<div align="center" style="margin-top:20px;">
+  <p style="margin-bottom:0;color:#000080;font:10pt Arial,sans-serif;">Select difficulty level for next question:</p>
+  <table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>
+  <?php foreach ($levels as $l): ?>
+    <td align="center">
+      <label style="font:9pt Arial,sans-serif;color:#800080;">
+        <input type="radio" name="level" value="<?php echo $l; ?>" <?php echo $lvl === $l ? 'checked' : ''; ?>> <b><?php echo $l; ?></b>
+      </label>
+    </td>
+  <?php endforeach; ?>
+  </tr></table>
+</div>
+Always exactly 2 radio columns (Easy, Hard). Never 3.
+
+11. Module-specific patterns
+Module type	Structure	Choice style
+Word classification (gender, reality-fantasy, fact-opinion)	['q'=>'...','correct'=>'...','wrong'=>[...]]	2 or 4 horizontal, array_chunk
+Reading comprehension (story-elements, speaker-id)	['title'=>,'paragraphs'=>[...],'source'=>,'questions'=>[...]] + render_story_card()	4 choices 2×2
+Text-input (adj-degrees, nouns-possessive, present-past-future)	Custom per module; store correct and answer2 if applicable	<input type="text"> + Submit + New Question
+Cause-effect pair (cause-effect)	[['cause','effect'], ...] split into sublists	4 vertical long-sentence buttons
+Multi-part (directions)	['q'=>'...','correct'=>'...','wrong'=>[...]] with symbol substitution	4 choices 2×2, min-height:64px for symbol alignment
+Marker-based (nouns-possessive)	'John* car' (*='s, +=')	text input
+Degree-system (adj-degrees)	Parse by style key ('r','er','double','y2ier','more')	text input with answer2 alternate
+11.1 Story card helper
+php
+function render_story_card(array $story): void {
+    echo '<div style="background:#FCFBE6;border:2px solid #DDD;border-radius:12px;padding:20px 28px;margin:10px auto 25px;max-width:640px;text-align:left;font-family:Arial,sans-serif;">';
+    echo '<h3 style="text-align:center;color:#CC0066;font-size:18pt;margin:0 0 4px;font-weight:700;">'.htmlspecialchars($story['title']).'</h3>';
+    if (!empty($story['author'])) {
+        echo '<p style="text-align:center;font-size:10pt;color:#666;font-style:italic;margin:0 0 18px;">'.htmlspecialchars($story['author']).'</p>';
+    } else {
+        echo '<div style="height:10px;"></div>';
+    }
+    foreach ($story['paragraphs'] as $p) {
+        echo '<p style="font-size:12pt;line-height:1.65;color:#333;margin:10px 0;">'.htmlspecialchars($p).'</p>';
+    }
+    echo '<p style="font-size:9pt;color:#888;font-style:italic;text-align:right;margin:15px 0 0;">source: '.htmlspecialchars($story['source']).'</p>';
+    echo '</div>';
+}
+Note story cards use max-width:640px (longer prose needs more width); the question/answer boxes still use 480 px.
+
+12. Ambiguity fixes for grammar modules
+12.1 The plural possessive ambiguity
+A sentence like The pirates boats overtook... is ambiguous: student could write pirate's (one pirate) or pirates' (many). The answer key accepts only pirates', so the question is a coin flip.
+
+Fix: precede every plural-marked (+) noun with a number-forcing word:
+
+these / those (demonstratives force plural)
+
+two / three / five (numerals > 1 force plural)
+
+Similarly, precede every singular-marked (*) noun with:
+
+a / an / one / single / lone
+
+proper names or unique entities (already unambiguous)
+
+Example rewrites:
+
+The pirates+ boats → Those pirates+ boats
+
+my sisters+ [item] → my two sisters+ [item]
+
+the books+ pages → these books+ pages
+
+12.2 Grammar bugs to catch
+feet's — not valid English; replace with the baby* toes (or similar)
+
+let water to be drawn — remove to
+
+has a no choice — remove a, change to had
+
+Any verb-send-sent (missing present form) — fix to verb-sends-sent
+
+13. Operational checklist
+13.1 Files must exist
+container.php at english/container.php (or wherever ../../container.php resolves to)
+
+scorer.php at same level
+
+Login redirect target /arville/kpluz0/login.php
+
+13.2 Database registration
+Every modern module must have rows in the modules table for every grade (0–10) it should appear for. Query:
+
+sql
+SELECT grade, is_active FROM modules
+WHERE subject = 'english' AND url LIKE '%<module>.php%'
+ORDER BY grade;
+If missing, english-menu.php won't show the button for that grade, and the tier branching will never fire. Provide this query in the conversion notes.
+
+13.3 Testing checklist
+For each converted module, verify:
+
+?level=Easy and ?level=Hard both render
+
+Grade N appears in the header (or correct module title if too long)
+
+Question renders in the bordered box at 480 px max-width
+
+Choices render (2 or 4, correctly sized, vertically centered)
+
+New Question button regenerates without scoring
+
+Submit (text modules) scores and shows feedback
+
+Feedback shows correct ✅/❌, correct answer, and New Question
+
+Long answers don't orphan the final word
+
+Switching grade via $_SESSION['user_grade'] = X gets the correct tier's content
+
+Reloading doesn't decrement score or double-score
+
+14. Common pitfalls
+Pitfall	Prevention
+Using mysql_* functions	Use $conn from mysqli
+Reading $grd without setting it	Always $grd = (int)($_SESSION['user_grade'] ?? 0)
+Keeping 3 levels	Fold Medium into Hard
+Parsing #Q[A+B]C in render	Parse at data-definition time into ['q', 'correct', 'wrong']
+Passing wrong level to scorer	Store 'lvl' => $lvl in $_SESSION[$sessionKey]['current'] at generation; pass $cur['lvl'] to scorer
+Text input not lowercased/trimmed	Always strtolower(trim((string)($_POST['answer'] ?? '')))
+9 substitution for apostrophes	Use urlencode() / urldecode()
+Applying bind_last_words() to story paragraphs	Only apply to questions/answers, not long prose
+width="50%" on choice cells	Removes natural sizing — use cellspacing for gaps
+text-align:left inside box	Box content must be text-align:center
+Forgetting word-break:break-word	Symbols/long tokens overflow fixed-width buttons
+Leaving $picfile read/render	Strip it — it's dead code
+Using $_POST['level'] without in_array check	Always whitelist against $levels
+Applying - Grade N - $lvl to long titles	Drop suffix if $moduleTitle > 35 chars
+Leaving Comic Sans MS	Replace all fonts with Arial
+15. Worked example skeleton
+Here's the canonical shape of a complete converted module (word-classification type, 4 choices, 2×2 grid):
+
+php
+<?php
+// [Standard header from §2]
+
+// ---- Grade / level (§3) ----
+$grd = (int)($_SESSION['user_grade'] ?? 0);
+if ($grd < 0 || $grd > 10) $grd = 0;
+
+$levels = ['Easy', 'Hard'];
+if (isset($_POST['level']) && in_array($_POST['level'], $levels, true)) $_SESSION['level'] = $_POST['level'];
+if (!isset($_SESSION['level'])) $_SESSION['level'] = 'Easy';
+if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
+if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
+$lvl = $_SESSION['level'];
+
+// ---- Tier mapping (§4) ----
+function resolve_X_tier(string $lvl, int $grd): int {
+    if ($lvl === 'Easy') {
+        if ($grd <= 2) return 1;
+        if ($grd <= 4) return 2;
+        return 3;
+    }
+    if ($grd <= 2) return 3;
+    if ($grd <= 4) return 4;
+    return 5;
+}
+
+// ---- Data (§5) ----
+$dataByTier = [
+    1 => [ /* items */ ],
+    2 => [ /* items */ ],
+    // ...
+];
+
+// ---- Helpers (§8.6, §8.4) ----
+function bind_last_words(string $text, int $words = 2): string { /* ... */ }
+function X_box(string $html, int $minHeight = 140): void { /* ... */ }
+
+// ---- Answer processing (§7) ----
+$result = null; $scorer = null;
+if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
+    // ...
+}
+
+// ---- Question generation (§6) ----
+if ($result === null || isset($_POST['Submit2'])) {
+    // ...
+}
+
+// ---- Render (§8, §9, §10) ----
+$theme = [ /* standard theme array */ ];
+render_header($moduleTitle.' - Grade '.$grd.' - '.$lvl, ...);
+?>
+
+<div style="padding:0 10px;text-align:center;">
+<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+<?php if ($result !== null): ?>
+  <!-- Feedback per §10 -->
+<?php else: ?>
+  <!-- Question per §10.3 + choices per §9 -->
+<?php endif; ?>
+  <!-- Difficulty radios per §10.4 -->
+</form><br>
+<?php render_score_box(); ?>
+</div>
+<?php
+if ($scorer !== null) $scorer->outputConsoleDebug();
+$conn->close();
+render_footer();
+?>
+16. Deliverable expectations
+Every converted module should be delivered as:
+
+Complete PHP file — one code block, copy-paste ready
+
+Behaviour matrix — table showing Level × Grade → tier
+
+Conversion notes — bullet list of changes made (structural, typos, dead code removed, ambiguity fixes, pattern decisions)
+
+Operational check — the SQL query from §13.2 for that specific module
+
+Confirm the following in the notes when applicable:
+
+Which legacy tiers were preserved / dropped
+
+Which typos were fixed (list them)
+
+What dead code was removed ($picfile, unused name pools, unreachable tiers)
+
+Any ambiguity fixes (plural-possessive rewriting, alternate correct answers)
+
+Any structural decisions (how $grd was interpreted if legacy never set it)
