@@ -1,819 +1,442 @@
-<?php 
-require '../../pass-chk.php';
-?>
-
-
-<html>
-
-<head>
-<meta http-equiv="Content-Language" content="en-us">
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <?php
-echo "<title>Action and Non-Action Verbs - EnglishPluz.com</title>";
-?>
-<script language="JavaScript">
-<!--
-function FP_swapImg() {//v1.0
- var doc=document,args=arguments,elm,n; doc.$imgSwaps=new Array(); for(n=2; n<args.length;
- n+=2) { elm=FP_getObjectByID(args[n]); if(elm) { doc.$imgSwaps[doc.$imgSwaps.length]=elm;
- elm.$src=elm.src; elm.src=args[n+1]; } }
+// english/modules/verbs-dyn-stat.php
+// Action and Non-Action Verbs — identify whether the highlighted verb in a
+// phrase is dynamic (action) or stative (non-action).
+// Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
+// 5 content tiers via (level × grade); 2 M/C choices (1×2 grid).
+//
+// Naming: tiers 1–2 label the categories "action verb" / "non-action verb";
+// tiers 3–5 label them "dynamic verb" / "stative verb". The canonical answer
+// carried in ?ansclick= is always 'action verb' / 'non-action verb' — display
+// labels switch by tier at render time (legacy did the same via $ansclicked0).
+//
+// LAYOUT RULE (permanent): "Click on the correct answer below." ALWAYS sits
+// immediately above the choice buttons — never above the phrase box.
+
+session_name('KPLUZ_SESSION');
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: /arville/kpluz0/login.php");
+    exit();
+}
+require_once __DIR__ . '/../../container.php';
+require_once __DIR__ . '/../../scorer.php';
+
+$conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz0");
+if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
+$base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
+$moduleTitle = 'Action and Non-Action Verbs';
+$moduleId = basename(__FILE__);
+$sessionKey = 'mod_' . md5($moduleId);
+
+// ---- Grade / level (§3) ----
+$grd = (int)($_SESSION['user_grade'] ?? 0);
+if ($grd < 0 || $grd > 10) $grd = 0;
+
+$levels = ['Easy', 'Hard'];
+if (isset($_POST['level']) && in_array($_POST['level'], $levels, true)) $_SESSION['level'] = $_POST['level'];
+if (!isset($_SESSION['level'])) $_SESSION['level'] = 'Easy';
+if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
+if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
+$lvl = $_SESSION['level'];
+
+// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+function resolve_vds_tier(string $lvl, int $grd): int {
+    if ($lvl === 'Easy') {
+        if ($grd <= 4) return 1;
+        if ($grd <= 6) return 2;
+        return 3;
+    }
+    // Hard — legacy Hard formula (harder of Medium/Hard)
+    if ($grd <= 4) return 3;
+    if ($grd <= 6) return 4;
+    return 5;
 }
 
-function FP_preloadImgs() {//v1.0
- var d=document,a=arguments; if(!d.FP_imgs) d.FP_imgs=new Array();
- for(var i=0; i<a.length; i++) { d.FP_imgs[i]=new Image; d.FP_imgs[i].src=a[i]; }
+// Tier-aware labels — canonical answers always 'action verb' / 'non-action verb'.
+function vds_labels(int $tier): array {
+    if ($tier <= 2) {
+        return [
+            'action_display'    => 'Action Verb',
+            'nonaction_display' => 'Non-Action Verb',
+            'action_lower'      => 'action verb',
+            'nonaction_lower'   => 'non-action verb',
+            'because_action'    => 'it is used to denote the action of the subject',
+            'because_state'     => 'it is used to denote the state of the subject',
+        ];
+    }
+    return [
+        'action_display'    => 'Dynamic Verb',
+        'nonaction_display' => 'Stative Verb',
+        'action_lower'      => 'dynamic verb',
+        'nonaction_lower'   => 'stative verb',
+        'because_action'    => 'it is used to denote the action of the subject',
+        'because_state'     => 'it is used to denote the state of the subject',
+    ];
 }
 
-function FP_getObjectByID(id,o) {//v1.0
- var c,el,els,f,m,n; if(!o)o=document; if(o.getElementById) el=o.getElementById(id);
- else if(o.layers) c=o.layers; else if(o.all) el=o.all[id]; if(el) return el;
- if(o.id==id || o.name==id) return o; if(o.childNodes) c=o.childNodes; if(c)
- for(n=0; n<c.length; n++) { el=FP_getObjectByID(id,c[n]); if(el) return el; }
- f=o.forms; if(f) for(n=0; n<f.length; n++) { els=f[n].elements;
- for(m=0; m<els.length; m++){ el=FP_getObjectByID(id,els[n]); if(el) return el; } }
- return null;
+// ---- Data (§5) — verbatim from legacy (first word of each phrase = the verb) ----
+$dataByTier = [
+    1 => [
+        'action' => [
+            'waxes the car','bakes that cake','rolls on the floor','playing with toys',
+            'carries the basket','moving very fast','laughs at the joke','spins like a top',
+            'cleans the garden','checks the wheels','plays loud music','passes balls',
+            'chases mice','reads aloud','sings at the party','plays games','eats fruits',
+            'plants vegetables','asked to be left alone','runs to the park',
+            'walks without shoes','shouted the words',
+        ],
+        'state' => [
+            'is really beautiful','looks very friendly','looked confused','was quite unhappy',
+            'is a bit surprised','agrees with him','agrees with that','believes him',
+            'believes the myth','have a black car','have a new pet','has three books',
+            'belonged to him','belongs to the church','consists of water and','contains toys',
+            'disagrees with her','dislikes snakes','doubts his story','doubts himself',
+            'costs a lot of money','smells delicious','feels very smooth','feels a bit slimy',
+            'sounds great to me','fears spiders','smells really awful','hates noisy pets',
+            'loves funny movies','likes cute puppies',
+        ],
+    ],
+    2 => [
+        'action' => [
+            'restores the car','bakes that wedding cake','wears goggles while','flies away from',
+            'donates to charity','gives an anniversary gift','transports those','flies in a pattern',
+            'races to get home','looks at the tornado','teaches patiently','watches the movie',
+            'composes songs for her','writes about his life','lands swiftly',
+            'fills it with antique ornaments','inspects the metal canister','storing solar energy',
+            'meets with the senator','rotating fast','hides behind the curtains',
+            'solves her problems','reviews for a test','taking difficult tests',
+            'rescuing old ladies','taking photographs of','performs a magic trick',
+            'does more harm than good',
+        ],
+        'state' => [
+            'is quite attractive','looks very reasonable','looked somewhat perplexed',
+            'was indeed excited','is a bit annoying','agrees with the group',
+            'believe the amazing story','has a housekeeper','belonged to their neighbor',
+            'belongs to that association','concerns all of us','consists of gravel and sand',
+            'contains all his clothes','depends on many factors','deserves to win the award',
+            'deserves to be punished','disagrees with the decision','dislikes being teased',
+            'doubts that statement','depends on the weather','deserves to win',
+            'exists deep in the forest','cost thousands of dollars','possess vital secrets',
+            'remembers everything',
+        ],
+    ],
+    3 => [
+        'action' => [
+            'restored the vintage car','decorates that wedding cake',
+            'enforces the laws of the city','upgrades the technological features',
+            'demanded unreasonable changes','modifies these mechanisms','reasons without logic',
+            'appeases the irate citizens','operates with inadequate knowledge',
+            'threatens the townspeople','preparing lunch that smells delicious',
+            'convicts many criminals','analyzes the existing data',
+            'traversed the dark tunnel','accumulated enough evidence',
+            'vandalized the colorful mural',
+        ],
+        'state' => [
+            'is quite obnoxious','looks very appealing','looked too exhausted',
+            'was really inconsiderate','is extremely repulsive','appears to be reluctant',
+            'seem to lack some discipline','appear to be headed to victory',
+            'seemed incompetent and irresponsible','agrees with their suggestion',
+            'believe the incredible report','believes in paranormal entities',
+            'has an elegant mansion','belongs to the local government',
+            'concerns the entire department','consists of sweeteners and carbohydrates',
+            'contains nothing but acrylic paint','depends on the situation',
+            'deserves that recognition','disagrees with the consensus',
+            'dislikes corrupt government officials',
+            'doubts that the prediction will come true',
+            'deems the action to be necessary','expected a better offer from',
+            'possesses valuable knowledge','exists independently of',
+            'cost a million dollars more','loathes foul-smelling places',
+        ],
+    ],
+    4 => [
+        'action' => [
+            'communicates using pricey digital gadgets','downloads videos via the internet',
+            'develops ideas for economic progress','analyzed the published technical report',
+            'distills the saline solution','rehabilitated the misguided youth',
+            'arbitrate in such legal disputes','calibrates the digital thermometer',
+            'tranquilized the agitated rhinoceros','scampered like an overgrown donkey',
+            'burglarized the abandoned mansion','cauterized the infected wound',
+            'concatenated the words together','miniaturized the power module',
+            'deoxygenates the smallest chamber','assimilate the new immigrants',
+        ],
+        'state' => [
+            'is very belligerent towards us','are circumspect and meticulous',
+            'looking totally calamitous','was avaricious in every manner',
+            'is utterly insensitive and repugnant','appear to lack conscientiousness',
+            'seems refreshing yet unorthodox','appears to be disintegrating quickly',
+            'understands the gravity of the situation',
+            'conceive the meaning of his explanation',
+            'suspects that something horrible is','realizes how vulnerable they are',
+            'expects the negotiation to be easy',
+            'deems the compromise to be fair to',
+            'presumes that the project is still ongoing',
+            'imagines a utopic future for their city',
+            'considers his suggestion preposterous',
+            'perceives their opponents to be undefeatable',
+            'abhors dealing with corrupt politicians',
+        ],
+    ],
+    5 => [
+        'action' => [
+            'accentuated the product\'s salient features',
+            'attenuated the transmitter\'s output signals',
+            'elucidates the complex concept',
+            'obfuscate the major issues being discussed',
+            'exacerbates the problematic situation',
+            'embellished his earlier statements with',
+            'bifurcated into two narrower channels',
+            'synthesizes those inorganic chemicals',
+            'oscillates between the opposite peaks',
+            'interpellating the neophyte senator',
+            'bureaucratize the nation\'s health system',
+            'transmogrified into a grotesque flying creature',
+            'gesticulated to get the guard\'s attention',
+            'extrapolate their total sales for next year',
+            'demodulates the upstream frequencies',
+        ],
+        'state' => [
+            'is both omnipresent and omniscient','were either petrified or ossified',
+            'looked ludicrous wearing that attire',
+            'are reminiscent of the city\'s glory days',
+            'seemed extremely cantankerous that moment',
+            'appears extemporaneous yet purposeful',
+            'envisions a prosperous future for all of them',
+            'expected the judge\'s ruling to be unprejudiced',
+            'perceived their efforts to be lackadaisical',
+            'comprehends the implications of that decision',
+            'deems the concession to be justifiable',
+            'apprehended the confusing details of the theory',
+            'concedes that your new hypothesis is better',
+            'embodies the true meaning of patriotism',
+            'considers him to be their best paleontologist',
+        ],
+    ],
+];
+
+// ---- Helpers (§8.4, §8.6) ----
+function vds_phrase_box(string $html, int $minHeight = 120): void {
+    echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
+       . 'margin:20px auto;padding:22px 28px;'
+       . 'background:#FCFBE6;border:2px solid #DDD;border-radius:10px;'
+       . 'display:flex;flex-direction:column;justify-content:center;align-items:center;'
+       . 'text-align:center;font-family:Arial,sans-serif;box-sizing:border-box;">'
+       . $html . '</div>';
 }
-// -->
-</script>
-</head>
 
-<body background="../../images/bluetop-bg.jpg" onload="FP_preloadImgs(/*url*/'../../images/header1c.jpg', /*url*/'../../images/header1b.jpg', /*url*/'../../images/header2c.jpg', /*url*/'../../images/header2b.jpg', /*url*/'../../images/header3c.jpg', /*url*/'../../images/header3b.jpg', /*url*/'../../images/header4c.jpg', /*url*/'../../images/header4b.jpg', /*url*/'../../images/header5c.jpg', /*url*/'../../images/header5b.jpg', /*url*/'../../images/header6c.jpg', /*url*/'../../images/header6b.jpg')">
-
-<div align="center">
-
-<table width="900"><tr><td height="100">
-	<div align="center">
-		<table border="0" width="900" cellspacing="0" cellpadding="0">
-			<tr>
-				<td width="193" height="100" valign="top">
-				<a href="/home-english.php">
-				<img border="0" src="../../images/header-logo.jpg"></a></td>
-				<td width="133" valign="top">
-										<a href="/how-to-use-kpluz.php">
-										<img border="0" id="img1" src="../../images/header1a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img1',/*url*/'../../images/header1b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img1',/*url*/'../../images/header1a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img1',/*url*/'../../images/header1c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img1',/*url*/'../../images/header1b.jpg')"></a></td>
-				<td width="133" valign="top">
-										<a href="/bluebars_student.php">
-										<img border="0" id="img2" src="../../images/header2a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img2',/*url*/'../../images/header2b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img2',/*url*/'../../images/header2a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img2',/*url*/'../../images/header2c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img2',/*url*/'../../images/header2b.jpg')"></a></td>
-				<td width="133" valign="top">
-										<a href="/programs.php">
-										<img border="0" id="img3" src="../../images/header3a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img3',/*url*/'../../images/header3b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img3',/*url*/'../../images/header3a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img3',/*url*/'../../images/header3c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img3',/*url*/'../../images/header3b.jpg')"></a></td>
-				<td width="134" valign="top">
-										<a href="/community.php">
-										<img border="0" id="img4" src="../../images/header4a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img4',/*url*/'../../images/header4b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img4',/*url*/'../../images/header4a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img4',/*url*/'../../images/header4c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img4',/*url*/'../../images/header4b.jpg')"></a></td>
-				<td width="134" valign="top">
-										<a href="/contact.php">
-										<img border="0" id="img5" src="../../images/header5a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img5',/*url*/'../../images/header5b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img5',/*url*/'../../images/header5a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img5',/*url*/'../../images/header5c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img5',/*url*/'../../images/header5b.jpg')"></a></td>
-				<td width="134" valign="top">
-										<a href="/logout.php">
-										<img border="0" id="img6" src="../../images/header6a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img6',/*url*/'../../images/header6b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img6',/*url*/'../../images/header6a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img6',/*url*/'../../images/header6c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img6',/*url*/'../../images/header6b.jpg')"></a></td>
-			</tr>
-		</table>
-	</div>
-	</td></tr></table>
-
-</div>
-
-	<div align="center">
-		<table border="0" width="800" cellspacing="0" cellpadding="0" id="table7">
-			<tr>
-				<td>
-				<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table32">
-					<tr>
-						<td>
-						<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table96">
-							<tr>
-								<td>
-								<img border="0" src="../images/ex-26-top.jpg"></td>
-							</tr>
-							<tr>
-								<td background="../images/ex-26-top2.jpg" height="80" valign="top">
-									<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table97">
-										<tr>
-										
-										<td width="111">&nbsp;</td>
-										
-											<td align="center" valign="center" >
-											
-											<p style="margin-top: 12px; margin-bottom:0">
-											<span style="font-weight: 700">
-											<font face="Verdana" style="font-size: 16pt" color="#CC0000">
-											
-												
-											
-												<?php
-												
-$vio="<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#800080'>";
-$red="<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#CC0000'>";
-$blue="<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#0000CC'>";
-$green="<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#007700'>";
-$gray="<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 500' color='#454545'>";
-$vio2="<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 700' color='#800080'>";
-$red2="<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 700' color='#CC0000'>";
-$blue2="<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 700' color='#0000CC'>";
-$red3="<font face='Verdana' style='font-size: 16pt; font-weight: 700' color='#CC0000'>";
-$blue3="<font face='Verdana' style='font-size: 16pt; font-weight: 700' color='#0000CC'>";
-
-												if($grd<7){$hvrb1="Action";$hvrb2="Non-Action Verbs<br/>";}
-												else{$hvrb1="Dynamic (Action)"; $hvrb2="Stative (Non-action) Verbs: ";}
-												
-												if (isset($_POST['Submit2'])){
-												echo $hvrb1." and ".$hvrb2."  Level ".$grd." - ".$_POST['level'];
-												}
-												else
-												{
-												echo $hvrb1." and ".$hvrb2."  Level ".$grd." - ".$_SESSION['level'];
-												}
-												?>
-											<td width="103" valign="top">											
-											<p align="center" style="margin-right: 8px">&nbsp;
-											
-											
-											</td>
-										</tr>
-									</table>
-								</div>
-								</td>
-							</tr>
-							</table>
-						</td>
-					</tr>
-					<tr>
-						<td>
-						<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table33">
-							<tr>
-								<td width="75" valign="top" height="34" background="../images/ex-26-left.jpg">
-								&nbsp;</td>
-								<td valign="top">
-								
-								
-<?PHP
-	
-	if (isset($_POST['level'])){$selected_radio = $_POST['level'];}
-	
-	if (!isset($selected_radio)){$selected_radio = $_SESSION['level'];}
-	if (isset($selected_radio)){$_SESSION['level'] = $selected_radio;}
-	
-	$Easy_status = "";	
-	$Medium_status = "";	
-	$Hard_status = "";	
-													
-	if ($selected_radio == 'Easy') {$Easy_status = 'checked';}
-	if ($selected_radio == 'Medium') {$Medium_status = 'checked';}
-	if ($selected_radio == 'Hard') {$Hard_status = 'checked';}
-
-?>
-																								
-												
-
-												
-								<table border="0" width="50" cellspacing="0" cellpadding="0" id="table34" height="203">
-									<tr>
-										<td background="../images/ex-26-content.jpg" height="203" valign="top" width="655">
-										<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table37">
-											<tr>
-												<td>
-												
-												
-<?php
-//set parameters for different difficulty levels
- 
-
-if (empty($_POST['Submit1']))
-{
-
-if ($_SESSION['level']=="Easy"){
-	if ($grd<=4){$arrnum=1;}
-	if ($grd==5 or $grd==6){$arrnum=2;}
-	if ($grd>=7){$arrnum=3;}
-	$points=1;}
-if ($_SESSION['level']=="Medium"){
-	if ($grd<=4){$arrnum=2;}
-	if ($grd==5 or $grd==6){$arrnum=3;}
-	if ($grd>=7){$arrnum=4;}
-	$points=2;}
-if ($_SESSION['level']=="Hard"){
-	if ($grd<=4){$arrnum=3;}
-	if ($grd==5 or $grd==6){$arrnum=4;}
-	if ($grd>=7){$arrnum=5;}
-	$points=3;}
-
-$_SESSION['points'] = $points;
-
+function vds_bind_last_words(string $text, int $words = 2): string {
+    $esc = htmlspecialchars($text);
+    $pat = '/\s+(\S+(?:\s+\S+){' . ($words - 1) . '})$/u';
+    return preg_replace_callback($pat, function ($m) {
+        return '&nbsp;' . preg_replace('/\s+/u', '&nbsp;', $m[1]);
+    }, $esc, 1);
 }
-?>
-												
-												
-												</td>
-											</tr>
-											<tr>
-												<td>
-												<p align="center">&nbsp;
-												
-												
-												
-<?php
- 
-echo "<FORM name ='form1' method ='post' action ='verbs-dyn-stat.php'>";
-$tnum="*56";
-	
-if(isset($_GET['ansclick'])){$ansclicked=$_GET['ansclick'];} 
-else{$ansclicked="";} 
 
-if ($ansclicked!="" and empty($_POST['Submit2']))
-{
-if (isset($_SESSION['answer'])){$ans=$_SESSION['answer'];}
-$q=$_SESSION['q'];
-$ansclicked0=$ansclicked;
-if ($ansclicked0=="action verb" and $arrnum>2){$ansclicked0="dynamic verb";}
-if ($ansclicked0=="non-action verb" and $arrnum>2){$ansclicked0="stative verb";}
+// Render a phrase with the leading verb highlighted pink; rest normal.
+function vds_render_phrase(string $phrase): string {
+    $parts = explode(' ', $phrase, 2);
+    $verb = $parts[0];
+    $rest = $parts[1] ?? '';
+    $html = '<strong style="color:#CC0066;">' . htmlspecialchars($verb) . '</strong>';
+    if ($rest !== '') $html .= ' ' . vds_bind_last_words($rest);
+    return $html;
+}
 
-	echo "<p align='center' style='margin-left: 25px; margin-right: 25px'>";
-	echo "<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#800080'>";
-	echo "Your answer is ";
-	echo "<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#0000BB'>";
-	echo "'".$ansclicked0."'";
-	echo "<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#800080'>";
-	echo ".<br />";
-	if ($ans==$ansclicked)
-	{
-	echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 700' color='#CC0000'>";
-	echo "You are correct!<br />";
+// ---- Question generation (§6) ----
+function build_vds_question(array $dataByTier, string $lvl, int $grd, string $sessionKey): ?array {
+    $tier = resolve_vds_tier($lvl, $grd);
+    $tierData = $dataByTier[$tier] ?? null;
+    if (!$tierData) return null;
 
-	 
-	if ($_SESSION['pageload']!="old"){$_SESSION['score']=	$_SESSION['score']+$_SESSION['points'];}	
-	
-	
-	//Update Database
-	if ($_SESSION['pageload']!="old"){
-	$con = mysql_connect("localhost","xigega65_EE","XigFanims1989");
-	if (!$con){die('Could not connect: ' . mysql_error());}
-	mysql_select_db("kpluz");
-	$schooler=$_COOKIE['KPluzID_my_site'];
-    $result = mysql_query("SELECT * FROM EPluz_accounts
- 	WHERE Cardholder = '$schooler' ");
-	$rec = mysql_fetch_array( $result );
-	$easy=$rec['Easy'];
-	$medium=$rec['Medium'];
-	$hard=$rec['Hard'];
-	
-	$newtnum=$tnum;
-	if ($_SESSION['level']=="Easy"){
-		if (strlen($easy)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE EPluz_accounts SET Easy = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($easy,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($easy,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct+1;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($easy,0,$pos1).$newgrade.substr($easy,($pos1+9));
-				mysql_query("UPDATE EPluz_accounts SET Easy = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$easy.$tnum."001001";
-				mysql_query("UPDATE EPluz_accounts SET Easy = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	if ($_SESSION['level']=="Medium"){
-		if (strlen($medium)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE EPluz_accounts SET Medium = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($medium,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($medium,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct+1;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($medium,0,$pos1).$newgrade.substr($medium,($pos1+9));
-				mysql_query("UPDATE EPluz_accounts SET Medium = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$medium.$tnum."001001";
-				mysql_query("UPDATE EPluz_accounts SET Medium = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	if ($_SESSION['level']=="Hard"){
-		if (strlen($hard)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE EPluz_accounts SET Hard = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($hard,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($hard,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct+1;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($hard,0,$pos1).$newgrade.substr($hard,($pos1+9));
-				mysql_query("UPDATE EPluz_accounts SET Hard = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$hard.$tnum."001001";
-				mysql_query("UPDATE EPluz_accounts SET Hard = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	mysql_close($con);
-	
-$_SESSION['pageload']="old";}
-	$_SESSION['points']=0;	
-	}
-	
-	else
-	{
-
-	  
-	echo "Sorry, that is not correct.<br />";
- 
-	//Update Database
-	if ($_SESSION['pageload']!="old"){
-	$con = mysql_connect("localhost","xigega65_EE","XigFanims1989");
-	if (!$con){die('Could not connect: ' . mysql_error());}
-	mysql_select_db("kpluz");
-	$schooler=$_COOKIE['KPluzID_my_site'];
-    $result = mysql_query("SELECT * FROM EPluz_accounts
- 	WHERE Cardholder = '$schooler' ");
-	$rec = mysql_fetch_array( $result );
-	$easy=$rec['Easy'];
-	$medium=$rec['Medium'];
-	$hard=$rec['Hard'];	
-	
-	$newtnum=$tnum;
-	if ($_SESSION['level']=="Easy"){
-		if (strlen($easy)<2){
-			$newgrades="*".$newtnum."000001";
-			mysql_query("UPDATE EPluz_accounts SET Easy = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($easy,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($easy,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($easy,0,$pos1).$newgrade.substr($easy,($pos1+9));
-				mysql_query("UPDATE EPluz_accounts SET Easy = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$easy.$tnum."000001";
-				mysql_query("UPDATE EPluz_accounts SET Easy = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	if ($_SESSION['level']=="Medium"){
-		if (strlen($medium)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE EPluz_accounts SET Medium = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($medium,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($medium,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($medium,0,$pos1).$newgrade.substr($medium,($pos1+9));
-				mysql_query("UPDATE EPluz_accounts SET Medium = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$medium.$tnum."000001";
-				mysql_query("UPDATE EPluz_accounts SET Medium = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	if ($_SESSION['level']=="Hard"){
-		if (strlen($hard)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE EPluz_accounts SET Hard = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($hard,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($hard,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($hard,0,$pos1).$newgrade.substr($hard,($pos1+9));
-				mysql_query("UPDATE EPluz_accounts SET Hard = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$hard.$tnum."000001";
-				mysql_query("UPDATE EPluz_accounts SET Hard = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	mysql_close($con);
-	
-
-	
-
-	
-$_SESSION['pageload']="old";}
-	$_SESSION['points']=0;	
+    // Roll question form: 1 = action-verb phrase (correct = action verb),
+    //                     2 = state-verb phrase  (correct = non-action verb).
+    $form = rand(1, 2);
+    if ($form === 1) {
+        $pool    = $tierData['action'];
+        $correct = 'action verb';
+    } else {
+        $pool    = $tierData['state'];
+        $correct = 'non-action verb';
     }
 
-	echo "<table width='75%' align='center'><tr><td align='center'>";
-	
-	
-	echo $vio."The red part of this phrase is ";
-	$fch=substr($ans,0,1);
-	if ($ans=="action verb" and $arrnum<=2){echo "an ".$red."action";}
-	if ($ans=="action verb" and $arrnum>2){echo "a ".$red."dynamic";}
-	if ($ans!="action verb" and $arrnum<=2){echo "a ".$red."non-action";}
-	if ($ans!="action verb" and $arrnum>2){echo "a ".$red."stative";}
-	if ($ans=="action verb"){echo " verb".$vio." because it is used to denote the action of the subject";}
-	else{echo " verb".$vio." because it is used to denote the state of the subject";}
-	echo $vio.".<br/><br/>";
-	echo "<table border='0' width='293' cellspacing='0' cellpadding='0' align='center'><tr><td>";
-	echo "<img border='0' src='../images/qnote2-top.jpg' width='100%'></td></tr><tr>";
-	echo "<td background='../images/qnote2-middle.jpg' width='100%' align='center' style='padding-top:5px; padding-bottom:5px;padding-left:25px; padding-right:25px'>";
-	echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#333333'>";
-	echo $q."<br/>";
-	echo "</td></tr>";
-	echo "<tr><td ><img border='0' src='../images/qnote2-bottom.jpg'></font></td>";
-	echo "</tr></table>";	
-	echo "</td></tr><tr><td>&nbsp;</td></tr></table>";
-	
- }
+    // No-repeat keyed per (tier, form, index)
+    $used = $_SESSION[$sessionKey]['used'] ?? [];
+    $available = [];
+    foreach ($pool as $i => $phrase) {
+        $key = "t$tier:f$form:$i";
+        if (!in_array($key, $used, true)) $available[] = ['key' => $key, 'idx' => $i];
+    }
+    if (empty($available)) {
+        $prefix = "t$tier:f$form:";
+        $used = array_values(array_filter($used, fn($k) => strpos($k, $prefix) !== 0));
+        foreach ($pool as $i => $phrase) $available[] = ['key' => "t$tier:f$form:$i", 'idx' => $i];
+    }
+    $pick = $available[array_rand($available)];
+    $used[] = $pick['key'];
+    if (count($used) > 500) $used = array_slice($used, -300);
+    $_SESSION[$sessionKey]['used'] = $used;
 
+    $phrase = $pool[$pick['idx']];
 
-if ($ansclicked=="" or isset($_POST['Submit2']))
-{
-$page=substr($_SERVER["PHP_SELF"],1);
-if (isset($_SESSION['curpage'])){if ($page != $_SESSION['curpage']){$_SESSION['curpage']=$page; $_SESSION['score']=0;}}
-else{$_SESSION['curpage']=$page; $_SESSION['score']=0;}
-$_SESSION['pageload']="new";
+    // Canonical choices — always 'action verb' / 'non-action verb' (URL params).
+    $choices = ['action verb', 'non-action verb'];
+    shuffle($choices);
 
-
-$red="<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#CC0000'>";
-$blue="<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#800080'>";
-$grayq="<font face='Comic Sans MS' style='font-size: 17pt; font-weight: 700' color='#333333'>";
-$redq="<font face='Comic Sans MS' style='font-size: 17pt; font-weight: 700' color='#BB0000'>";
-$blueq="<font face='Comic Sans MS' style='font-size: 17pt; font-weight: 700' color='#0000BB'>";
- 
-if(isset($_SESSION['allstr1'])){if (strlen($_SESSION['allstr1'])<3){$_SESSION['allstr1']="*****";}}
-else {$_SESSION['allstr1']="*****";}
-
-$form=rand(1,2);
- 
-if ($form==1){
-	$ans="action verb";
-	if ($arrnum==1){$phs=array(
-		"waxes the car", "bakes that cake", "rolls on the floor", "playing with toys", "carries the basket", 
-		"moving very fast", "laughs at the joke", "spins like a top", "cleans the garden", "checks the wheels", 
-		"plays loud music", "passes balls", "chases mice", "reads aloud", "sings at the party", 
-		"plays games", "eats fruits", "plants vegetables", "asked to be left alone", "runs to the park", 
-		"walks without shoes", "shouted the words"		
-		);
-		}
-	if ($arrnum==2){$phs=array(
-		"restores the car", "bakes that wedding cake", "wears goggles while", "flies away from", "donates to charity", 
-		"gives an anniversary gift", "transports those", "flies in a pattern", "races to get home", "looks at the tornado", 
-		"teaches patiently", "watches the movie", "composes songs for her", "writes about his life", "lands swiftly", 
-		"fills it with antique ornaments", "inspects the metal canister", "storing solar energy", "meets with the senator", "rotating fast", 
-		"hides behind the curtains", "solves her problems", "reviews for a test", "taking difficult tests", "rescuing old ladies", 
-		"taking photographs of", "performs a magic trick", "does more harm than good", 	
-		);
-		}	
-	if ($arrnum==3){$phs=array(
-		"restored the vintage car", "decorates that wedding cake", "enforces the laws of the city", "upgrades the technological features", 
-		"demanded unreasonable changes", "modifies these mechanisms", "reasons without logic", "appeases the irate citizens", 
-		"operates with inadequate knowledge", "threatens the townspeople", "preparing lunch that smells delicious", "convicts many criminals",  
-		"analyzes the existing data", "traversed the dark tunnel", "accumulated enough evidence", "vandalized the colorful mural",		
-		);
-		}
-	if ($arrnum==4){$phs=array(
-		"communicates using pricey digital gadgets", "downloads videos via the internet", "develops ideas for economic progress", 
-		"analyzed the published technical report", "distills the saline solution", "rehabilitated the misguided youth", 
-		"arbitrate in such legal disputes", "calibrates the digital thermometer", "tranquilized the agitated rhinoceros", 
-		"scampered like an overgrown donkey", "burglarized the abandoned mansion", "cauterized the infected wound",
-		"concatenated the words together", "miniaturized the power module", "deoxygenates the smallest chamber", 
-		"assimilate the new immigrants"
-		);
-		}
-	if ($arrnum==5){$phs=array(
-		"accentuated the product's salient features", "attenuated the transmitter's output signals", "elucidates the complex concept", 
-		"obfuscate the major issues being discussed", "exacerbates the problematic situation", "embellished his earlier statements with", 
-		"bifurcated into two narrower channels", "synthesizes those inorganic chemicals", "oscillates between the opposite peaks", 
-		"interpellating the neophyte senator", "bureaucratize the nation's health system", "transmogrified into a grotesque flying creature",
-		"gesticulated to get the guard's attention", "extrapolate their total sales for next year", "demodulates the upstream frequencies",
-		);
-		}
-		
-	do {$ph=$phs[rand(0,(count($phs)-1))];}
-	while (strpos($_SESSION['allstr1'],$ph)>1);
-	$_SESSION['allstr1']=$_SESSION['allstr1'].$ph;
-	if (strlen($_SESSION['allstr1'])>300){$_SESSION['allstr1']=substr($_SESSION['allstr1'],-300);}	
-	$verb=strtok($ph," ");
-	$q=$redq.$verb.$grayq.substr($ph,strlen($verb));
-	}
-	
-if ($form==2){
-	$ans="non-action verb";
-	if ($arrnum==1){$phs=array(
-		"is really beautiful", "looks very friendly", "looked confused", "was quite unhappy", "is a bit surprised", 
-		"agrees with him", "agrees with that", "believes him", "believes the myth", "have a black car", 
-		"have a new pet", "has three books", "belonged to him", "belongs to the church", "consists of water and", 
-		"contains toys", "disagrees with her", "dislikes snakes", "doubts his story", "doubts himself",
-		"costs a lot of money",	"smells delicious", "feels very smooth", "feels a bit slimy", "sounds great to me", 
-		"fears spiders", "smells really awful", "hates noisy pets", "loves funny movies", "likes cute puppies",
-		);
-		}
-	if ($arrnum==2){$phs=array( 
-		"is quite attractive", "looks very reasonable", "looked somewhat perplexed", "was indeed excited", "is a bit annoying", 
-		"agrees with the group", "believe the amazing story", "has a housekeeper", "belonged to their neighbor", "belongs to that association", 
-		"concerns all of us", "consists of gravel and sand", "contains all his clothes", "depends on many factors", "deserves to win the award", 
-		"deserves to be punished", "disagrees with the decision", "dislikes being teased", "doubts that statement", "depends on the weather", 
-		"deserves to win", "exists deep in the forest", "cost thousands of dollars", "possess vital secrets", "remembers everything",
-		);
-		}
-	if ($arrnum==3){$phs=array(
-		"is quite obnoxious", "looks very appealing", "looked too exhausted", "was really inconsiderate", "is extremely repulsive", 
-		"appears to be reluctant", "seem to lack some discipline", "appear to be headed to victory", "seemed incompetent and irresponsible", 
-		"agrees with their suggestion", "believe the incredible report", "believes in paranormal entities", "has an elegant mansion", 
-		"belongs to the local government", "concerns the entire department", "consists of sweeteners and carbohydrates", "contains nothing but acrylic paint", 
-		"depends on the situation", "deserves that recognition", "disagrees with the consensus", "dislikes corrupt government officials", 
-		"doubts that the prediction will come true", "deems the action to be necessary", "expected a better offer from", "possesses valuable knowledge",
-		"exists independently of", "cost a million dollars more", "loathes foul-smelling places", 
-		);
-		}
-	if ($arrnum==4){$phs=array(
-		"is very belligerent towards us", "are circumspect and meticulous", "looking totally calamitous", 
-		"was avaricious in every manner", "is utterly insensitive and repugnant", "appear to lack conscientiousness", 
-		"seems refreshing yet unorthodox", "appears to be disintegrating quickly",  "understands the gravity of the situation", 
-		"conceive the meaning of his explanation", "suspects that something horrible is", "realizes how vulnerable they are", 
-		"expects the negotiation to be easy", "deems the compromise to be fair to",	"presumes that the project is still ongoing", 
-		"imagines a utopic future for their city", "considers his suggestion preposterous", "perceives their opponents to be undefeatable", 
-		"abhors dealing with corrupt politicians",
-		);
-		}
-	if ($arrnum==5){$phs=array(
-		"is both omnipresent and omniscient", "were either petrified or ossified", "looked ludicrous wearing that attire", 
-		"are reminiscent of the city's glory days", "seemed extremely cantankerous that moment", "appears extemporaneous yet purposeful", 
-		"envisions a prosperous future for all of them", "expected the judge's ruling to be unprejudiced", "perceived their efforts to be lackadaisical",
-		"comprehends the implications of that decision", "deems the concession to be justifiable", "apprehended the confusing details of the theory",
-		"concedes that your new hypothesis is better", "embodies the true meaning of patriotism", "considers him to be their best paleontologist",
-		);
-		}
-
-
-	do {$ph=$phs[rand(0,(count($phs)-1))];}
-	while (strpos($_SESSION['allstr1'],$ph)>1);
-	$_SESSION['allstr1']=$_SESSION['allstr1'].$ph;
-	if (strlen($_SESSION['allstr1'])>300){$_SESSION['allstr1']=substr($_SESSION['allstr1'],-300);}	
-	$verb=strtok($ph," ");
-	$q=$redq.$verb.$grayq.substr($ph,strlen($verb));
-	}
-	
-
-$_SESSION['answer']=$ans;
-$_SESSION['q']=$q;
-	
-echo "<P align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 15pt; font-weight: 600' color='#CC0000'>";
-
-echo "<table border='0' width='70%' align='center' cellspacing='0' cellpadding='0' id='table61'>";
-echo "<tr><td align='center' valign='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 600' color='#800080'>";
-if ($arrnum<=2){echo "Is the red part of this phrase an<br/>action verb or a non-action verb?<br/><br/>";}
-else{echo "Is the red part of this phrase a dynamic verb or a stative verb?<br/><br/>";}
-echo "<table border='0' width='293' cellspacing='0' cellpadding='0' align='center'><tr><td>";
-echo "<img border='0' src='../images/qnote2-top.jpg' width='100%'></td></tr><tr>";
-echo "<td background='../images/qnote2-middle.jpg' width='100%' align='center' style='padding-top:5px; padding-bottom:5px;padding-left:25px; padding-right:25px'>";
-echo "<font face='Comic Sans MS' style='font-size: 24pt; font-weight: 700' color='#333333'>";
-echo $q."<br/>";
-echo "</td></tr>";
-echo "<tr><td ><img border='0' src='../images/qnote2-bottom.jpg'></font></td>";
-echo "</tr></table>";	
-echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 600' color='#800080'>";
-echo "<br/>Click on your answer.<br/><br/>";
-echo "</td></tr>";
-echo "</table>";
-
-$blankimg="../images/question-paper-11.jpg";
-echo "<table align='center' width='450'><tr><td background='$blankimg' width='214' height='117' align='center' width='50%' style='padding-bottom:5px;'>";
-echo "<a href='verbs-dyn-stat.php?ansclick=action verb' style='text-decoration: none'>";
-echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 600' color='#0000CC'>";
-if ($arrnum<=2){echo "Action Verb</a></td>";}
-else{echo "Dynamic Verb</a></td>";}
-echo "<td width='22'>&nbsp;</td>";
-echo "<td background='$blankimg' width='214' height='117' align='center' valign='center' width='50%' style='padding-bottom:5px;'>";
-echo "<a href='verbs-dyn-stat.php?ansclick=non-action verb' style='text-decoration: none'>";
-echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 600' color='#0000CC'>";
-if ($arrnum<=2){echo "Non-Action Verb</a></td>";}
-else{echo "Stative Verb</a></td>";}
-echo "</tr></table>";
-
-
-echo "<table border='0' width='90%' align='center' cellspacing='0' cellpadding='0' id='table61'>";
-echo "<tr><td align='center' valign='center'>";
-
-
-
-echo "</td></tr>";
-echo "</table>";
-echo "<br/>";
-
+    return [
+        'phrase'  => $phrase,
+        'correct' => $correct,
+        'choices' => $choices,
+        'tier'    => $tier,
+        'lvl'     => $lvl,
+    ];
 }
-echo "<P align='center'><Input type = 'Submit' Name = 'Submit2' VALUE = 'New Question' style='margin-top:20px'>";
 
-echo "</font>";
+// ---- Answer processing (§7) ----
+$result = null; $scorer = null;
+if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
+    $cur     = $_SESSION[$sessionKey]['current'];
+    $clicked = (string)$_GET['ansclick'];
+    $scorer  = new Scorer($conn, $moduleId);
+    $isCorrect = $scorer->processAnswer($clicked, $cur['correct'], $cur['lvl']);
+    $result  = ['correct' => $isCorrect, 'clicked' => $clicked, 'cur' => $cur];
+    unset($_SESSION[$sessionKey]['current']);
+}
 
-echo "</font>";
+// ---- Question generation (§6) ----
+if ($result === null || isset($_POST['Submit2'])) {
+    $newQ = build_vds_question($dataByTier, $lvl, $grd, $sessionKey);
+    if ($newQ !== null) $_SESSION[$sessionKey]['current'] = $newQ;
+}
 
+// ---- Render (§8, §9, §10) ----
+$headerTier = resolve_vds_tier($lvl, $grd);
+$moduleTitleResolved = ($headerTier <= 2)
+    ? 'Action and Non-Action<br/>Verbs'
+    : 'Dynamic (Action) and Stative<br/>(Non-Action) Verbs';
+
+$theme = [
+    'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
+    'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
+    'left_side'=>$base.'/math/images/images/paper-69-left.jpg',
+    'right_side'=>$base.'/math/images/images/paper-69-right.jpg',
+    'content_bg'=>$base.'/math/images/images/paper-69-content.jpg',
+    'bottom_banner'=>$base.'/math/images/images/paper-69-bottom.jpg',
+    'score_top'=>$base.'/math/images/score-top-1.jpg',
+    'score_bottom'=>$base.'/math/images/score-bottom-1.jpg',
+];
+render_header($moduleTitleResolved.' - Grade '.$grd.' - '.$lvl,
+              $moduleTitleResolved.' - Grade '.$grd.' - '.$lvl,
+              $theme);
 ?>
-					
 
-												
-												
-												</td>
-											</tr>
-											<tr>
-												<td>
-												&nbsp;</td>
-											</tr>
-											<tr>
-												<td>
-												<div align="center">
-													<p style="margin-top: 5px; margin-bottom: 0">
-													<font face="Verdana" style="font-size: 10pt; " color="#000080">
-													Select difficulty level for 
-													next question:</font></p>
-												<table border="0" width="80%" cellspacing="0" cellpadding="0" id="table38">
-													<tr>
+<div style="padding:0 10px;text-align:center;">
+<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+<?php if ($result !== null):
+    $cur = $result['cur'];
+    $labels = vds_labels($cur['tier']);
+    // Map canonical answer to tier-appropriate display form.
+    $displayClicked = $result['clicked'];
+    if ($cur['tier'] > 2) {
+        if ($displayClicked === 'action verb')      $displayClicked = 'dynamic verb';
+        elseif ($displayClicked === 'non-action verb') $displayClicked = 'stative verb';
+    }
+    $isAction = ($cur['correct'] === 'action verb');
+    $labelVerb  = $isAction ? $labels['action_lower'] : $labels['nonaction_lower'];
+    $because    = $isAction ? $labels['because_action'] : $labels['because_state'];
+    $article    = (strtolower(substr($labelVerb, 0, 1)) === 'a') ? 'an' : 'a';
 
-
-														<td align="center">														
-														
-														
-
-														<p style="margin-bottom: 4px">														
-														
-														
-
-														<font face="Verdana">
-														<span style="font-size: 9pt">
-														<font color="#800080">														
-														<Input type = 'Radio' Name ='level' value= 'Easy' style="font-weight: 700"
-														<?PHP if (isset($Easy_status)) {print $Easy_status;} ?>>
-														<b>&nbsp;Easy														
-														</b></font></span>
-														</font>														
-														</td>
-														
-														<td align="center">
-														<p style="margin-bottom: 4px">
-														<font face="Verdana">
-														<span style="font-size: 9pt">
-														<font color="#800080">
-														<Input type = 'Radio' Name ='level' value= 'Medium' style="font-weight: 700"
-														<?PHP if (isset($Medium_status)) {print $Medium_status;} ?>
-														><b>&nbsp;Medium
-														</b></font></span>
-														</font>
-														</td>
-														
-														<td align="center">														
-														<p style="margin-bottom: 4px">														
-														<font face="Verdana">
-														<span style="font-size: 9pt">
-														<font color="#800080">														
-														<Input type = 'Radio' Name ='level' value= 'Hard' style="font-weight: 700"
-														<?PHP if (isset($Hard_status)) {print $Hard_status;} ?>
-														><b>&nbsp;Hard
-														</b></font></span>
-														</font>
-														</td>
-														
-
-													</tr>
-												</table>
-												</div>
-												</td>
-											</tr>
-											<tr>
-												<td>
-												&nbsp;</td>
-											</tr>
-											<tr>
-												<td>
-												&nbsp;</td>
-											</tr>
-											<tr>
-												<td>
-												&nbsp;</td>
-											</tr>
-											<tr>
-												<td>
-												<p align="center">
-												
-												
-												
-												
-												
-												
-												
-										
+    $fbText  = 'The highlighted verb is ' . $article . ' ';
+    $fbHtml  = vds_bind_last_words($fbText)
+             . '<strong style="color:#CC0066;font-size:15pt;">' . htmlspecialchars($labelVerb) . '</strong>'
+             . ' because ' . htmlspecialchars($because) . '.';
+?>
+  <p style="font-family:Arial,sans-serif;font-size:14pt;color:#666;margin-top:20px;max-width:480px;margin-left:auto;margin-right:auto;">
+    Your answer: <strong style="color:#0000CC;font-size:14pt;">'<?php echo htmlspecialchars($displayClicked); ?>'</strong>
+  </p>
+  <p style="font-family:Arial,sans-serif;font-size:16pt;font-weight:700;color:<?php echo $result['correct'] ? '#006600' : '#CC0000'; ?>;max-width:480px;margin:10px auto;">
+    <?php echo $result['correct'] ? '&#9989; You are correct!' : '&#10060; Sorry, that is not correct.'; ?>
+  </p>
+  <?php vds_phrase_box('<div style="width:100%;font-size:20pt;color:#333;line-height:1.55;">' . vds_render_phrase($cur['phrase']) . '</div>', 120); ?>
+  <p style="font-family:Arial,sans-serif;font-size:14pt;color:#800080;max-width:480px;margin:10px auto 20px;line-height:1.55;text-wrap:balance;">
+    <?php echo $fbHtml; ?>
+  </p>
+  <input type="submit" name="Submit2" value=" New Question " style="margin:20px 0;font-family:Arial,sans-serif;font-size:11pt;">
+<?php else:
+    $q = $_SESSION[$sessionKey]['current'] ?? null;
+    if ($q === null) {
+        echo '<p style="font-family:Arial,sans-serif;font-size:14pt;color:#CC0000;margin:40px auto;">No question could be generated. Please try again.</p>';
+    } else {
+        $labels = vds_labels($q['tier']);
+        $isActionVerb  = ($q['correct'] === 'action verb');
+        $isNonAction   = ($q['correct'] === 'non-action verb');
+        // Prompt names both categories with the tier-appropriate labels.
+        $promptLeft  = $isActionVerb  ? $labels['action_lower']    : $labels['nonaction_lower'];
+        $promptRight = $isActionVerb  ? $labels['nonaction_lower'] : $labels['action_lower'];
+        // But legacy prompt always asks the two categories; derive from the
+        // tier's canonical pair (not from the current question).
+        $tierActionLabel    = ($q['tier'] <= 2) ? 'action verb'    : 'dynamic verb';
+        $tierNonactionLabel = ($q['tier'] <= 2) ? 'non-action verb' : 'stative verb';
+        $promptArt1 = (strtolower(substr($tierActionLabel, 0, 1)) === 'a') ? 'an' : 'a';
+        $promptArt2 = (strtolower(substr($tierNonactionLabel, 0, 1)) === 'a') ? 'an' : 'a';
+?>
+  <div style="margin:35px auto 12px;font-family:Arial,sans-serif;font-size:17pt;font-weight:700;color:#800080;max-width:480px;text-wrap:balance;">
+    Is the <span style="color:#CC0066;">highlighted</span> part of this phrase
+    <?php echo $promptArt1; ?> <span style="color:#0000CC;"><?php echo htmlspecialchars($tierActionLabel); ?></span>
+    or <?php echo $promptArt2; ?> <span style="color:#0000CC;"><?php echo htmlspecialchars($tierNonactionLabel); ?></span>?
+  </div>
+  <?php vds_phrase_box('<div style="width:100%;font-size:22pt;color:#333;line-height:1.25;">' . vds_render_phrase($q['phrase']) . '</div>', 120); ?>
+  <div style="font-family:Arial,sans-serif;font-size:14pt;color:#666;max-width:480px;margin:0 auto 22px;">
+    Click on the correct answer below.
+  </div>
+  <table border="0" cellspacing="16" cellpadding="0" style="margin:0 auto;">
+    <tr>
+      <td align="center" valign="middle">
+        <a href="?ansclick=<?php echo urlencode('action verb'); ?>"
+           style="display:flex;align-items:center;justify-content:center;
+                  min-width:190px;max-width:260px;min-height:64px;padding:12px 22px;
+                  border:2px solid #888888;border-radius:8px;background:#fff;
+                  text-decoration:none;color:#0000CC;font-family:Arial,sans-serif;
+                  font-size:17pt;font-weight:700;text-align:center;
+                  word-break:break-word;box-sizing:border-box;line-height:1.3;">
+          <?php echo htmlspecialchars($labels['action_display']); ?>
+        </a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="?ansclick=<?php echo urlencode('non-action verb'); ?>"
+           style="display:flex;align-items:center;justify-content:center;
+                  min-width:190px;max-width:260px;min-height:64px;padding:12px 22px;
+                  border:2px solid #888888;border-radius:8px;background:#fff;
+                  text-decoration:none;color:#0000CC;font-family:Arial,sans-serif;
+                  font-size:17pt;font-weight:700;text-align:center;
+                  word-break:break-word;box-sizing:border-box;line-height:1.3;">
+          <?php echo htmlspecialchars($labels['nonaction_display']); ?>
+        </a>
+      </td>
+    </tr>
+  </table>
+  <input type="submit" name="Submit2" value=" New Question " style="margin:30px 0;font-family:Arial,sans-serif;font-size:11pt;">
 <?php
+    }
+endif;
+?>
 
-echo "<table align='center' cellspacing='0' cellpadding='0' ><tr><td align='center' width='114' height='85' background='../images/score-top-3.jpg'></td></tr>";
-echo "<tr><td align='center' valign='top' width='114' height='60' background='../images/score-bottom-3.jpg'>";
-echo "<font face='Comic Sans MS' style='font-size: 22pt; font-weight: 700' color='#800080'>";
-if(isset($_SESSION['score'])){echo $_SESSION['score'];}
-echo "</td></tr></table>";
-?>						
-										
-												
-												
-												
-												
-												
-												
-												
-												
-												
-												</td>
-											</tr>
-											<tr>
-												<td>
-												&nbsp;</td>
-											</tr>
-											<tr>
-												<td>
-												&nbsp;</td>
-											</tr>
-											<tr>
-												<td>
-												<img border="0" src="../images/ex-26-bottom.jpg"></td>
-											</tr>
-										</table>
-										</td>
-									</tr>
-									</table>
-								</td>
-								<td width="70" valign="top" height="34" background="../images/ex-26-right.jpg">
-								
-								
-								
-								</td>
-							</tr>
-						</table>
-						</td>
-					</tr>
-				</table>
-				</td>
-			</tr>
-			<tr>
-				<td bgcolor="#0086CE">
-			<p align="center" style="margin-top: 5px; margin-bottom: 5px">
-            <font style="font-size: 10pt"><span style="mso-spacerun: yes">
-			<font face="Arial" color="#FFFFFF">
-            Copyright&nbsp; 2010
-        </font><b><font face="Arial" color="#365669">
-        	<a href="/home-english.php"><font color="#FFFFFF">KPluz.com</font></a></font></b><font face="Arial" color="#FFFFFF">. All Rights Reserved.</font></span></font></p>
-				</td>
-			</tr>
-			</table>
-	</div>
+<!-- Difficulty radios (§10.4 — Easy / Hard only) -->
+<div align="center" style="margin-top:20px;">
+  <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p><table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>
+  <?php foreach ($levels as $l): ?>
+    <td align="center">
+      <label style="font:9pt Arial,sans-serif;color:#800080;">
+        <input type="radio" name="level" value="<?php echo $l; ?>" <?php echo $lvl === $l ? 'checked' : ''; ?>> <b><?php echo $l; ?></b>
+      </label>
+    </td>
+  <?php endforeach; ?>
+  </tr></table>
 </div>
-
-</body>
-
-</html>
+</form><br>
+<?php render_score_box(); ?>
+</div>
+<?php
+if ($scorer !== null) $scorer->outputConsoleDebug();
+$conn->close();
+render_footer();
+?>
