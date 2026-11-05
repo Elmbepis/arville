@@ -1144,6 +1144,14 @@
       "lesson": "Q2 Lesson 3",
       "file_path": "rmats/Net Technology/Q2_LE3.pdf",
       "description": "Responsive Web Design and Introduction to JavaScript"
+    },
+    {
+      "id": 486,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": ".NET Technology",
+      "lesson": "Q3 Lesson 1",
+      "file_path": "rmats/Net Technology/Q3_LE1.pdf",
+      "description": "JavaScript Fundamentals"
     }
 
   ]
