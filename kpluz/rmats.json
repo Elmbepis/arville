@@ -1152,6 +1152,14 @@
       "lesson": "Q3 Lesson 1",
       "file_path": "rmats/Net Technology/Q3_LE1.pdf",
       "description": "JavaScript Fundamentals"
+    },
+    {
+      "id": 487,
+      "shs_pathway": "SHS Academic Elective Subject",
+      "subject": ".NET Technology",
+      "lesson": "Q3 Lesson 2",
+      "file_path": "rmats/Net Technology/Q3_LE2.pdf",
+      "description": "C# Fundamentals"
     }
 
   ]
