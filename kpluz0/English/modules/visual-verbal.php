@@ -1,680 +1,387 @@
-<?php 
-require '../../pass-chk.php';
-?>
-
 <?php
-$_SESSION['level']="Medium";
-?>
+// english/modules/visual-verbal.php
+// IMAGE-CHOICE. Bypass QEngine per §D.
+// Shows a question about a visual/graphic organizer (chart, diagram, etc.);
+// student clicks the correct term or interpretation.
+//
+// Levels (§E — single-level collapse §5):
+//   Legacy hardcoded $_SESSION['level']="Medium" with no level radios in the
+//   HTML. Collapsed to $lvl='Hard' (preserves legacy 2-point value). No
+//   selector rendered.
+//
+// Grade-keyed content (§10):
+//   grd 0-6   &#8594; 18 questions (easier graphic organizers)
+//   grd 7-10  &#8594; 23 questions (all, includes Pareto/business/evolution content)
+//   Both pools preserved verbatim from legacy's two $questions arrays.
+//
+// Image handling (§21): entries embed '**<file>.jpg' before '='. Parser
+// extracts filename, strips marker from displayed question, and validates
+// via file_exists() at pick-time — image-bearing questions with missing
+// files are skipped rather than served broken. Two questions have no image
+// at all (Venn Diagrams / Pareto Chart conceptual); those work fine.
+//
+// Data fix: Q19 answer question "contructing" corrected to "constructing"
+// (typo; semantics unchanged — the wrong-characteristic question).
+//
+// Font sizing matches journalistic-writing.php reference:
+//   prompt 1.35rem · question card 1.35rem · feedback card 1.25rem
+//   hint 1.2rem · choice buttons 1.25rem
+//   Inline "Your answer is" 14pt · verdict 16pt (unchanged)
+//
+// Choice layout (§14): maxLen &#8804; 17 &#8594; 2×2 grid; else 1-col hug.
+//
+// $grd defensive default (§11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
+//
+// Theme: ex-27-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Score box: score-*-1 (matches legacy).
+// DB row required: modules.url = 'visual-verbal.php'
 
-<html>
-
-<head>
-<meta http-equiv="Content-Language" content="en-us">
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Visual-Verbal Relationships - EnglishPluz.com</title>
-<script language="JavaScript">
-<!--
-function FP_swapImg() {//v1.0
- var doc=document,args=arguments,elm,n; doc.$imgSwaps=new Array(); for(n=2; n<args.length;
- n+=2) { elm=FP_getObjectByID(args[n]); if(elm) { doc.$imgSwaps[doc.$imgSwaps.length]=elm;
- elm.$src=elm.src; elm.src=args[n+1]; } }
+session_name('KPLUZ_SESSION');
+session_start();
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    header("Location: /arville/kpluz0/login.php");
+    exit();
 }
+require_once __DIR__ . '/../../container.php';
+require_once __DIR__ . '/../../scorer.php';
 
-function FP_preloadImgs() {//v1.0
- var d=document,a=arguments; if(!d.FP_imgs) d.FP_imgs=new Array();
- for(var i=0; i<a.length; i++) { d.FP_imgs[i]=new Image; d.FP_imgs[i].src=a[i]; }
-}
+$conn = new mysqli("localhost", "root", "AcadeV25!", "kpluz0");
+if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
 
-function FP_getObjectByID(id,o) {//v1.0
- var c,el,els,f,m,n; if(!o)o=document; if(o.getElementById) el=o.getElementById(id);
- else if(o.layers) c=o.layers; else if(o.all) el=o.all[id]; if(el) return el;
- if(o.id==id || o.name==id) return o; if(o.childNodes) c=o.childNodes; if(c)
- for(n=0; n<c.length; n++) { el=FP_getObjectByID(id,c[n]); if(el) return el; }
- f=o.forms; if(f) for(n=0; n<f.length; n++) { els=f[n].elements;
- for(m=0; m<els.length; m++){ el=FP_getObjectByID(id,els[n]); if(el) return el; } }
- return null;
-}
-// -->
-</script>
-</head>
+$base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 
-<body background="../../images/bluetop-bg.jpg" onload="FP_preloadImgs(/*url*/'../../images/header1c.jpg', /*url*/'../../images/header1b.jpg', /*url*/'../../images/header2c.jpg', /*url*/'../../images/header2b.jpg', /*url*/'../../images/header3c.jpg', /*url*/'../../images/header3b.jpg', /*url*/'../../images/header4c.jpg', /*url*/'../../images/header4b.jpg', /*url*/'../../images/header5c.jpg', /*url*/'../../images/header5b.jpg', /*url*/'../../images/header6c.jpg', /*url*/'../../images/header6b.jpg')">
+$moduleTitle = 'Visual-Verbal Relationships';
+$moduleId    = basename(__FILE__);
+$sessionKey  = 'mod_' . md5($moduleId);
+$lvl         = 'Hard';   // single-level collapse (§5) — legacy was Medium/2pts
 
-<div align="center">
+$grd = min(10, max(0, (int)($_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5)));
 
-<table width="900"><tr><td height="100">
-	<div align="center">
-		<table border="0" width="900" cellspacing="0" cellpadding="0">
-			<tr>
-				<td width="193" height="100" valign="top">
-				<a href="/home-english.php">
-				<img border="0" src="../../images/header-logo.jpg"></a></td>
-				<td width="133" valign="top">
-										<a href="/how-to-use-kpluz.php">
-										<img border="0" id="img1" src="../../images/header1a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img1',/*url*/'../../images/header1b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img1',/*url*/'../../images/header1a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img1',/*url*/'../../images/header1c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img1',/*url*/'../../images/header1b.jpg')"></a></td>
-				<td width="133" valign="top">
-										<a href="/bluebars_student.php">
-										<img border="0" id="img2" src="../../images/header2a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img2',/*url*/'../../images/header2b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img2',/*url*/'../../images/header2a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img2',/*url*/'../../images/header2c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img2',/*url*/'../../images/header2b.jpg')"></a></td>
-				<td width="133" valign="top">
-										<a href="/programs.php">
-										<img border="0" id="img3" src="../../images/header3a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img3',/*url*/'../../images/header3b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img3',/*url*/'../../images/header3a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img3',/*url*/'../../images/header3c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img3',/*url*/'../../images/header3b.jpg')"></a></td>
-				<td width="134" valign="top">
-										<a href="/community.php">
-										<img border="0" id="img4" src="../../images/header4a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img4',/*url*/'../../images/header4b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img4',/*url*/'../../images/header4a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img4',/*url*/'../../images/header4c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img4',/*url*/'../../images/header4b.jpg')"></a></td>
-				<td width="134" valign="top">
-										<a href="/contact.php">
-										<img border="0" id="img5" src="../../images/header5a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img5',/*url*/'../../images/header5b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img5',/*url*/'../../images/header5a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img5',/*url*/'../../images/header5c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img5',/*url*/'../../images/header5b.jpg')"></a></td>
-				<td width="134" valign="top">
-										<a href="/logout.php">
-										<img border="0" id="img6" src="../../images/header6a.jpg" alt="Button Text" fp-style="fp-btn: Border Bottom 1; fp-orig: 0" fp-title="Button Text" onmouseover="FP_swapImg(1,0,/*id*/'img6',/*url*/'../../images/header6b.jpg')" onmouseout="FP_swapImg(0,0,/*id*/'img6',/*url*/'../../images/header6a.jpg')" onmousedown="FP_swapImg(1,0,/*id*/'img6',/*url*/'../../images/header6c.jpg')" onmouseup="FP_swapImg(0,0,/*id*/'img6',/*url*/'../../images/header6b.jpg')"></a></td>
-			</tr>
-		</table>
-	</div>
-	</td></tr></table>
+// ============================================================
+// Bank: Advanced pool (23 questions) — grd 7-10
+// ============================================================
+$bankAdvanced = [
+    "What is this graphic organizer about?**txtaid01.jpg=ammonium nitrate[dangerous chemicals+explosions]uses of ammonium nitrate",
+    "According to this graphic organizer, ammonium nitrate is primarily used in ____.**txtaid01.jpg=agriculture[mining+explosives]construction",
+    "The image shown is called what?**txtaid03.jpg=Venn Diagram[Cause and Effect Diagram+Flow Diagram]Concept Map",
+    "The image shown is called what?**txtaid06.jpg=flowchart[tree diagram+Pareto chart]control chart",
+    "____ visually represent the similarities and differences between two concepts.=Venn Diagrams[Cause and Effect Diagrams+Flow Diagrams]Pareto Charts",
+    "A ____ is a vertical bar graph that's used to analyze which problems need attention first.=Pareto Chart[Cause and Effect Diagram+Flow Diagrams]Tree Diagram",
+    "According to this diagram, whales and fishes have ____.**txtaid03.jpg=three things in common[nothing in common+six things in common]no differences",
+    "According to this Pareto Chart, 80% of all customer complaints are due to ____.**txtaid04.jpg=4 causes[5 causes+6 causes]7 causes",
+    "According to this Pareto Chart, which of these is the biggest contributor to customer complaints?**txtaid04.jpg=lack of parking space[poor sales rep attitude+poor lighting]confusing lay-out",
+    "What is this graphic organizer about?**txtaid07.jpg=health care for people with disabilities[needs of people with disabilities+how to help people with disabilities]kinds of disabilities in people",
+    "According to this graphic organizer, what percentage of people with disabilities can't afford health care?**txtaid07.jpg=50%[25%+30%]75%",
+    "According to this graphic organizer, which of these assistive devices is needed by most people?**txtaid07.jpg=eyeglasses[wheel chair+hearing aid]artificial legs",
+    "All of these are flu prevention tips given by the graphic organizer shown except ____.**txtaid08.jpg=getting vaccinated[drinking water+eating fruits and vegetables]washing your hands",
+    "According to this graphic organizer, the month with the highest number of influenza infections in the U.S. is ____.**txtaid08.jpg=February[March+April]January",
+    "According to this graphic organizer, all of the following happen each year due to influenza except ____.**txtaid08.jpg=Millions of people die.[Millions of people become sick.+More than 100K people are hospitalized.]Flu illnesses peak from January to April.",
+    "According to this graphic organizer, lack of access to safe drinking water makes many people in developing countries sick and exhibit which symptom?**txtaid09.jpg=diarrhea[nausea+vertigo]muscle spasms",
+    "According to this graphic organizer, investing a thousand pesos in safe water systems and sanitation would result in an economic return of how much?**txtaid09.jpg=8000 pesos[80000 pesos+8000 dollars]800 pesos",
+    "According to this pie chart, which two activities consume exactly one half of a student's time?**txtaid10.jpg=sleep and homework[school and homework+homework and play]sleep and play",
+    "According to this pie chart, all of the following are true when constructing a house except ____.**txtaid11.jpg=Cement costs less than bricks.[The cost of manpower is 40%.+The cost of steel and cement is 35%.]Timber contributes the least cost.",
+    "According to this bar graph, the highest revenue in any single quarter was achieved by ____.**txtaid12.jpg=Kent in Q4[Kent in Q3+Lincoln in Q1]Lincoln in Q4",
+    "According to this bar graph, the only person who never experienced a dip in revenue from one quarter to the next is ____.**txtaid12.jpg=Kent[York+Lincoln]Mersey",
+    "What is this idea web graphic organizer about?**txtaid13.jpg=differences/similarities between desert and water biomes[animals found in desert and water biomes+plants found in desert and water biomes]what biomes are and why they're important",
+    "According to this graphic organizer, one similarity that a desert biome may share with a water biome is ____.**txtaid13.jpg=having sand and dirt[being very hot and dry+being wet or very moist]having abundant plants and animals",
+];
 
-</div>
+// ============================================================
+// Bank: Beginner pool (18 questions) — grd 0-6
+// ============================================================
+$bankBeginner = [
+    "According to this diagram, whales and fishes have ____.**txtaid03.jpg=three things in common[nothing in common+six things in common]no differences",
+    "What is this graphic organizer about?**txtaid07.jpg=health care for people with disabilities[needs of people with disabilities+how to help people with disabilities]kinds of disabilities in people",
+    "All of these are flu prevention tips given by the graphic organizer shown except ____.**txtaid08.jpg=getting vaccinated[drinking water+eating fruits and vegetables]washing your hands",
+    "According to this graphic organizer, the month with the highest number of influenza infections in the U.S. is ____.**txtaid08.jpg=February[March+April]January",
+    "According to this graphic organizer, all of the following happen each year due to influenza except ____.**txtaid08.jpg=Millions of people die.[Millions of people become sick.+More than 100K people are hospitalized.]Flu illnesses peak from January to April.",
+    "What is this graphic organizer about?**txtaid09.jpg=lack of access to clean water[waterborne diseases+women and child labor]lack of rainfall",
+    "According to this pie chart, which two activities consume exactly one half of a student's time?**txtaid10.jpg=sleep and homework[school and homework+homework and play]sleep and play",
+    "What is this idea web graphic organizer about?**txtaid13.jpg=differences/similarities between desert and water biomes[animals found in desert and water biomes+plants found in desert and water biomes]what biomes are and why they're important",
+    "According to this graphic organizer, one similarity that a desert biome may share with a water biome is ____.**txtaid13.jpg=having sand and dirt[being very hot and dry+being wet or very moist]having abundant plants and animals",
+    "What is this graphic organizer about?**txtaid14.jpg=causes and effects of air pollution[causes of air pollution+effects of air pollution]how to prevent air pollution",
+    "What does the graphic organizer shown do?**txtaid15.jpg=classifies animals[gives scientific names of animals+identifies habitats of animals]shows the importance of animals",
+    "What does this graphic organizer show about the words 'fish' and 'sheep'?**txtaid16.jpg=they can either be singular or plural[they are both names of animals+they are both plural]they are both singular",
+    "According to this Venn diagram, both freelancers and corporate employees have all of these in common except ____.**txtaid17.jpg=health benefits[working overtime+having a boss]meeting deadlines",
+    "The graphic organizer shown is often used for what?**txtaid18.jpg=analyzing the parts of a whole[analyzing how something works+analyzing where something may be found]analyzing why something is important",
+    "The graphic organizer shown is used to show the ____ of doing something.**txtaid19.jpg=advantages and disadvantages[total cost+underlying risks]importance",
+    "The graphic organizer shown presents ____.**txtaid20.jpg=how humans evolved the past 4 M years[how humans evolved the past 3 M years+how mammals evolved the past 4 M years]how mammals evolved the past 3 M years",
+    "A storyboard such as the one shown above is used to ____.**txtaid21.jpg=visualize a story[put a story in writing+narrate a story]find a title for a story",
+    "What does the graphic organizer shown do?**txtaid22.jpg=classifies quadrilaterals[shows why quadrilaterals are important+measures quadrilaterals]defines all types of polygons",
+];
 
-	<div align="center">
-		<table border="0" width="800" cellspacing="0" cellpadding="0" id="table7">
-			<tr>
-				<td>
-				<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table32">
-					<tr>
-						<td>
-						<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table96">
-							<tr>
-								<td>
-								<img border="0" src="../images/ex-27-top.jpg"></td>
-							</tr>
-							<tr>
-								<td background="../images/ex-27-top2.jpg" height="80" valign="top">
-									<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table97">
-										<tr>
-										
-										<td width="111">&nbsp;</td>
-										
-											<td align="center" valign="center" >
-											
-											<p style="margin-top: 25px; margin-bottom:0">
-											<span style="font-weight: 700">
-											<font face="Verdana" style="font-size: 16pt" color="#CC0066">
-<?php
-
-$vio="<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 700' color='#800080'>";
-$red="<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 700' color='#CC0066'>";
-
-
-if (isset($_POST['Submit2'])){
-echo "Visual-Verbal Relationships";
-}
-else
-{
-echo "Visual-Verbal Relationships";
-}
-?>
-											<td width="103" valign="top">											
-											<p align="center" style="margin-right: 8px">&nbsp;
-											
-											
-											</td>
-										</tr>
-									</table>
-								</div>
-								</td>
-							</tr>
-							</table>
-						</td>
-					</tr>
-					<tr>
-						<td>
-						<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table33">
-							<tr>
-								<td width="75" valign="top" height="34" background="../images/ex-27-left.jpg">
-								&nbsp;</td>
-								<td valign="top">
-								
-								
-								<table border="0" width="50" cellspacing="0" cellpadding="0" id="table34" height="203">
-									<tr>
-										<td background="../images/ex-27-content.jpg" height="203" valign="top" width="655">
-										<table border="0" width="100%" cellspacing="0" cellpadding="0" id="table37">
-											<tr>
-												<td>
-												
-												
-<?php
-//set parameters for different difficulty levels
- 
-
-if (empty($_POST['Submit1']))
-{
-	$points=2;
-	$_SESSION['points'] = $points;
-}
-?>
-												
-												
-												
-												</td>
-											</tr>
-											<tr>
-												<td>
-												<p align="center">&nbsp;
-												
-												
-												
-<?php
- 
-echo "<FORM name ='form1' method ='post' action ='visual-verbal.php'>";
-$tnum="*8c";
-	
-if(isset($_GET['ansclick'])){$ansclicked=$_GET['ansclick'];} 
-else{$ansclicked="";} 
-
-if ($ansclicked!="" and empty($_POST['Submit2']))
-{
-if (isset($_SESSION['answer'])){$ans=$_SESSION['answer'];}
-$question=$_SESSION['q'];
-
-	echo "<p align='center' style='margin-left: 25px; margin-right: 25px'>";
-	echo "<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#800080'>";
-	echo "Your answer is ";
-	echo "<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#0000BB'>";
-	echo "'".$ansclicked."'";
-	echo "<font face='Comic Sans MS' style='font-size: 14pt; font-weight: 700' color='#800080'>";
-	echo ".<br />";
-	if ($ans==$ansclicked)
-	{
-	echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 700' color='#CC0066'>";
-	echo "You are correct!<br />";
-
-	 
-	if ($_SESSION['pageload']!="old"){$_SESSION['score']=	$_SESSION['score']+$_SESSION['points'];}	
-	
-	
-	//Update Database
-	if ($_SESSION['pageload']!="old"){
-	$con = mysql_connect("localhost","xigega65_EE","XigFanims1989");
-	if (!$con){die('Could not connect: ' . mysql_error());}
-	mysql_select_db("kpluz");
-	$schooler=$_COOKIE['KPluzID_my_site'];
-    $result = mysql_query("SELECT * FROM EPluz_accounts
- 	WHERE Cardholder = '$schooler' ");
-	$rec = mysql_fetch_array( $result );
-	$easy=$rec['Easy'];
-	$medium=$rec['Medium'];
-	$hard=$rec['Hard'];
-	
-	$newtnum=$tnum;
-	if ($_SESSION['level']=="Easy"){
-		if (strlen($easy)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE EPluz_accounts SET Easy = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($easy,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($easy,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct+1;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($easy,0,$pos1).$newgrade.substr($easy,($pos1+9));
-				mysql_query("UPDATE EPluz_accounts SET Easy = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$easy.$tnum."001001";
-				mysql_query("UPDATE EPluz_accounts SET Easy = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	if ($_SESSION['level']=="Medium"){
-		if (strlen($medium)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE EPluz_accounts SET Medium = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($medium,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($medium,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct+1;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($medium,0,$pos1).$newgrade.substr($medium,($pos1+9));
-				mysql_query("UPDATE EPluz_accounts SET Medium = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$medium.$tnum."001001";
-				mysql_query("UPDATE EPluz_accounts SET Medium = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	if ($_SESSION['level']=="Hard"){
-		if (strlen($hard)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE EPluz_accounts SET Hard = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($hard,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($hard,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct+1;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($hard,0,$pos1).$newgrade.substr($hard,($pos1+9));
-				mysql_query("UPDATE EPluz_accounts SET Hard = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$hard.$tnum."001001";
-				mysql_query("UPDATE EPluz_accounts SET Hard = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	mysql_close($con);
-	
-$_SESSION['pageload']="old";}
-	$_SESSION['points']=0;	
-	}
-	
-	else
-	{
-
-	  
-	echo "Sorry, that is not correct.<br />";
- 
-	//Update Database
-	if ($_SESSION['pageload']!="old"){
-	$con = mysql_connect("localhost","xigega65_EE","XigFanims1989");
-	if (!$con){die('Could not connect: ' . mysql_error());}
-	mysql_select_db("kpluz");
-	$schooler=$_COOKIE['KPluzID_my_site'];
-    $result = mysql_query("SELECT * FROM EPluz_accounts
- 	WHERE Cardholder = '$schooler' ");
-	$rec = mysql_fetch_array( $result );
-	$easy=$rec['Easy'];
-	$medium=$rec['Medium'];
-	$hard=$rec['Hard'];	
-	
-	$newtnum=$tnum;
-	if ($_SESSION['level']=="Easy"){
-		if (strlen($easy)<2){
-			$newgrades="*".$newtnum."000001";
-			mysql_query("UPDATE EPluz_accounts SET Easy = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($easy,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($easy,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($easy,0,$pos1).$newgrade.substr($easy,($pos1+9));
-				mysql_query("UPDATE EPluz_accounts SET Easy = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$easy.$tnum."000001";
-				mysql_query("UPDATE EPluz_accounts SET Easy = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	if ($_SESSION['level']=="Medium"){
-		if (strlen($medium)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE EPluz_accounts SET Medium = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($medium,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($medium,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($medium,0,$pos1).$newgrade.substr($medium,($pos1+9));
-				mysql_query("UPDATE EPluz_accounts SET Medium = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$medium.$tnum."000001";
-				mysql_query("UPDATE EPluz_accounts SET Medium = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	if ($_SESSION['level']=="Hard"){
-		if (strlen($hard)<2){
-			$newgrades="*".$newtnum."001001";
-			mysql_query("UPDATE EPluz_accounts SET Hard = '$newgrades'
-			WHERE Cardholder = '$schooler'");}
-		else{
-			$pos1=strpos($hard,$tnum);
-			if ($pos1>0){
-				$gradestring=substr($hard,$pos1,9);
-				$correct=substr($gradestring,3,3);
-				$all=substr($gradestring,6,3);
-				$correct=$correct;
-				$all=$all+1;
-				$corlen=strlen($correct);
-				for ($i=1; $i<=(3-$corlen); $i+=1){$correct="0".$correct;}
-				$alllen=strlen($all);
-				for ($i=1; $i<=(3-$alllen); $i+=1){$all="0".$all;}
-				$newgrade=substr($gradestring,0,3).$correct.$all;
-				$newgrades=substr($hard,0,$pos1).$newgrade.substr($hard,($pos1+9));
-				mysql_query("UPDATE EPluz_accounts SET Hard = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-			else{
-				$newgrades=$hard.$tnum."000001";
-				mysql_query("UPDATE EPluz_accounts SET Hard = '$newgrades'
-				WHERE Cardholder = '$schooler'");}
-	}}
-	mysql_close($con);
-	
-
-	
-
-	
-$_SESSION['pageload']="old";}
-	$_SESSION['points']=0;	
+// ============================================================
+// Parse helper
+// ============================================================
+function vv_parse($entry) {
+    $imgFile = null;
+    if (preg_match('/\*\*([A-Za-z0-9_\-\.]+\.jpg)/', $entry, $m)) {
+        $imgFile = $m[1];
+        $entry = str_replace($m[0], '', $entry);
     }
 
-	if (isset($_SESSION['picfile'])){$picfile=$_SESSION['picfile'];}
-	if (isset($picfile) and !empty($picfile)){
-		echo "<table border='0' width='100%' cellspacing='0' cellpadding='0' align='center'><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr><tr><td align='center'>";
-		echo "<img border='1' src='$picfile'></td></tr><tr><td>&nbsp;</td></tr></table>";
-		}
+    $p0 = strpos($entry, '=');
+    if ($p0 === false) return null;
+    $p1 = strpos($entry, '[', $p0);
+    $p2 = strpos($entry, '+', $p1 === false ? 0 : $p1);
+    $p3 = strpos($entry, ']', $p2 === false ? 0 : $p2);
+    if ($p1 === false || $p2 === false || $p3 === false) return null;
 
-	echo "<table width='75%' align='center'><tr><td align='center'>";
-	echo "<br/><table border='0' width='370' cellspacing='0' cellpadding='0' align='center'><tr><td>";
-	echo "<img border='0' src='../images/qnote-top.jpg' width='100%'></td></tr><tr>";
-	echo "<td background='../images/qnote-middle.jpg' width='100%' align='center' style='padding-left:30px; padding-right:30px;'>";
-	echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 700' color='#333333'>";
-	echo $question."<br/><br/>";
-	echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 700' color='#800080'>";
-	echo "Answer: ";
-	echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 700' color='#CC0066'>";
-	echo $ans;
-	echo "</td></tr>";
-	echo "<tr><td ><img border='0' src='../images/qnote-bottom.jpg'></font></td>";
-	echo "</tr></table>";	
-	echo "</td></tr><tr><td>&nbsp;</td></tr></table>";
-	
+    $question = trim(substr($entry, 0, $p0));
+    $answer   = trim(substr($entry, $p0 + 1, $p1 - $p0 - 1));
+    $d1       = trim(substr($entry, $p1 + 1, $p2 - $p1 - 1));
+    $d2       = trim(substr($entry, $p2 + 1, $p3 - $p2 - 1));
+    $d3       = trim(substr($entry, $p3 + 1));
 
- 
-	
- }
+    if ($question === '' || $answer === '') return null;
 
-
-if ($ansclicked=="" or isset($_POST['Submit2']))
-{
-$page=substr($_SERVER["PHP_SELF"],1);
-if (isset($_SESSION['curpage'])){if ($page != $_SESSION['curpage']){$_SESSION['curpage']=$page; $_SESSION['score']=0;}}
-else{$_SESSION['curpage']=$page; $_SESSION['score']=0;}
-$_SESSION['pageload']="new";
-
-//$grd=8;
-$questions=array(
-"What is this graphic organizer about?**txtaid01.jpg=ammonium nitrate[dangerous chemicals+explosions]uses of ammonium nitrate",
-"According to this graphic organizer, ammonium nitrate is primarily used in ____.**txtaid01.jpg=agriculture[mining+explosives]construction",
-"The image shown is called what?**txtaid03.jpg=Venn Diagram[Cause and Effect Diagram+Flow Diagram]Concept Map",
-"The image shown is called what?**txtaid06.jpg=flowchart[tree diagram+Pareto chart]control chart",
-"____ visually represent the similarities and differences between two concepts.=Venn Diagrams[Cause and Effect Diagrams+Flow Diagrams]Pareto Charts",
-"A ____ is a vertical bar graph that's used to analyze which problems need attention first.=Pareto Chart[Cause and Effect Diagram+Flow Diagrams]Tree Diagram",
-"According to this diagram, whales and fishes have ____.**txtaid03.jpg=three things in common[nothing in common+six things in common]no differences",
-"According to this Pareto Chart, 80% of all customer complaints are due to ____.**txtaid04.jpg=4 causes[5 causes+6 causes]7 causes",
-"According to this Pareto Chart, which of these is the biggest contributor to customer complaints?**txtaid04.jpg=lack of parking space[poor sales rep attitude+poor lighting]confusing lay-out",
-"What is this graphic organizer about?**txtaid07.jpg=health care for people with disabilities[needs of people with disabilities+how to help people with disabilities]kinds of disabilities in people",
-"According to this graphic organizer, what percentage of people with disabilities can't afford health care?**txtaid07.jpg=50%[25%+30%]75%",
-"According to this graphic organizer, which of these assistive devices is needed by most people?**txtaid07.jpg=eyeglasses[wheel chair+hearing aid]artificial legs",
-"All of these are flu prevention tips given by the graphic organizer shown except ____.**txtaid08.jpg=getting vaccinated[drinking water+eating fruits and vegetables]washing your hands",
-"According to this graphic organizer, the month with the highest number of influenza infections in the U.S. is ____.**txtaid08.jpg=February[March+April]January",
-"According to this graphic organizer, all of the following happen each year due to influenza except ____.**txtaid08.jpg=Millions of people die.[Millions of people become sick.+More than 100K people are hospitalized.]Flu illnesses peak from January to April.",
-"According to this graphic organizer, lack of access to safe drinking water makes many people in developing countries sick and exhibit which symptom?**txtaid09.jpg=diarrhea[nausea+vertigo]muscle spasms",
-"According to this graphic organizer, investing a thousand pesos in safe water systems and sanitation would result in an economic return of how much?**txtaid09.jpg=8000 pesos[80000 pesos+8000 dollars]800 pesos",
-"According to this pie chart, which two activities consume exactly one half of a student's time?**txtaid10.jpg=sleep and homework[school and homework+homework and play]sleep and play",
-"According to this pie chart, all of the following are true when contructing a house except ____.**txtaid11.jpg=Cement costs less than bricks.[The cost of manpower is 40%.+The cost of steel and cement is 35%.]Timber contributes the least cost.",
-"According to this bar graph, the highest revenue in any single quarter was achieved by ____.**txtaid12.jpg=Kent in Q4[Kent in Q3+Lincoln in Q1]Lincoln in Q4",
-"According to this bar graph, the only person who never experienced a dip in revenue from one quarter to the next is  ____.**txtaid12.jpg=Kent[York+Lincoln]Mersey",
-"What is this idea web graphic organizer about?**txtaid13.jpg=differences/similarities between desert and water biomes[animals found in desert and water biomes+plants found in desert and water biomes]what biomes are and why they're important",
-"According to this graphic organizer, one similarity that a desert biome may share with a water biome is ____.**txtaid13.jpg=having sand and dirt[being very hot and dry+being wet or very moist]having abundant plants and animals",
-);
-
-if($grd<=6){
-$questions=array(
-"According to this diagram, whales and fishes have ____.**txtaid03.jpg=three things in common[nothing in common+six things in common]no differences",
-"What is this graphic organizer about?**txtaid07.jpg=health care for people with disabilities[needs of people with disabilities+how to help people with disabilities]kinds of disabilities in people",
-"All of these are flu prevention tips given by the graphic organizer shown except ____.**txtaid08.jpg=getting vaccinated[drinking water+eating fruits and vegetables]washing your hands",
-"According to this graphic organizer, the month with the highest number of influenza infections in the U.S. is ____.**txtaid08.jpg=February[March+April]January",
-"According to this graphic organizer, all of the following happen each year due to influenza except ____.**txtaid08.jpg=Millions of people die.[Millions of people become sick.+More than 100K people are hospitalized.]Flu illnesses peak from January to April.",
-"What is this graphic organizer about?**txtaid09.jpg=lack of access to clean water[waterborne diseases+women and child labor]lack of rainfall",
-"According to this pie chart, which two activities consume exactly one half of a student's time?**txtaid10.jpg=sleep and homework[school and homework+homework and play]sleep and play",
-"What is this idea web graphic organizer about?**txtaid13.jpg=differences/similarities between desert and water biomes[animals found in desert and water biomes+plants found in desert and water biomes]what biomes are and why they're important",
-"According to this graphic organizer, one similarity that a desert biome may share with a water biome is ____.**txtaid13.jpg=having sand and dirt[being very hot and dry+being wet or very moist]having abundant plants and animals",
-"What is this graphic organizer about?**txtaid14.jpg=causes and effects of air pollution[causes of air pollution+effects of air pollution]how to prevent air pollution",
-"What does the graphic organizer shown do?**txtaid15.jpg=classifies animals[gives scientific names of animals+identifies habitats of animals]shows the importance of animals",
-"What does this graphic organizer show about the words 'fish' and 'sheep'?**txtaid16.jpg=they can either be singular or plural[they are both names of animals+they are both plural]they are both singular",
-"According to this Venn diagram, both freelancers and corporate employees have all of these in common except ____.**txtaid17.jpg=health benefits[working overtime+having a boss]meeting deadlines",
-"The graphic organizer shown is often used for what?**txtaid18.jpg=analyzing the parts of a whole[analyzing how something works+analyzing where something may be found]analyzing why something is important",
-"The graphic organizer shown is used to show the ____ of doing something.**txtaid19.jpg=advantages and disadvantages[total cost+underlying risks]importance",
-"The graphic organizer shown presents ____.**txtaid20.jpg=how humans evolved the past 4 M years[how humans evolved the past 3 M years+how mammals evolved the past 4 M years]how mammals evolved the past 3 M years",
-"A storyboard such as the one shown above is used to ____.**txtaid21.jpg=visualize a story[put a story in writing+narrate a story]find a title for a story",
-"What does the graphic organizer shown do?**txtaid22.jpg=classifies quadrilaterals[shows why quadrilaterals are important+measures quadrilaterals]defines all types of polygons",
-);
+    return [
+        'question' => $question,
+        'answer'   => $answer,
+        'd1'       => $d1,
+        'd2'       => $d2,
+        'd3'       => $d3,
+        'image'    => $imgFile,
+    ];
 }
 
-if(isset($_SESSION['allstr'])){if (strlen($_SESSION['allstr'])<3){$_SESSION['allstr']="*****";}}
-else {$_SESSION['allstr']="*****";}
+// ============================================================
+// Handle answer click
+// ============================================================
+$result = null;
+$scorer = null;
 
-do {
-	$rcount=count($questions)-1;
-	$rnum=rand(0,$rcount);
-	$qstr=$questions[$rnum];
-	if (strlen($rnum)<2){$rnum="0".$rnum;}	
-	$qchk="*".$rnum;
-	}
-while (strpos($_SESSION['allstr'],$qchk)>0);
-	
-$_SESSION['allstr']=$_SESSION['allstr']."*".$qchk;
-$allstrlim=($rcount-1)*4;
-if (strlen($_SESSION['allstr'])>$allstrlim){$_SESSION['allstr']=substr($_SESSION['allstr'],(-1*$allstrlim));}
-//echo $_SESSION['allstr'];
+if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
+    $cur     = $_SESSION[$sessionKey]['current'];
+    $clicked = (string)$_GET['ansclick'];
 
-$pos0=strpos($qstr,"=");
-$pos1=strpos($qstr,"[");
-$question=substr($qstr,0,$pos0);
-$ans=substr($qstr,($pos0+1),($pos1-$pos0-1));
-$choice[0]=$ans;
-$pos2=strpos($qstr,"+");
-$pos3=strpos($qstr,"]");
-$choice[1]=substr($qstr,($pos1+1),($pos2-$pos1-1));
-$choice[2]=substr($qstr,($pos2+1),($pos3-$pos2-1));
-$choice[3]=substr($qstr,($pos3+1));
-shuffle($choice);
+    $scorer    = new Scorer($conn, $moduleId);
+    $isCorrect = $scorer->processAnswer($clicked, $cur['answer'], $cur['lvl']);
 
-
-$picfile="";
-if (strpos($qstr,".jpg")>0){
-	$picpos1=strpos($qstr,"**");
-	$picpos2=strpos($qstr,".jpg");
-	$picfile=substr($qstr,($picpos1+2),($picpos2-$picpos1-2));
-	$picfile="../images/others/".$picfile.".jpg";
-	$picfile0=substr($qstr,($picpos1),($picpos2-$picpos1+4));
-	}	
- 
-$_SESSION['picfile']=$picfile;
-if (isset($picfile) and !empty($picfile)){
-	echo "<table border='0' width='100%' cellspacing='0' cellpadding='0' align='center'><tr><td align='center'>";
-	echo "<img border='1' src='$picfile'></td></tr><tr><td>&nbsp;</td></tr></table>";
-	}
-
-if(isset($picfile0)){$question=str_replace($picfile0,"",$question);}
-
-$_SESSION['answer']=$ans;
-$_SESSION['q']=$question;
-
-
-echo "<P align='center'>";
-echo "<font face='Comic Sans MS' style='font-size: 15pt; font-weight: 600' color='#CC0066'>";
-
-echo "<table border='0' width='80%' align='center' cellspacing='0' cellpadding='0' id='table61'>";
-echo "<tr><td align='center' valign='center'>";
-echo "<table border='0' width='370' cellspacing='0' cellpadding='0' align='center'><tr><td>";
-echo "<img border='0' src='../images/qnote-top.jpg' width='100%'></td></tr><tr>";
-echo "<td background='../images/qnote-middle.jpg' width='100%' align='center' style='padding-left:30px; padding-right:30px;'>";
-echo "<font face='Comic Sans MS' style='font-size: 17pt; font-weight: 700' color='#333333'>";
-echo $question."<br/>";
-echo "</td></tr>";
-echo "<tr><td ><img border='0' src='../images/qnote-bottom.jpg'></font></td>";
-echo "</tr></table>";	
-echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 600' color='#800080'>";
-echo "<br/>Click on your answer.<br/><br/>";
-
-$wt=190; $ht=50; $bgcolor="DDDDDD";
-$lim1=9; $lim2=12; $lim3=15; $lim4=18; $lim5=30;
-if (strlen($choice[0])>$lim1 or strlen($choice[1])>$lim1 or strlen($choice[2])>$lim1 or strlen($choice[3])>$lim1){$wt=230;}
-if (strlen($choice[0])>$lim2 or strlen($choice[1])>$lim2 or strlen($choice[2])>$lim2 or strlen($choice[3])>$lim2){$wt=270;}
-if (strlen($choice[0])>$lim3 or strlen($choice[1])>$lim3 or strlen($choice[2])>$lim3 or strlen($choice[3])>$lim3){$wt=310;}
-if (strlen($choice[0])>$lim4 or strlen($choice[1])>$lim4 or strlen($choice[2])>$lim4 or strlen($choice[3])>$lim4){$wt=350;}
-if (strlen($choice[0])>$lim5 or strlen($choice[1])>$lim5 or strlen($choice[2])>$lim5 or strlen($choice[3])>$lim5){$wt=460;}
-$bstyle="border-style: solid; border-width: 1px; padding-left: 0; padding-right: 0; padding-top: 1px; padding-bottom: 1px";
-echo "<table align='center'><tr><td bordercolor='#EEEEEE' style='$bstyle' bgcolor='$bgcolor' width='$wt' height='$ht' align='center' width='50%' >";
-echo "<a href='visual-verbal.php?ansclick=$choice[0]' style='text-decoration: none'>";
-echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 500' color='#0000CC'>";
-echo $choice[0]."</a></td></tr><tr><td height='10'></td></tr><tr><td bordercolor='#EEEEEE' style='$bstyle' bgcolor='$bgcolor' width='$wt' height='$ht' align='center' valign='center' >";
-echo "<a href='visual-verbal.php?ansclick=$choice[1]' style='text-decoration: none'>";
-echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 500' color='#0000CC'>";
-echo $choice[1]."</a></td></tr>";
-echo "<tr><td height='10'></td></tr><tr><td bordercolor='#EEEEEE' style='$bstyle' bgcolor='$bgcolor' width='$wt' height='$ht' align='center' valign='center' >";
-echo "<a href='visual-verbal.php?ansclick=$choice[2]' style='text-decoration: none'>";
-echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 500' color='#0000CC'>";
-echo $choice[2]."</a></td></tr>";
-echo "<tr><td height='10'></td></tr><tr><td bordercolor='#EEEEEE' style='$bstyle' bgcolor='$bgcolor' width='$wt' height='$ht' align='center' valign='center' >";
-echo "<a href='visual-verbal.php?ansclick=$choice[3]' style='text-decoration: none'>";
-echo "<font face='Comic Sans MS' style='font-size: 16pt; font-weight: 500' color='#0000CC'>";
-echo $choice[3]."</a></td></tr>";
-echo "</table></td></tr><tr><td>&nbsp;</td></tr>";
-echo "</table>";
-
+    $result = ['correct' => $isCorrect, 'clicked' => $clicked, 'cur' => $cur];
+    unset($_SESSION[$sessionKey]['current']);
 }
-echo "<br/><P align='center'><Input type = 'Submit' Name = 'Submit2' VALUE = 'New Question'>";
 
-echo "</font>";
+// ============================================================
+// Theme
+// ============================================================
+$theme = [
+    'top_banner'    => $base . '/english/images/ex-27-top.jpg',
+    'title_bg'      => $base . '/english/images/ex-27-top2.jpg',
+    'left_side'     => $base . '/english/images/ex-27-left.jpg',
+    'right_side'    => $base . '/english/images/ex-27-right.jpg',
+    'content_bg'    => $base . '/english/images/ex-27-content.jpg',
+    'bottom_banner' => $base . '/english/images/ex-27-bottom.jpg',
+    'score_top'     => $base . '/english/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+];
 
-echo "</font>";
+// ============================================================
+// Generate
+// ============================================================
+if ($result === null || isset($_POST['Submit2'])) {
+    $useAdvanced = ($grd >= 7);
+    $pool        = $useAdvanced ? $bankAdvanced : $bankBeginner;
+    $poolKey     = $useAdvanced ? 'used_advanced' : 'used_beginner';
 
+    $used     = $_SESSION[$sessionKey][$poolKey] ?? [];
+    $imgDirFs = __DIR__ . '/../../english/images/others/';
+
+    $avail = [];
+    foreach ($pool as $i => $entry) {
+        if (in_array($i, $used, true)) continue;
+        $parsed = vv_parse($entry);
+        if ($parsed === null) continue;
+        if ($parsed['image'] !== null && !file_exists($imgDirFs . $parsed['image'])) continue;
+        $avail[] = $i;
+    }
+    if (empty($avail)) {
+        $used = [];
+        foreach ($pool as $i => $entry) {
+            $parsed = vv_parse($entry);
+            if ($parsed === null) continue;
+            if ($parsed['image'] !== null && !file_exists($imgDirFs . $parsed['image'])) continue;
+            $avail[] = $i;
+        }
+    }
+    if (empty($avail)) {
+        render_header($moduleTitle, $moduleTitle, $theme);
+        echo '<p style="text-align:center;font-size:16pt;margin:30px auto;">Temporarily unavailable.</p>';
+        render_score_box();
+        render_footer();
+        exit;
+    }
+
+    $idx = $avail[array_rand($avail)];
+    $used[] = $idx;
+    if (count($used) > 100) $used = array_slice($used, -50);
+    $_SESSION[$sessionKey][$poolKey] = $used;
+
+    $parsed = vv_parse($pool[$idx]);
+
+    $choices = [$parsed['answer'], $parsed['d1'], $parsed['d2'], $parsed['d3']];
+    shuffle($choices);
+
+    $imgUrl = ($parsed['image'] !== null)
+        ? $base . '/english/images/others/' . $parsed['image']
+        : null;
+
+    $_SESSION[$sessionKey]['current'] = [
+        'question' => $parsed['question'],
+        'answer'   => $parsed['answer'],
+        'choices'  => $choices,
+        'image'    => $imgUrl,
+        'lvl'      => $lvl,
+    ];
+    $q = $_SESSION[$sessionKey]['current'];
+}
+
+// ============================================================
+// Render
+// ============================================================
+render_header($moduleTitle, $moduleTitle, $theme);
 ?>
-					
+<style>
+  .vv-card {
+    background: #fffbe8;
+    border: 2px solid #e8d888;
+    border-radius: 12px;
+    padding: 22px 28px;
+    width: fit-content;
+    max-width: 100%;
+    margin: 20px auto;
+    font-family: Arial, 'Segoe UI', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.45;
+    text-align: center;
+    box-sizing: border-box;
+  }
+  .vv-card.vv-feedback { font-size: 1.25rem; }
+  .vv-prompt {
+    font-family: Arial, 'Segoe UI', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #800080;
+    text-align: center;
+    margin: 20px auto 12px;
+    line-height: 1.5;
+  }
+  .vv-hint {
+    font-family: Arial, 'Segoe UI', sans-serif;
+    font-size: 1.2rem;
+    color: #555555;
+    text-align: center;
+    margin: 24px auto 6px;
+  }
+  .vv-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin: 20px auto 0;
+  }
+  .vv-grid-2x2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+    max-width: 100%;
+    margin: 14px auto;
+  }
+  .vv-grid-1col {
+    display: grid;
+    grid-template-columns: auto;
+    justify-content: center;
+    gap: 12px;
+    max-width: 100%;
+    margin: 14px auto;
+  }
+  .vv-choice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 64px;
+    padding: 14px 20px;
+    background: #f8f8ff;
+    border: 2px solid #ccc;
+    border-radius: 12px;
+    font-family: Arial, 'Segoe UI', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #0000BB;
+    text-decoration: none;
+    text-align: center;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+    max-width: 100%;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .vv-choice:hover { background: #eef; border-color: #8080ff; }
+</style>
+<div style="max-width: 480px; margin: 0 auto; padding: 0; text-align: center;">
+<form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 
-												
-												
-												</td>
-											</tr>
-											<tr>
-												<td>
-												&nbsp;</td>
-											</tr>
-											<tr>
-												<td>
-												&nbsp;</td>
-											</tr>
-											<tr>
-												<td>
-												&nbsp;</td>
-											</tr>
-											<tr>
-												<td>
-												<p align="center">
-												
-												
-												
-												
-												
-												
-												
-										
-<?php
+<?php if ($result !== null): ?>
+    <?php $cur = $result['cur']; ?>
+    <p style="font-size:14pt; color:#666; margin-top:20px;">
+        Your answer is <strong style="color:#0000CC; font-size:16pt;">'<?php echo htmlspecialchars($result['clicked']); ?>'</strong>.
+    </p>
+    <p style="font-size:16pt; font-weight:700; color:<?php echo $result['correct'] ? '#006600' : '#CC0000'; ?>;">
+        <?php echo $result['correct'] ? '&#9989; You are correct!' : '&#10060; Sorry, that is not correct.'; ?>
+    </p>
 
-echo "<table align='center' cellspacing='0' cellpadding='0' ><tr><td align='center' width='114' height='85' background='../images/score-top-1.jpg'></td></tr>";
-echo "<tr><td align='center' valign='top' width='114' height='60' background='../images/score-bottom-1.jpg'>";
-echo "<font face='Comic Sans MS' style='font-size: 22pt; font-weight: 700' color='#800080'>";
-if(isset($_SESSION['score'])){echo $_SESSION['score'];}
-echo "</td></tr></table>";
-?>						
-										
-												
-												
-												
-												
-												
-												
-												
-												
-												
-												</td>
-											</tr>
-											<tr>
-												<td>
-												&nbsp;</td>
-											</tr>
-											<tr>
-												<td>
-												&nbsp;</td>
-											</tr>
-											<tr>
-												<td>
-												<img border="0" src="../images/ex-27-bottom.jpg"></td>
-											</tr>
-										</table>
-										</td>
-									</tr>
-									</table>
-								</td>
-								<td width="70" valign="top" height="34" background="../images/ex-27-right.jpg">
-								
-								
-								
-								</td>
-							</tr>
-						</table>
-						</td>
-					</tr>
-				</table>
-				</td>
-			</tr>
-			<tr>
-				<td bgcolor="#0086CE">
-			<p align="center" style="margin-top: 5px; margin-bottom: 5px">
-            <font style="font-size: 10pt"><span style="mso-spacerun: yes">
-			<font face="Arial" color="#FFFFFF">
-            Copyright&nbsp; 2010
-        </font><b><font face="Arial" color="#365669">
-        	<a href="/home-english.php"><font color="#FFFFFF">KPluz.com</font></a></font></b><font face="Arial" color="#FFFFFF">. All Rights Reserved.</font></span></font></p>
-				</td>
-			</tr>
-			</table>
-	</div>
+    <?php if ($cur['image'] !== null): ?>
+        <img src="<?php echo htmlspecialchars($cur['image']); ?>"
+             alt="Graphic organizer"
+             class="vv-image"
+             onerror="this.style.display='none';">
+    <?php endif; ?>
+
+    <div class="vv-card vv-feedback">
+        <?php echo htmlspecialchars($cur['question']); ?>
+        <br><br>
+        <span style="color:#800080; font-weight:700;">Answer:</span>
+        <strong style="color:#CC0066; font-weight:700;"><?php echo htmlspecialchars($cur['answer']); ?></strong>
+    </div>
+
+    <input type="submit" name="Submit2" value=" New Question " style="margin:30px 0;">
+<?php else: ?>
+    <?php if ($q['image'] !== null): ?>
+        <img src="<?php echo htmlspecialchars($q['image']); ?>"
+             alt="Graphic organizer"
+             class="vv-image"
+             onerror="this.style.display='none';">
+    <?php endif; ?>
+
+    <div class="vv-card"><?php echo htmlspecialchars($q['question']); ?></div>
+
+    <p class="vv-hint">Click on your answer.</p>
+
+    <?php
+        $maxLen = 0;
+        foreach ($q['choices'] as $c) $maxLen = max($maxLen, strlen((string)$c));
+        $use2x2 = ($maxLen <= 17);
+        $containerClass = $use2x2 ? 'vv-grid-2x2' : 'vv-grid-1col';
+    ?>
+    <div class="<?php echo $containerClass; ?>">
+        <?php foreach ($q['choices'] as $c): ?>
+            <a href="?ansclick=<?php echo urlencode($c); ?>" class="vv-choice">
+                <?php echo htmlspecialchars($c); ?>
+            </a>
+        <?php endforeach; ?>
+    </div>
+
+    <input type="submit" name="Submit2" value=" New Question " style="margin:30px 0;">
+<?php endif; ?>
+
+</form>
+<br>
+<?php render_score_box(); ?>
 </div>
-
-</body>
-
-</html>
+<?php
+if ($scorer !== null) $scorer->outputConsoleDebug();
+$conn->close();
+render_footer();
