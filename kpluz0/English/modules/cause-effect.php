@@ -317,7 +317,7 @@ render_header($moduleTitle.'<br/>Grade '.$grd.' - '.$lvl, $moduleTitle.'<br/>Gra
   <div style="max-width:480px;margin:0 auto;">
     <?php foreach ($q['choices'] as $c): ?>
       <a href="?ansclick=<?php echo urlencode($c); ?>"
-         style="display:block;margin:10px 0;padding:14px 20px;border:2px solid #888888;border-radius:8px;background:#fff;text-decoration:none;color:#0000CC;font-family:Arial,sans-serif;font-size:14pt;font-weight:600;text-align:center;line-height:1.5;box-sizing:border-box;">
+         style="display:block;margin:10px 0;padding:14px 20px;border:2px solid #888888;border-radius:8px;background:#fff;text-decoration:none;color:#0000CC;font-family:Arial,sans-serif;font-size:15pt;font-weight:500;text-align:center;line-height:1.5;box-sizing:border-box;">
         <?php echo htmlspecialchars($c); ?>
       </a>
     <?php endforeach; ?>

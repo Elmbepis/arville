@@ -258,7 +258,7 @@ render_header($moduleTitle.' - Grade '.$grd, $moduleTitle.' - Grade '.$grd, $the
               width:<?php echo $choiceBoxW; ?>px;min-height:56px;padding:12px 18px;
               border:2px solid #888888;border-radius:8px;background:#fff;
               text-decoration:none;color:#0000CC;font-family:Arial,sans-serif;
-              font-size:14pt;font-weight:700;text-align:center;
+              font-size:14pt;font-weight:500;text-align:center;
               word-break:break-word;box-sizing:border-box;line-height:1.4;">
       <?php echo htmlspecialchars($c); ?>
     </a>

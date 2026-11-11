@@ -320,7 +320,7 @@ render_header($moduleTitle.' - Grade '.$grd, $moduleTitle.' - Grade '.$grd, $the
     // Uniform choice-box width from longest choice, capped at 560
     $maxLen = 0;
     foreach ($q['choices'] as $c) $maxLen = max($maxLen, strlen($c));
-    $choiceBoxW = max(300, min(560, $maxLen * 8 + 50));
+    $choiceBoxW = max(300, min(480, $maxLen * 8 + 50));
 ?>
   <div style="margin:35px auto 15px;font-family:Arial,sans-serif;font-size:14pt;font-weight:700;color:#800080;max-width:560px;text-wrap:balance;">
     Click on the correct meaning of this proverb:
