@@ -1,12 +1,19 @@
 <?php
 // container.php – shared layout, no session handling
+// VERSION 15 — universal choice hover now uses colors.php's blue style
+//                (background #e0e0ff / border #0000CC) as the default for
+//                every subject. Per-subject overrides removed. Text color
+//                is intentionally not overridden on hover so each module's
+//                own choice-label color is preserved.
+// VERSION 14 — universal choice-button hover across all subjects
+//                (was green per-subject). Superseded by v15.
 // VERSION 13 — logo anchor now routes via home-subj.php?subj=<subject>
 //                derived from the module's path segment (was hardcoded to
 //                math/modules/math-menu.php for every subject).
 // VERSION 12 — .frac-input.frac-single now defaults to 52px/30px
 //                (base .frac-input = 70/40 for stacked fraction fields).
 
-define('KPLUZ_CONTAINER_VERSION', '13');
+define('KPLUZ_CONTAINER_VERSION', '15');
 
 function _math_theme_file_exists($fileName) {
     $fsPath = __DIR__ . '/math/images/images/' . $fileName;
@@ -365,6 +372,38 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             max-width: 100%;
             height: auto;
         }
+
+        /* ============================================================
+           UNIVERSAL CHOICE HOVER (v15 — colors.php style)
+           Targets every <a href=\"?ansclick=…\"> choice link in every
+           subject. Uses !important to beat the inline style=\"…\" that
+           converted modules apply to their choice anchors.
+
+           Hover values match colors.php's original JS hover:
+             background : #e0e0ff  (soft lavender)
+             border     : #0000CC  (strong blue)
+           Text color is intentionally NOT overridden — each module keeps
+           its own choice-label color on hover, exactly as colors.php did.
+
+           Excludes .image-choice (image-wrapped anchors keep their own
+           subtle background overlay).
+
+           To reinstate per-subject colors later, add rules after this
+           block keyed on body.subject-<name> with higher specificity,
+           e.g.:
+             body.subject-science a[href*='ansclick']:not(.image-choice):hover {
+                 background: #d4ffee !important;
+                 border-color: #008866 !important;
+             }
+           ============================================================ */
+        a[href*='ansclick']:not(.image-choice) {
+            transition: background 0.2s, border-color 0.2s;
+        }
+        a[href*='ansclick']:not(.image-choice):hover {
+            background: #d4ecff !important;
+            border-color: #0066cc !important;
+        }
+
         .feedback-arrow {
             height: 40px;
             margin-right: 5px;
@@ -387,7 +426,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
         .answer-input:focus {
             outline: none;
             border-color: #8080ff;
-            background: #f8f8ff;
+            background: #d5effb;
         }
 
         .equation-card {
@@ -683,7 +722,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
                 );
             };
 
-            // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+            // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
             // Line-break post-processor.
             // Converts literal "<br/>", "<br>", "<br />" text and literal
             // "\n" text inside .module-output into real <br> elements.
@@ -691,7 +730,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             // it was echoed via htmlspecialchars or render_statement.
             // Runs once on DOMContentLoaded. Skips whitespace-only nodes so
             // source-format indentation never becomes visible breaks.
-            // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+            // &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
             document.addEventListener('DOMContentLoaded', function () {
                 var container = document.querySelector('.module-output');
                 if (!container) return;
@@ -732,7 +771,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
             });
         </script>
     </head>
-    <body>
+    <body class="subject-<?php echo htmlspecialchars($subjectKey); ?> mod-<?php echo htmlspecialchars(basename($scriptPath, '.php')); ?>">
     <div class="main-wrapper">
 
         <table class="header-table" cellspacing="0" cellpadding="0">
@@ -748,7 +787,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
                              onmouseover="FP_swapImg(1,0,'img1','<?php echo $base; ?>/images/header1b.jpg')"
                              onmouseout="FP_swapImg(0,0,'img1','<?php echo $base; ?>/images/header1a.jpg')"
                              onmousedown="FP_swapImg(1,0,'img1','<?php echo $base; ?>/images/header1c.jpg')"
-                             onmouseup="FP_swapImg(1,0,'img1','<?php echo $base; ?>/images/header1b.jpg')">
+                             onmouseup="FP_swapImg(0,0,'img1','<?php echo $base; ?>/images/header1b.jpg')">
                     </a>
                 </td>
                 <td width="133" valign="top">
@@ -766,7 +805,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
                              onmouseover="FP_swapImg(1,0,'img3','<?php echo $base; ?>/images/header3b.jpg')"
                              onmouseout="FP_swapImg(0,0,'img3','<?php echo $base; ?>/images/header3a.jpg')"
                              onmousedown="FP_swapImg(1,0,'img3','<?php echo $base; ?>/images/header3c.jpg')"
-                             onmouseup="FP_swapImg(1,0,'img3','<?php echo $base; ?>/images/header3b.jpg')">
+                             onmouseup="FP_swapImg(0,0,'img3','<?php echo $base; ?>/images/header3b.jpg')">
                     </a>
                 </td>
                 <td width="134" valign="top">
@@ -775,7 +814,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
                              onmouseover="FP_swapImg(1,0,'img4','<?php echo $base; ?>/images/header4b.jpg')"
                              onmouseout="FP_swapImg(0,0,'img4','<?php echo $base; ?>/images/header4a.jpg')"
                              onmousedown="FP_swapImg(1,0,'img4','<?php echo $base; ?>/images/header4c.jpg')"
-                             onmouseup="FP_swapImg(1,0,'img4','<?php echo $base; ?>/images/header4b.jpg')">
+                             onmouseup="FP_swapImg(0,0,'img4','<?php echo $base; ?>/images/header4b.jpg')">
                     </a>
                 </td>
                 <td width="134" valign="top">
@@ -784,7 +823,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
                              onmouseover="FP_swapImg(1,0,'img5','<?php echo $base; ?>/images/header5b.jpg')"
                              onmouseout="FP_swapImg(0,0,'img5','<?php echo $base; ?>/images/header5a.jpg')"
                              onmousedown="FP_swapImg(1,0,'img5','<?php echo $base; ?>/images/header5c.jpg')"
-                             onmouseup="FP_swapImg(1,0,'img5','<?php echo $base; ?>/images/header5b.jpg')">
+                             onmouseup="FP_swapImg(0,0,'img5','<?php echo $base; ?>/images/header5b.jpg')">
                     </a>
                 </td>
                 <td width="134" valign="top">
@@ -793,7 +832,7 @@ function render_header($page_title = 'EnglishPluz', $page_heading = '', $theme_i
                              onmouseover="FP_swapImg(1,0,'img6','<?php echo $base; ?>/images/header6b.jpg')"
                              onmouseout="FP_swapImg(0,0,'img6','<?php echo $base; ?>/images/header6a.jpg')"
                              onmousedown="FP_swapImg(1,0,'img6','<?php echo $base; ?>/images/header6c.jpg')"
-                             onmouseup="FP_swapImg(1,0,'img6','<?php echo $base; ?>/images/header6b.jpg')">
+                             onmouseup="FP_swapImg(0,0,'img6','<?php echo $base; ?>/images/header6b.jpg')">
                     </a>
                 </td>
             </tr>
