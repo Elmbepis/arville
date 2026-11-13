@@ -1,9 +1,9 @@
 <?php
 // q-engine.php — generic question engine
+// v2: pickStatic now caps recursion (avoids silent segfault when every
+//     bank entry fails parseMCQ). Returns null past depth 30; caller's
+//     existing "could not generate" guard fires instead.
 // Two modes: 'procedural' (randomized params) and 'static' (fixed bank)
-// Static mode supports 2-, 3-, or 4-choice questions (T/F and MCQ)
-// HTML entities (e.g. &ntilde;) in stems/answers/distractors are decoded
-// on output so the renderer's htmlspecialchars() emits them correctly.
 
 class QEngine {
     private $template;
@@ -27,32 +27,33 @@ class QEngine {
     public function getLevels() { return $this->template['levels']; }
     public function getDebug()  { return $this->debug; }
 
-public function generate($sessionKey) {
-    $type = $this->template['type'] ?? 'procedural';
-    $result = ($type === 'static')
-        ? $this->pickStatic($sessionKey)
-        : $this->generateProcedural($sessionKey);
+    public function generate($sessionKey) {
+        $type = $this->template['type'] ?? 'procedural';
+        $result = ($type === 'static')
+            ? $this->pickStatic($sessionKey)
+            : $this->generateProcedural($sessionKey);
 
-    // Decode HTML entities (applied after structural parsing)
-    $result = $this->decodeResult($result);
+        $result = $this->decodeResult($result);
 
-    // ===== UNIFORM CHOICE WIDTH HINT =====
-    // Length (in chars) of the longest choice. Consumed by modules to
-    // size all choice buttons equally via CSS variable --choice-min-width.
-    if ($result !== null && !empty($result['choices'])) {
-        $maxLen = 0;
-        foreach ($result['choices'] as $c) {
-            $len = strlen((string)$c);
-            if ($len > $maxLen) $maxLen = $len;
+        if ($result !== null && !empty($result['choices'])) {
+            $maxLen = 0;
+            foreach ($result['choices'] as $c) {
+                $len = strlen((string)$c);
+                if ($len > $maxLen) $maxLen = $len;
+            }
+            $result['max_choice_len'] = $maxLen;
         }
-        $result['max_choice_len'] = $maxLen;
+
+        return $result;
     }
 
-    return $result;
-}
     // ============ STATIC (fixed bank) ============
 
-    private function pickStatic($sessionKey) {
+    private function pickStatic($sessionKey, $depth = 0) {
+        if ($depth > 30) {
+            $this->debug[] = "pickStatic: recursion limit ($depth) reached — bank entries likely incompatible with parseMCQ";
+            return null;
+        }
         $bank = $this->template['questions'] ?? [];
         if (empty($bank)) return null;
 
@@ -78,11 +79,9 @@ public function generate($sessionKey) {
 
         $parsed = $this->parseMCQ($bank[$idx]);
         if ($parsed === null) {
-            // Malformed entry — try again with a fresh pick
-            return $this->pickStatic($sessionKey);
+            return $this->pickStatic($sessionKey, $depth + 1);
         }
 
-        // Resolve image path
         if (!empty($parsed['image']) && !empty($this->template['image_base'])) {
             $img = $parsed['image'];
             if (strpos($img, '/') === false) {
@@ -96,17 +95,13 @@ public function generate($sessionKey) {
     }
 
     private function parseMCQ($raw) {
-        // Formats supported (all with optional **image.jpg suffix):
-        //   4 choices:  prompt.=correct>wrong1+wrong2<wrong3
-        //   3 choices:  prompt.=correct>wrong1+wrong2
-        //   2 choices:  prompt.=correct>wrong   (T/F — answer is "tama" or "mali")
         $image = null;
         if (($imgPos = strpos($raw, '**')) !== false) {
             $image = substr($raw, $imgPos + 2);
             $raw = substr($raw, 0, $imgPos);
         }
 
-        $p1 = strpos($raw, '=');              // prompt | answer
+        $p1 = strpos($raw, '=');
         $p2 = ($p1 === false) ? false : strpos($raw, '>', $p1);
 
         if ($p1 === false || $p2 === false) {
@@ -117,7 +112,6 @@ public function generate($sessionKey) {
         $prompt  = trim(substr($raw, 0, $p1));
         $correct = trim(substr($raw, $p1 + 1, $p2 - $p1 - 1));
 
-        // Everything after '>' is the distractor list (split on + and <)
         $distractorSection = substr($raw, $p2 + 1);
         $distractors = preg_split('/[+<]/', $distractorSection);
         $distractors = array_map('trim', $distractors);
@@ -135,11 +129,11 @@ public function generate($sessionKey) {
         ];
     }
 
-    // ============ PROCEDURAL (randomized params) ============
+    // ============ PROCEDURAL ============
 
     private function generateProcedural($sessionKey) {
         if (!isset($this->template['template'])) {
-            $this->debug[] = "generateProcedural: no 'template' key — wrong mode?";
+            $this->debug[] = "generateProcedural: no 'template' key";
             return null;
         }
 
@@ -313,19 +307,6 @@ public function generate($sessionKey) {
     }
 
     // ============ HTML ENTITY HANDLING ============
-    //
-    // A single, uniform pass over the final result object. Decoding here
-    // (rather than inside parseMCQ / generateProcedural) guarantees:
-    //   1. Delimiters ( = > + < ** ) are matched against the RAW form,
-    //      so entity-encoded text like `&lt;` can never alias a real `<`.
-    //   2. Both static and procedural modes are handled identically.
-    //   3. Unknown/invalid entities pass through untouched.
-    //   4. Double-encoded entities ( `&amp;ntilde;` ) are preserved as
-    //      literal text (single decode), so intentional escapes still work.
-    //
-    // After decoding, q-display-legacy.php's htmlspecialchars() call
-    // re-encodes only genuine markup chars ( < > & " ' ), leaving UTF-8
-    // characters like ñ, á, é intact for the browser to render normally.
 
     private function decodeResult($result) {
         if ($result === null) return null;
