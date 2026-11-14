@@ -30,6 +30,33 @@ while ($row = $result->fetch_assoc()) {
 }
 $db->close();
 
+/**
+ * Build a q-display-legacy URL for a science module, regardless of
+ * what format the DB 'url' column currently uses.
+ * Target: /<base>/q-display-legacy.php?m=science/modules/<filename-stem>
+ */
+function science_module_href($mod, $base) {
+    $currentUrl = (string)($mod['url'] ?? '');
+    $moduleName = '';
+
+    if (preg_match('/[?&]mfile=([^&]+)/', $currentUrl, $m)) {
+        // e.g. "../../q-display3.php?mfile=language-culture.php"
+        $moduleName = basename($m[1], '.php');
+    } elseif (preg_match('/[?&]m=([^&]+)/', $currentUrl, $m)) {
+        // e.g. "../../q-display-legacy.php?m=science/modules/foo"
+        $moduleName = basename($m[1], '.php');
+    } elseif ($currentUrl !== '') {
+        // e.g. "science/modules/foo.php" or "foo.php"
+        $moduleName = basename($currentUrl, '.php');
+    }
+
+    if ($moduleName === '' && !empty($mod['module_key'])) {
+        $moduleName = $mod['module_key'];
+    }
+
+    return $base . '/q-display-legacy.php?m=science/modules/' . rawurlencode($moduleName);
+}
+
 $sectionHeaders = [
     'life-living'         => $base . '/science/images/topics-life-living.jpg',
     'human-body'          => $base . '/science/images/topics-human-body.jpg',
@@ -81,7 +108,7 @@ $videosHover = $base . '/science/images/videosb.jpg';
     </style>
     <script>
         function FP_swapImg() { var doc=document,args=arguments,elm,n; doc.$imgSwaps=new Array(); for(n=2; n<args.length; n+=2) { elm=FP_getObjectByID(args[n]); if(elm) { doc.$imgSwaps[doc.$imgSwaps.length]=elm; elm.$src=elm.src; elm.src=args[n+1]; } } }
-        function FP_preloadImgs() { var d=document,a=arguments; if(!d.FP_imgs) d.FP_imgs=new Array(); for(var i=0; i<a.length; i++) { d.FP_imgs[i]=new Image; d.FP_imgs[i].src=a[i]; } }
+        function FP_preloadImgs() { var d=document,a=arguments; if(!d.FP_imgs) d.FP_imgs=new Array(); for(var i=0; i<a.length; i++) { d.FP_imgs[i]=new Image(); d.FP_imgs[i].src=a[i]; } }
         function FP_getObjectByID(id,o) { var c,el,els,f,m,n; if(!o)o=document; if(o.getElementById) el=o.getElementById(id); else if(o.layers) c=o.layers; else if(o.all) el=o.all[id]; if(el) return el; if(o.id==id || o.name==id) return o; if(o.childNodes) c=o.childNodes; if(c) for(n=0; n<c.length; n++) { el=FP_getObjectByID(id,c[n]); if(el) return el; } f=o.forms; if(f) for(n=0; n<f.length; n++) { els=f[n].elements; for(m=0; m<els.length; m++){ el=FP_getObjectByID(id,els[n]); if(el) return el; } } return null; }
         window.onload = function() {
             FP_preloadImgs(
@@ -168,8 +195,9 @@ $videosHover = $base . '/science/images/videosb.jpg';
                                                     if ($idx < $total):
                                                         $mod = $modules[$idx];
                                                         $imgId = 'mod-' . $mod['id'];
+                                                        $modHref = science_module_href($mod, $base);
                                                 ?>
-                                                    <td width="208" align="center" valign="top" style="padding:0; margin:0;"><p style="margin:0 0 25px 0; padding:0; line-height:normal;"><a href="<?= htmlspecialchars($mod['url']) ?>"><img border="0" id="<?= $imgId ?>" src="<?= htmlspecialchars($mod['image_normal']) ?>" onmouseover="FP_swapImg(1,0,'<?= $imgId ?>','<?= htmlspecialchars($mod['image_hover']) ?>')" onmouseout="FP_swapImg(0,0,'<?= $imgId ?>','<?= htmlspecialchars($mod['image_normal']) ?>')" style="display:inline-block;"></a></p></td>
+                                                    <td width="208" align="center" valign="top" style="padding:0; margin:0;"><p style="margin:0 0 25px 0; padding:0; line-height:normal;"><a href="<?= htmlspecialchars($modHref) ?>"><img border="0" id="<?= $imgId ?>" src="<?= htmlspecialchars($mod['image_normal']) ?>" onmouseover="FP_swapImg(1,0,'<?= $imgId ?>','<?= htmlspecialchars($mod['image_hover']) ?>')" onmouseout="FP_swapImg(0,0,'<?= $imgId ?>','<?= htmlspecialchars($mod['image_normal']) ?>')" style="display:inline-block;"></a></p></td>
                                                 <?php else: ?>
                                                     <td width="208" align="center" valign="top" style="padding:0; margin:0;">&nbsp;</td>
                                                 <?php endif; endfor; ?>

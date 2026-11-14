@@ -1,6 +1,14 @@
 <?php
 // q-display-legacy.php — displays legacy question-set modules
-// Production version. No debug instrumentation.
+// v6: theme resets to a new random pick on fresh arrival from the menu;
+//     stays fixed within the module (answers, New Question, level change).
+// v5: difficulty widget at bottom (synonyms.php pattern); level radio
+//     posts together with Submit2 — one click changes level AND generates
+//     the next question.
+// v4: multi-level support. Modules that declare $module_levels = ['Easy','Hard']
+//     get a difficulty selector and per-level scoring.
+// v3: renders optional [explanation] text on the feedback panel.
+// Modules that don't declare $module_levels (e.g. AP) stay single-level 'Easy'.
 // URL: q-display-legacy.php?m=AP/modules/sarili-pagkilala
 
 ob_start();
@@ -77,7 +85,7 @@ function qdl_pick_score($rel, $fallbackRel) {
     return qdl_file_exists('', $rel) ? $rel : $fallbackRel;
 }
 
-function qdl_resolve_theme($subject, $base, $moduleId) {
+function qdl_resolve_theme($subject, $base, $moduleId, $isFreshNavigation = true) {
     $slots = ['top', 'top2', 'left', 'right', 'content', 'bottom'];
 
     $configs = [
@@ -104,7 +112,7 @@ function qdl_resolve_theme($subject, $base, $moduleId) {
             'score_bottom' => 'AP/modules/images/score-bottom-1.png',
         ],
         'science' => [
-            'prefixes'     => ['squiz-20', 'squiz-21', 'squiz-22', 'squiz-23', 'squiz-24'],
+            'prefixes'     => ['squiz-19', 'squiz-20', 'squiz-21', 'squiz-22', 'squiz-24'],
             'folder'       => 'science/images/images/',
             'score_top'    => 'science/images/score-top-5.jpg',
             'score_bottom' => 'science/images/score-bottom-5.jpg',
@@ -132,10 +140,22 @@ function qdl_resolve_theme($subject, $base, $moduleId) {
     $rotKey = 'qdl_theme_' . $subject;
     if (!isset($_SESSION[$rotKey])) $_SESSION[$rotKey] = [];
 
-    $picked = $_SESSION[$rotKey][$moduleId] ?? null;
-    if ($picked === null || !in_array($picked, $valid, true)) {
+    if ($isFreshNavigation) {
+        // Fresh arrival from the menu — always pick a new random theme,
+        // overwriting whatever this module used in a prior session.
         $picked = $valid[array_rand($valid)];
         $_SESSION[$rotKey][$moduleId] = $picked;
+    } else {
+        // Within-module navigation (answered a question, requested a new
+        // one, changed difficulty) — reuse the theme chosen on arrival.
+        $picked = $_SESSION[$rotKey][$moduleId] ?? null;
+        if ($picked === null || !in_array($picked, $valid, true)) {
+            // Fallback: no stored theme (e.g. user deep-linked straight to
+            // an answer URL). Pick one and store it so subsequent in-module
+            // requests stay consistent.
+            $picked = $valid[array_rand($valid)];
+            $_SESSION[$rotKey][$moduleId] = $picked;
+        }
     }
 
     $scoreTop    = qdl_pick_score($cfg['score_top'],    'English/images/score-top-3.jpg');
@@ -180,6 +200,23 @@ $parts         = explode('/', $moduleKey);
 $subjectFolder = $parts[0];
 $subject       = strtolower($subjectFolder);
 
+$sessionKey  = 'mod_' . md5(basename($modulePath));
+$moduleParam = htmlspecialchars($moduleKey);
+
+// ============================================================
+// LEVEL CHANGE
+// Runs BEFORE require so the module rebuilds its bank for the new level.
+// Clears per-session question state on actual level change so the engine
+// starts fresh from the new pool.
+// ============================================================
+if (isset($_POST['level']) && in_array($_POST['level'], ['Easy', 'Hard'], true)) {
+    $prevLevel = $_SESSION['level'] ?? null;
+    if ($prevLevel !== $_POST['level']) {
+        $_SESSION['level'] = $_POST['level'];
+        unset($_SESSION[$sessionKey]);
+    }
+}
+
 // ============================================================
 // LANGUAGE
 // ============================================================
@@ -188,22 +225,26 @@ $uiLang = in_array($subject, $englishSubjects, true) ? 'en' : 'fil';
 
 $uiStrings = [
     'en' => [
-        'your_answer'     => 'Your answer is',
-        'correct'         => 'That is correct!',
-        'incorrect'       => 'That is incorrect.',
-        'question_label'  => 'Question:',
-        'answer_label'    => 'Answer:',
-        'click_to_answer' => 'Click on your answer below.',
-        'new_question'    => 'New Question',
+        'your_answer'       => 'Your answer is',
+        'correct'           => 'That is correct!',
+        'incorrect'         => 'That is incorrect.',
+        'question_label'    => 'Question:',
+        'answer_label'      => 'Answer:',
+        'explanation_label' => 'Explanation:',
+        'click_to_answer'   => 'Click on your answer below.',
+        'new_question'      => 'New Question',
+        'difficulty_prompt' => 'Select difficulty level for next question:',
     ],
     'fil' => [
-        'your_answer'     => 'Ang sagot mo ay',
-        'correct'         => 'Ito ay tumpak!',
-        'incorrect'       => 'Ito ay hindi tumpak.',
-        'question_label'  => 'Tanong:',
-        'answer_label'    => 'Sagot:',
-        'click_to_answer' => 'Pindutin ang iyong sagot sa ibaba.',
-        'new_question'    => 'Bagong Tanong',
+        'your_answer'       => 'Ang sagot mo ay',
+        'correct'           => 'Ito ay tumpak!',
+        'incorrect'         => 'Ito ay hindi tumpak.',
+        'question_label'    => 'Tanong:',
+        'answer_label'      => 'Sagot:',
+        'explanation_label' => 'Paliwanag:',
+        'click_to_answer'   => 'Pindutin ang iyong sagot sa ibaba.',
+        'new_question'      => 'Bagong Tanong',
+        'difficulty_prompt' => 'Piliin ang antas ng kahirapan para sa susunod na tanong:',
     ],
 ];
 $t = $uiStrings[$uiLang];
@@ -231,8 +272,12 @@ if ($grd === null) $grd = 1;
 
 // ============================================================
 // LOAD MODULE
+// Default $module_levels = ['Easy']; a module that supports more
+// levels overrides it by assigning $module_levels = [...] at top scope.
+// Modules that don't declare it (AP, etc.) stay single-level.
 // ============================================================
 $questions = [];
+$module_levels = ['Easy'];
 unset($_SESSION['title'], $_SESSION['tnum']);
 
 try {
@@ -244,6 +289,22 @@ try {
     die('<pre style="background:#fee;padding:16px;color:#900;font-family:monospace;text-align:left;max-width:900px;margin:20px auto;white-space:pre-wrap;">' .
         "Module load threw " . get_class($e) . ":\n" . htmlspecialchars($e->getMessage()) . "\n\nAt: " . htmlspecialchars($e->getFile()) . ":" . $e->getLine() . "\n\n" .
         htmlspecialchars($e->getTraceAsString()) . '</pre>');
+}
+
+// ============================================================
+// RESOLVE LEVELS
+// ============================================================
+$module_levels = (isset($module_levels) && is_array($module_levels)) ? $module_levels : [];
+$module_levels = array_values(array_filter(
+    $module_levels,
+    fn($l) => in_array($l, ['Easy', 'Hard'], true)
+));
+if (empty($module_levels)) $module_levels = ['Easy'];
+$isMultiLevel = count($module_levels) > 1;
+
+$currentLevel = $_SESSION['level'] ?? $module_levels[0];
+if (!in_array($currentLevel, $module_levels, true)) {
+    $currentLevel = $module_levels[0];
 }
 
 header_remove();
@@ -262,19 +323,17 @@ $template = [
     'subject'           => $subject,
     'module_identifier' => basename($modulePath),
     'type'              => 'static',
-    'levels'            => ['Easy'],
+    'levels'            => $module_levels,
     'image_base'        => $base . '/' . $subjectFolder . '/modules/qimages/',
     'questions'         => $questions,
 ];
 
 try {
     $engine = new QEngine($template, $template['module_identifier']);
-    $engine->setLevel('Easy');
+    $engine->setLevel($currentLevel);
 } catch (\Throwable $e) {
     die("QEngine construction failed.");
 }
-
-$sessionKey = 'mod_' . md5($template['module_identifier']);
 
 $result = null;
 $scorer = null;
@@ -285,14 +344,15 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current'])) {
     $selected = $_GET['ansclick'];
 
     $scorer  = new Scorer($conn, $template['module_identifier']);
-    $correct = $scorer->processAnswer($selected, $q['answer'], 'Easy');
+    $correct = $scorer->processAnswer($selected, $q['answer'], $currentLevel);
 
     $result = [
-        'correct'  => $correct,
-        'selected' => $selected,
-        'answer'   => $q['answer'],
-        'image'    => $q['image'],
-        'prompt'   => $q['prompt'],
+        'correct'     => $correct,
+        'selected'    => $selected,
+        'answer'      => $q['answer'],
+        'image'       => $q['image'],
+        'prompt'      => $q['prompt'],
+        'explanation' => $q['explanation'] ?? null,
     ];
     unset($_SESSION[$sessionKey]['current']);
 }
@@ -310,13 +370,17 @@ if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = $q;
 }
 
-$moduleParam = htmlspecialchars($moduleKey);
-$qColors     = legacy_question_colors($subject);
+$qColors = legacy_question_colors($subject);
 
 // ============================================================
 // RENDER HEADER
+// Fresh = user clicked a module from the menu (or any clean URL entry).
+// In-module = clicked an answer (ansclick) or submitted a form (POST).
+// Fresh arrivals pick a new random theme; in-module requests keep it.
 // ============================================================
-$themeImages = qdl_resolve_theme($subject, $base, $template['module_identifier']);
+$isFreshNavigation = ($_SERVER['REQUEST_METHOD'] === 'GET' && !isset($_GET['ansclick']));
+
+$themeImages = qdl_resolve_theme($subject, $base, $template['module_identifier'], $isFreshNavigation);
 
 $__origScriptName = $_SERVER['SCRIPT_NAME'] ?? '';
 $_SERVER['SCRIPT_NAME'] = $base . '/' . $subject . '/modules/' . basename($modulePath);
@@ -376,6 +440,13 @@ echo $headerHtml;
         <strong style="color:#CC0066; font-size:15pt;"><?php echo htmlspecialchars($cur['answer']); ?></strong>
     </p>
 
+    <?php if (!empty($cur['explanation'])): ?>
+    <div style="max-width:480px; margin:10px auto; padding:14px 20px; background:#FFFDF0; border:1px solid <?php echo htmlspecialchars($qColors['border']); ?>; border-radius:10px; font-family:Arial,sans-serif; font-size:13pt; color:#333; text-align:left; line-height:1.5; box-sizing:border-box;">
+        <strong style="color:#800080;"><?php echo htmlspecialchars($t['explanation_label']); ?></strong>
+        <?php echo htmlspecialchars($cur['explanation']); ?>
+    </div>
+    <?php endif; ?>
+
     <input type="submit" name="Submit2" value="<?php echo htmlspecialchars(' ' . $t['new_question'] . ' '); ?>" style="margin:30px 0; font-family:Arial,sans-serif;">
 <?php else: ?>
     <?php if (!empty($q['image'])): ?>
@@ -416,6 +487,24 @@ echo $headerHtml;
     </table>
 
     <input type="submit" name="Submit2" value="<?php echo htmlspecialchars(' ' . $t['new_question'] . ' '); ?>" style="margin:30px 0; font-family:Arial,sans-serif;">
+<?php endif; ?>
+
+<?php if ($isMultiLevel): ?>
+    <div align="center" style="margin-top:20px;">
+        <p style="margin-top:5px; margin-bottom:0">
+            <font face="Verdana" style="font-size:10pt;" color="#000080"><?php echo htmlspecialchars($t['difficulty_prompt']); ?></font>
+        </p>
+        <table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>
+            <?php foreach ($module_levels as $l): ?>
+                <td align="center">
+                    <font face="Verdana" style="font-size:9pt;"><font color="#800080">
+                        <input type="radio" name="level" value="<?php echo htmlspecialchars($l); ?>" <?php echo $currentLevel === $l ? 'checked' : ''; ?>>
+                        <b>&nbsp;<?php echo htmlspecialchars($l); ?></b>
+                    </font></font>
+                </td>
+            <?php endforeach; ?>
+        </tr></table>
+    </div>
 <?php endif; ?>
 
 </form>

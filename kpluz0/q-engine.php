@@ -1,8 +1,8 @@
 <?php
 // q-engine.php — generic question engine
-// v2: pickStatic now caps recursion (avoids silent segfault when every
-//     bank entry fails parseMCQ). Returns null past depth 30; caller's
-//     existing "could not generate" guard fires instead.
+// v3: parseMCQ now supports the optional [explanation] suffix after
+//     the image filename; explanation is decoded alongside the other
+//     text fields so HTML entities render correctly on feedback.
 // Two modes: 'procedural' (randomized params) and 'static' (fixed bank)
 
 class QEngine {
@@ -95,10 +95,33 @@ class QEngine {
     }
 
     private function parseMCQ($raw) {
+        // Formats supported (optional **image.jpg[explanation] suffix):
+        //   4 choices:  prompt.=correct>wrong1+wrong2<wrong3
+        //   3 choices:  prompt.=correct>wrong1+wrong2
+        //   2 choices:  prompt.=correct>wrong   (T/F — answer is "tama" or "mali")
+        //
+        // The bracketed text after the image filename is optional and
+        // appears only in the feedback panel — never in the question stem.
         $image = null;
+        $explanation = null;
         if (($imgPos = strpos($raw, '**')) !== false) {
-            $image = substr($raw, $imgPos + 2);
-            $raw = substr($raw, 0, $imgPos);
+            $tail = substr($raw, $imgPos + 2);
+            $raw  = substr($raw, 0, $imgPos);
+
+            $bracketPos = strpos($tail, '[');
+            if ($bracketPos === false) {
+                $image = trim($tail);
+            } else {
+                $image = trim(substr($tail, 0, $bracketPos));
+                // strrpos — explanation text itself may contain stray '['
+                $closeBracket = strrpos($tail, ']');
+                if ($closeBracket === false || $closeBracket <= $bracketPos) {
+                    $explanation = trim(substr($tail, $bracketPos + 1));
+                } else {
+                    $explanation = trim(substr($tail, $bracketPos + 1, $closeBracket - $bracketPos - 1));
+                }
+                if ($explanation === '') $explanation = null;
+            }
         }
 
         $p1 = strpos($raw, '=');
@@ -121,11 +144,12 @@ class QEngine {
         shuffle($choices);
 
         return [
-            'prompt'  => $prompt,
-            'answer'  => $correct,
-            'image'   => $image,
-            'choices' => $choices,
-            'params'  => [],
+            'prompt'      => $prompt,
+            'answer'      => $correct,
+            'image'       => $image,
+            'explanation' => $explanation,
+            'choices'     => $choices,
+            'params'      => [],
         ];
     }
 
@@ -162,6 +186,7 @@ class QEngine {
         $answer = $this->interpolate($spec['answer'], $params);
         $prompt = $this->resolveValue($spec['prompt'], $params);
         $image  = isset($spec['image']) ? $this->interpolate($spec['image'], $params) : null;
+        $explanation = isset($spec['explanation']) ? $this->interpolate($spec['explanation'], $params) : null;
 
         $distractors = $this->buildDistractors($spec['distractors'], $params, $answer);
         $choices = array_merge([$answer], $distractors);
@@ -170,11 +195,12 @@ class QEngine {
         $this->debug[] = "Procedural: params=" . json_encode($params) . " answer=$answer";
 
         return [
-            'prompt'  => $prompt,
-            'answer'  => $answer,
-            'image'   => $image,
-            'choices' => $choices,
-            'params'  => $params,
+            'prompt'      => $prompt,
+            'answer'      => $answer,
+            'image'       => $image,
+            'explanation' => $explanation,
+            'choices'     => $choices,
+            'params'      => $params,
         ];
     }
 
@@ -316,6 +342,10 @@ class QEngine {
 
         if (isset($result['image']) && $result['image'] !== null) {
             $result['image'] = $this->decodeEntities($result['image']);
+        }
+
+        if (isset($result['explanation']) && $result['explanation'] !== null) {
+            $result['explanation'] = $this->decodeEntities($result['explanation']);
         }
 
         if (isset($result['choices']) && is_array($result['choices'])) {
