@@ -106,7 +106,7 @@ if ($grd <= 1) {
     "The plant part marked as 'D' in the picture is called what?=stem>roots+leaf<flower**pc-pparts2.jpg",
     "The plant part marked as 'E' in the picture is called what?=roots>stem+leaf<flower**pc-pparts2.jpg",
     "The leaf part marked as 'A' in the picture is called what?=tip>midrib+vein<petiole**pc-lparts1.jpg",
-    "The leaf part marked as 'B' in the picture is called what?=vein>tip+midrip<petiole**pc-lparts1.jpg",
+    "The leaf part marked as 'B' in the picture is called what?=vein>tip+midrib<petiole**pc-lparts1.jpg",
     "The leaf part marked as 'C' in the picture is called what?=blade>vein+midrib<petiole**pc-lparts1.jpg",
     "The leaf part marked as 'D' in the picture is called what?=midrib>tip+vein<petiole**pc-lparts1.jpg",
     "The leaf part marked as 'E' in the picture is called what?=petiole>vein+midrib<tip**pc-lparts1.jpg",
@@ -146,7 +146,7 @@ if ($grd <= 1) {
     "The leaf part marked as 'A' in the picture is called what?=tip>midrib+vein<petiole**pc-lparts2.jpg",
     "The leaf part marked as 'B' in the picture is called what?=lamina>vein+midrib<petiole**pc-lparts2.jpg",
     "The leaf part marked as 'C' in the picture is called what?=margin>vein+midrib<tip**pc-lparts2.jpg",
-    "The leaf part marked as 'D' in the picture is called what?=vein>tip+midrip<margin**pc-lparts2.jpg",
+    "The leaf part marked as 'D' in the picture is called what?=vein>tip+midrib<margin**pc-lparts2.jpg",
     "The leaf part marked as 'E' in the picture is called what?=midrib>tip+vein<margin**pc-lparts2.jpg",
     "The leaf part marked as 'F' in the picture is called what?=petiole>vein+midrib<tip**pc-lparts2.jpg",
 
@@ -169,7 +169,6 @@ if ($grd <= 1) {
     "What do you call the part of a flowering plant that protects the seeds and acts as their vehicle?=fruit>flower+leaf<stem",
     "The vascular tissue that transports water from the roots to the rest of the plant is called what?=xylem>phloem+cambium<tap root",
     "The minute pores in the epidermis of a leaf or stem through which gases and water vapor pass are called ____.=stomata>ovules+bulbs<spores",
-    "Which of these refers to the first leaf that sprouts from a seed?=cotyledon>seedling+seed coat<ovule",
     "The ____ is a protective layer covering the epidermis of leaves, young shoots, and other aerial plant organs.=cuticle>cotyledon+ovule<embryo",
     "What do you call the green chemical in plant cells that allows plants to use the sun's energy to make food?=chlorophyll>glucose+chloroplast<endosperm",
     "The tough outer covering of the stems of trees and other woody plants is called what?=bark>xylem+phloem<cambium",
@@ -184,17 +183,16 @@ if ($grd <= 1) {
     "A dicot seed has two of this. What is it?=cotyledon>embryo+seed coat<bulb",
     "A monocotyledon seed has only one ____.=cotyledon>embryo+seed coat<bulb",
     "Which of these are used for the movement of oxygen and carbon dioxide into and out of the plant?=stomata>ovules+chloroplasts<spores",
-    "Which of these is the equivalent of human sperm in plants?=pollen>nectar+ovule<spore",
+    "Which of these carries the male reproductive cells in flowering plants?=pollen>nectar+ovule<spore",
     "Which of these refers to a leaf of a fern or cycad, which usually consists of many divisions or leaflets?=frond>palm+rhizome<tuber",
     "Which of these refers to a layer of wood produced by the growth of a woody plant in one year?=annual ring>tuber+rhizoid<pith",
     "What do you call the part of a plant cell where photosynthesis takes place?=chloroplast>stoma+chlorophyll<cell wall",
 
     // &#9472;&#9472;&#9472; Advanced stem/root items moved from grade 3 &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
-    "Which of the following refers to plants whose stems are green with no woody parts?=herbaceous>undergound+aerial<aquatic",
-    "Stems beneath the ground that can store food or survive harsh conditions are called ____ stems.=undergound>herbaceous+aerial<subaerial",
-    "Stems that are erect and grow vertically above the ground are called ____ stems.=aerial>herbaceous+undergound<subaerial",
-    "Stems that are weak and grow horizontally on the ground are called ____ stems.=subaerial>herbaceous+undergound<aerial",
-    "Which of the following refers to a thick or stout root that grows downward and from which smaller roots come out?=taproot>fibrous root+lateral root<tertiary root",
+    "Which of the following refers to plants whose stems are green with no woody parts?=herbaceous>underground+aerial<aquatic",
+    "Stems beneath the ground that can store food or survive harsh conditions are called ____ stems.=underground>herbaceous+aerial<subaerial",
+    "Stems that are erect and grow vertically above the ground are called ____ stems.=aerial>herbaceous+underground<subaerial",
+    "Stems that are weak and grow horizontally on the ground are called ____ stems.=subaerial>herbaceous+underground<aerial",
     "Which of the following consists of a large number of thin roots growing in different directions?=fibrous root>taproot+lateral root<secondary root",
 
     // &#9472;&#9472;&#9472; Picture MCQ &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
@@ -209,7 +207,6 @@ if ($grd <= 1) {
     // &#9472;&#9472;&#9472; T/F — balanced 6T/6F &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
     "Photosynthesis happens in the leaves of a plant.=true>false",
     "The plant organ where photosynthesis happens is the stem.=false>true",
-    "A plant that has no roots, stems, or leaves is called a 'simple plant'.=true>false",
     "A plant that has no roots, stems, or leaves is called an 'annual plant'.=false>true",
     "Leaves use air, sunlight, and water to make food for the plant.=true>false",
     "Leaves don't need air and sunlight to make food for the plant.=false>true",
@@ -273,8 +270,8 @@ if ($grd <= 1) {
     "The chloroplast is an organelle in a plant's cell that contains chlorophyll.=true>false",
     "The chloroplast has nothing to do with chlorophyll.=false>true",
     "A form of asexual reproduction in which tissues from one plant are inserted into those of another is called 'grafting'.=true>false",
-    "A form of asexual reproduction in which tissues from one plant are inserted into those of another is called 'budding'.=false>true",
-    "In asexual reproduction of plants, the offsprings come from only one parent.=true>false",
+    "Grafting requires the fusion of male and female reproductive cells.=false>true",
+    "In asexual reproduction of plants, the offspring is beneath come from only one parent.=true>false",
     "Two parents are required for asexual reproduction of plants to take place.=false>true",
     "The term 'endosperm' refers to the tissue that surrounds an embryo of a seed and provides food for its growth.=true>false",
     "The term 'endosperm' refers to a seed plant that produces flowers.=false>true",
@@ -306,7 +303,7 @@ if ($grd <= 1) {
     "A waxy, waterproof layer on the epidermis of leaves that helps a plant minimize its loss of water is called what?=cuticle>radicle+rhizoid<plumule",
     "Which of these is the plant tissue from which phloem and xylem grow by cell division?=cambium>bark+plumule<pith",
     "The ____ of a plant embryo develops into the primary root.=radicle>hypocotyl+epicotyl<plumule",
-    "The ____ a plant embryo is beneath the seed leaves and directly above the root.=hypocotyl>radicle+epicotyl<plumule",
+    "The ____ of a plant embryo is beneath the seed leaves and directly above the root.=hypocotyl>radicle+epicotyl<plumule",
     "The ____ is the stem of a plant embryo that's located between the cotyledons and the first true leaves.=epicotyl>hypocotyl+radicle<plumule",
 
     // &#9472;&#9472;&#9472; T/F — balanced 4T/4F &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
@@ -338,10 +335,10 @@ if ($grd <= 1) {
     "The part of a plant embryo that is beneath the seed leaves and directly above the root is called what?=hypocotyl>radicle+epicotyl<plumule",
     "Which of these is the stem of a plant embryo that's located between the cotyledons and the first true leaves?=epicotyl>hypocotyl+radicle<plumule",
     "Which of these is the part of an embryo that contains the epicotyl and the first true leaves of a plant?=plumule>hypocotyl+cotyledon<radicle",
-    "Any of the long, soft, and fine hairs covering certain parts of certain plants is known as what?=villus>plumule+achene<rhizoid",
+    "What is the general botanical term for a hairlike outgrowth on the surface of a plant?=trichome>plumule+achene<rhizoid",
     "A small, dry, single-seeded fruit that does not split open to release the seed is called what?=achene>spore+pith<kernel",
     "Which of these refers to the main constituent of plant cell walls which gives them their structure?=cellulose>cambium+cytoplasm<vacuole",
-    "Which of these is the plant hormone that regulates plant growth processes and is responsible for cell elongation?=auxin>insulin+adrenalin<progesterone",
+    "Which of these is the plant hormone that regulates plant growth processes and is responsible for cell elongation?=auxin>insulin+adrenaline<progesterone",
 
     // &#9472;&#9472;&#9472; MCQ — plant physiology & taxonomy (new, +7) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
     "What do you call the pair of specialized epidermal cells that surround each stoma and control its opening and closing?=guard cells>companion cells+tracheid cells<epidermal hairs",
