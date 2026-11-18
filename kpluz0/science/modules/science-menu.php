@@ -34,6 +34,7 @@ $db->close();
  * Build a q-display-legacy URL for a science module, regardless of
  * what format the DB 'url' column currently uses.
  * Target: /<base>/q-display-legacy.php?m=science/modules/<filename-stem>
+ * Exception: modules listed in $directModules link straight to <this folder>/<stem>.php
  */
 function science_module_href($mod, $base) {
     $currentUrl = (string)($mod['url'] ?? '');
@@ -52,6 +53,13 @@ function science_module_href($mod, $base) {
 
     if ($moduleName === '' && !empty($mod['module_key'])) {
         $moduleName = $mod['module_key'];
+    }
+
+    // Converted modules that sit in this folder and open directly,
+    // bypassing q-display-legacy.php
+    $directModules = ['animal-classifications'];
+    if (in_array($moduleName, $directModules, true)) {
+        return rtrim(dirname($_SERVER['SCRIPT_NAME']), '/') . '/' . rawurlencode($moduleName) . '.php';
     }
 
     return $base . '/q-display-legacy.php?m=science/modules/' . rawurlencode($moduleName);
