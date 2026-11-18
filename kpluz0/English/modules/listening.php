@@ -1,27 +1,27 @@
 <?php
-// english/modules/listening.php
-// AUDIO &#8594; CHOICE — user hears a spoken word, clicks the matching word text.
-// Static bank of 6 tiers (grades 0-5). Bypass QEngine per §3.
+// English/modules/listening.php
+// AUDIO &#8594; CHOICE ï¿½ user hears a spoken word, clicks the matching word text.
+// Static bank of 6 tiers (grades 0-5). Bypass QEngine per ï¿½3.
 //
-// Levels (§5 — 2-level scheme, Medium+Hard merged):
+// Levels (ï¿½5 ï¿½ 2-level scheme, Medium+Hard merged):
 //   Grade-keyed tier assignment:
 //     grd 0 &#8594; Easy: 0; Hard: rand(1,2)   [Medium=1, Hard=2]
 //     grd 1-2 &#8594; Easy: 1; Hard: rand(2,3) [Medium=2, Hard=3]
 //     grd 3-4 &#8594; Easy: 2; Hard: rand(3,4) [Medium=3, Hard=4]
 //     grd 5+ &#8594; Easy: 3; Hard: rand(4,5)  [Medium=4, Hard=5]
-//   Hard keeps Medium+Hard union per §10 — preserves real tier differentiation.
+//   Hard keeps Medium+Hard union per ï¿½10 ï¿½ preserves real tier differentiation.
 //
 // Bank format: "correct1dist2_2dist3_3dist4" per item (e.g. "back1bake2beak3bike").
 //   Correct word first; "1","2","3" delimit the three distractors.
 //   Shuffled at render time.
 //
-// Audio: $base . '/english/modules/sounds/<ans>.wav' — preserved from legacy.
+// Audio: $base . '/English/modules/sounds/<ans>.wav' ï¿½ preserved from legacy.
 //
-// Choice layout (§14): maxLen rule.
-//   &#8804; 4 &#8594; 1 row (4-across); 5-20 &#8594; 2×2; > 20 &#8594; 1-col.
+// Choice layout (ï¿½14): maxLen rule.
+//   &#8804; 4 &#8594; 1 row (4-across); 5-20 &#8594; 2ï¿½2; > 20 &#8594; 1-col.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 2.
-// Theme: ex-*-25 (75/655/70) &#8594; fits §8 &#8594; paper-69-*.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 2.
+// Theme: ex-*-25 (75/655/70) &#8594; fits ï¿½8 &#8594; paper-69-*.
 // Score box: score-*-3 (English default).
 // DB row required: modules.url = 'listening.php'
 
@@ -51,7 +51,7 @@ $lvl = $_SESSION['level'];
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? 2)));
 
 // ============================================================
-// BANK — tier &#8594; list of "correct1dist1_2dist2_3dist3"
+// BANK ï¿½ tier &#8594; list of "correct1dist1_2dist2_3dist3"
 // ============================================================
 $bank = [];
 
@@ -300,14 +300,14 @@ render_header($moduleTitle . ' - ' . $lvl, $moduleTitle . ' - ' . $lvl, $theme);
     </p>
     <div class="lsw-audio-box">
         <audio controls preload="auto" controlslist="nodownload">
-            <source src="<?php echo htmlspecialchars($base . '/english/modules/sounds/' . $cur['answer'] . '.wav'); ?>" type="audio/wav">
+            <source src="<?php echo htmlspecialchars($base . '/English/modules/sounds/' . $cur['answer'] . '.wav'); ?>" type="audio/wav">
         </audio>
     </div>
     <input type="submit" name="Submit2" value="New Question" style="margin:30px 0;">
 <?php else: ?>
     <div class="lsw-audio-box">
         <audio controls preload="auto" controlslist="nodownload" autoplay>
-            <source src="<?php echo htmlspecialchars($base . '/english/modules/sounds/' . $q['answer'] . '.wav'); ?>" type="audio/wav">
+            <source src="<?php echo htmlspecialchars($base . '/English/modules/sounds/' . $q['answer'] . '.wav'); ?>" type="audio/wav">
         </audio>
     </div>
 

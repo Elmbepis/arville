@@ -1,13 +1,13 @@
 <?php
-// english/modules/nouns-kinds.php
-// Concrete, Abstract, Count, & Mass Nouns — identify a noun's category.
+// English/modules/nouns-kinds.php
+// Concrete, Abstract, Count, & Mass Nouns ï¿½ identify a noun's category.
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 5 content tiers via (level × grade); 2 M/C choices per question.
+// 5 content tiers via (level ï¿½ grade); 2 M/C choices per question.
 //
 // Grade-awareness:
-//   • Tier (word-list difficulty) scales by grade per legacy formula.
-//   • Grade 1 (all levels) and grade 2 (Easy only) see only the count/mass
-//     question pair — legacy gate preserved verbatim. Grades 0, 3+ see all
+//   ï¿½ Tier (word-list difficulty) scales by grade per legacy formula.
+//   ï¿½ Grade 1 (all levels) and grade 2 (Easy only) see only the count/mass
+//     question pair ï¿½ legacy gate preserved verbatim. Grades 0, 3+ see all
 //     four question types. (Grade 0 not gated, matches legacy; extend to
 //     $grd <= 1 if you want kindergartners treated like grade 1.)
 //
@@ -18,7 +18,7 @@
 //   4 = pick a concrete noun   &#8594; choices: abstract noun / concrete noun
 //
 // LAYOUT RULE (permanent): "Click on the correct answer below." ALWAYS sits
-// immediately above the choice buttons — never above the noun box.
+// immediately above the choice buttons ï¿½ never above the noun box.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -36,7 +36,7 @@ $moduleTitle = 'Concrete, Abstract, Count, &amp; Mass Nouns';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -47,20 +47,20 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+// ---- Tier mapping (ï¿½4) ï¿½ legacy Easy / legacy Hard; Medium folded into Hard ----
 function resolve_nk_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 4) return 1;
         if ($grd <= 6) return 2;
         return 3;
     }
-    // Hard — legacy Hard formula (harder of Medium/Hard)
+    // Hard ï¿½ legacy Hard formula (harder of Medium/Hard)
     if ($grd <= 4) return 3;
     if ($grd <= 6) return 4;
     return 5;
 }
 
-// ---- Data (§5) — verbatim from legacy ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy ----
 $dataByTier = [
     1 => [
         'count' => ['balloon','bead','bell','bottle','bush','camera','candy','card',
@@ -245,7 +245,7 @@ $categoryDefs = [
     'concrete noun' => 'Concrete nouns are nouns that can be detected by any of our senses.',
 ];
 
-// ---- Helpers (§8.4) ----
+// ---- Helpers (ï¿½8.4) ----
 // Word box: hugs the noun (width:fit-content) with ample padding so short
 // nouns like "air" or "dew" don't render as a skinny capsule.
 function nk_word_box(string $html, int $minHeight = 100): void {
@@ -257,7 +257,7 @@ function nk_word_box(string $html, int $minHeight = 100): void {
        . $html . '</div>';
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_nk_question(array $dataByTier, string $lvl, int $grd, string $sessionKey): array {
     $tier     = resolve_nk_tier($lvl, $grd);
     $tierData = $dataByTier[$tier];
@@ -284,7 +284,7 @@ function build_nk_question(array $dataByTier, string $lvl, int $grd, string $ses
         if (!in_array($key, $used, true)) $available[] = ['key' => $key, 'word' => $word];
     }
     if (empty($available)) {
-        // Clear only current (tier, qopt) entries — preserve other tiers/qopts.
+        // Clear only current (tier, qopt) entries ï¿½ preserve other tiers/qopts.
         $prefix = "t$tier:q$qopt:";
         $used = array_values(array_filter($used, fn($k) => strpos($k, $prefix) !== 0));
         foreach ($list as $word) $available[] = ['key' => "t$tier:q$qopt:$word", 'word' => $word];
@@ -305,7 +305,7 @@ function build_nk_question(array $dataByTier, string $lvl, int $grd, string $ses
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -316,13 +316,13 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = build_nk_question($dataByTier, $lvl, $grd, $sessionKey);
 }
 
-// ---- Render (§8, §9, §10) ----
-// Title is 40 chars (>35) so §3.3 exception applies — drop the - Grade - Level suffix.
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
+// Title is 40 chars (>35) so ï¿½3.3 exception applies ï¿½ drop the - Grade - Level suffix.
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -390,7 +390,7 @@ render_header($moduleTitle, $moduleTitle, $theme);
   <input type="submit" name="Submit2" value=" New Question " style="margin:30px 0;font-family:Arial,sans-serif;font-size:11pt;">
 <?php endif; ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:10pt Arial,sans-serif;">Select difficulty level for next question:</p>
   <table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>

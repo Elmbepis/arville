@@ -1,28 +1,28 @@
 <?php
-// english/modules/rhyming-words.php
-// STATIC rhyme-group bank + 4-choice. Bypass QEngine per §3.
+// English/modules/rhyming-words.php
+// STATIC rhyme-group bank + 4-choice. Bypass QEngine per ï¿½3.
 // Two forms (preserved from legacy):
-//   Form 1 (rhyme) — 75%: show word; click which of 4 choices rhymes with it.
-//   Form 2 (doesn't rhyme) — 25% (only when grd &#8805; 1): show word; click which
+//   Form 1 (rhyme) ï¿½ 75%: show word; click which of 4 choices rhymes with it.
+//   Form 2 (doesn't rhyme) ï¿½ 25% (only when grd &#8805; 1): show word; click which
 //     of 4 choices does NOT rhyme with it.
 //
-// Levels (§5 — 2-level scheme, Medium+Hard merged):
+// Levels (ï¿½5 ï¿½ 2-level scheme, Medium+Hard merged):
 //   Grade-keyed tier assignment (bank has 6 tiers, indices 0-5):
 //     grd 0 &#8594; Easy: 0; Hard: rand(1,2)   [Medium=1, Hard=2]
 //     grd 1 &#8594; Easy: 1; Hard: rand(2,3)   [Medium=2, Hard=3]
 //     grd 2 &#8594; Easy: 2; Hard: rand(3,4)   [Medium=3, Hard=4]
 //     grd 3+ &#8594; Easy: 3; Hard: rand(4,5)  [Medium=4, Hard=5]
 //
-// Data-fix flagged (§19/§29): legacy form-2 generation required a 5-word
+// Data-fix flagged (ï¿½19/ï¿½29): legacy form-2 generation required a 5-word
 //   rhyme group (word + 4 choices). Only group ["cub","dub","rub","tub"] in
-//   tier 0 has 4 words — the legacy while-loop would have infinite-looped.
+//   tier 0 has 4 words ï¿½ the legacy while-loop would have infinite-looped.
 //   Form-2 generation here filters to groups with &#8805;5 words, excluding that
 //   single group from form-2 only (form-1 unaffected).
 //
-// Choice layout (§14): 4 short words &#8594; 2×2 grid, uniform width per maxLen.
+// Choice layout (ï¿½14): 4 short words &#8594; 2ï¿½2 grid, uniform width per maxLen.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 2.
-// Theme: ex-*-24 (75/655/70) &#8594; fits §8 &#8594; paper-69-* per English convention.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 2.
+// Theme: ex-*-24 (75/655/70) &#8594; fits ï¿½8 &#8594; paper-69-* per English convention.
 // Score box: score-*-3 (English default, matching synonyms.php/syn-ant-hom.php).
 // DB row required: modules.url = 'rhyming-words.php'
 
@@ -52,7 +52,7 @@ $lvl = $_SESSION['level'];
 $grd = min(5, max(0, (int)($_SESSION['grade'] ?? 2)));
 
 // ============================================================
-// BANK — tier &#8594; list of rhyme groups (all words in a group rhyme)
+// BANK ï¿½ tier &#8594; list of rhyme groups (all words in a group rhyme)
 // ============================================================
 $rhyms = [];
 

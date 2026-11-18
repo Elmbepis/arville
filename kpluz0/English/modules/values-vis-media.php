@@ -1,17 +1,17 @@
 <?php
-// english/modules/values-vis-media.php
-// IMAGE-CHOICE. Bypass QEngine per §D.
+// English/modules/values-vis-media.php
+// IMAGE-CHOICE. Bypass QEngine per ï¿½D.
 // Shows a picture (or a photo of a symbolic object/scene); student clicks
-// the value most suggested by it — or, for "except for" questions, the value
+// the value most suggested by it ï¿½ or, for "except for" questions, the value
 // that is NOT suggested.
 //
-// Levels (§E — single-level collapse §5):
+// Levels (ï¿½E ï¿½ single-level collapse ï¿½5):
 //   Legacy hardcoded $_SESSION['level']="Medium" with no level radios in
 //   the HTML. Collapsed to $lvl='Hard' (preserves legacy 2-point value). No
 //   selector rendered.
 //
 // 25 image-choice questions preserved verbatim. Each entry references an
-// image in english/images/others/ via '**<file>.jpg'. Parser extracts the
+// image in English/images/others/ via '**<file>.jpg'. Parser extracts the
 // filename, strips the marker, then parses "=answer[d1+d2]d3".
 //
 // Two question phrasings preserved verbatim from bank text:
@@ -22,23 +22,23 @@
 // Both render with the same prompt styling; the "except for" wording is
 // carried inside the question text itself.
 //
-// §21 image validation: file_exists() at pick-time — any question whose
+// ï¿½21 image validation: file_exists() at pick-time ï¿½ any question whose
 // image is missing is skipped. If every remaining entry is invalid, module
 // shows "Temporarily unavailable."
 //
 // Font sizing matches journalistic-writing.php reference:
-//   prompt 1.35rem · feedback text 1.25rem · hint 1.2rem
+//   prompt 1.35rem ï¿½ feedback text 1.25rem ï¿½ hint 1.2rem
 //   choice buttons 1.25rem
-//   "Your answer is" 14pt · verdict 16pt (inline, unchanged)
+//   "Your answer is" 14pt ï¿½ verdict 16pt (inline, unchanged)
 //
-// Choice layout (§14): maxLen &#8804; 17 &#8594; 2×2 grid; else 1-col hug.
-// Value names are mostly short single words — 2×2 handles the vast
-// majority. Longer values like "self-reliance" (13) still fit 2×2.
+// Choice layout (ï¿½14): maxLen &#8804; 17 &#8594; 2ï¿½2 grid; else 1-col hug.
+// Value names are mostly short single words ï¿½ 2ï¿½2 handles the vast
+// majority. Longer values like "self-reliance" (13) still fit 2ï¿½2.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
-// (Not used for content selection — single-pool module.)
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
+// (Not used for content selection ï¿½ single-pool module.)
 //
-// Theme: ex-27-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-27-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'values-vis-media.php'
 
@@ -59,7 +59,7 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Values Suggested in Visual Media';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Hard';   // single-level collapse (§5) — legacy was Medium/2pts
+$lvl         = 'Hard';   // single-level collapse (ï¿½5) ï¿½ legacy was Medium/2pts
 
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5)));
 
@@ -155,14 +155,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // Theme
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-27-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-27-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-27-left.jpg',
-    'right_side'    => $base . '/english/images/ex-27-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-27-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-27-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-27-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-27-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-27-left.jpg',
+    'right_side'    => $base . '/English/images/ex-27-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-27-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-27-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================
@@ -170,7 +170,7 @@ $theme = [
 // ============================================================
 if ($result === null || isset($_POST['Submit2'])) {
     $used     = $_SESSION[$sessionKey]['used'] ?? [];
-    $imgDirFs = __DIR__ . '/../../english/images/others/';
+    $imgDirFs = __DIR__ . '/../../English/images/others/';
 
     $avail = [];
     foreach ($bank as $i => $entry) {
@@ -210,7 +210,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     $choices = array_values(array_unique($choices));
     shuffle($choices);
 
-    $imgUrl = $base . '/english/images/others/' . $parsed['image'];
+    $imgUrl = $base . '/English/images/others/' . $parsed['image'];
 
     $_SESSION[$sessionKey]['current'] = [
         'question' => $parsed['question'],

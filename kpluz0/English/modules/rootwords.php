@@ -1,7 +1,7 @@
 <?php
-// english/modules/rootwords.php
-// Root Words — text-input: read a word, write its root (English, Latin, or Greek).
-// 6 tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
+// English/modules/rootwords.php
+// Root Words ï¿½ text-input: read a word, write its root (English, Latin, or Greek).
+// 6 tiers via (level ï¿½ grade); grade from $_SESSION['user_grade'] (0ï¿½10).
 // Easy: grd<=3&#8594;1, 4-5&#8594;2, 6-7&#8594;3, >=8&#8594;4     (legacy Easy)
 // Hard: grd<=3&#8594;3, 4-5&#8594;4, 6-7&#8594;5, >=8&#8594;6     (legacy Hard; legacy Medium folded in)
 // Answer box uses prefix-suffix's editable-box style, sized to the root length.
@@ -23,7 +23,7 @@ $moduleTitle = 'Root Words';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -34,7 +34,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 function resolve_root_words_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 3) return 1;
@@ -48,7 +48,7 @@ function resolve_root_words_tier(string $lvl, int $grd): int {
     return 6;
 }
 
-// ---- Raw data (§5) — verbatim from legacy ----
+// ---- Raw data (ï¿½5) ï¿½ verbatim from legacy ----
 // Format: '[G|L]root=1word1 2word2 3word3'
 //   'G' prefix &#8594; Greek root
 //   'L' prefix &#8594; Latin root
@@ -244,7 +244,7 @@ function rootword_meaning(string $root): string {
     return $map[$root] ?? '';
 }
 
-// ---- Pre-parse data (§5.1) ----
+// ---- Pre-parse data (ï¿½5.1) ----
 function parse_rootword_entry(string $raw): ?array {
     $lang = '';
     if (substr($raw, 0, 1) === 'L') { $lang = 'Latin'; $raw = substr($raw, 1); }
@@ -274,7 +274,7 @@ foreach ($rawByTier as $tier => $rawList) {
     }
 }
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function rw_box(string $html, int $minHeight = 150): void {
     // Increased padding around the hint (was 20px/26px in prefix-suffix)
     echo '<div style="max-width:520px;min-height:' . $minHeight . 'px;'
@@ -292,7 +292,7 @@ function bind_last_words(string $text, int $words = 2): string {
     }, $esc, 1);
 }
 
-// ---- No-repeat picker (§6.2) ----
+// ---- No-repeat picker (ï¿½6.2) ----
 function pick_rootword_item(array $pool, string $sessionKey, int $tier): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -311,7 +311,7 @@ function pick_rootword_item(array $pool, string $sessionKey, int $tier): array {
     return $item;
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -330,7 +330,7 @@ if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $tier = resolve_root_words_tier($lvl, $grd);
     $pool = $items[$tier] ?? $items[1];
@@ -351,7 +351,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

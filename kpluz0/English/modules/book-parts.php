@@ -1,9 +1,9 @@
 <?php
-// english/modules/book-parts.php
-// Parts of a Book — click the correct part of a book / identify from image.
-// Single level (Easy) — 4 choices at all times. Grade-aware pools:
-//   grd 0–4 &#8594; text-based definitions (10 items)
-//   grd 5–10 &#8594; full pool including image-recognition questions (23 items)
+// English/modules/book-parts.php
+// Parts of a Book ï¿½ click the correct part of a book / identify from image.
+// Single level (Easy) ï¿½ 4 choices at all times. Grade-aware pools:
+//   grd 0ï¿½4 &#8594; text-based definitions (10 items)
+//   grd 5ï¿½10 &#8594; full pool including image-recognition questions (23 items)
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -21,11 +21,11 @@ $moduleTitle = 'Parts of a Book';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade (§3) ----
+// ---- Grade (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
-// Single level — no selector.
+// Single level ï¿½ no selector.
 $lvl = 'Easy';
 
 // ---- Tier mapping (grade-aware) ----
@@ -33,7 +33,7 @@ function resolve_book_parts_tier(int $grd): int {
     return ($grd <= 4) ? 1 : 2;
 }
 
-// ---- Data (§5) — verbatim from legacy ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy ----
 $rawQuestions = [
     "The ____ gives people an idea what the book is about.=cover[copyright page+glossary]publisher",
     "The cover usually includes a picture, the title, and the ____.=author[epilogue+glossary]copyright page",
@@ -60,7 +60,7 @@ $rawQuestions = [
     "The person who wrote the book is called its ____.=author[illustrator+reader]publisher",
 ];
 
-// ---- Pre-parse (§5.1) ----
+// ---- Pre-parse (ï¿½5.1) ----
 function parse_book_parts(string $raw): ?array {
     $eq = strpos($raw, '=');
     if ($eq === false) return null;
@@ -111,7 +111,7 @@ $itemsByTier = [
     2 => $allItems,
 ];
 
-// ---- Helpers (§8.4, §8.6 + hugging technique) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6 + hugging technique) ----
 function book_parts_box(string $html, int $minHeight = 80, int $widthPx = 0): void {
     $sizing = ($widthPx > 0)
         ? 'width:' . $widthPx . 'px;max-width:100%;'
@@ -147,7 +147,7 @@ function book_parts_explanation(array $item): string {
     return 'The image is showing the ' . $item['answer'] . '.';
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -158,7 +158,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $tier = resolve_book_parts_tier($grd);
     $pool = $itemsByTier[$tier] ?? $itemsByTier[1];
@@ -193,7 +193,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

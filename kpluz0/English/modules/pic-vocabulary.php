@@ -1,19 +1,19 @@
 <?php
-// english/modules/pic-vocabulary.php
-// STATIC image-choice + choice. Bypass QEngine per §D.
+// English/modules/pic-vocabulary.php
+// STATIC image-choice + choice. Bypass QEngine per ï¿½D.
 // Shows a noun image; click the word that matches. 4 choices.
 //
-// Levels (§E — 2-level scheme): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme): Easy / Hard
 //   Easy = legacy Easy pool per grade.
 //   Hard = legacy Medium + legacy Hard merged per grade.
 //   Grades: 0-1 shared, 2, 3, 4, 5, 6, 7+ shared (per legacy thresholds).
 //   Structured entries (grades 3+): "answer>distractor1+distractor2<distractor3"
 //   carry pre-baked distractors; grades 0-2 pick 3 random others from pool.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 5.
-// Image validation (§21): file_exists at pick-time; fallback exit if none.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 5.
+// Image validation (ï¿½21): file_exists at pick-time; fallback exit if none.
 //
-// Theme: ex-24-* &#8594; paper-69-* per §8 fit test.
+// Theme: ex-24-* &#8594; paper-69-* per ï¿½8 fit test.
 // Score box: score-*-3 (English default).
 // DB row required: modules.url = 'pic-vocabulary.php'
 
@@ -99,7 +99,7 @@ function pv_parse_entry($entry) {
     return ['answer' => $ans, 'd1' => $d1, 'd2' => $d2, 'd3' => $d3];
 }
 
-$imgDirFs = __DIR__ . '/../../english/images/nouns/';
+$imgDirFs = __DIR__ . '/../../English/images/nouns/';
 
 function pv_pick($rawPool, $useStructured, $imgDirFs) {
     $candidates = [];
@@ -190,7 +190,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     shuffle($choices);
 
     $_SESSION[$sessionKey]['current'] = [
-        'image'   => $base . '/english/images/nouns/' . $answer . '.jpg',
+        'image'   => $base . '/English/images/nouns/' . $answer . '.jpg',
         'answer'  => $answer,
         'choices' => $choices,
         'lvl'     => $lvl,

@@ -1,25 +1,25 @@
 <?php
-// english/modules/classifying-words.php
-// STATIC category bank + 4-choice. Bypass QEngine per §3.
-// Single-level — §5 collapse (legacy hardcoded $_SESSION['level']="Easy").
+// English/modules/classifying-words.php
+// STATIC category bank + 4-choice. Bypass QEngine per ï¿½3.
+// Single-level ï¿½ ï¿½5 collapse (legacy hardcoded $_SESSION['level']="Easy").
 //
 // Question: show 3 words drawn from a category pool; user clicks which
 // category (of 4) they belong to. E.g. "cow, deer, hyena" &#8594; "animals".
 //
 // Data format: "category[dist1+dist2]dist3" per question. 19 questions.
-// Distractors are other categories — one from each of the 3 other slots.
+// Distractors are other categories ï¿½ one from each of the 3 other slots.
 // Word selection from category pool of &#8805; 5 (all pools qualified):
 //   pick 3 distinct entries &#8594; display as "word1, word2, and word3".
 //
-// Data-fix flagged (§19): legacy word-picking loop used `for ($i==1; ...)`
+// Data-fix flagged (ï¿½19): legacy word-picking loop used `for ($i==1; ...)`
 //   (== not =) which ran 4 iterations and produced 4-word lists with broken
 //   separators. Modern picks exactly 3 distinct words. All category pools
 //   have &#8805; 5 entries, so 3-distinct is always satisfiable.
 //
-// Choice layout (§14): categories like "hand tools" span 10+ chars &#8594; 2×2 grid.
+// Choice layout (ï¿½14): categories like "hand tools" span 10+ chars &#8594; 2ï¿½2 grid.
 //
 // $grd not used (single-level).
-// Theme: ex-*-24 (75/655/70) &#8594; fits §8 &#8594; paper-69-*.
+// Theme: ex-*-24 (75/655/70) &#8594; fits ï¿½8 &#8594; paper-69-*.
 // Score box: score-*-3 (English default).
 // DB row required: modules.url = 'classifying-words.php'
 
@@ -40,7 +40,7 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Classifying Words into Categories';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Easy';   // single-level (§5)
+$lvl         = 'Easy';   // single-level (ï¿½5)
 
 // ============================================================
 // BANK

@@ -1,6 +1,6 @@
 <?php
-// english/modules/problem-solution-id.php
-// Identifying Problems and Solutions — MC (2 choices: problem / solution).
+// English/modules/problem-solution-id.php
+// Identifying Problems and Solutions ï¿½ MC (2 choices: problem / solution).
 // Easy pool: shorter single-clause items. Hard pool: longer multi-actor items.
 
 session_name('KPLUZ_SESSION');
@@ -34,7 +34,7 @@ $lvl = $_SESSION['level'];
 // Each item: [part1_text, part1_kind, part2_text, part2_kind]
 //   so-items:      part1 = problem, part2 = solution
 //   because-items: part1 = solution, part2 = problem
-// Indices 0–13 = so-items (sbs), indices 14–28 = because-items (bss).
+// Indices 0ï¿½13 = so-items (sbs), indices 14ï¿½28 = because-items (bss).
 $allItems = [
     // ---- so-items (sbs) ----
     0  => ["Dave was hungry",                   'problem',  "so he ate two cookies.",                 'solution'],
@@ -75,7 +75,7 @@ $hardIdx = [8,9,10,11,12,13, 19,20,21,22,23,24,25,26,27,28];                   /
 
 // ---- Grade-aware pool resolver ---------------------------------------------
 // Easy     : simple items only (any grade).
-// Hard 0-2 : both pools merged (29 items) — young kids see breadth, not depth.
+// Hard 0-2 : both pools merged (29 items) ï¿½ young kids see breadth, not depth.
 // Hard 3+  : harder items only (16 items).
 function resolve_ps_pool(string $lvl, int $grd, array $easyIdx, array $hardIdx): array {
     if ($lvl === 'Easy') return $easyIdx;

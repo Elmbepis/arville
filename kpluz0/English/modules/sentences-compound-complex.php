@@ -1,21 +1,21 @@
 <?php
-// english/modules/sentences-compound-complex.php
-// Compound, Complex, and Compound-Complex Sentences — identify the sentence
+// English/modules/sentences-compound-complex.php
+// Compound, Complex, and Compound-Complex Sentences ï¿½ identify the sentence
 // type of each passage.
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 5 content tiers via (level × grade); 3 M/C choices (1×3 grid).
+// 5 content tiers via (level ï¿½ grade); 3 M/C choices (1ï¿½3 grid).
 //
-// Legacy had Easy/Medium/Hard. Modern folds legacy Medium into Hard per §3.2.
+// Legacy had Easy/Medium/Hard. Modern folds legacy Medium into Hard per ï¿½3.2.
 //
-// Data markers: {boy} {girl} {name} {surname} — rolled once per question.
+// Data markers: {boy} {girl} {name} {surname} ï¿½ rolled once per question.
 // {name} is a random boy OR girl (matches legacy's rand(1,2) roll).
 //
 // LAYOUT (mirrors analogy.php / nouns-using.php):
 //   [Hugging box with sentence, vertically centered, adaptive font]
-//   [Click on the correct answer below. — gray]
-//   [Choices: Compound | Complex | Compound-Complex in 1×3 grid]
+//   [Click on the correct answer below. ï¿½ gray]
+//   [Choices: Compound | Complex | Compound-Complex in 1ï¿½3 grid]
 //
-// Feedback: replicates the question-page presentation — same yellow box,
+// Feedback: replicates the question-page presentation ï¿½ same yellow box,
 // sentence shown as-is. Below the box: "The correct answer is 'Compound'."
 
 session_name('KPLUZ_SESSION');
@@ -34,7 +34,7 @@ $moduleTitle = 'Compound, Complex, and Compound-<br/>Complex Sentences';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -45,20 +45,20 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+// ---- Tier mapping (ï¿½4) ï¿½ legacy Easy / legacy Hard; Medium folded into Hard ----
 function resolve_cc_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 5) return 1;
         if ($grd <= 7) return 2;
         return 3;
     }
-    // Hard — legacy Hard formula
+    // Hard ï¿½ legacy Hard formula
     if ($grd <= 5) return 3;
     if ($grd <= 7) return 4;
     return 5;
 }
 
-// ---- Name pools (§5.2) — verbatim from legacy ----
+// ---- Name pools (ï¿½5.2) ï¿½ verbatim from legacy ----
 $boyPool = ['Adam','Alexander','Andrew','Angelo','Benjamin','Brandon','Carlos',
     'Charles','Christopher','Daniel','David','Diego','Dominic','Gabriel','Ian',
     'Isaac','Jack','Jacob','James','Jason','Jose','John','Jonathan','Joseph',
@@ -73,7 +73,7 @@ $girlPool = ['Alyssa','Amelia','Andrea','Anna','Ariana','Bella','Betty','Camille
 $surnamePool = ['Aquino','Castro','Cruz','Dantes','Fajardo','Gascon','Gonzales',
     'Martinez','Mendez','Paredes','Revilla','Santos','Tolentino'];
 
-// ---- Data (§5) — verbatim from legacy (184 items across 5 tiers × 3 types) ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy (184 items across 5 tiers ï¿½ 3 types) ----
 $dataByTier = [
     1 => [
         'compound' => [
@@ -301,7 +301,7 @@ $dataByTier = [
     ],
 ];
 
-// ---- Helpers (§8.4, §8.6 + hugging technique) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6 + hugging technique) ----
 function cc_box(string $html, int $minHeight = 100): void {
     echo '<div style="display:flex;flex-direction:column;justify-content:center;'
        . 'width:fit-content;max-width:480px;'
@@ -340,7 +340,7 @@ function cc_display_choice(string $c): string {
     return $map[$c] ?? ucfirst($c);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_cc_question(array $dataByTier, string $lvl, int $grd, string $sessionKey): ?array {
     $tier = resolve_cc_tier($lvl, $grd);
     $tierData = $dataByTier[$tier] ?? null;
@@ -380,7 +380,7 @@ function build_cc_question(array $dataByTier, string $lvl, int $grd, string $ses
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -391,7 +391,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) — with tier-1 fallback if generation fails ----
+// ---- Question generation (ï¿½6) ï¿½ with tier-1 fallback if generation fails ----
 if ($result === null || isset($_POST['Submit2'])) {
     $newQ = build_cc_question($dataByTier, $lvl, $grd, $sessionKey);
     if ($newQ !== null) {
@@ -402,7 +402,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     }
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -478,7 +478,7 @@ render_header($moduleTitle.' - Grade '.$grd.' - '.$lvl,
   <input type="submit" name="Submit2" value=" New Question " style="margin:30px 0;font-family:Arial,sans-serif;font-size:11pt;">
 <?php endif; ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only, 12pt label) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only, 12pt label) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p>
   <table border="0" width="80%" cellspacing="0" cellpadding="0" style="margin:0 auto;"><tr>

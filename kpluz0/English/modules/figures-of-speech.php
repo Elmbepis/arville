@@ -1,16 +1,16 @@
 <?php
-// english/modules/figures-of-speech.php
-// STATIC question bank + choice. Bypass QEngine per §D.
+// English/modules/figures-of-speech.php
+// STATIC question bank + choice. Bypass QEngine per ï¿½D.
 // Shows a sentence; student identifies which figure of speech it uses.
 //
-// Levels (§E — 2-level scheme, Medium+Hard merged): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme, Medium+Hard merged): Easy / Hard
 //   Legacy had 3 levels with distinct content pools. Modern:
 //     Easy &#8594; legacy Easy config
 //     Hard &#8594; 50/50 pick between legacy Medium config and legacy Hard config
 //   This preserves every legacy tier's content pool AND answer range exactly
 //   (Medium configuration &#8800; Hard configuration in choice-pool size).
 //
-// Grade-keyed config (§10) — four bands × three internal configs:
+// Grade-keyed config (ï¿½10) ï¿½ four bands ï¿½ three internal configs:
 //   grd 0-4, 5-6, 7, 8-10. Each (band, internal) resolves to arrnum (content
 //   difficulty 0-8) + ansopt_max (answer range 1-9) + choice pool.
 //
@@ -29,11 +29,11 @@
 //
 // Data preservation: every entry from legacy's $qs arrays kept verbatim.
 // Two dead branches in legacy (ansopt==10 anaphora, ansopt==11 understatement)
-// never reached because ansopt caps at 9 in every code path — omitted.
+// never reached because ansopt caps at 9 in every code path ï¿½ omitted.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
 //
-// Theme: ex-26-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-26-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'figures-of-speech.php'
 
@@ -136,7 +136,7 @@ $figureByAnsopt = [
 ];
 
 // ============================================================
-// Content bank — figure => tier => items
+// Content bank ï¿½ figure => tier => items
 // ============================================================
 $euphemismItems = [
     "XX is sorry to hear that X2X has already passed away",
@@ -525,14 +525,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // Theme
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-26-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-26-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-26-left.jpg',
-    'right_side'    => $base . '/english/images/ex-26-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-26-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-26-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-26-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-26-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-26-left.jpg',
+    'right_side'    => $base . '/English/images/ex-26-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-26-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-26-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================

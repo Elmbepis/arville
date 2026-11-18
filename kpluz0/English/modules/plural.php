@@ -1,6 +1,6 @@
 <?php
-// english/modules/plural.php
-// Singular and Plural Nouns — static word bank + MC choices; bypass QEngine.
+// English/modules/plural.php
+// Singular and Plural Nouns ï¿½ static word bank + MC choices; bypass QEngine.
 // Legacy Easy/Medium/Hard tiers are collapsed to Easy/Hard: Easy uses the grade tier;
 // Hard uses grade tier + 2, clamped to available tiers. Medium is intentionally omitted.
 // Rule families and irregular pairs are based on the legacy plural.php banks.

@@ -1,10 +1,10 @@
 <?php
-// english/modules/homonyms.php
-// FIB (free-text entry). Bypass QEngine per §D.
+// English/modules/homonyms.php
+// FIB (free-text entry). Bypass QEngine per ï¿½D.
 // Shows a word + definition of the target homonym. Student types the answer.
-// Canonicalization: lowercase + strip spaces (matches legacy, not §F.1 numeric rule).
+// Canonicalization: lowercase + strip spaces (matches legacy, not ï¿½F.1 numeric rule).
 //
-// Levels (§E — 2-level scheme, Medium+Hard merged): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme, Medium+Hard merged): Easy / Hard
 //   Grade-keyed tier assignment (bank has 6 tiers):
 //     grd 0-2  &#8594; Easy: 1;  Hard: rand(2,3)   [Medium=2, Hard=3]
 //     grd 3-4  &#8594; Easy: 2;  Hard: rand(3,4)   [Medium=3, Hard=4]
@@ -13,9 +13,9 @@
 //   Rationale: modern Hard takes the union of legacy Medium + legacy Hard;
 //   per-grade range preserves both difficulty tiers as a random pick.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 5.
 //
-// Theme: ex-*-010 (136/556/117) &#8594; not in §8 fit list &#8594; paper-69-*.
+// Theme: ex-*-010 (136/556/117) &#8594; not in ï¿½8 fit list &#8594; paper-69-*.
 // Score box: score-*-3 (English default).
 // DB row required: modules.url = 'homonyms.php'
 

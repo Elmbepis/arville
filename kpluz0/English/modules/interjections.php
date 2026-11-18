@@ -1,10 +1,10 @@
 <?php
-// english/modules/interjections.php
-// Interjections — identify which word in a sentence is the interjection.
+// English/modules/interjections.php
+// Interjections ï¿½ identify which word in a sentence is the interjection.
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 5 content tiers via (level × grade); 4 M/C choices (2×2 grid).
+// 5 content tiers via (level ï¿½ grade); 4 M/C choices (2ï¿½2 grid).
 //
-// Distractor strategy (§ user request): all 3 distractors are drawn from the
+// Distractor strategy (ï¿½ user request): all 3 distractors are drawn from the
 // SAME sentence as the interjection. Priority filter:
 //   1. Content words (length &#8805; 3, not a stop word)
 //   2. Remaining words (length &#8805; 3)
@@ -14,12 +14,12 @@
 // among ordinary sentence words" rather than "pick the most emotional word".
 //
 // Data markers: *... +   surround the interjection in the source sentence.
-// Placeholders: {boy}, {girl}, {name}, {surname} — rolled once per question.
+// Placeholders: {boy}, {girl}, {name}, {surname} ï¿½ rolled once per question.
 //
 // Display vs answer forms:
-//   • Choice buttons show the clean form (ucfirst, trailing punctuation stripped)
-//   • The scorer/URL uses the same clean form for consistent comparison
-//   • The feedback sentence preserves the interjection's original sentence case
+//   ï¿½ Choice buttons show the clean form (ucfirst, trailing punctuation stripped)
+//   ï¿½ The scorer/URL uses the same clean form for consistent comparison
+//   ï¿½ The feedback sentence preserves the interjection's original sentence case
 //     via the *... + marker callback (so "argh" in the sentence stays "argh")
 
 session_name('KPLUZ_SESSION');
@@ -38,7 +38,7 @@ $moduleTitle = 'Interjections';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -49,7 +49,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+// ---- Tier mapping (ï¿½4) ï¿½ legacy Easy / legacy Hard; Medium folded into Hard ----
 function resolve_inter_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 4) return 1;
@@ -61,7 +61,7 @@ function resolve_inter_tier(string $lvl, int $grd): int {
     return 5;
 }
 
-// ---- Data (§5) — verbatim from legacy, with name placeholders ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy, with name placeholders ----
 // `*... +` markers around the interjection. {boy}/{girl}/{name}/{surname}
 // placeholders replace the legacy interpolated variables.
 $dataByTier = [
@@ -162,7 +162,7 @@ $dataByTier = [
     ],
 ];
 
-// ---- Name pools (§5.2) — verbatim from legacy ----
+// ---- Name pools (ï¿½5.2) ï¿½ verbatim from legacy ----
 $boys = [
     'Adam','Alexander','Andrew','Angelo','Benjamin','Brandon','Carlos','Charles',
     'Christopher','Daniel','David','Diego','Dominic','Gabriel','Ian','Isaac','Jack',
@@ -182,7 +182,7 @@ $surnames = [
     'Mendez','Paredes','Revilla','Santos','Tolentino',
 ];
 
-// Stop words — deprioritized when picking distractors.
+// Stop words ï¿½ deprioritized when picking distractors.
 $stopWords = [
     'the','a','an','and','or','but','so','if','as','at','by','for','in','of','on',
     'to','up','is','are','was','were','be','been','being','have','has','had','do',
@@ -192,7 +192,7 @@ $stopWords = [
     'into','over','under','not','no','yes','yeah','ok','okay',
 ];
 
-// ---- Helpers (§8.2 target #CC0066, §8.4) ----
+// ---- Helpers (ï¿½8.2 target #CC0066, ï¿½8.4) ----
 function inter_extract_marker(string $raw): string {
     if (preg_match('/\*([^+]+)\+/u', $raw, $m)) return $m[1];
     return '';
@@ -282,7 +282,7 @@ function inter_pick_distractors(array $tokens, string $correct, array $stopWords
     return $out;
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_inter_question(array $dataByTier, string $lvl, int $grd,
                               string $sessionKey, array $boys, array $girls,
                               array $surnames, array $stopWords): ?array {
@@ -357,7 +357,7 @@ function build_inter_question(array $dataByTier, string $lvl, int $grd,
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -368,7 +368,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) — with tier-1 fallback if generation fails ----
+// ---- Question generation (ï¿½6) ï¿½ with tier-1 fallback if generation fails ----
 if ($result === null || isset($_POST['Submit2'])) {
     $newQ = build_inter_question($dataByTier, $lvl, $grd, $sessionKey,
                                  $boys, $girls, $surnames, $stopWords);
@@ -381,7 +381,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     }
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -456,7 +456,7 @@ render_header($moduleTitle.' - Grade '.$grd.' - '.$lvl,
 endif;
 ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only, 12pt label) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only, 12pt label) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p>
   <table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>

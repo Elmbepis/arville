@@ -1,15 +1,15 @@
 <?php
-// english/modules/two-syllable-words.php
-// Understanding Texts with Two-syllable Words — read short passages or stories
+// English/modules/two-syllable-words.php
+// Understanding Texts with Two-syllable Words ï¿½ read short passages or stories
 // and identify 2-syllable words by their grammatical function / meaning.
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 4 choices always in a 2×2 grid.
+// 4 choices always in a 2ï¿½2 grid.
 //
 // Layout (question page):
 //   [Box with passage]                          &#8592; hugging cream box
 //   [Prompt below box]                          &#8592; purple, bold, tight gap
 //   [Click on the correct answer below.]        &#8592; gray #666
-//   [Choices — 2×2]
+//   [Choices ï¿½ 2ï¿½2]
 //
 // Data format: 'passage\n\nprompt=answer>wrong1+wrong2<wrong3'
 //   Last \n\n splits passage (box) from prompt (below box).
@@ -30,7 +30,7 @@ $moduleTitle = 'Understanding Texts with Two-syllable Words';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -41,14 +41,14 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4 — bridge pattern for grade-awareness) ----
+// ---- Tier mapping (ï¿½4 ï¿½ bridge pattern for grade-awareness) ----
 function resolve_tsw_pool(string $lvl, int $grd): int {
     if ($lvl === 'Easy') return 1;
     if ($grd <= 4) return 1;
     return 2;
 }
 
-// ---- Stories (§5) — plain text with \n preserved ----
+// ---- Stories (ï¿½5) ï¿½ plain text with \n preserved ----
 $story1 = rtrim(<<<'EOT'
 The Spotted Cow
 by Enid Blyton
@@ -130,7 +130,7 @@ $stories = [
     7 => $story7,
 ];
 
-// ---- Sentence pools — format: 'passage\n\nprompt=answer>wrong1+wrong2<wrong3' ----
+// ---- Sentence pools ï¿½ format: 'passage\n\nprompt=answer>wrong1+wrong2<wrong3' ----
 $sentencePools = [
     1 => [
         "There is a red apple and a yellow banana on the table.\n\nWhat is the color of the fruit with two syllables?=yellow>red+apple<banana",
@@ -166,7 +166,7 @@ $sentencePools = [
     ],
 ];
 
-// ---- Helpers (§8.4, §8.6 + hugging technique) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6 + hugging technique) ----
 function tsw_compute_width(string $html, int $maxWidthPx = 480, int $minWidthPx = 220): int {
     $charPx          = 11;
     $horizontalSpace = 40;
@@ -191,7 +191,7 @@ function tsw_compute_width(string $html, int $maxWidthPx = 480, int $minWidthPx 
     return max($minWidthPx, min($maxWidthPx, $longest * $charPx + $horizontalSpace));
 }
 
-// Hugging box — display:block + width:fit-content so vertical margins are
+// Hugging box ï¿½ display:block + width:fit-content so vertical margins are
 // honored (inline-flex ignores vertical margins, causing the strut issue).
 function tsw_box(string $html, int $minHeight = 80, int $widthPx = 0): void {
     $sizing = ($widthPx > 0)
@@ -284,7 +284,7 @@ function tsw_pick_question(array $pool, string $sessionKey, int $poolId, array $
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -295,7 +295,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $poolId = resolve_tsw_pool($lvl, $grd);
     $pool   = $sentencePools[$poolId] ?? $sentencePools[1];
@@ -319,7 +319,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -401,7 +401,7 @@ render_header($moduleTitle.' - Grade '.$grd.' - '.$lvl,
   <input type="submit" name="Submit2" value=" New Question " style="display:block;margin:25px auto;font-family:Arial,sans-serif;font-size:11pt;">
 <?php endif; ?>
 
-  <!-- Difficulty radios (§10.4 — Easy / Hard only, 12pt label) -->
+  <!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only, 12pt label) -->
   <div align="center" style="margin-top:20px;">
     <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p>
     <table border="0" width="80%" cellspacing="0" cellpadding="0" style="margin:0 auto;"><tr>

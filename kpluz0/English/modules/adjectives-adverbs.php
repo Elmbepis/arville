@@ -1,13 +1,13 @@
 <?php
-// english/modules/adjectives-adverbs.php
-// Adjectives and Adverbs — text-input: type either the adjective or the adverb
+// English/modules/adjectives-adverbs.php
+// Adjectives and Adverbs ï¿½ text-input: type either the adjective or the adverb
 // from a sentence that contains one of each.
-// 5 tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
+// 5 tiers via (level ï¿½ grade); grade from $_SESSION['user_grade'] (0ï¿½10).
 // Easy: grd<=3&#8594;1, 4-6&#8594;2, >=7&#8594;3     (legacy Easy)
 // Hard: grd<=3&#8594;3, 4-6&#8594;4, >=7&#8594;5     (legacy Hard; legacy Medium folded in)
 // The target (adjective or adverb) is rolled fresh per question.
 // Multi-word adverbs trigger the "isn't part of any adverb" clarification
-// when the target is the adjective — matches legacy behaviour.
+// when the target is the adjective ï¿½ matches legacy behaviour.
 //
 // Sentence box width: computed from a greedy word-wrap simulation so the box
 // hugs the longest wrapped line rather than always expanding to 480px.
@@ -28,7 +28,7 @@ $moduleTitle = 'Adjectives and Adverbs';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -39,7 +39,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 function resolve_adjectives_adverbs_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 3) return 1;
@@ -51,9 +51,9 @@ function resolve_adjectives_adverbs_tier(string $lvl, int $grd): int {
     return 5;
 }
 
-// ---- Data (§5) — verbatim from legacy; one typo fixed ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy; one typo fixed ----
 // Format: 'sentence with [adjective] and (adverb)'
-// Legacy bug: last tier-5 item used [already] instead of (already) — fixed.
+// Legacy bug: last tier-5 item used [already] instead of (already) ï¿½ fixed.
 $rawByTier = [
     1 => [
         'I watch [funny] movies (often).',
@@ -188,7 +188,7 @@ $girlsNames = ['Alyssa','Amelia','Andrea','Anna','Ariana','Bella','Betty','Camil
     'Mariah','Melanie','Mia','Naomi','Natalie','Olivia','Samantha','Sarah','Sophia','Stella','Tina','Victoria'];
 $surnames = ['Aquino','Castro','Cruz','Dantes','Fajardo','Gascon','Gonzales','Martinez','Mendez','Paredes','Revilla','Santos','Tolentino'];
 
-// ---- Pre-parse (§5.1) ----
+// ---- Pre-parse (ï¿½5.1) ----
 function parse_aa_item(string $raw): ?array {
     if (!preg_match('/\[([^\]]+)\]/u', $raw, $adjMatch)) return null;
     if (!preg_match('/\(([^)]+)\)/u', $raw, $advMatch)) return null;
@@ -210,7 +210,7 @@ foreach ($rawByTier as $tier => $rawList) {
     }
 }
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 // Compute a snug box width by simulating where the browser would wrap the
 // text at maxWidthPx, then sizing to the longest resulting line. Falls back
 // to minWidthPx for very short content.
@@ -224,7 +224,7 @@ function aa_compute_width(string $html, int $maxWidthPx = 480, int $minWidthPx =
     $availablePx  = $maxWidthPx - $horizontalSpace;
     $charsPerLine = max(1, (int)floor($availablePx / $charPx));
 
-    // Greedy word-wrap simulation — mirrors how the browser fills a line
+    // Greedy word-wrap simulation ï¿½ mirrors how the browser fills a line
     $words   = preg_split('/\s+/', $plain);
     $lines   = [];
     $current = '';
@@ -283,7 +283,7 @@ function aa_highlight_answer(string $sentence, string $answer): string {
     );
 }
 
-// ---- No-repeat picker (§6.2) ----
+// ---- No-repeat picker (ï¿½6.2) ----
 function pick_aa_item(array $pool, string $sessionKey, int $tier): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -302,7 +302,7 @@ function pick_aa_item(array $pool, string $sessionKey, int $tier): array {
     return $item;
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -321,7 +321,7 @@ if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $tier = resolve_adjectives_adverbs_tier($lvl, $grd);
     $pool = $items[$tier] ?? $items[1];
@@ -356,7 +356,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

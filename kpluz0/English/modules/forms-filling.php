@@ -1,43 +1,43 @@
 <?php
-// english/modules/forms-filling.php
-// IMAGE-CHOICE. Bypass QEngine per §D.
+// English/modules/forms-filling.php
+// IMAGE-CHOICE. Bypass QEngine per ï¿½D.
 // Shows a form image with one field highlighted; student clicks the value
 // that correctly fills the highlighted blank.
 //
-// Levels (§E — single-level collapse §5):
+// Levels (ï¿½E ï¿½ single-level collapse ï¿½5):
 //   Legacy hardcoded $_SESSION['level']="Easy" with no level radios in the
 //   HTML. Collapsed to $lvl='Easy' (preserves legacy 1-point value). No
 //   selector rendered.
 //
 // 32 form-filling questions preserved verbatim. Each entry references a form
-// image in english/images/forms/ via '**<file>.jpg'. Parser extracts the
+// image in English/images/forms/ via '**<file>.jpg'. Parser extracts the
 // filename, then the remaining "=answer[d1+d2]d3" body is parsed. The image
-// IS the question — the prompt is fixed:
+// IS the question ï¿½ the prompt is fixed:
 //   "Which of the following may be used to fill in the highlighted blank of
 //    the form shown?"
 //
-// §21 image validation: file_exists() at pick-time — any question whose form
+// ï¿½21 image validation: file_exists() at pick-time ï¿½ any question whose form
 // image is missing is skipped. If every remaining entry is invalid, module
 // shows "Temporarily unavailable."
 //
 // Data notes (preserved verbatim, not fixed):
-//   • Legacy bank has commented-out entries for f21 (Tick questions) and
-//     f27 (Melita Hermano). Skipped here — 32 active questions preserved.
-//   • f28 is absent from the legacy source; jump f27&#8594;f29 preserved.
-//   • Q17 distractor "2020-E1725" (with E) vs Q26 answer "2020-1725"
-//     (no E) is a legacy inconsistency — preserved verbatim.
+//   ï¿½ Legacy bank has commented-out entries for f21 (Tick questions) and
+//     f27 (Melita Hermano). Skipped here ï¿½ 32 active questions preserved.
+//   ï¿½ f28 is absent from the legacy source; jump f27&#8594;f29 preserved.
+//   ï¿½ Q17 distractor "2020-E1725" (with E) vs Q26 answer "2020-1725"
+//     (no E) is a legacy inconsistency ï¿½ preserved verbatim.
 //
 // Font sizing matches journalistic-writing.php reference:
-//   prompt 1.35rem · feedback text 1.25rem · hint 1.2rem
+//   prompt 1.35rem ï¿½ feedback text 1.25rem ï¿½ hint 1.2rem
 //   choice buttons 1.25rem
-//   "Your answer is" 14pt · verdict 16pt (inline, unchanged)
+//   "Your answer is" 14pt ï¿½ verdict 16pt (inline, unchanged)
 //
-// Choice layout (§14): maxLen &#8804; 17 &#8594; 2×2 grid; else 1-col hug.
+// Choice layout (ï¿½14): maxLen &#8804; 17 &#8594; 2ï¿½2 grid; else 1-col hug.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
-// (Not used for content selection — single-pool module.)
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
+// (Not used for content selection ï¿½ single-pool module.)
 //
-// Theme: ex-27-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-27-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'forms-filling.php'
 
@@ -58,7 +58,7 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Filling Out Forms';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Easy';   // single-level collapse (§5)
+$lvl         = 'Easy';   // single-level collapse (ï¿½5)
 
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5)));
 
@@ -159,14 +159,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // Theme
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-27-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-27-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-27-left.jpg',
-    'right_side'    => $base . '/english/images/ex-27-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-27-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-27-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-27-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-27-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-27-left.jpg',
+    'right_side'    => $base . '/English/images/ex-27-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-27-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-27-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================
@@ -174,14 +174,14 @@ $theme = [
 // ============================================================
 if ($result === null || isset($_POST['Submit2'])) {
     $used     = $_SESSION[$sessionKey]['used'] ?? [];
-    $imgDirFs = __DIR__ . '/../../english/images/forms/';
+    $imgDirFs = __DIR__ . '/../../English/images/forms/';
 
     $avail = [];
     foreach ($bank as $i => $entry) {
         if (in_array($i, $used, true)) continue;
         $parsed = ff_parse($entry);
         if ($parsed === null) continue;
-        // §21 image validation — skip if the form image is missing
+        // ï¿½21 image validation ï¿½ skip if the form image is missing
         if ($parsed['image'] === null) continue;
         if (!file_exists($imgDirFs . $parsed['image'])) continue;
         $avail[] = $i;
@@ -215,7 +215,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     $choices = array_values(array_unique($choices));
     shuffle($choices);
 
-    $imgUrl = $base . '/english/images/forms/' . $parsed['image'];
+    $imgUrl = $base . '/English/images/forms/' . $parsed['image'];
 
     $_SESSION[$sessionKey]['current'] = [
         'answer'  => $parsed['answer'],

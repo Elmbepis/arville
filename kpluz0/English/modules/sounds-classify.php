@@ -1,13 +1,13 @@
 <?php
-// english/modules/sounds-classify.php
-// Classifying Sounds — listen to an audio clip, then pick the sound's category.
+// English/modules/sounds-classify.php
+// Classifying Sounds ï¿½ listen to an audio clip, then pick the sound's category.
 // Single-tier pool: both Easy and Hard share the same 40-item pool. Grade is
 // displayed in the header but does not gate content (module is designed for
-// grades 0–4). 4 choices always (2×2 grid); choices are baked into each
+// grades 0ï¿½4). 4 choices always (2ï¿½2 grid); choices are baked into each
 // pool item (correct + 3 distractors), not generated.
 //
 // Legacy note: `$_SESSION['level']` was hardcoded to "Easy" and `$grd` was
-// never used for gating — the module was effectively single-tier in production.
+// never used for gating ï¿½ the module was effectively single-tier in production.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -25,7 +25,7 @@ $moduleTitle = 'Classifying Sounds';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -36,7 +36,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Pool selection (§4.3) ----
+// ---- Pool selection (ï¿½4.3) ----
 // Single flat pool. Legacy had no level or grade differentiation
 // (level hardcoded, $grd unused for gating). Both levels and all grades use
 // the same 40-item pool.
@@ -44,7 +44,7 @@ function resolve_sounds_tier(string $lvl, int $grd): int {
     return 1;
 }
 
-// ---- Data (§5) — verbatim from legacy ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy ----
 // Format: 'sound=correct1wrong12wrong23wrong3'
 // Choices are baked in: 1 correct + 3 distractors per item.
 $rawData = [
@@ -90,7 +90,7 @@ $rawData = [
     'xylophone=instrument1animal2nature3human',
 ];
 
-// ---- Pre-parse (§5.1) ----
+// ---- Pre-parse (ï¿½5.1) ----
 $items = [];
 foreach ($rawData as $raw) {
     $eq = strpos($raw, '=');
@@ -105,7 +105,7 @@ foreach ($rawData as $raw) {
     ];
 }
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function sounds_box(string $html, int $minHeight = 130): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -136,7 +136,7 @@ function sounds_type_phrase(string $type): string {
     ][$type] ?? "a {$type} sound";
 }
 
-// ---- No-repeat picker (§6.2) ----
+// ---- No-repeat picker (ï¿½6.2) ----
 function pick_sounds_item(array $pool, string $sessionKey, int $tier): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -155,7 +155,7 @@ function pick_sounds_item(array $pool, string $sessionKey, int $tier): array {
     return $item;
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -166,7 +166,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $tier = resolve_sounds_tier($lvl, $grd);
     $pool = $items;
@@ -184,7 +184,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

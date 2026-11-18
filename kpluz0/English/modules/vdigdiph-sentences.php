@@ -1,13 +1,13 @@
 <?php
-// english/modules/vdigdiph-sentences.php
-// Identifying Vowel Digraphs and Diphthongs in Sentences — click the word in a
+// English/modules/vdigdiph-sentences.php
+// Identifying Vowel Digraphs and Diphthongs in Sentences ï¿½ click the word in a
 // sentence that contains a vowel digraph or a vowel diphthong.
-// Single level (Easy) — legacy hardcoded the level at the top of the file.
-// 4 choices always (2×2 grid), 1 target word + 3 distractors.
+// Single level (Easy) ï¿½ legacy hardcoded the level at the top of the file.
+// 4 choices always (2ï¿½2 grid), 1 target word + 3 distractors.
 // Grade displayed but does not affect tier (legacy had no grade gating).
 //
 // LAYOUT RULE (permanent): "Click on the correct answer below." ALWAYS sits
-// immediately above the choice buttons — never above the question/sentence box.
+// immediately above the choice buttons ï¿½ never above the question/sentence box.
 //
 // Each item carries a 'type' of 'digraph' or 'diphthong' (from the legacy 1/2
 // prefix) so the prompt and feedback can name the target correctly.
@@ -28,14 +28,14 @@ $moduleTitle = 'Identifying Vowel Digraphs<br/>and Diphthongs in Sentences';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade (§3) ----
+// ---- Grade (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
-// Single level — no selector.
+// Single level ï¿½ no selector.
 $lvl = 'Easy';
 
-// ---- Data (§5) — verbatim from legacy, with 1 typo fix ("Have"&#8594;"Has") ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy, with 1 typo fix ("Have"&#8594;"Has") ----
 // Format: "<typeDigit><sentence>=<correct>[<w1>+<w2>]<w3>"
 // typeDigit: 1 = vowel digraph, 2 = vowel diphthong
 $rawQuestions = [
@@ -73,7 +73,7 @@ $rawQuestions = [
     "2This gadget will enhance your singing voice.=voice[gadget+enhance]singing",
 ];
 
-// ---- Pre-parse (§5.1) ----
+// ---- Pre-parse (ï¿½5.1) ----
 // Format per raw string: "<typeDigit><sentence>=<correct>[<w1>+<w2>]<w3>"
 //   typeDigit "1" = vowel digraph, "2" = vowel diphthong
 $items = [];
@@ -103,7 +103,7 @@ foreach ($rawQuestions as $raw) {
     ];
 }
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function vd_box(string $html, int $minHeight = 140): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -124,7 +124,7 @@ function vd_highlight(string $sentence, string $answer): string {
     );
 }
 
-// ---- No-repeat picker (§6) ----
+// ---- No-repeat picker (ï¿½6) ----
 function pick_vd(array $pool, string $sessionKey): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -156,7 +156,7 @@ function build_vd_question(array $items, string $lvl, string $sessionKey): array
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -167,12 +167,12 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = build_vd_question($items, $lvl, $sessionKey);
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

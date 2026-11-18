@@ -1,6 +1,6 @@
 <?php
-// english/modules/idioms.php
-// Meanings of Idioms — click the correct definition of an idiomatic expression.
+// English/modules/idioms.php
+// Meanings of Idioms ï¿½ click the correct definition of an idiomatic expression.
 // Single-level module: 4 choices always. No level selector.
 // All definitions are stored/displayed with a lowercase first letter.
 // Single flat idiom pool (~78 entries). No grade tiering (legacy had none).
@@ -21,14 +21,14 @@ $moduleTitle = 'Meanings of Idioms';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade (§3) ----
+// ---- Grade (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
-// Single level — no selector. Scorer still wants a level string.
+// Single level ï¿½ no selector. Scorer still wants a level string.
 $lvl = 'Easy';
 
-// ---- Data (§5) — verbatim from legacy (with 3 typo fixes) ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy (with 3 typo fixes) ----
 $idioms = [
     "A blessing in disguise:Something good that's not seen as good at first",
     "A chip on your shoulder:Being upset for something that happened in the past",
@@ -113,7 +113,7 @@ $idioms = [
     "When pigs fly:Something that will never ever happen",
 ];
 
-// ---- Pre-parse (§5.1) — force lowercase-first definitions ----
+// ---- Pre-parse (ï¿½5.1) ï¿½ force lowercase-first definitions ----
 $items = [];
 foreach ($idioms as $raw) {
     $pos = strpos($raw, ':');
@@ -124,7 +124,7 @@ foreach ($idioms as $raw) {
     $items[] = ['q' => $q, 'def' => $def];
 }
 
-// ---- Helpers (§8.4, §8.6 + hugging technique) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6 + hugging technique) ----
 function idioms_box(string $html, int $minHeight = 80, int $widthPx = 0): void {
     $sizing = ($widthPx > 0)
         ? 'width:' . $widthPx . 'px;max-width:100%;'
@@ -153,7 +153,7 @@ function bind_last_words(string $text, int $words = 2): string {
     }, $esc, 1);
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -164,7 +164,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $numChoices = 4;
 
@@ -203,7 +203,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

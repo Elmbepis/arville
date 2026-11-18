@@ -1,11 +1,11 @@
 <?php
-// english/modules/grammar-adj-degrees.php
-// Grammar: Degrees of Adjectives — click the correct form of the adjective
+// English/modules/grammar-adj-degrees.php
+// Grammar: Degrees of Adjectives ï¿½ click the correct form of the adjective
 // (positive / comparative / superlative) that fits the blank.
-// 12 sentence pools mapped by (level × grade). Legacy had Easy + Medium; modern
-// folds legacy Medium into Hard per handover §3.2.
+// 12 sentence pools mapped by (level ï¿½ grade). Legacy had Easy + Medium; modern
+// folds legacy Medium into Hard per handover ï¿½3.2.
 // 3 choices always (correct + 2 wrongs), vertical stack, all buttons share the
-// same width — equal to the widest choice's natural pixel width.
+// same width ï¿½ equal to the widest choice's natural pixel width.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -23,7 +23,7 @@ $moduleTitle = 'Grammar: Degrees of Adjectives';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -34,7 +34,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 function resolve_gad_pool(string $lvl, int $grd): int {
     if ($grd < 0) $grd = 0;
     if ($grd > 10) $grd = 10;
@@ -55,7 +55,7 @@ function resolve_gad_pool(string $lvl, int $grd): int {
     return 12; // 7 or 9
 }
 
-// ---- Value pools (§5) ----
+// ---- Value pools (ï¿½5) ----
 $boysPool = ['Adam','Alexander','Andrew','Angelo','Benjamin','Brandon','Carlos','Charles','Christopher','Daniel',
     'David','Diego','Dominic','Gabriel','Ian','Isaac','Jack','Jacob','James','Jason','Jose','John','Jonathan',
     'Joseph','Joshua','Juan','Kevin','Lucas','Luis','Luke','Matthew','Max','Michael','Nathan','Nicholas','Noah','Oliver',
@@ -65,7 +65,7 @@ $girlsPool = ['Alyssa','Amelia','Andrea','Anna','Ariana','Bella','Betty','Camill
     'Mariah','Melanie','Mia','Naomi','Natalie','Olivia','Samantha','Sarah','Sophia','Stella','Tina','Victoria'];
 $surnamePool = ['Cruz','Chua','de Guzman','Gomez','Padua','Santos','Reyes','Tolentino','Torres'];
 
-// ---- Sentence pools — verbatim from legacy, 2 typos fixed ----
+// ---- Sentence pools ï¿½ verbatim from legacy, 2 typos fixed ----
 $sentencePools = [
     1 => [
         '{name1} likes to watch ___ movies.=funny>funnier+funniest',
@@ -334,7 +334,7 @@ $sentencePools = [
     ],
 ];
 
-// ---- Helpers (§8.4, §8.6 + hugging technique) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6 + hugging technique) ----
 function gad_compute_width(string $html, int $maxWidthPx = 480, int $minWidthPx = 220): int {
     $charPx          = 11; // Arial 17pt &#8776; 11px/char
     $horizontalSpace = 40;
@@ -448,7 +448,7 @@ function gad_pick_question(array $pool, string $sessionKey, int $poolId): ?array
     return ['answer' => $parsed['answer'], 'sentence' => $sentence, 'wrong' => $parsed['wrong']];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -459,7 +459,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $poolId = resolve_gad_pool($lvl, $grd);
     $pool   = $sentencePools[$poolId] ?? $sentencePools[1];
@@ -485,7 +485,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

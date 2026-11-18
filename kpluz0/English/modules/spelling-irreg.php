@@ -1,14 +1,14 @@
 <?php
-// english/modules/spelling-irreg.php
-// Identifying Words with Irregular Spelling — click the word with the most
+// English/modules/spelling-irreg.php
+// Identifying Words with Irregular Spelling ï¿½ click the word with the most
 // irregular spelling from a set of 4 (1 irregular + 3 regular spellings).
-// Single level (Easy) — legacy forced $_SESSION['level']="Easy" at the top and
+// Single level (Easy) ï¿½ legacy forced $_SESSION['level']="Easy" at the top and
 // the level never affected content (only which legacy DB column was updated,
 // now handled by Scorer). Grade displayed but does not affect tier.
 //
 // LAYOUT RULE (permanent): "Click on the correct answer below." ALWAYS sits
 // immediately above the choice buttons. No content box on the question page
-// because the module has no sentence/content to display — the words ARE the
+// because the module has no sentence/content to display ï¿½ the words ARE the
 // choices (matches cblends layout when no separate sentence exists).
 
 session_name('KPLUZ_SESSION');
@@ -27,14 +27,14 @@ $moduleTitle = 'Identifying Words with<br/>Irregular Spelling';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade (§3) ----
+// ---- Grade (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
-// Single level — no selector (legacy forced Easy and did not vary by level).
+// Single level ï¿½ no selector (legacy forced Easy and did not vary by level).
 $lvl = 'Easy';
 
-// ---- Data (§5) — verbatim from legacy ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy ----
 // Two separate pools: one irregular word (correct) + 3 regular words (distractors).
 $irregsList = [
     'again', 'answer', 'any', 'are', 'bear', 'beautiful', 'beauty', 'because',
@@ -62,7 +62,7 @@ $regsList = [
     'stray', 'stripe', 'sweet', 'street', 'teach', 'toast', 'trade', 'trail', 'train', 'tried',
 ];
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function sp_box(string $html, int $minHeight = 140): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -72,7 +72,7 @@ function sp_box(string $html, int $minHeight = 140): void {
        . $html . '</div>';
 }
 
-// ---- No-repeat picker (§6) — keyed by index into $irregsList ----
+// ---- No-repeat picker (ï¿½6) ï¿½ keyed by index into $irregsList ----
 function pick_sp_index(array $pool, string $sessionKey): int {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -117,7 +117,7 @@ function build_sp_question(array $irregs, array $regs, string $lvl, string $sess
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -128,12 +128,12 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = build_sp_question($irregsList, $regsList, $lvl, $sessionKey);
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

@@ -1,6 +1,6 @@
 <?php
-// english/modules/story-elements.php
-// Elements of a Story — reading comprehension MC (4 choices).
+// English/modules/story-elements.php
+// Elements of a Story ï¿½ reading comprehension MC (4 choices).
 // 4 stories; grade-aware pools per level.
 
 session_name('KPLUZ_SESSION');

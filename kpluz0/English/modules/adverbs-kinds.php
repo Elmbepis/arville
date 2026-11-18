@@ -1,20 +1,20 @@
 <?php
-// english/modules/adverbs-kinds.php
-// Kinds of Adverbs — identify the type (manner/place/time/frequency/degree) of
+// English/modules/adverbs-kinds.php
+// Kinds of Adverbs ï¿½ identify the type (manner/place/time/frequency/degree) of
 // a highlighted adverb in a sentence.
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 5 content tiers via (level × grade); 4 M/C choices (2×2 grid).
+// 5 content tiers via (level ï¿½ grade); 4 M/C choices (2ï¿½2 grid).
 //
 // Data prefix convention (preserved from legacy):
 //   M = manner, P = place, T = time, F = frequency, D = degree
 //   e.g. "MThe boy *slowly+ unwrapped his gift." &#8594; type=manner
 //
-// Data fixes (§5.4):
-//   * tier 1 "took our photographs *cheerfully+ ." — extra space before period
-//   * tier 5 "beverages *at least thrice a week." — missing closing '+' marker
+// Data fixes (ï¿½5.4):
+//   * tier 1 "took our photographs *cheerfully+ ." ï¿½ extra space before period
+//   * tier 5 "beverages *at least thrice a week." ï¿½ missing closing '+' marker
 //
 // LAYOUT RULE (permanent): "Click on the correct answer below." ALWAYS sits
-// immediately above the choice buttons — never above the sentence box.
+// immediately above the choice buttons ï¿½ never above the sentence box.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -32,7 +32,7 @@ $moduleTitle = 'Kinds of Adverbs';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -43,7 +43,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+// ---- Tier mapping (ï¿½4) ï¿½ legacy Easy / legacy Hard; Medium folded into Hard ----
 function resolve_ak_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 4) return 1;
@@ -55,7 +55,7 @@ function resolve_ak_tier(string $lvl, int $grd): int {
     return 5;
 }
 
-// ---- Data (§5) — verbatim from legacy, templated for placeholders ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy, templated for placeholders ----
 // Type prefix char (M/P/T/F/D) is stripped at definition time.
 $rawDataByTier = [
     1 => [
@@ -281,7 +281,7 @@ foreach ($rawDataByTier as $tier => $list) {
     }
 }
 
-// ---- Name pools (§5.2) — verbatim from legacy ----
+// ---- Name pools (ï¿½5.2) ï¿½ verbatim from legacy ----
 $boys = [
     'Adam','Alexander','Andrew','Angelo','Benjamin','Brandon','Carlos','Charles',
     'Christopher','Daniel','David','Diego','Dominic','Gabriel','Ian','Isaac','Jack',
@@ -301,7 +301,7 @@ $surnames = [
     'Mendez','Paredes','Revilla','Santos','Tolentino',
 ];
 
-// ---- Render helpers (§8.2 target #CC0066) ----
+// ---- Render helpers (ï¿½8.2 target #CC0066) ----
 function ak_render_sentence(string $raw): string {
     $out = '';
     $pos = 0;
@@ -353,7 +353,7 @@ function ak_display_label(string $c): string {
     return ucfirst($c);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_ak_question(array $dataByTier, string $lvl, int $grd,
                            string $sessionKey, array $boys, array $girls,
                            array $surnames): ?array {
@@ -413,7 +413,7 @@ function build_ak_question(array $dataByTier, string $lvl, int $grd,
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -424,7 +424,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) — with tier-1 fallback ----
+// ---- Question generation (ï¿½6) ï¿½ with tier-1 fallback ----
 if ($result === null || isset($_POST['Submit2'])) {
     $newQ = build_ak_question($dataByTier, $lvl, $grd, $sessionKey, $boys, $girls, $surnames);
     if ($newQ !== null) {
@@ -435,7 +435,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     }
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -513,7 +513,7 @@ render_header($moduleTitle.' - Grade '.$grd.' - '.$lvl,
 endif;
 ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only, 12pt label) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only, 12pt label) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p>
   <table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>

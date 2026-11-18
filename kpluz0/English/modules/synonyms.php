@@ -1,9 +1,9 @@
 <?php
-// english/modules/synonyms.php
-// STATIC synonym bank + choice. Bypass QEngine per §D.
+// English/modules/synonyms.php
+// STATIC synonym bank + choice. Bypass QEngine per ï¿½D.
 // Shows a base word; click its synonym from 4 choices.
 //
-// Levels (§E — 2-level scheme, Medium+Hard merged): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme, Medium+Hard merged): Easy / Hard
 //   Grade-keyed tier assignment (bank has 7 tiers):
 //     grd 0-1 &#8594; Easy: 1; Hard: rand(2,3)   [Medium=2, Hard=3]
 //     grd 2-3 &#8594; Easy: 2; Hard: rand(3,4)   [Medium=3, Hard=4]
@@ -13,18 +13,18 @@
 //   Rationale: modern Hard takes the union of legacy Medium + legacy Hard;
 //   per-grade range preserves both difficulty tiers as a random pick.
 //
-// Bank structure: $bank[tier][groupIdx] = [word1, word2, ...] — all entries
+// Bank structure: $bank[tier][groupIdx] = [word1, word2, ...] ï¿½ all entries
 // in a group are synonyms of each other. Question = one entry; answer = a
 // different entry from the same group. Distractors = 1 entry each from 3
 // distinct other groups. Preserves legacy semantics.
 //
-// Choice layout (§14): uniform width via --choice-width CSS var.
-//   maxLen &#8804; 4 &#8594; 1-row (4-across); 5–20 &#8594; 2×2; > 20 &#8594; 1-col.
+// Choice layout (ï¿½14): uniform width via --choice-width CSS var.
+//   maxLen &#8804; 4 &#8594; 1-row (4-across); 5ï¿½20 &#8594; 2ï¿½2; > 20 &#8594; 1-col.
 //   Never 3+1 wrap.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 5.
 //
-// Theme: ex-*-008 (136/556/117) &#8594; not in §8 fit list &#8594; paper-69-*.
+// Theme: ex-*-008 (136/556/117) &#8594; not in ï¿½8 fit list &#8594; paper-69-*.
 // Score box: score-*-3 (English default).
 // DB row required: modules.url = 'synonyms.php'
 

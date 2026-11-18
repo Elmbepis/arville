@@ -1,11 +1,11 @@
 <?php
-// english/modules/journalistic-writing.php
-// STATIC question bank + choice. Bypass QEngine per §D.
+// English/modules/journalistic-writing.php
+// STATIC question bank + choice. Bypass QEngine per ï¿½D.
 // Shows a question about journalistic writing; student clicks the correct
 // term. Several questions reference a shared diagram image
-// (news-report-parts.jpg) showing labelled parts A–G of a news report.
+// (news-report-parts.jpg) showing labelled parts Aï¿½G of a news report.
 //
-// Levels (§E — single-level collapse §5):
+// Levels (ï¿½E ï¿½ single-level collapse ï¿½5):
 //   Legacy hardcoded $_SESSION['level']="Easy" with no level radios in the
 //   HTML. Collapsed to $lvl='Easy' (preserves legacy 1-point value). No
 //   selector rendered.
@@ -13,24 +13,24 @@
 // 33 questions preserved verbatim. Image entries (Q19-Q24) reference the
 // diagram via a '**<file>.jpg' marker embedded in the bank string; the
 // parser extracts the filename, strips the marker from the displayed
-// question, and validates the image via file_exists (§21) at pick-time —
+// question, and validates the image via file_exists (ï¿½21) at pick-time ï¿½
 // image-bearing questions are skipped if the image is missing rather than
 // served broken.
 //
 // Data fix: Q25 answer "exagerrated" corrected to "exaggerated"
-// (spelling; semantics unchanged — the wrong characteristic of a headline).
+// (spelling; semantics unchanged ï¿½ the wrong characteristic of a headline).
 //
-// Choice layout (§14):
-//   maxLen &#8804; 17 &#8594; 2×2 grid (equal halves)
+// Choice layout (ï¿½14):
+//   maxLen &#8804; 17 &#8594; 2ï¿½2 grid (equal halves)
 //   maxLen > 17 &#8594; 1-col hug (auto column = widest choice, all same width)
 //
 // Font sizing: question card, choices, and hint enlarged; "Your answer is"
 // and verdict lines retain their inline 14pt/16pt size.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
-// (Not used for content selection — single-pool module.)
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
+// (Not used for content selection ï¿½ single-pool module.)
 //
-// Theme: ex-27-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-27-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'journalistic-writing.php'
 
@@ -51,7 +51,7 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Journalistic Writing';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Easy';   // single-level collapse (§5)
+$lvl         = 'Easy';   // single-level collapse (ï¿½5)
 
 // ============================================================
 // Question bank: "question=answer[d1+d2]d3"
@@ -148,14 +148,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // Theme
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-27-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-27-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-27-left.jpg',
-    'right_side'    => $base . '/english/images/ex-27-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-27-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-27-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-27-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-27-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-27-left.jpg',
+    'right_side'    => $base . '/English/images/ex-27-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-27-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-27-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================
@@ -164,7 +164,7 @@ $theme = [
 if ($result === null || isset($_POST['Submit2'])) {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
 
-    $imgDirFs = __DIR__ . '/../../english/images/others/';
+    $imgDirFs = __DIR__ . '/../../English/images/others/';
 
     $avail = [];
     foreach ($bank as $i => $entry) {
@@ -202,7 +202,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     shuffle($choices);
 
     $imgUrl = ($parsed['image'] !== null)
-        ? $base . '/english/images/others/' . $parsed['image']
+        ? $base . '/English/images/others/' . $parsed['image']
         : null;
 
     $_SESSION[$sessionKey]['current'] = [

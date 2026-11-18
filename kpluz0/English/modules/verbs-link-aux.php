@@ -1,9 +1,9 @@
 <?php
-// english/modules/verbs-link-aux.php
-// Linking and Helping/Auxiliary Verbs — identify whether the highlighted verb
+// English/modules/verbs-link-aux.php
+// Linking and Helping/Auxiliary Verbs ï¿½ identify whether the highlighted verb
 // in a phrase is a linking verb or a helping/auxiliary verb.
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 5 content tiers via (level × grade); 2 M/C choices (1×2 grid).
+// 5 content tiers via (level ï¿½ grade); 2 M/C choices (1ï¿½2 grid).
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -20,7 +20,7 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -31,7 +31,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 function resolve_vla_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 4) return 1;
@@ -60,7 +60,7 @@ function vla_labels(int $tier): array {
     ];
 }
 
-// ---- Data (§5) — verbatim from legacy, 1 typo fix, {name} placeholders ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy, 1 typo fix, {name} placeholders ----
 $rawDataByTier = [
     1 => [
         'auxs' => [
@@ -214,7 +214,7 @@ $girls = ['Alyssa','Amelia','Andrea','Anna','Ariana','Bella','Betty','Camille','
     'Madeline','Maria','Mariah','Melanie','Mia','Naomi','Natalie','Olivia','Samantha',
     'Sarah','Sophia','Stella','Tina','Victoria'];
 
-// ---- Parsers (§5.1) ----
+// ---- Parsers (ï¿½5.1) ----
 function vla_parse_aux(string $raw): array {
     $star  = strpos($raw, '*');
     $plus  = strpos($raw, '+');
@@ -243,7 +243,7 @@ function vla_parse_link(string $raw): array {
     ];
 }
 
-// ---- Render helpers (§8.2 target = #CC0066) ----
+// ---- Render helpers (ï¿½8.2 target = #CC0066) ----
 function vla_render_aux(array $p): string {
     $html = '<strong style="color:#CC0066;">' . htmlspecialchars($p['aux']) . '</strong>';
     $parts = [];
@@ -268,7 +268,7 @@ function vla_box(string $html, int $minHeight = 120): void {
        . $html . '</div>';
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_vla_question(array $rawDataByTier, string $lvl, int $grd,
                             string $sessionKey, array $boys, array $girls): ?array {
     $tier = resolve_vla_tier($lvl, $grd);
@@ -318,7 +318,7 @@ function build_vla_question(array $rawDataByTier, string $lvl, int $grd,
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -329,13 +329,13 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) — retry if generation ever fails ----
+// ---- Question generation (ï¿½6) ï¿½ retry if generation ever fails ----
 if ($result === null || isset($_POST['Submit2'])) {
     $newQ = build_vla_question($rawDataByTier, $lvl, $grd, $sessionKey, $boys, $girls);
     if ($newQ !== null) {
         $_SESSION[$sessionKey]['current'] = $newQ;
     } elseif (!isset($_SESSION[$sessionKey]['current'])) {
-        // Fallback to tier 1 if the current tier somehow fails — keeps user unstuck.
+        // Fallback to tier 1 if the current tier somehow fails ï¿½ keeps user unstuck.
         $fallback = build_vla_question($rawDataByTier, 'Easy', 0, $sessionKey, $boys, $girls);
         if ($fallback !== null) $_SESSION[$sessionKey]['current'] = $fallback;
     }
@@ -470,7 +470,7 @@ render_header($moduleTitle.'<br/>Grade '.$grd.' - '.$lvl,
 endif;
 ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p>
   <table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>

@@ -1,8 +1,8 @@
 <?php
-// english/modules/verbs.php
-// Identifying Verbs — click the verb among four words (4 choices).
-// 2 levels (Easy, Hard); tier index = grade-aware word bank (0–10).
-// grade from $_SESSION['user_grade'] (0–10).
+// English/modules/verbs.php
+// Identifying Verbs ï¿½ click the verb among four words (4 choices).
+// 2 levels (Easy, Hard); tier index = grade-aware word bank (0ï¿½10).
+// grade from $_SESSION['user_grade'] (0ï¿½10).
 
 session_name('KPLUZ_SESSION');
 session_start();

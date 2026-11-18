@@ -1,7 +1,7 @@
 <?php
-// english/modules/adj-degrees.php
-// Degrees of Adjectives — text-input exercise with derived answer checks.
-// 6 tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
+// English/modules/adj-degrees.php
+// Degrees of Adjectives ï¿½ text-input exercise with derived answer checks.
+// 6 tiers via (level ï¿½ grade); grade from $_SESSION['user_grade'] (0ï¿½10).
 
 session_name('KPLUZ_SESSION');
 session_start();

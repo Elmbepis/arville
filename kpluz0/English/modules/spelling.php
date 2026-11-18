@@ -1,11 +1,11 @@
 <?php
-// english/modules/spelling.php
-// Spelling — click the correctly spelled word for the given hint.
-// 10 tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
+// English/modules/spelling.php
+// Spelling ï¿½ click the correctly spelled word for the given hint.
+// 10 tiers via (level ï¿½ grade); grade from $_SESSION['user_grade'] (0ï¿½10).
 // Easy &#8594; max(1, min(8, grd))      (legacy Easy: $arrnum=$grd; clamp at 8)
 // Hard &#8594; max(1, min(10, grd+2))   (legacy Hard: $arrnum=$grd+2; clamp at 10;
 //                                  legacy Medium folded into Hard)
-// 4 choices always in a 2×2 grid: 1 correctly spelled word + 3 misspellings.
+// 4 choices always in a 2ï¿½2 grid: 1 correctly spelled word + 3 misspellings.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -23,7 +23,7 @@ $moduleTitle = 'Spelling';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -34,15 +34,15 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 function resolve_spelling_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') return max(1, min(8, $grd));
     return max(1, min(10, $grd + 2));
 }
 
-// ---- Raw data (§5) — verbatim from legacy, one typo fixed ----
+// ---- Raw data (ï¿½5) ï¿½ verbatim from legacy, one typo fixed ----
 // Format: "hint+correct?wrong1=wrong2=wrong3"
-// NOTE: 'to argue angrily+quarrel?quarel=quarrell=quarelle' — legacy was missing
+// NOTE: 'to argue angrily+quarrel?quarel=quarrell=quarelle' ï¿½ legacy was missing
 // the '?' between correct and wrong1; restored so the parser doesn't break.
 $rawData = [
     1 => [
@@ -391,7 +391,7 @@ $rawData = [
     ],
 ];
 
-// ---- Pre-parse data (§5.1) ----
+// ---- Pre-parse data (ï¿½5.1) ----
 function parse_spelling_entry(string $raw): ?array {
     $plus = strpos($raw, '+');
     $q    = strpos($raw, '?');
@@ -412,7 +412,7 @@ foreach ($rawData as $tier => $rawList) {
     }
 }
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function spelling_box(string $html, int $minHeight = 130): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -429,7 +429,7 @@ function bind_last_words(string $text, int $words = 2): string {
     }, $esc, 1);
 }
 
-// ---- No-repeat picker (§6) ----
+// ---- No-repeat picker (ï¿½6) ----
 function pick_spelling_item(array $pool, string $sessionKey, int $tier): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -467,7 +467,7 @@ function build_spelling_question(array $items, int $tier, string $lvl, string $s
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -478,13 +478,13 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $tier = resolve_spelling_tier($lvl, $grd);
     $_SESSION[$sessionKey]['current'] = build_spelling_question($items, $tier, $lvl, $sessionKey);
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

@@ -1,12 +1,12 @@
 <?php
-// english/modules/syn-ant-hom.php
-// STATIC synonyms / antonyms / homonyms bank + 3-choice. Bypass QEngine per §3.
+// English/modules/syn-ant-hom.php
+// STATIC synonyms / antonyms / homonyms bank + 3-choice. Bypass QEngine per ï¿½3.
 // Prompt: shows two words; user classifies as synonyms, antonyms, or homonyms.
 //
 // Question-type weighting (preserved from legacy): 50% syn, 40% ant, 10% hom
 //   (legacy: $opt0 = rand(1,11); &#8804;5&#8594;syn, 6-10&#8594;ant, 11&#8594;hom).
 //
-// Levels (§5 — 2-level scheme, Medium+Hard merged):
+// Levels (ï¿½5 ï¿½ 2-level scheme, Medium+Hard merged):
 //   Grade-keyed tier assignment (bank has 7 tiers):
 //     grd 0-1 &#8594; Easy: 1; Hard: rand(2,3)   [Medium=2, Hard=3]
 //     grd 2-3 &#8594; Easy: 2; Hard: rand(3,4)   [Medium=3, Hard=4]
@@ -20,16 +20,16 @@
 //   For antonyms Q: pick one word from even group, one from next odd group.
 //   $bank[tier]['hom'] = flat list of "w1-w2" homonym pair strings.
 //
-// Data-fix flagged (§13.3/§29): legacy $homonympairs[4] contained
-//   "creak-pitched sound when being moved'-creek" — hyphen inside the description
+// Data-fix flagged (ï¿½13.3/ï¿½29): legacy $homonympairs[4] contained
+//   "creak-pitched sound when being moved'-creek" ï¿½ hyphen inside the description
 //   breaks the split-on-'-' parser. Interpreted as intended pair "creak-creek".
 //   Also enriched legacy single-word groups ['slow'] and ['true'] to ['slow','gradual']
-//   and ['true','correct'] — legacy while-loop would have infinite-looped on synonym Q.
+//   and ['true','correct'] ï¿½ legacy while-loop would have infinite-looped on synonym Q.
 //
-// Choice layout (§14): 3 fixed short labels &#8594; single row, uniform 9em.
+// Choice layout (ï¿½14): 3 fixed short labels &#8594; single row, uniform 9em.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 5.
-// Theme: ex-*-007 (136/556/117) &#8594; not in §8 fit list &#8594; paper-69-*.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 5.
+// Theme: ex-*-007 (136/556/117) &#8594; not in ï¿½8 fit list &#8594; paper-69-*.
 // Score box: score-*-3 (English default, matching synonyms.php sample).
 // DB row required: modules.url = 'syn-ant-hom.php'
 
@@ -59,7 +59,7 @@ $lvl = $_SESSION['level'];
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? 5)));
 
 // ============================================================
-// BANK — tier &#8594; { 'syn' => [groups...], 'hom' => [pairs...] }
+// BANK ï¿½ tier &#8594; { 'syn' => [groups...], 'hom' => [pairs...] }
 // ============================================================
 $bank = [];
 

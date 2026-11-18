@@ -1,18 +1,18 @@
 <?php
-// english/modules/yes-no-questions.php
-// Forming Yes/No Questions — click the verb form that correctly completes the
+// English/modules/yes-no-questions.php
+// Forming Yes/No Questions ï¿½ click the verb form that correctly completes the
 // yes/no question.
-// 6 sentence pools mapped by (level × grade). Legacy Easy + Hard (no forced
+// 6 sentence pools mapped by (level ï¿½ grade). Legacy Easy + Hard (no forced
 // Hard&#8594;Medium conversion in this file, unlike grammar-perfect-tenses.php).
 // Modern preserves legacy Easy and legacy Hard as-is.
-// 4 choices always in a 2×2 grid; correct answer guaranteed to appear.
+// 4 choices always in a 2ï¿½2 grid; correct answer guaranteed to appear.
 //
 // Data format: 'sentence_with____+correct?wrong1=wrong2=wrong3'
 // The '?' at the end of the sentence is appended at build time (data does not
-// include it — matches legacy render behaviour).
+// include it ï¿½ matches legacy render behaviour).
 //
-// Data fix (§5.4):
-//   • pool 1 item 9 (chase) — wrong3 duplicated the correct answer; changed
+// Data fix (ï¿½5.4):
+//   ï¿½ pool 1 item 9 (chase) ï¿½ wrong3 duplicated the correct answer; changed
 //     to 'chasing'.
 
 session_name('KPLUZ_SESSION');
@@ -31,7 +31,7 @@ $moduleTitle = 'Forming Yes/No Questions';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -42,7 +42,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 // Legacy pools:
 //   Easy:  grd &#8804;4 &#8594; 1, 5-6 &#8594; 2, 7-8 &#8594; 3, &#8805;9 &#8594; 4
 //   Hard:  grd &#8804;4 &#8594; 3, 5-6 &#8594; 4, 7-8 &#8594; 5, &#8805;9 &#8594; 6  (no forced Hard&#8594;Medium here)
@@ -61,7 +61,7 @@ function resolve_ynq_pool(string $lvl, int $grd): int {
     return 6;
 }
 
-// ---- Value pools (§5) ----
+// ---- Value pools (ï¿½5) ----
 $namePool = [
     'John','Peter','Paul','George','Waldo','Andrew','Jeffrey','Simon','Randy','Leo',
     'Tom','David','Sam','Barry','Danny','Henry','Alex','Bernie','Dustin','Donald',
@@ -81,7 +81,7 @@ $animalPool = ['lion','tiger','alligator','crocodile','shark','bear','hyena','ja
 $pastPool = ['yesterday','last night','last week','last month','last year','last Monday','last Wednesday','last Saturday'];
 $futurePool = ['tomorrow','tonight','next week','tomorrow night','tomorrow morning','next month','next Monday','next Wednesday','next Saturday'];
 
-// ---- Sentence pools — format: 'sentence____+correct?w1=w2=w3' ----
+// ---- Sentence pools ï¿½ format: 'sentence____+correct?w1=w2=w3' ----
 $sentencePools = [
     1 => [
         'Are you ____ to the zoo+going?went=go=goes',
@@ -241,7 +241,7 @@ $sentencePools = [
     ],
 ];
 
-// ---- Helpers (§8.4, §8.6 + hugging technique, mirrors grammar-progressive) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6 + hugging technique, mirrors grammar-progressive) ----
 function ynq_compute_width(string $html, int $maxWidthPx = 480, int $minWidthPx = 220): int {
     $charPx          = 11;
     $horizontalSpace = 40;
@@ -348,7 +348,7 @@ function ynq_pick_question(array $pool, string $sessionKey, int $poolId): ?array
     return ['answer' => $parsed['answer'], 'sentence' => $sentence, 'wrong' => $parsed['wrong']];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -359,7 +359,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $poolId = resolve_ynq_pool($lvl, $grd);
     $pool   = $sentencePools[$poolId] ?? $sentencePools[1];
@@ -385,7 +385,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -458,7 +458,7 @@ render_header($moduleTitle.'<br/>Grade '.$grd.' - '.$lvl, $moduleTitle.'<br/>Gra
   <input type="submit" name="Submit2" value=" New Question " style="display:block;margin:25px auto;font-family:Arial,sans-serif;font-size:11pt;">
 <?php endif; ?>
 
-  <!-- Difficulty radios (§10.4 — Easy / Hard only, 12pt label) -->
+  <!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only, 12pt label) -->
   <div align="center" style="margin-top:20px;">
     <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p>
     <table border="0" width="80%" cellspacing="0" cellpadding="0" style="margin:0 auto;"><tr>

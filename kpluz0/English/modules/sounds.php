@@ -1,20 +1,20 @@
 <?php
-// english/modules/sounds.php
-// AUDIO &#8594; CHOICE — user hears a sound effect, clicks the source object.
-// Static bank of 35 items. Bypass QEngine per §3.
-// Single-level — §5 collapse (legacy hardcoded $_SESSION['level']="Easy").
+// English/modules/sounds.php
+// AUDIO &#8594; CHOICE ï¿½ user hears a sound effect, clicks the source object.
+// Static bank of 35 items. Bypass QEngine per ï¿½3.
+// Single-level ï¿½ ï¿½5 collapse (legacy hardcoded $_SESSION['level']="Easy").
 //
 // Bank format: "source1dist2_2dist3_3dist4" per item (e.g. "airplane1elephant2bird3piano").
 //   Correct source first; "1","2","3" delimit the three distractors.
 //
-// Audio: $base . '/english/modules/sounds/effects/<ans>.mp3' — preserved from legacy.
+// Audio: $base . '/English/modules/sounds/effects/<ans>.mp3' ï¿½ preserved from legacy.
 //
-// Feedback grammar: "You heard the sound of a <X>" / "an <X>" — picked by first letter.
+// Feedback grammar: "You heard the sound of a <X>" / "an <X>" ï¿½ picked by first letter.
 //
-// Choice layout (§14): 4-9 char choices &#8594; 2×2 grid.
+// Choice layout (ï¿½14): 4-9 char choices &#8594; 2ï¿½2 grid.
 //
 // $grd not used (single-level).
-// Theme: ex-*-25 (75/655/70) &#8594; fits §8 &#8594; paper-69-*.
+// Theme: ex-*-25 (75/655/70) &#8594; fits ï¿½8 &#8594; paper-69-*.
 // Score box: score-*-3 (English default).
 // DB row required: modules.url = 'sounds.php'
 
@@ -35,7 +35,7 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Sounds of Animals and Things';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Easy';   // single-level (§5)
+$lvl         = 'Easy';   // single-level (ï¿½5)
 
 // ============================================================
 // BANK
@@ -235,14 +235,14 @@ render_header($moduleTitle, $moduleTitle, $theme);
     </p>
     <div class="snd-audio-box">
         <audio controls preload="auto" controlslist="nodownload">
-            <source src="<?php echo htmlspecialchars($base . '/english/modules/sounds/effects/' . $cur['answer'] . '.mp3'); ?>" type="audio/mpeg">
+            <source src="<?php echo htmlspecialchars($base . '/English/modules/sounds/effects/' . $cur['answer'] . '.mp3'); ?>" type="audio/mpeg">
         </audio>
     </div>
     <input type="submit" name="Submit2" value="New Question" style="margin:30px 0;">
 <?php else: ?>
     <div class="snd-audio-box">
         <audio controls preload="auto" controlslist="nodownload" autoplay>
-            <source src="<?php echo htmlspecialchars($base . '/english/modules/sounds/effects/' . $q['answer'] . '.mp3'); ?>" type="audio/mpeg">
+            <source src="<?php echo htmlspecialchars($base . '/English/modules/sounds/effects/' . $q['answer'] . '.mp3'); ?>" type="audio/mpeg">
         </audio>
     </div>
 

@@ -1,38 +1,38 @@
 <?php
-// english/modules/visual-verbal.php
-// IMAGE-CHOICE. Bypass QEngine per §D.
+// English/modules/visual-verbal.php
+// IMAGE-CHOICE. Bypass QEngine per ï¿½D.
 // Shows a question about a visual/graphic organizer (chart, diagram, etc.);
 // student clicks the correct term or interpretation.
 //
-// Levels (§E — single-level collapse §5):
+// Levels (ï¿½E ï¿½ single-level collapse ï¿½5):
 //   Legacy hardcoded $_SESSION['level']="Medium" with no level radios in the
 //   HTML. Collapsed to $lvl='Hard' (preserves legacy 2-point value). No
 //   selector rendered.
 //
-// Grade-keyed content (§10):
+// Grade-keyed content (ï¿½10):
 //   grd 0-6   &#8594; 18 questions (easier graphic organizers)
 //   grd 7-10  &#8594; 23 questions (all, includes Pareto/business/evolution content)
 //   Both pools preserved verbatim from legacy's two $questions arrays.
 //
-// Image handling (§21): entries embed '**<file>.jpg' before '='. Parser
+// Image handling (ï¿½21): entries embed '**<file>.jpg' before '='. Parser
 // extracts filename, strips marker from displayed question, and validates
-// via file_exists() at pick-time — image-bearing questions with missing
+// via file_exists() at pick-time ï¿½ image-bearing questions with missing
 // files are skipped rather than served broken. Two questions have no image
 // at all (Venn Diagrams / Pareto Chart conceptual); those work fine.
 //
 // Data fix: Q19 answer question "contructing" corrected to "constructing"
-// (typo; semantics unchanged — the wrong-characteristic question).
+// (typo; semantics unchanged ï¿½ the wrong-characteristic question).
 //
 // Font sizing matches journalistic-writing.php reference:
-//   prompt 1.35rem · question card 1.35rem · feedback card 1.25rem
-//   hint 1.2rem · choice buttons 1.25rem
-//   Inline "Your answer is" 14pt · verdict 16pt (unchanged)
+//   prompt 1.35rem ï¿½ question card 1.35rem ï¿½ feedback card 1.25rem
+//   hint 1.2rem ï¿½ choice buttons 1.25rem
+//   Inline "Your answer is" 14pt ï¿½ verdict 16pt (unchanged)
 //
-// Choice layout (§14): maxLen &#8804; 17 &#8594; 2×2 grid; else 1-col hug.
+// Choice layout (ï¿½14): maxLen &#8804; 17 &#8594; 2ï¿½2 grid; else 1-col hug.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
 //
-// Theme: ex-27-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-27-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'visual-verbal.php'
 
@@ -53,12 +53,12 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Visual-Verbal Relationships';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Hard';   // single-level collapse (§5) — legacy was Medium/2pts
+$lvl         = 'Hard';   // single-level collapse (ï¿½5) ï¿½ legacy was Medium/2pts
 
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5)));
 
 // ============================================================
-// Bank: Advanced pool (23 questions) — grd 7-10
+// Bank: Advanced pool (23 questions) ï¿½ grd 7-10
 // ============================================================
 $bankAdvanced = [
     "What is this graphic organizer about?**txtaid01.jpg=ammonium nitrate[dangerous chemicals+explosions]uses of ammonium nitrate",
@@ -87,7 +87,7 @@ $bankAdvanced = [
 ];
 
 // ============================================================
-// Bank: Beginner pool (18 questions) — grd 0-6
+// Bank: Beginner pool (18 questions) ï¿½ grd 0-6
 // ============================================================
 $bankBeginner = [
     "According to this diagram, whales and fishes have ____.**txtaid03.jpg=three things in common[nothing in common+six things in common]no differences",
@@ -166,14 +166,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // Theme
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-27-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-27-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-27-left.jpg',
-    'right_side'    => $base . '/english/images/ex-27-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-27-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-27-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-27-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-27-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-27-left.jpg',
+    'right_side'    => $base . '/English/images/ex-27-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-27-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-27-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================
@@ -185,7 +185,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     $poolKey     = $useAdvanced ? 'used_advanced' : 'used_beginner';
 
     $used     = $_SESSION[$sessionKey][$poolKey] ?? [];
-    $imgDirFs = __DIR__ . '/../../english/images/others/';
+    $imgDirFs = __DIR__ . '/../../English/images/others/';
 
     $avail = [];
     foreach ($pool as $i => $entry) {
@@ -223,7 +223,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     shuffle($choices);
 
     $imgUrl = ($parsed['image'] !== null)
-        ? $base . '/english/images/others/' . $parsed['image']
+        ? $base . '/English/images/others/' . $parsed['image']
         : null;
 
     $_SESSION[$sessionKey]['current'] = [

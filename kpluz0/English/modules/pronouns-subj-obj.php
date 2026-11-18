@@ -1,29 +1,29 @@
 <?php
-// english/modules/pronouns-subj-obj.php
-// Subject and Object Pronouns — given a sentence, type the subject pronoun or
+// English/modules/pronouns-subj-obj.php
+// Subject and Object Pronouns ï¿½ given a sentence, type the subject pronoun or
 // the object pronoun it asks for.
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 6 content tiers via (level × grade); text-input answer.
+// 6 content tiers via (level ï¿½ grade); text-input answer.
 //
 // Data markers per sentence:
 //   *subject+     &#8594; the subject pronoun
 //   [object]      &#8594; the object pronoun (optional)
 //
 // Question mechanics (preserved from legacy):
-//   • Default target = subject pronoun.
-//   • If the sentence has an object pronoun, 50/50 the target switches to
+//   ï¿½ Default target = subject pronoun.
+//   ï¿½ If the sentence has an object pronoun, 50/50 the target switches to
 //     object pronoun.
-//   • Comparison is case-insensitive EXCEPT for "I", which must stay
+//   ï¿½ Comparison is case-insensitive EXCEPT for "I", which must stay
 //     capitalized (English rule). Legacy enforced the same.
-//   • A trailing period on the user's input is stripped before comparison.
+//   ï¿½ A trailing period on the user's input is stripped before comparison.
 //
-// Data fixes (§5.4) — see inline comments at the fixed entries in $rawByTier.
+// Data fixes (ï¿½5.4) ï¿½ see inline comments at the fixed entries in $rawByTier.
 //
 // LAYOUT RULE (mirrors objects.php): question box hugs its content with ample
 // padding (inline-flex wrapper), answer input hugs answer length, 24px
 // vertical spacing around the answer input.
 //
-// text-wrap:pretty (not balance) inside the box — balance fights shrink-to-fit
+// text-wrap:pretty (not balance) inside the box ï¿½ balance fights shrink-to-fit
 // and forces the box to max-width when the sentence wraps to 2+ lines.
 
 session_name('KPLUZ_SESSION');
@@ -42,7 +42,7 @@ $moduleTitle = 'Subject and Object Pronouns';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -53,7 +53,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+// ---- Tier mapping (ï¿½4) ï¿½ legacy Easy / legacy Hard; Medium folded into Hard ----
 function resolve_pso_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 3) return 1;
@@ -67,7 +67,7 @@ function resolve_pso_tier(string $lvl, int $grd): int {
     return 6;
 }
 
-// ---- Name pools (§5.2) — verbatim from legacy ----
+// ---- Name pools (ï¿½5.2) ï¿½ verbatim from legacy ----
 $boys = ['Adam','Alexander','Andrew','Angelo','Benjamin','Brandon','Carlos',
     'Charles','Christopher','Daniel','David','Diego','Dominic','Gabriel','Ian',
     'Isaac','Jack','Jacob','James','Jason','Jose','John','Jonathan','Joseph',
@@ -80,7 +80,7 @@ $girls = ['Alyssa','Amelia','Andrea','Anna','Ariana','Bella','Betty','Camille',
     'Leah','Lillian','Lydia','Madeline','Maria','Mariah','Melanie','Mia','Naomi',
     'Natalie','Olivia','Samantha','Sarah','Sophia','Stella','Tina','Victoria'];
 
-// ---- Data (§5) — verbatim from legacy, with placeholders + typo fixes ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy, with placeholders + typo fixes ----
 $rawByTier = [
     1 => [
         "*You+ should get [her] a steady job.",
@@ -274,7 +274,7 @@ $rawByTier = [
     ],
 ];
 
-// ---- Parser (§5.1) ----
+// ---- Parser (ï¿½5.1) ----
 function pso_parse(string $raw): ?array {
     $subjp = null; $objp = null;
     if (preg_match('/\*([^+]+)\+/u', $raw, $m)) {
@@ -293,7 +293,7 @@ function pso_parse(string $raw): ?array {
     ];
 }
 
-// ---- Render helpers (§8.2 target #CC0066) ----
+// ---- Render helpers (ï¿½8.2 target #CC0066) ----
 function pso_render(array $p, string $highlight = ''): string {
     $subjEsc = htmlspecialchars($p['subjp']);
     $objEsc  = $p['objp'] !== null ? htmlspecialchars($p['objp']) : '';
@@ -312,7 +312,7 @@ function pso_render(array $p, string $highlight = ''): string {
     return $html;
 }
 
-// Hugging box — outer text-align:center wrapper + inner inline-flex that
+// Hugging box ï¿½ outer text-align:center wrapper + inner inline-flex that
 // shrink-wraps content. inline-flex avoids the width:fit-content + flex
 // sizing conflict; vertical-align:middle prevents baseline gap.
 function pso_box(string $html, int $minHeight = 100): void {
@@ -328,7 +328,7 @@ function pso_box(string $html, int $minHeight = 100): void {
        . '</div>';
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_pso_question(array $rawByTier, string $lvl, int $grd,
                             string $sessionKey, array $boys, array $girls): ?array {
     $tier = resolve_pso_tier($lvl, $grd);
@@ -380,7 +380,7 @@ function build_pso_question(array $rawByTier, string $lvl, int $grd,
     ];
 }
 
-// ---- Answer processing (§7 — text input, with legacy "I" capitalization rule) ----
+// ---- Answer processing (ï¿½7 ï¿½ text input, with legacy "I" capitalization rule) ----
 $result = null; $scorer = null;
 if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -403,7 +403,7 @@ if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) — with tier-1 fallback ----
+// ---- Question generation (ï¿½6) ï¿½ with tier-1 fallback ----
 if ($result === null || isset($_POST['Submit2'])) {
     $newQ = build_pso_question($rawByTier, $lvl, $grd, $sessionKey, $boys, $girls);
     if ($newQ !== null) {
@@ -414,7 +414,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     }
 }
 
-// ---- Render (§8, §10) ----
+// ---- Render (ï¿½8, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -514,7 +514,7 @@ render_header($moduleTitle.'<br/>Grade '.$grd.' - '.$lvl,
 endif;
 ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only, 12pt label) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only, 12pt label) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p>
   <table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>

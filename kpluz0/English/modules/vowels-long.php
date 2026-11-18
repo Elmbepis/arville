@@ -1,19 +1,19 @@
 <?php
-// english/modules/vowels-long.php
-// STATIC word bank + choice. Bypass QEngine per §D.
+// English/modules/vowels-long.php
+// STATIC word bank + choice. Bypass QEngine per ï¿½D.
 // Shows a noun image with the FIRST (long) vowel blanked; click the correct vowel.
 //
-// Levels (§E — 2-level scheme): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme): Easy / Hard
 //   Easy = legacy Easy pool (words0)
 //   Hard = legacy Medium + legacy Hard merged (words1 + words2)
 //   Rationale: preserves all vocabulary while honouring the no-Medium rule.
 //
 // Choice layout: 4 single-letter vowel choices in ONE row (.letter-row).
-// Manual anchors (§15 bypass) — render_choices' --choice-width sizing is too
+// Manual anchors (ï¿½15 bypass) ï¿½ render_choices' --choice-width sizing is too
 // small for these visually-large letter tiles.
 //
-// Image: english/images/nouns/{word}.jpg (validated via file_exists).
-// Theme: ex-26-* (75/655/70) but not in §8 "known to fit" list &#8594; paper-69-*.
+// Image: English/images/nouns/{word}.jpg (validated via file_exists).
+// Theme: ex-26-* (75/655/70) but not in ï¿½8 "known to fit" list &#8594; paper-69-*.
 // Score box: score-*-3 (matches legacy).
 // DB row required: modules.url = 'vowels-long.php'
 
@@ -49,7 +49,7 @@ $wordsByLevel = [
     'Hard' => array_merge($medWords, $hardWords),
 ];
 $words = array_values(array_unique($wordsByLevel[$lvl]));
-$imgDirFs = __DIR__ . '/../../english/images/nouns/';
+$imgDirFs = __DIR__ . '/../../English/images/nouns/';
 
 function pick_word_long($words, $sessionKey, $imgDirFs) {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
@@ -142,8 +142,8 @@ if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = [
         'word'     => $word,
         'blankPos' => $blankPos,
-        'image'    => $base . '/english/images/nouns/' . $word . '.jpg',
-        'qmark'    => $base . '/english/images/blank-qmark.jpg',
+        'image'    => $base . '/English/images/nouns/' . $word . '.jpg',
+        'qmark'    => $base . '/English/images/blank-qmark.jpg',
         'answer'   => $answer,
         'choices'  => $choices,
         'lvl'      => $lvl,

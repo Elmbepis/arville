@@ -1,11 +1,11 @@
 <?php
-// english/modules/info-text-elements.php
-// Elements of Informational or Factual Text — identify text structures,
+// English/modules/info-text-elements.php
+// Elements of Informational or Factual Text ï¿½ identify text structures,
 // text features, and chart/diagram types from a passage or an image.
-// Single level (Easy) — legacy hardcoded $_SESSION['level']="Medium" at the
+// Single level (Easy) ï¿½ legacy hardcoded $_SESSION['level']="Medium" at the
 // top and never varied content by grade or level. Grade displayed but does
 // not affect tier.
-// 4 M/C choices always (2×2 grid); some questions show an image above the
+// 4 M/C choices always (2ï¿½2 grid); some questions show an image above the
 // question text.
 //
 // Data format: '<question>**<image>.jpg=<answer>[<w1>+<w2>]<w3>'
@@ -13,15 +13,15 @@
 // Inline tags <i> <u> <b> <br> are preserved through a whitelist because they
 // are the text features the module is actually testing (e.g. <i>ante cibum</i>).
 //
-// Data fix (§5.4): Q6 had an orphan </b> at the start of the string.
+// Data fix (ï¿½5.4): Q6 had an orphan </b> at the start of the string.
 //
 // LAYOUT:
-//   [Image — if present]
+//   [Image ï¿½ if present]
 //   [Hugging box with question, prompt section in pink]
-//   [Click on the correct answer below. — gray]     (question page only)
-//   [Choices 2×2]                                   (question page only)
+//   [Click on the correct answer below. ï¿½ gray]     (question page only)
+//   [Choices 2ï¿½2]                                   (question page only)
 //
-// Feedback: replicates the question-page presentation exactly — same yellow
+// Feedback: replicates the question-page presentation exactly ï¿½ same yellow
 // box, same pink-highlighted prompt, same ____ blank. Below the box:
 // "The correct answer is 'X'." then the New Question button.
 
@@ -41,14 +41,14 @@ $moduleTitle = 'Elements of Informational<br/>or Factual Text';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade (§3) ----
+// ---- Grade (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
-// Single level — no selector.
+// Single level ï¿½ no selector.
 $lvl = 'Easy';
 
-// ---- Data (§5) — verbatim from legacy (20 items), one typo fix ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy (20 items), one typo fix ----
 $rawData = [
     "The diagram shown is called what?**txtaid03.jpg=Venn Diagram[Cause and Effect Diagram+Flow Diagram]Concept Map",
     "A ____, which consists of overlapping circles, shows the similarities and differences between two ideas.=Venn Diagram[Cause and Effect Diagram+Flow Chart]Pareto Chart",
@@ -72,7 +72,7 @@ $rawData = [
     "The informational text element shown above is called what?**book-glossary.jpg=glossary[caption+index]heading",
 ];
 
-// ---- Parser (§5.1) — run once at definition time ----
+// ---- Parser (ï¿½5.1) ï¿½ run once at definition time ----
 function ite_parse(string $raw): ?array {
     $image = '';
     if (preg_match('/\*\*([^.]+)\.jpg/', $raw, $m)) {
@@ -115,7 +115,7 @@ foreach ($rawData as $raw) {
     if ($parsed !== null) $items[] = $parsed;
 }
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 // Escape everything, then re-allow <i> <u> <b> <br>. Collapse source-level
 // newlines to spaces and any run of 2+ spaces to a single space.
 function ite_safe(string $s): string {
@@ -149,7 +149,7 @@ function ite_highlight_prompts(string $html): string {
     return $html;
 }
 
-// Hugging box for the question — used on both question and feedback pages so
+// Hugging box for the question ï¿½ used on both question and feedback pages so
 // the feedback presentation matches the question presentation exactly.
 function ite_box(string $html, int $minHeight = 100): void {
     echo '<div style="display:flex;flex-direction:column;justify-content:center;'
@@ -171,7 +171,7 @@ function ite_image(string $path): void {
        . '</div>';
 }
 
-// ---- No-repeat picker (§6) ----
+// ---- No-repeat picker (ï¿½6) ----
 function pick_ite(array $pool, string $sessionKey): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -203,7 +203,7 @@ function build_ite_question(array $items, string $lvl, string $sessionKey): arra
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -214,12 +214,12 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = build_ite_question($items, $lvl, $sessionKey);
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -238,7 +238,7 @@ render_header($moduleTitle, $moduleTitle, $theme);
 <?php if ($result !== null):
     $cur      = $result['cur'];
     $question = ite_highlight_prompts(ite_safe($cur['question']));
-    // Question rendered as-is — the ____ blank is NOT filled in, matching
+    // Question rendered as-is ï¿½ the ____ blank is NOT filled in, matching
     // exactly how the student saw it on the question page.
 ?>
   <p style="font-family:Arial,sans-serif;font-size:14pt;color:#666;margin-top:20px;max-width:480px;margin-left:auto;margin-right:auto;">

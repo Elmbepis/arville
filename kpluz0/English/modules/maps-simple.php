@@ -1,11 +1,11 @@
 <?php
-// english/modules/maps-simple.php
-// Interpreting Simple Maps — read a map, street sign, or directional diagram
+// English/modules/maps-simple.php
+// Interpreting Simple Maps ï¿½ read a map, street sign, or directional diagram
 // and click the correct answer.
-// Single level (Easy) — legacy hardcoded $_SESSION['level']="Easy" at the top
+// Single level (Easy) ï¿½ legacy hardcoded $_SESSION['level']="Easy" at the top
 // and never varied content by grade or level. Grade displayed but does not
 // affect tier (matches cblends/cdigraphs/homographs/abbreviations/info-text).
-// 4 M/C choices always (2×2 grid); every question shows a map/symbol image
+// 4 M/C choices always (2ï¿½2 grid); every question shows a map/symbol image
 // above the question box.
 //
 // Data format: '<question>**<image>.jpg=<answer>[<w1>+<w2>]<w3>'
@@ -13,12 +13,12 @@
 //   served from ../images/others/.
 //
 // LAYOUT (mirrors info-text-elements.php):
-//   [Image — always present]
+//   [Image ï¿½ always present]
 //   [Hugging box with question, vertically centered]
-//   [Click on the correct answer below. — gray]
-//   [Choices 2×2]
+//   [Click on the correct answer below. ï¿½ gray]
+//   [Choices 2ï¿½2]
 //
-// Feedback: replicates the question-page presentation — same image, same
+// Feedback: replicates the question-page presentation ï¿½ same image, same
 // yellow box, question shown as-is. Below the box: "The correct answer is 'X'."
 
 session_name('KPLUZ_SESSION');
@@ -37,14 +37,14 @@ $moduleTitle = 'Interpreting Simple Maps';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade (§3) ----
+// ---- Grade (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
-// Single level — no selector.
+// Single level ï¿½ no selector.
 $lvl = 'Easy';
 
-// ---- Data (§5) — verbatim from legacy (28 items) ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy (28 items) ----
 $rawData = [
     "The front of the school is on which street?**map1.jpg=Bonifacio St.[Rizal St.+Luna St.]Jacinto St.",
     "The front of the bakery is on which street?**map1.jpg=Bonifacio St.[Rizal St.+Luna St.]Jacinto St.",
@@ -76,7 +76,7 @@ $rawData = [
     "The map or street sign symbol shown represents which of these?**map11.jpg=hotel[church+hospital]garage",
 ];
 
-// ---- Parser (§5.1) — run once at definition time ----
+// ---- Parser (ï¿½5.1) ï¿½ run once at definition time ----
 function ms_parse(string $raw): ?array {
     $image = '';
     if (preg_match('/\*\*([^.]+)\.jpg/', $raw, $m)) {
@@ -119,8 +119,8 @@ foreach ($rawData as $raw) {
     if ($parsed !== null) $items[] = $parsed;
 }
 
-// ---- Helpers (§8.4, §8.6) ----
-// Hugging box — display:flex (block-level) with vertical centering so short
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
+// Hugging box ï¿½ display:flex (block-level) with vertical centering so short
 // questions like "The chart shown is called what?" don't float at the top of
 // a tall 100px box.
 function ms_box(string $html, int $minHeight = 100): void {
@@ -143,7 +143,7 @@ function ms_image(string $path): void {
        . '</div>';
 }
 
-// ---- No-repeat picker (§6) ----
+// ---- No-repeat picker (ï¿½6) ----
 function pick_ms(array $pool, string $sessionKey): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -175,7 +175,7 @@ function build_ms_question(array $items, string $lvl, string $sessionKey): array
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -186,12 +186,12 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = build_ms_question($items, $lvl, $sessionKey);
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

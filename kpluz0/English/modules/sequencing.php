@@ -1,9 +1,9 @@
 <?php
-// english/modules/sequencing.php
-// Sequencing Sentences — M/C: given a scrambled list of sentences, pick the
+// English/modules/sequencing.php
+// Sequencing Sentences ï¿½ M/C: given a scrambled list of sentences, pick the
 // number sequence that puts them back into the correct reading order.
 // 2 levels (Easy, Hard), grade-aware pools. Legacy Easy/Medium/Hard folded to
-// Easy/Hard per handover §3.2 (Medium &#8594; Hard).
+// Easy/Hard per handover ï¿½3.2 (Medium &#8594; Hard).
 // Pool mapping:
 //   Easy grd 0     &#8594; easySimple        (simple 3-sentence stories)
 //   Easy grd 1..10 &#8594; mparagraph[grd-1] (3 &#8594; 7 sentences)
@@ -25,7 +25,7 @@ $moduleTitle = 'Sequencing Sentences';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -48,7 +48,7 @@ function resolve_seq_pool(string $lvl, int $grd, array $easySimple, array $mpara
     return $mparagraph[$idx] ?? $mparagraph[0];
 }
 
-// ---- Data pools (§5) — verbatim from legacy ----
+// ---- Data pools (ï¿½5) ï¿½ verbatim from legacy ----
 $easySimple = [
     ['My toy truck was muddy.', 'I washed my toy truck.', 'Now it is clean again.'],
     ['Dave was hungry.', 'He ate his lunch.', 'Now he is full.'],
@@ -190,7 +190,7 @@ $mparagraph[11] = [
     ['The watch repairman, named Jojo, turned the watch over and placed a soft pad under the crystal of the watch.', 'He then removed the metal back cover of the watch by prying it off with a very small flat screwdriver.', 'Jojo put down the back cover then carefully removed the gasket. The gasket, which looks like a rubber band, seals the watch from dirt and moisture.', "Jojo set the gasket aside and looked for the battery. It's easy to find because it's just round and shiny.", 'When Jojo located the battery, he removed it from the watch with a screwdriver.', 'He looked at the name of the battery on its back to identify it correctly.', 'Jojo immediately knew where to get the replacement battery when he read its name. He took out an identical but brand-new battery from a drawer.', 'He removed the brand-new battery from its protective wrapper and carefully installed it into the watch.', 'Jojo then reassembled the gasket and back cover of the watch, checked the watch one more time, and set it to the right time before handing it back to the owner.'],
 ];
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function seq_compute_width(array $lines, int $maxWidthPx = 560, int $minWidthPx = 240, ?array $annotations = null): int {
     $charPx  = 10;
     $padX    = 50;
@@ -204,7 +204,7 @@ function seq_compute_width(array $lines, int $maxWidthPx = 560, int $minWidthPx 
     return max($minWidthPx, min($maxWidthPx, $longest * $charPx + $padX));
 }
 
-// The helper adds the "1. ", "2. ", "3. " prefixes — callers should NOT
+// The helper adds the "1. ", "2. ", "3. " prefixes ï¿½ callers should NOT
 // pre-number their lines, otherwise we get "1. 1. She finished..." duplication.
 // Annotations (optional, per-line) render as gray italic text after the number.
 function seq_sentences_box(array $lines, int $widthPx, ?array $annotations = null): void {
@@ -241,7 +241,7 @@ function seq_make_distractors(array $correct, int $n, int $need = 3): array {
     return $result;
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -252,7 +252,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $pool = resolve_seq_pool($lvl, $grd, $easySimple, $mparagraph);
 
@@ -314,7 +314,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -360,7 +360,7 @@ render_header($moduleTitle.' - Grade '.$grd.' - '.$lvl, $moduleTitle.' - Grade '
 <?php else:
     $q = $_SESSION[$sessionKey]['current'];
 
-    // Raw sentences — helper adds the 1. 2. 3. prefixes (no caller numbering)
+    // Raw sentences ï¿½ helper adds the 1. 2. 3. prefixes (no caller numbering)
     $displayLines = $q['display'];
     $displayBoxW = seq_compute_width($displayLines);
 

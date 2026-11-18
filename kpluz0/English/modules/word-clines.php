@@ -1,8 +1,8 @@
 <?php
-// english/modules/word-clines.php
-// Word Clines — pick the word that best completes a 5-word ordered sequence.
-// 2 levels × grade-aware pool breadth (see resolve_word_clines_pool).
-// 3 choices always: correct word + 2 distractors, laid out 1×3.
+// English/modules/word-clines.php
+// Word Clines ï¿½ pick the word that best completes a 5-word ordered sequence.
+// 2 levels ï¿½ grade-aware pool breadth (see resolve_word_clines_pool).
+// 3 choices always: correct word + 2 distractors, laid out 1ï¿½3.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -20,7 +20,7 @@ $moduleTitle = 'Word Clines';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -31,7 +31,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Pool selection (§4.4 — grade widens breadth) ----
+// ---- Pool selection (ï¿½4.4 ï¿½ grade widens breadth) ----
 // Legacy: session level was hardcoded "Easy" and $grd was never assigned, so
 // the full 37-item pool was always used regardless of level/grade.
 // Modern: Easy grows with grade; Hard uses the full pool.
@@ -45,7 +45,7 @@ function resolve_word_clines_pool(string $lvl, int $grd): array {
     return range(0, 36);                       // 37 items: all
 }
 
-// ---- Data (§5.1) — pre-parsed; typos fixed ----
+// ---- Data (ï¿½5.1) ï¿½ pre-parsed; typos fixed ----
 $items = [
     // 0-4  frequency (never &#8596; always)
     ['seq' => 'never, occasionally, ____, frequently, always',      'correct' => 'usually',      'wrong' => ['rarely',      'seldom']],
@@ -94,7 +94,7 @@ $items = [
     ['seq' => 'dull, average, smart, brilliant, ____',              'correct' => 'genius',       'wrong' => ['bright',      'clever']],
 ];
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function word_clines_box(string $html, int $minHeight = 130): void {
     echo '<div style="max-width:520px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -123,7 +123,7 @@ function render_word_clines_seq(string $seq, string $answer = ''): string {
     return htmlspecialchars($seq);
 }
 
-// ---- No-repeat picker (§6.2) ----
+// ---- No-repeat picker (ï¿½6.2) ----
 function pick_word_clines_item(array $items, array $poolIdxs, string $sessionKey, string $lvl): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -131,7 +131,7 @@ function pick_word_clines_item(array $items, array $poolIdxs, string $sessionKey
         if (!in_array("$lvl:$idx", $used, true)) $available[$idx] = $items[$idx];
     }
     if (empty($available)) {
-        // Pool exhausted — clear only this level's entries, preserving the other
+        // Pool exhausted ï¿½ clear only this level's entries, preserving the other
         $used = array_values(array_filter($used, fn($k) => strpos($k, "$lvl:") !== 0));
         foreach ($poolIdxs as $idx) $available[$idx] = $items[$idx];
     }
@@ -143,7 +143,7 @@ function pick_word_clines_item(array $items, array $poolIdxs, string $sessionKey
     return $item;
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -154,7 +154,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $poolIdxs = resolve_word_clines_pool($lvl, $grd);
     $item     = pick_word_clines_item($items, $poolIdxs, $sessionKey, $lvl);
@@ -170,7 +170,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

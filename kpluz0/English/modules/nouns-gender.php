@@ -1,6 +1,6 @@
 <?php
-// english/modules/nouns-gender.php
-// Genders of Nouns — 5 vocabulary tiers; 2 or 4 choice buttons by (level, grade).
+// English/modules/nouns-gender.php
+// Genders of Nouns ï¿½ 5 vocabulary tiers; 2 or 4 choice buttons by (level, grade).
 // Grade sourced from $_SESSION['user_grade'] (0-10), same as english-menu.php.
 
 session_name('KPLUZ_SESSION');

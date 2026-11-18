@@ -1,13 +1,13 @@
 <?php
-// english/modules/abbreviations.php
-// Abbreviations — click the most common abbreviation of the word shown.
-// Single level (Easy) — legacy hardcoded $_SESSION['level']="Easy" at the top
+// English/modules/abbreviations.php
+// Abbreviations ï¿½ click the most common abbreviation of the word shown.
+// Single level (Easy) ï¿½ legacy hardcoded $_SESSION['level']="Easy" at the top
 // and never varied content by grade or level. Grade displayed but does not
 // affect tier (matches cblends/cdigraphs/homographs precedent).
-// 4 M/C choices always (2×2 grid).
+// 4 M/C choices always (2ï¿½2 grid).
 //
 // LAYOUT RULE (permanent): "Click on the correct answer below." ALWAYS sits
-// immediately above the choice buttons — never above the content box.
+// immediately above the choice buttons ï¿½ never above the content box.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -25,14 +25,14 @@ $moduleTitle = 'Abbreviations';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade (§3) ----
+// ---- Grade (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
-// Single level — no selector.
+// Single level ï¿½ no selector.
 $lvl = 'Easy';
 
-// ---- Data (§5) — verbatim from legacy (36 items) ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy (36 items) ----
 // Format: "word=answer[wrong1+wrong2]wrong3"
 $rawData = [
     'Doctor=Dr.[Dc.+Dt.]Do.',
@@ -73,7 +73,7 @@ $rawData = [
     'brothers=bros.[brot.+brtr.]brth.',
 ];
 
-// ---- Pre-parse (§5.1) ----
+// ---- Pre-parse (ï¿½5.1) ----
 $items = [];
 foreach ($rawData as $raw) {
     $eq = strpos($raw, '=');
@@ -94,8 +94,8 @@ foreach ($rawData as $raw) {
     ];
 }
 
-// ---- Helpers (§8.4) ----
-// Hugging word box — display:block + width:fit-content so vertical margins
+// ---- Helpers (ï¿½8.4) ----
+// Hugging word box ï¿½ display:block + width:fit-content so vertical margins
 // apply reliably and the short word hugs inside the box.
 function abbr_box(string $html, int $minHeight = 80): void {
     echo '<div style="display:block;width:fit-content;max-width:480px;'
@@ -106,7 +106,7 @@ function abbr_box(string $html, int $minHeight = 80): void {
        . $html . '</div>';
 }
 
-// ---- No-repeat picker (§6) ----
+// ---- No-repeat picker (ï¿½6) ----
 function pick_abbr(array $pool, string $sessionKey): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -137,7 +137,7 @@ function build_abbr_question(array $items, string $lvl, string $sessionKey): arr
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -148,12 +148,12 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = build_abbr_question($items, $lvl, $sessionKey);
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

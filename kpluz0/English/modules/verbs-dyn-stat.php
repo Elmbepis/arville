@@ -1,17 +1,17 @@
 <?php
-// english/modules/verbs-dyn-stat.php
-// Action and Non-Action Verbs — identify whether the highlighted verb in a
+// English/modules/verbs-dyn-stat.php
+// Action and Non-Action Verbs ï¿½ identify whether the highlighted verb in a
 // phrase is dynamic (action) or stative (non-action).
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 5 content tiers via (level × grade); 2 M/C choices (1×2 grid).
+// 5 content tiers via (level ï¿½ grade); 2 M/C choices (1ï¿½2 grid).
 //
-// Naming: tiers 1–2 label the categories "action verb" / "non-action verb";
-// tiers 3–5 label them "dynamic verb" / "stative verb". The canonical answer
-// carried in ?ansclick= is always 'action verb' / 'non-action verb' — display
+// Naming: tiers 1ï¿½2 label the categories "action verb" / "non-action verb";
+// tiers 3ï¿½5 label them "dynamic verb" / "stative verb". The canonical answer
+// carried in ?ansclick= is always 'action verb' / 'non-action verb' ï¿½ display
 // labels switch by tier at render time (legacy did the same via $ansclicked0).
 //
 // LAYOUT RULE (permanent): "Click on the correct answer below." ALWAYS sits
-// immediately above the choice buttons — never above the phrase box.
+// immediately above the choice buttons ï¿½ never above the phrase box.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -29,7 +29,7 @@ $moduleTitle = 'Action and Non-Action Verbs';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -40,20 +40,20 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+// ---- Tier mapping (ï¿½4) ï¿½ legacy Easy / legacy Hard; Medium folded into Hard ----
 function resolve_vds_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 4) return 1;
         if ($grd <= 6) return 2;
         return 3;
     }
-    // Hard — legacy Hard formula (harder of Medium/Hard)
+    // Hard ï¿½ legacy Hard formula (harder of Medium/Hard)
     if ($grd <= 4) return 3;
     if ($grd <= 6) return 4;
     return 5;
 }
 
-// Tier-aware labels — canonical answers always 'action verb' / 'non-action verb'.
+// Tier-aware labels ï¿½ canonical answers always 'action verb' / 'non-action verb'.
 function vds_labels(int $tier): array {
     if ($tier <= 2) {
         return [
@@ -75,7 +75,7 @@ function vds_labels(int $tier): array {
     ];
 }
 
-// ---- Data (§5) — verbatim from legacy (first word of each phrase = the verb) ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy (first word of each phrase = the verb) ----
 $dataByTier = [
     1 => [
         'action' => [
@@ -214,7 +214,7 @@ $dataByTier = [
     ],
 ];
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function vds_phrase_box(string $html, int $minHeight = 120): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:22px 28px;'
@@ -242,7 +242,7 @@ function vds_render_phrase(string $phrase): string {
     return $html;
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_vds_question(array $dataByTier, string $lvl, int $grd, string $sessionKey): ?array {
     $tier = resolve_vds_tier($lvl, $grd);
     $tierData = $dataByTier[$tier] ?? null;
@@ -278,7 +278,7 @@ function build_vds_question(array $dataByTier, string $lvl, int $grd, string $se
 
     $phrase = $pool[$pick['idx']];
 
-    // Canonical choices — always 'action verb' / 'non-action verb' (URL params).
+    // Canonical choices ï¿½ always 'action verb' / 'non-action verb' (URL params).
     $choices = ['action verb', 'non-action verb'];
     shuffle($choices);
 
@@ -291,7 +291,7 @@ function build_vds_question(array $dataByTier, string $lvl, int $grd, string $se
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -302,13 +302,13 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $newQ = build_vds_question($dataByTier, $lvl, $grd, $sessionKey);
     if ($newQ !== null) $_SESSION[$sessionKey]['current'] = $newQ;
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $headerTier = resolve_vds_tier($lvl, $grd);
 $moduleTitleResolved = ($headerTier <= 2)
     ? 'Action and Non-Action<br/>Verbs'
@@ -420,7 +420,7 @@ render_header($moduleTitleResolved.' - Grade '.$grd.' - '.$lvl,
 endif;
 ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p><table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>
   <?php foreach ($levels as $l): ?>

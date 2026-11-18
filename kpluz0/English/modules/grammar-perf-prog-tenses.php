@@ -1,9 +1,9 @@
 <?php
-// english/modules/grammar-perf-prog-tenses.php
-// Grammar: Perfect Progressive Tenses — click the verb form that correctly
-// fits the blank. 10 sentence pools mapped by (grade × level).
+// English/modules/grammar-perf-prog-tenses.php
+// Grammar: Perfect Progressive Tenses ï¿½ click the verb form that correctly
+// fits the blank. 10 sentence pools mapped by (grade ï¿½ level).
 //
-// Legacy Easy + Medium folded into modern Easy / Hard (§5.3 Medium&#8594;Hard).
+// Legacy Easy + Medium folded into modern Easy / Hard (ï¿½5.3 Medium&#8594;Hard).
 // Legacy Hard was forced to Medium at file top (dead path), so modern Hard
 // = legacy Medium content.
 //
@@ -15,26 +15,26 @@
 //   grd 8 or 10  &#8594; "8_10_*"
 //   (* = Easy or Hard)
 //
-// Placeholders: {boy}, {girl}, {surname}, {day}, {month} — freshly rolled
+// Placeholders: {boy}, {girl}, {surname}, {day}, {month} ï¿½ freshly rolled
 // per question from the same pools legacy used (names, surnames, days,
 // months).
 //
-// Data fixes (§5.4):
-//   • grd 4 Easy item 24 — "for a year already.==" (double =) &#8594; single =
-//   • grd 5 Easy item 24 — "for a year already.==" (double =) &#8594; single =
-//   • grd 8/10 Hard — 8 instances of "____" (four underscores) &#8594; "___" (three)
-//   • grd 4 Hard item 10 — extra space "stars  ___" &#8594; "stars ___"
-//   • grd 4 Easy item 6 — "My little brother ___ for his lost toy since yesterday." preserved
-//   • grd 8/10 Hard item 3 — "governor ____ zero-interest loans" &#8594; "___" (three underscores)
+// Data fixes (ï¿½5.4):
+//   ï¿½ grd 4 Easy item 24 ï¿½ "for a year already.==" (double =) &#8594; single =
+//   ï¿½ grd 5 Easy item 24 ï¿½ "for a year already.==" (double =) &#8594; single =
+//   ï¿½ grd 8/10 Hard ï¿½ 8 instances of "____" (four underscores) &#8594; "___" (three)
+//   ï¿½ grd 4 Hard item 10 ï¿½ extra space "stars  ___" &#8594; "stars ___"
+//   ï¿½ grd 4 Easy item 6 ï¿½ "My little brother ___ for his lost toy since yesterday." preserved
+//   ï¿½ grd 8/10 Hard item 3 ï¿½ "governor ____ zero-interest loans" &#8594; "___" (three underscores)
 //
-// Correct answer is guaranteed to appear exactly once per question — the
+// Correct answer is guaranteed to appear exactly once per question ï¿½ the
 // distractor list is de-duped against the correct form. If the pick
 // resolver fails (malformed entry), falls back to the first entry of the
 // first pool.
 //
-// $grd defensive default (§11): $_SESSION['grade'] / user_grade fallback.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] / user_grade fallback.
 //
-// Theme: ex-23-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-23-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'grammar-perf-prog-tenses.php'
 
@@ -54,7 +54,7 @@ $moduleTitle = 'Grammar: Perfect Progressive Tenses';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -65,7 +65,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Pool resolver (§4) ----
+// ---- Pool resolver (ï¿½4) ----
 function resolve_gpp_pool(string $lvl, int $grd): string {
     if ($grd < 4) $grd = 4;
     if ($grd > 10) $grd = 10;
@@ -82,7 +82,7 @@ $surnamePool = ['Cruz','de Guzman','Gomez','Padua','Santos','Reyes','Tolentino',
 $dayPool     = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 $monthPool   = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-// ---- Sentence pools — format: 'sentence=answer>wrong1+wrong2<wrong3' ----
+// ---- Sentence pools ï¿½ format: 'sentence=answer>wrong1+wrong2<wrong3' ----
 $sentencePools = [
     '4_Easy' => [
         'Mr. {surname} ___ me that question for the past six weeks.=has been asking>have been asking+had been asking<will have been asking',
@@ -409,7 +409,7 @@ function gpp_pick_question(array $pool, string $sessionKey, string $poolId): ?ar
     return ['answer' => $parsed['answer'], 'sentence' => $sentence, 'wrong' => $parsed['wrong']];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -420,7 +420,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $poolId = resolve_gpp_pool($lvl, $grd);
     $pool   = $sentencePools[$poolId] ?? $sentencePools['4_Easy'];
@@ -449,16 +449,16 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-23-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-23-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-23-left.jpg',
-    'right_side'    => $base . '/english/images/ex-23-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-23-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-23-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-23-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-23-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-23-left.jpg',
+    'right_side'    => $base . '/English/images/ex-23-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-23-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-23-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 render_header($moduleTitle . '<br/>Grade ' . $grd . ' - ' . $lvl, $moduleTitle . '<br/>Grade ' . $grd . ' - ' . $lvl, $theme);
 ?>
@@ -522,7 +522,7 @@ render_header($moduleTitle . '<br/>Grade ' . $grd . ' - ' . $lvl, $moduleTitle .
   <input type="submit" name="Submit2" value=" New Question " style="display:block;margin:25px auto;font-family:Arial,sans-serif;font-size:11pt;">
 <?php endif; ?>
 
-  <!-- Difficulty radios (§10.4 — Easy / Hard only, inside form so they POST) -->
+  <!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only, inside form so they POST) -->
   <div align="center" style="margin-top:20px;">
     <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p>
     <table border="0" width="80%" cellspacing="0" cellpadding="0" style="margin:0 auto;"><tr>

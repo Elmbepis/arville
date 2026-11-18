@@ -1,9 +1,9 @@
 <?php
-// english/modules/sentence-not-sentence.php
-// Sentences and Non-Sentences — decide whether a block of text is a complete
+// English/modules/sentence-not-sentence.php
+// Sentences and Non-Sentences ï¿½ decide whether a block of text is a complete
 // sentence or a non-sentence (fragment).
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 6 content tiers via (level × grade); 2 M/C choices (1×2 grid).
+// 6 content tiers via (level ï¿½ grade); 2 M/C choices (1ï¿½2 grid).
 //
 // Grade-dependent name pools (preserved verbatim from legacy):
 //   grades 0-2 &#8594; simple names (Adam, Ben, Amy, ...)
@@ -17,11 +17,11 @@
 // Data markers: *... + surrounds the fragment / non-sentence portion of the
 // template. The full sentence is the entire template minus markers, minus
 // trailing punctuation. Each template yields TWO possible questions (full
-// sentence OR fragment), chosen 50/50 at build time — matches legacy
+// sentence OR fragment), chosen 50/50 at build time ï¿½ matches legacy
 // rand(1,8)<5.
 //
 // LAYOUT RULE (permanent): "Click on the correct answer below." ALWAYS sits
-// immediately above the choice buttons — never above the sentence box.
+// immediately above the choice buttons ï¿½ never above the sentence box.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -39,7 +39,7 @@ $moduleTitle = 'Sentences and Non-Sentences';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -50,7 +50,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+// ---- Tier mapping (ï¿½4) ï¿½ legacy Easy / legacy Hard; Medium folded into Hard ----
 function resolve_sns_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 3) return 1;
@@ -58,14 +58,14 @@ function resolve_sns_tier(string $lvl, int $grd): int {
         if ($grd <= 7) return 3;
         return 4;
     }
-    // Hard — legacy Hard formula
+    // Hard ï¿½ legacy Hard formula
     if ($grd <= 3) return 3;
     if ($grd <= 5) return 4;
     if ($grd <= 7) return 5;
     return 6;
 }
 
-// ---- Name pools — grade &#8804; 2 uses simple names; else standard ----
+// ---- Name pools ï¿½ grade &#8804; 2 uses simple names; else standard ----
 $simpleBoys = ['Adam','Ben','Bert','Carlo','Chris','Danny','David','Dino','Isaac',
     'Jack','Jacob','James','Jason','Jose','John','Juan','Kevin','Lucas','Luis','Luke',
     'Max','Mike','Nick','Noah','Robert','Ryan','Samuel','Tom','Willie'];
@@ -83,7 +83,7 @@ $standardGirls = ['Alyssa','Amelia','Andrea','Anna','Ariana','Bella','Betty',
     'Leah','Lillian','Lydia','Madeline','Maria','Mariah','Melanie','Mia','Naomi',
     'Natalie','Olivia','Samantha','Sarah','Sophia','Stella','Tina','Victoria'];
 
-// ---- Parser — extract {full, fragment} from a legacy *…+ template ----
+// ---- Parser ï¿½ extract {full, fragment} from a legacy *ï¿½+ template ----
 function sns_parse(string $raw): ?array {
     $star = strpos($raw, '*');
     $plus = strpos($raw, '+');
@@ -94,7 +94,7 @@ function sns_parse(string $raw): ?array {
     return ['full' => $full, 'fragment' => $fragment];
 }
 
-// ---- Data (§5) — verbatim from legacy (6 tiers) ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy (6 tiers) ----
 $rawByTier = [
     1 => [
         "{name1} *likes to watch funny movies with me+.",
@@ -279,7 +279,7 @@ $rawByTier = [
     ],
 ];
 
-// Pre-parse at definition time (§5.1).
+// Pre-parse at definition time (ï¿½5.1).
 $dataByTier = [];
 foreach ($rawByTier as $tier => $list) {
     $dataByTier[$tier] = [];
@@ -289,7 +289,7 @@ foreach ($rawByTier as $tier => $list) {
     }
 }
 
-// ---- Helpers (§8.4) ----
+// ---- Helpers (ï¿½8.4) ----
 function sns_box(string $html, int $minHeight = 110): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:22px 28px;'
@@ -299,7 +299,7 @@ function sns_box(string $html, int $minHeight = 110): void {
        . $html . '</div>';
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_sns_question(array $dataByTier, string $lvl, int $grd,
                             string $sessionKey, array $boys, array $girls): ?array {
     $tier = resolve_sns_tier($lvl, $grd);
@@ -352,7 +352,7 @@ function build_sns_question(array $dataByTier, string $lvl, int $grd,
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -363,7 +363,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) — grade-dependent name pool + tier-1 fallback ----
+// ---- Question generation (ï¿½6) ï¿½ grade-dependent name pool + tier-1 fallback ----
 if ($result === null || isset($_POST['Submit2'])) {
     if ($grd <= 2) {
         $boyPool  = $simpleBoys;
@@ -382,7 +382,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     }
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -487,7 +487,7 @@ render_header($moduleTitle.'<br/>Grade '.$grd.' - '.$lvl,
 endif;
 ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only, 12pt label) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only, 12pt label) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p>
   <table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>

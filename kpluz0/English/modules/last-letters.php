@@ -1,22 +1,22 @@
 <?php
-// english/modules/last-letters.php
-// STATIC word bank + choice. Bypass QEngine per §D.
+// English/modules/last-letters.php
+// STATIC word bank + choice. Bypass QEngine per ï¿½D.
 // Shows a noun image with the last letter blanked; click the correct last letter.
 //
-// Levels (§E — 2-level scheme): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme): Easy / Hard
 //   Easy = legacy Easy pool (short CVC words)
 //   Hard = legacy Medium + legacy Hard merged (mixed-complexity words)
 //   Rationale: Medium and Hard are phonetically similar (both CCVCC / mixed blends);
 //   merging preserves all legacy vocabulary while honouring the no-Medium rule.
 //
 // Choice layout: single-letter choices render 4-across in ONE row (.letter-row).
-// 2×2 (.letter-grid-2x2) only activates when a choice string is long enough
+// 2ï¿½2 (.letter-grid-2x2) only activates when a choice string is long enough
 // that 4-across would not fit (maxLen &#8805; 5). Never produces 3-on-top + 1-below.
-// `render_choices` is bypassed (§15) because its --choice-width sizing is too
+// `render_choices` is bypassed (ï¿½15) because its --choice-width sizing is too
 // small for these visually-large letter tiles.
 //
-// Image: english/images/nouns/{word}.jpg (validated via file_exists).
-// Theme: ex-29-* (110/582/108) &#8594; paper-69-* per §C fit test.
+// Image: English/images/nouns/{word}.jpg (validated via file_exists).
+// Theme: ex-29-* (110/582/108) &#8594; paper-69-* per ï¿½C fit test.
 // Score box: score-*-3 (English default).
 // DB row required: modules.url = 'last-letters.php'
 
@@ -43,7 +43,7 @@ if (isset($_POST['level'])) $_SESSION['level'] = $_POST['level'];
 if (!isset($_SESSION['level']) || !in_array($_SESSION['level'], $levels)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// Word pools — Medium + Hard merged into Hard (§E)
+// Word pools ï¿½ Medium + Hard merged into Hard (ï¿½E)
 $easyWords = ["bag","bat","bed","bee","boy","bug","bun","bus","cake","cap","car","cat","cup","doe","dog","ear","fan","fox","gum","ham","hat","hen","hog","hug","hut","jam","jar","leg","man","mop","mug","net","nut","pan","pen","pie","pig","pot","rag","rat","sun","ten","tin","top","toy"];
 $mediumWords = ["apple","bag","bat","bee","bell","bike","boat","bone","bug","bun","bus","cake","coat","cone","cop","cot","deer","doe","doll","duck","ear","eat","eel","elf","fan","fat","feet","fish","five","fox","goat","gem","gum","ham","hip","hoe","hog","hug","hut","ice","jam","jar","jeep","jet","jug","keg","kite","lamb","leg","log","mail","map","mat","meat","mop","mug","nail","net","nun","nut","pail","pan","peas","pen","pet","pie","pin","pot","rag","ram","read","rice","rose","rug","sea","seal","seed","sock","star","tail","ten","tie","tin","toad","toes","top","van","web"];
 $hardWords = ["apple","bake","banana","band","barn","beads","beak","beans","bell","bike","bird","boat","bone","bowl","cake","card","cart","coat","cone","cube","date","deer","desk","dike","dish","duck","farm","feet","five","flag","fork","frog","gate","goat","hand","hear","heel","hill","hump","jail","jeep","king","kite","kitten","lamb","lamp","lips","lock","mail","mask","meal","meat","nail","nest","orange","pail","peas","pencil","pond","puppy","quail","queen","read","rice","road","rock","rose","sail","seal","seed","sleep","snail","snake","sock","spoon","star","table","tail","tank","tiger","toad","toes","train","tree","well","whale","wheel"];
@@ -53,7 +53,7 @@ $wordsByLevel = [
     'Hard' => array_merge($mediumWords, $hardWords),
 ];
 $words = array_values(array_unique($wordsByLevel[$lvl]));
-$imgDirFs = __DIR__ . '/../../english/images/nouns/';
+$imgDirFs = __DIR__ . '/../../English/images/nouns/';
 
 function pick_word_last($words, $sessionKey, $imgDirFs) {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
@@ -128,7 +128,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     $blankPos = strlen($word) - 1;
     $answer   = $word[$blankPos];
 
-    // 3 distinct random letters (4-choice guarantee §13.7)
+    // 3 distinct random letters (4-choice guarantee ï¿½13.7)
     $distractors = [];
     $safety = 0;
     while (count($distractors) < 3 && $safety < 100) {
@@ -144,8 +144,8 @@ if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = [
         'word'     => $word,
         'blankPos' => $blankPos,
-        'image'    => $base . '/english/images/nouns/' . $word . '.jpg',
-        'qmark'    => $base . '/english/images/blank-qmark.jpg',
+        'image'    => $base . '/English/images/nouns/' . $word . '.jpg',
+        'qmark'    => $base . '/English/images/blank-qmark.jpg',
         'answer'   => $answer,
         'choices'  => $choices,
         'lvl'      => $lvl,
@@ -169,9 +169,9 @@ $theme = [
 render_header($moduleTitle . ' - ' . $lvl, $moduleTitle . ' - ' . $lvl, $theme);
 ?>
 <style>
-  /* Single-row layout — default for short choices (single letters).
+  /* Single-row layout ï¿½ default for short choices (single letters).
      flex-wrap: nowrap guarantees 4-across; the mobile media query below
-     shrinks the tiles so 4×64 + 3×12 = 292px fits even on ~300px viewports. */
+     shrinks the tiles so 4ï¿½64 + 3ï¿½12 = 292px fits even on ~300px viewports. */
   .letter-row {
     display: flex;
     flex-wrap: nowrap;
@@ -180,7 +180,7 @@ render_header($moduleTitle . ' - ' . $lvl, $moduleTitle . ' - ' . $lvl, $theme);
     gap: 24px;
     margin: 20px auto;
   }
-  /* 2×2 grid — fallback ONLY when a choice is long enough that 4-across
+  /* 2ï¿½2 grid ï¿½ fallback ONLY when a choice is long enough that 4-across
      would not fit (maxLen &#8805; 5). Never produces 3-on-top + 1-below. */
   .letter-grid-2x2 {
     display: grid;
@@ -248,7 +248,7 @@ render_header($moduleTitle . ' - ' . $lvl, $moduleTitle . ' - ' . $lvl, $theme);
     <p style="font-size:16pt; color:#800080; margin-top:15px;">Click on the last letter of this word.</p>
 
     <?php
-        // §14 layout rule: maxLen &#8804; 4 &#8594; 1-row (4-across); maxLen &#8805; 5 &#8594; 2×2.
+        // ï¿½14 layout rule: maxLen &#8804; 4 &#8594; 1-row (4-across); maxLen &#8805; 5 &#8594; 2ï¿½2.
         // Single-letter choices (this module) always hit the 1-row branch.
         $plainLens = [];
         foreach ($q['choices'] as $c) $plainLens[] = strlen(strip_tags((string)$c));

@@ -1,6 +1,6 @@
 <?php
-// english/modules/a-an.php
-// Using 'a' or 'an' in Sentences — static question bank + 2 MC choices (horizontal).
+// English/modules/a-an.php
+// Using 'a' or 'an' in Sentences ï¿½ static question bank + 2 MC choices (horizontal).
 // Converted from legacy a-an.php to the container.php / scorer.php pattern.
 
 session_name('KPLUZ_SESSION');

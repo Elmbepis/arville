@@ -1,6 +1,6 @@
 <?php
-// english/modules/intro-self.php
-// Introducing Oneself — static question bank + 4 MC choices (vertical).
+// English/modules/intro-self.php
+// Introducing Oneself ï¿½ static question bank + 4 MC choices (vertical).
 // Converted from legacy intro-self.php to the container.php / scorer.php pattern.
 
 session_name('KPLUZ_SESSION');

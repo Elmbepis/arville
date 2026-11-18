@@ -1,21 +1,21 @@
 <?php
-// english/modules/pic-exp-gest-2.php
-// STATIC image-choice bank. Bypass QEngine per §D.
+// English/modules/pic-exp-gest-2.php
+// STATIC image-choice bank. Bypass QEngine per ï¿½D.
 // Shows an image of a facial expression or gesture; click the word/phrase
 // that names it. 4 choices.
 //
-// Levels (§E — single-level collapse §5):
+// Levels (ï¿½E ï¿½ single-level collapse ï¿½5):
 //   Legacy hardcoded $_SESSION['level']="Easy" and had no level radios.
 //   Collapsed to single level with $lvl='Easy' as local. No selector rendered.
 //
-// Bank format: "answer1d1+2d2+3d3" — delimiters are literal digits 1,2,3.
+// Bank format: "answer1d1+2d2+3d3" ï¿½ delimiters are literal digits 1,2,3.
 // Two answers need display-name transformation:
 //   head-shake &#8594; "head shake" (image stays as head-shake.jpg)
 //   not-okay   &#8594; "not okay"   (image stays as not-okay.jpg)
 // Store both `answer` (display) and `imageSlug` (file) per question.
 //
-// Image: english/images/others/{imageSlug}.jpg (validated via file_exists).
-// Theme: ex-23-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Image: English/images/others/{imageSlug}.jpg (validated via file_exists).
+// Theme: ex-23-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'pic-exp-gest-2.php'
 
@@ -36,7 +36,7 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Words for Facial Expressions and Gestures';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Easy';   // single level (§5)
+$lvl         = 'Easy';   // single level (ï¿½5)
 
 $bank = [
     "afraid1happy2sad3sleepy",
@@ -71,7 +71,7 @@ $bank = [
     "wave1nod2kiss3head shake",
 ];
 
-$imgDirFs = __DIR__ . '/../../english/images/others/';
+$imgDirFs = __DIR__ . '/../../English/images/others/';
 
 function parse_peg($entry) {
     $p1 = strpos($entry, '1');
@@ -113,14 +113,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // THEME (hoisted for "Temporarily unavailable" path)
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-23-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-23-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-23-left.jpg',
-    'right_side'    => $base . '/english/images/ex-23-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-23-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-23-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-23-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-23-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-23-left.jpg',
+    'right_side'    => $base . '/English/images/ex-23-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-23-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-23-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================
@@ -139,7 +139,7 @@ if ($result === null || isset($_POST['Submit2'])) {
         $avail[] = $i;
     }
     if (empty($avail)) {
-        // Reset — re-scan without the $used filter
+        // Reset ï¿½ re-scan without the $used filter
         $used = [];
         for ($i = 0; $i < $total; $i++) {
             $parsed = parse_peg($bank[$i]);
@@ -165,7 +165,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     shuffle($choices);
 
     $_SESSION[$sessionKey]['current'] = [
-        'image'   => $base . '/english/images/others/' . $parsed['imageSlug'] . '.jpg',
+        'image'   => $base . '/English/images/others/' . $parsed['imageSlug'] . '.jpg',
         'answer'  => $parsed['answer'],
         'choices' => $choices,
         'lvl'     => $lvl,

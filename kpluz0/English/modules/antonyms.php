@@ -1,9 +1,9 @@
 <?php
-// english/modules/antonyms.php
-// STATIC antonym bank + choice. Bypass QEngine per §D.
+// English/modules/antonyms.php
+// STATIC antonym bank + choice. Bypass QEngine per ï¿½D.
 // Shows a base word; click its antonym from 4 choices.
 //
-// Levels (§E — 2-level scheme, Medium+Hard merged): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme, Medium+Hard merged): Easy / Hard
 //   Grade-keyed tier assignment (bank has 7 tiers):
 //     grd 0-1 &#8594; Easy: 1; Hard: rand(2,3)   [Medium=2, Hard=3]
 //     grd 2-3 &#8594; Easy: 2; Hard: rand(3,4)   [Medium=3, Hard=4]
@@ -18,13 +18,13 @@
 // [2] of the same group. Distractors = 3 random entries from distinct other
 // groups (either list). Preserves legacy semantics.
 //
-// Choice layout (§14): uniform width via --choice-width CSS var.
-//   maxLen &#8804; 4 &#8594; 1-row (4-across); 5–20 &#8594; 2×2; > 20 &#8594; 1-col.
+// Choice layout (ï¿½14): uniform width via --choice-width CSS var.
+//   maxLen &#8804; 4 &#8594; 1-row (4-across); 5ï¿½20 &#8594; 2ï¿½2; > 20 &#8594; 1-col.
 //   Never 3+1 wrap.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 5.
 //
-// Theme: ex-*-009 (136/556/117) &#8594; not in §8 fit list &#8594; paper-69-*.
+// Theme: ex-*-009 (136/556/117) &#8594; not in ï¿½8 fit list &#8594; paper-69-*.
 // Score box: score-*-3 (English default).
 // DB row required: modules.url = 'antonyms.php'
 

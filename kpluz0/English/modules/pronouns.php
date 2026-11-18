@@ -1,8 +1,8 @@
 <?php
-// english/modules/pronouns.php
-// Substituting Pronouns — fill in the blank with the correct pronoun.
-// 7 tiers via (level × grade); tier 1 yields 2 choices, tiers 2–7 yield 4.
-// grade from $_SESSION['user_grade'] (0–10).
+// English/modules/pronouns.php
+// Substituting Pronouns ï¿½ fill in the blank with the correct pronoun.
+// 7 tiers via (level ï¿½ grade); tier 1 yields 2 choices, tiers 2ï¿½7 yield 4.
+// grade from $_SESSION['user_grade'] (0ï¿½10).
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -442,7 +442,7 @@ $maxLen   = max(array_map('strlen', $q['choices']));
 $sumLen   = array_sum(array_map('strlen', $q['choices']));
 $use2x2   = ($n === 4) && ($maxLen > 7 || $sumLen > 24);
 
-// Per-box width in px — fixed, so every box is identical width
+// Per-box width in px ï¿½ fixed, so every box is identical width
 if ($n === 2)      $boxW = 120;   // two narrow boxes, centred
 elseif ($use2x2)   $boxW = 200;   // 2x2, roomy
 else               $boxW = 110;   // four short choices on one row

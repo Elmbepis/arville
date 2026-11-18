@@ -1,41 +1,41 @@
 <?php
-// english/modules/bias-images.php
-// IMAGE-CHOICE. Bypass QEngine per §D.
+// English/modules/bias-images.php
+// IMAGE-CHOICE. Bypass QEngine per ï¿½D.
 // Shows a persuasive image; student clicks the bias technique it uses
 // (bandwagon, name-calling, stereotyping, testimonial, fear).
 //
-// Levels (§E — single-level collapse §5):
+// Levels (ï¿½E ï¿½ single-level collapse ï¿½5):
 //   Legacy hardcoded $_SESSION['level']="Easy" with no level radios in the
 //   HTML. Collapsed to $lvl='Easy' (preserves legacy 1-point value). No
 //   selector rendered.
 //
 // 37 image-bearing questions preserved verbatim. Each entry references a
-// bias image in english/images/others/ via '**<file>.jpg'. Parser extracts
+// bias image in English/images/others/ via '**<file>.jpg'. Parser extracts
 // the filename, strips the marker, then parses "=answer[d1+d2]d3".
 //
-// §21 image validation: file_exists() at pick-time — any question whose
+// ï¿½21 image validation: file_exists() at pick-time ï¿½ any question whose
 // bias image is missing is skipped. If every remaining entry is invalid,
 // module shows "Temporarily unavailable."
 //
 // Bias technique per question preserved exactly:
-//   imgbias01–07  &#8594; bandwagon
-//   imgbias08–14  &#8594; name-calling
-//   imgbias15–21  &#8594; stereotyping
-//   imgbias22–28  &#8594; testimonial
-//   imgbias29–37  &#8594; fear
+//   imgbias01ï¿½07  &#8594; bandwagon
+//   imgbias08ï¿½14  &#8594; name-calling
+//   imgbias15ï¿½21  &#8594; stereotyping
+//   imgbias22ï¿½28  &#8594; testimonial
+//   imgbias29ï¿½37  &#8594; fear
 //
 // Font sizing matches journalistic-writing.php reference:
-//   prompt 1.35rem · feedback text 1.25rem · hint 1.2rem
+//   prompt 1.35rem ï¿½ feedback text 1.25rem ï¿½ hint 1.2rem
 //   choice buttons 1.25rem
-//   "Your answer is" 14pt · verdict 16pt (inline, unchanged)
+//   "Your answer is" 14pt ï¿½ verdict 16pt (inline, unchanged)
 //
 // Choice layout: all bias technique names are short (max 12 chars =
-// "stereotyping"/"name-calling") &#8594; 2×2 grid always.
+// "stereotyping"/"name-calling") &#8594; 2ï¿½2 grid always.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
-// (Not used for content selection — single-pool module.)
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
+// (Not used for content selection ï¿½ single-pool module.)
 //
-// Theme: ex-27-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-27-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'bias-images.php'
 
@@ -56,7 +56,7 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Identifying Bias Techniques in Images';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Easy';   // single-level collapse (§5)
+$lvl         = 'Easy';   // single-level collapse (ï¿½5)
 
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5)));
 
@@ -162,14 +162,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // Theme
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-27-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-27-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-27-left.jpg',
-    'right_side'    => $base . '/english/images/ex-27-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-27-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-27-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-27-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-27-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-27-left.jpg',
+    'right_side'    => $base . '/English/images/ex-27-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-27-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-27-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================
@@ -177,7 +177,7 @@ $theme = [
 // ============================================================
 if ($result === null || isset($_POST['Submit2'])) {
     $used     = $_SESSION[$sessionKey]['used'] ?? [];
-    $imgDirFs = __DIR__ . '/../../english/images/others/';
+    $imgDirFs = __DIR__ . '/../../English/images/others/';
 
     $avail = [];
     foreach ($bank as $i => $entry) {
@@ -217,7 +217,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     $choices = array_values(array_unique($choices));
     shuffle($choices);
 
-    $imgUrl = $base . '/english/images/others/' . $parsed['image'];
+    $imgUrl = $base . '/English/images/others/' . $parsed['image'];
 
     $_SESSION[$sessionKey]['current'] = [
         'answer'  => $parsed['answer'],

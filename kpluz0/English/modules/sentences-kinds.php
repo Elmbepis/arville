@@ -1,6 +1,6 @@
 <?php
-// english/modules/sentences-kinds.php
-// Kinds of Sentences — 4 choices in a 2x2 grid.
+// English/modules/sentences-kinds.php
+// Kinds of Sentences ï¿½ 4 choices in a 2x2 grid.
 // Easy level uses Telling/Asking/Commanding/Exclaiming.
 // Hard level uses Declarative/Interrogative/Imperative/Exclamatory.
 

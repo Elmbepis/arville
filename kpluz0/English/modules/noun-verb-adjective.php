@@ -1,7 +1,7 @@
 <?php
-// english/modules/noun-verb-adjective.php
-// Nouns, Verbs, and Adjectives — classify three words as N/V/A.
-// 11 tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
+// English/modules/noun-verb-adjective.php
+// Nouns, Verbs, and Adjectives ï¿½ classify three words as N/V/A.
+// 11 tiers via (level ï¿½ grade); grade from $_SESSION['user_grade'] (0ï¿½10).
 //
 // Easy: one noun + one verb + one adjective in a random permutation
 //       &#8594; answer is always one of the 6 permutations of "NVA".
@@ -24,7 +24,7 @@ $moduleTitle = 'Nouns, Verbs, and Adjectives';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -35,7 +35,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 // Legacy Easy:   $arrnum = $grd;      if ($grd>=8) $arrnum=8;   &#8594;  min(8, grd)
 // Legacy Hard:   $arrnum = $grd+2;    if ($grd>=8) $arrnum=10;  &#8594;  min(10, grd+2)
 // (Medium folds into Hard; Hard is the harder of the two formulas.)
@@ -44,8 +44,8 @@ function resolve_nva_tier(string $lvl, int $grd): int {
     return min(10, $grd + 2);
 }
 
-// ---- Data (§5) ----
-// [Tier 0–10 noun / verb / adjective pools — preserved verbatim from legacy.]
+// ---- Data (ï¿½5) ----
+// [Tier 0ï¿½10 noun / verb / adjective pools ï¿½ preserved verbatim from legacy.]
 
 $nouns = [];
 $nouns[0] = [
@@ -377,7 +377,7 @@ $adjectives[10] = [
     "sacrilegious","sagacious","sanctimonious","scrumptious","subservient","surreptitious","therapeutic","truculent","ubiquitous","unorthodox","voluptuous","voracious"
 ];
 
-// ---- Helpers (§8.4, §8.6, §11) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6, ï¿½11) ----
 
 function nva_box(string $html, int $minHeight = 140): void {
     echo '<div style="max-width:360px;min-height:' . $minHeight . 'px;'
@@ -466,7 +466,7 @@ function build_nva_question(array $nouns, array $verbs, array $adjectives, int $
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -486,13 +486,13 @@ if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $tier = resolve_nva_tier($lvl, $grd);
     $_SESSION[$sessionKey]['current'] = build_nva_question($nouns, $verbs, $adjectives, $tier, $lvl);
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

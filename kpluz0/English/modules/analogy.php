@@ -1,20 +1,20 @@
 <?php
-// english/modules/analogy.php
-// Word Analogy — complete the analogy by clicking the correct word.
-// Single level (Easy) — legacy hardcoded $_SESSION['level']="Easy" at the top
+// English/modules/analogy.php
+// Word Analogy ï¿½ complete the analogy by clicking the correct word.
+// Single level (Easy) ï¿½ legacy hardcoded $_SESSION['level']="Easy" at the top
 // and never varied content by grade or level. Grade displayed but does not
 // affect tier (matches cblends/cdigraphs/maps-simple/pictographs).
-// 4 M/C choices always (2×2 grid); text-based, no images.
+// 4 M/C choices always (2ï¿½2 grid); text-based, no images.
 //
 // Data format: '<question>=<answer>[<w1>+<w2>]<w3>'
 //   The question contains a ____ placeholder for the missing word.
 //
 // LAYOUT (mirrors pictographs.php / maps-simple.php):
 //   [Hugging box with question, vertically centered]
-//   [Click on the correct answer below. — gray]
-//   [Choices 2×2]
+//   [Click on the correct answer below. ï¿½ gray]
+//   [Choices 2ï¿½2]
 //
-// Feedback: replicates the question-page presentation exactly — same yellow
+// Feedback: replicates the question-page presentation exactly ï¿½ same yellow
 // box, same ____ blank (not filled in). Below the box:
 // "The correct answer is 'X'."
 
@@ -34,14 +34,14 @@ $moduleTitle = 'Word Analogy';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade (§3) ----
+// ---- Grade (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
-// Single level — no selector.
+// Single level ï¿½ no selector.
 $lvl = 'Easy';
 
-// ---- Data (§5) — verbatim from legacy (38 items) ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy (38 items) ----
 $rawData = [
     "Poetry is to rhyme as philosophy is to ____.=theory[student+music]wisdom",
     "Triangle is to three as ____ is to five.=pentagon[circle+oval]hexagon",
@@ -81,7 +81,7 @@ $rawData = [
     "Hiss is to snake as ____ is to bull.=bellow[bleat+yap]shriek",
 ];
 
-// ---- Parser (§5.1) — run once at definition time ----
+// ---- Parser (ï¿½5.1) ï¿½ run once at definition time ----
 function analogy_parse(string $raw): ?array {
     $eq = strpos($raw, '=');
     if ($eq === false) return null;
@@ -117,8 +117,8 @@ foreach ($rawData as $raw) {
     if ($parsed !== null) $items[] = $parsed;
 }
 
-// ---- Helpers (§8.4, §8.6) ----
-// Hugging box — display:flex (block-level) with vertical centering so short
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
+// Hugging box ï¿½ display:flex (block-level) with vertical centering so short
 // questions don't float at the top of a tall 100px box.
 function analogy_box(string $html, int $minHeight = 100): void {
     echo '<div style="display:flex;flex-direction:column;justify-content:center;'
@@ -130,7 +130,7 @@ function analogy_box(string $html, int $minHeight = 100): void {
        . $html . '</div>';
 }
 
-// ---- No-repeat picker (§6) ----
+// ---- No-repeat picker (ï¿½6) ----
 function pick_analogy(array $pool, string $sessionKey): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -161,7 +161,7 @@ function build_analogy_question(array $items, string $lvl, string $sessionKey): 
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -172,12 +172,12 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = build_analogy_question($items, $lvl, $sessionKey);
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

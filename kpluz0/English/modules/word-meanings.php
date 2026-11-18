@@ -1,9 +1,9 @@
 <?php
-// english/modules/word-meanings.php
-// STATIC word-definition bank + choice. Bypass QEngine per §D.
+// English/modules/word-meanings.php
+// STATIC word-definition bank + choice. Bypass QEngine per ï¿½D.
 // Shows a word; click the best-fitting definition from 4 options.
 //
-// Levels (§E — 2-level scheme, Medium+Hard merged): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme, Medium+Hard merged): Easy / Hard
 //   Grade-keyed tier assignment (bank has 7 tiers, 0..6):
 //     grd 0-2 &#8594; Easy: 0; Hard: rand(1,2)   [Medium=1, Hard=2]
 //     grd 3-4 &#8594; Easy: 1; Hard: rand(2,3)   [Medium=2, Hard=3]
@@ -17,11 +17,11 @@
 // Distractors drawn from the SAME part-of-speech pool.
 //
 // Choice layout: 4 definition cards in 1-col (definitions are prose).
-// Click the definition directly — no letter buttons needed.
+// Click the definition directly ï¿½ no letter buttons needed.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 5.
 //
-// Theme: ex-*-001 &#8594; not in §8 fit list &#8594; paper-69-*.
+// Theme: ex-*-001 &#8594; not in ï¿½8 fit list &#8594; paper-69-*.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'word-meanings.php'
 
@@ -51,7 +51,7 @@ $lvl = $_SESSION['level'];
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? 5)));
 
 // ------------------------------------------------------------------
-// Data bank: 7 tiers × 3 parts-of-speech
+// Data bank: 7 tiers ï¿½ 3 parts-of-speech
 // ------------------------------------------------------------------
 $meanings = [];
 
@@ -126,7 +126,7 @@ $meanings[6]['verb'] = [
 ];
 
 // ------------------------------------------------------------------
-// Level &#8594; tier resolution (§10): Easy = legacy Easy, Hard = union of Med+Hard
+// Level &#8594; tier resolution (ï¿½10): Easy = legacy Easy, Hard = union of Med+Hard
 // ------------------------------------------------------------------
 $grdKey = ($grd <= 2) ? 0 : (($grd <= 4) ? 1 : (($grd <= 6) ? 2 : (($grd <= 8) ? 3 : 4)));
 $configs = [

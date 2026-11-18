@@ -1,8 +1,8 @@
 <?php
-// english/modules/translation.php
-// Translating Filipino Words into English — pick the English equivalent of a
-// Filipino word. 4 choices (correct + 3 baked-in distractors) in a 2×2 grid.
-// Pool gated by (level × grade) via the §4.4 "bridge" pattern:
+// English/modules/translation.php
+// Translating Filipino Words into English ï¿½ pick the English equivalent of a
+// Filipino word. 4 choices (correct + 3 baked-in distractors) in a 2ï¿½2 grid.
+// Pool gated by (level ï¿½ grade) via the ï¿½4.4 "bridge" pattern:
 //   Simple pool = concrete nouns (body parts, animals, places, things)
 //   Complex pool = verbs, adjectives, abstract concepts
 // Legacy had no level differentiation (level hardcoded) and no grade gating.
@@ -23,7 +23,7 @@ $moduleTitle = 'Translating Filipino Words into English';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -34,7 +34,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Data (§5) — verbatim from legacy ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy ----
 // Format: 'filipino=english[wrong1+wrong2]wrong3'
 // Each item has 1 correct English + 3 baked-in distractors.
 $rawData = [
@@ -80,7 +80,7 @@ $rawData = [
     'usa=deer[goat+sheep]cow',
 ];
 
-// ---- Pre-parse (§5.1) ----
+// ---- Pre-parse (ï¿½5.1) ----
 $items = [];
 foreach ($rawData as $raw) {
     if (!preg_match('/^([^=]+)=([^\[]+)\[([^\+]+)\+([^\]]+)\](.+)$/', $raw, $m)) continue;
@@ -91,7 +91,7 @@ foreach ($rawData as $raw) {
     ];
 }
 
-// ---- Pool partitioning by difficulty (§4.4 bridge pattern) ----
+// ---- Pool partitioning by difficulty (ï¿½4.4 bridge pattern) ----
 // Simple indices = concrete nouns (body parts, animals, places, things)
 $simpleIdx = [
     1, 2, 3, 4, 5, 6, 7, 8,         // balikat, bangketa, batok, bundok, daliri, gubat, halaman, ilog
@@ -123,7 +123,7 @@ function resolve_translation_pool(string $lvl, int $grd, array $simpleIdx, array
     return $complexIdx;
 }
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function translation_box(string $html, int $minHeight = 130): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -140,7 +140,7 @@ function bind_last_words(string $text, int $words = 2): string {
     }, $esc, 1);
 }
 
-// ---- No-repeat picker (§6.2) ----
+// ---- No-repeat picker (ï¿½6.2) ----
 function pick_translation_item(array $allItems, array $poolIdxs, string $sessionKey, string $lvl, int $grd): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -158,7 +158,7 @@ function pick_translation_item(array $allItems, array $poolIdxs, string $session
     return $allItems[$idx];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -169,7 +169,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $poolIdxs = resolve_translation_pool($lvl, $grd, $simpleIdx, $complexIdx);
     $item     = pick_translation_item($items, $poolIdxs, $sessionKey, $lvl, $grd);
@@ -186,7 +186,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

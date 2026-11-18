@@ -1,21 +1,21 @@
 <?php
-// english/modules/compound-words.php
-// FIB + image choice. Bypass QEngine per §D.
+// English/modules/compound-words.php
+// FIB + image choice. Bypass QEngine per ï¿½D.
 // Shows two pictures; student types the compound word they form (no hyphen).
 //
-// Levels (§E — 2-level scheme, Medium+Hard merged): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme, Medium+Hard merged): Easy / Hard
 //   Easy = legacy Easy (tier 1, simpler compounds).
-//   Hard = union of legacy Medium (tier 2) + legacy Hard (tier 3) — rand pick.
+//   Hard = union of legacy Medium (tier 2) + legacy Hard (tier 3) ï¿½ rand pick.
 //
 // Answer canonicalization: lowercase, all whitespace and hyphens stripped.
 // So "angel-fish", "Angel Fish", "angelfish", "AngelFish" all score the same.
 //
-// Image validation (§21): BOTH src images must exist; 30-attempt loop;
+// Image validation (ï¿½21): BOTH src images must exist; 30-attempt loop;
 // "Temporarily unavailable" fallback if none resolve.
 //
 // $grd not used by this module (legacy was purely level-driven).
 //
-// Theme: ex-*-012 &#8594; not in §8 fit list &#8594; paper-69-*.
+// Theme: ex-*-012 &#8594; not in ï¿½8 fit list &#8594; paper-69-*.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'compound-words.php'
 
@@ -74,8 +74,8 @@ $bank[3] = [
 if ($lvl === 'Easy') $arrnum = 1;
 else                 $arrnum = rand(2, 3);
 
-$imgDirFs = __DIR__ . '/../../english/images/compound-word-pics/';
-$imgDir   = $base . '/english/images/compound-word-pics/';
+$imgDirFs = __DIR__ . '/../../English/images/compound-word-pics/';
+$imgDir   = $base . '/English/images/compound-word-pics/';
 
 // ------------------------------------------------------------------
 // Score handler (FIB canonicalization)

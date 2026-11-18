@@ -1,11 +1,11 @@
 <?php
-// english/modules/common-proper-nouns.php
-// Common and Proper Nouns — click the common noun or the proper noun among N choices.
-// 9 tiers via (level × grade); 2 choices only for Easy at grades 0–1, else 4 choices.
+// English/modules/common-proper-nouns.php
+// Common and Proper Nouns ï¿½ click the common noun or the proper noun among N choices.
+// 9 tiers via (level ï¿½ grade); 2 choices only for Easy at grades 0ï¿½1, else 4 choices.
 // Choices display in UPPERCASE for Hard (or grade &#8805; 6) so students can't lean on
 // capitalisation as the giveaway; original case is preserved for the answer key,
 // feedback message, and href.
-// Grade from $_SESSION['user_grade'] (0–10).
+// Grade from $_SESSION['user_grade'] (0ï¿½10).
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -23,7 +23,7 @@ $moduleTitle = 'Common and Proper Nouns';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -34,7 +34,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 // Legacy Easy:   $arrnum = $grd;      if ($grd>=6) $arrnum=6;   &#8594;  min(6, grd)
 // Legacy Hard:   $arrnum = $grd+2;    if ($grd>=6) $arrnum=8;   &#8594;  min(8, grd+2)
 // (Medium folded into Hard; Hard is the harder of the two formulas.)
@@ -43,7 +43,7 @@ function resolve_cpn_tier(string $lvl, int $grd): int {
     return min(8, $grd + 2);
 }
 
-// ---- Data (§5) ----
+// ---- Data (ï¿½5) ----
 $nouns = [];
 $nouns[0] = [
     "ant","arms","apple","aunt","ball","barn","bead","bean","bear","bed","bell","bird","berry","bone","boat","boy","book","boot","boss","bread",
@@ -258,7 +258,7 @@ $pnouns[6][7] = $pnouns[5][7];
 $pnouns[7] = $pnouns[6];
 $pnouns[8] = $pnouns[6];
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function cpn_box(string $html, int $minHeight = 130): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -341,7 +341,7 @@ $applyUpper = ($lvl === 'Hard') || ($grd >= 3);
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -352,12 +352,12 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = build_cpn_question($nouns, $pnouns, $grd, $lvl);
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

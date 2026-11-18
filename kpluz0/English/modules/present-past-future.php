@@ -1,7 +1,7 @@
 <?php
-// english/modules/present-past-future.php
-// Simple Past, Present, Future Tenses — MC (4 or 3 options).
-// 4 verb tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
+// English/modules/present-past-future.php
+// Simple Past, Present, Future Tenses ï¿½ MC (4 or 3 options).
+// 4 verb tiers via (level ï¿½ grade); grade from $_SESSION['user_grade'] (0ï¿½10).
 
 session_name('KPLUZ_SESSION');
 session_start();

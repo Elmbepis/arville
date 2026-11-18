@@ -1,17 +1,17 @@
 <?php
-// english/modules/complements-subject.php
-// FIB (free-text entry). Bypass QEngine per §D.
+// English/modules/complements-subject.php
+// FIB (free-text entry). Bypass QEngine per ï¿½D.
 // Student types the complete phrase that serves as the subject complement
 // in the given sentence.
 //
-// Levels (§E — 2-level scheme, Medium+Hard merged): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme, Medium+Hard merged): Easy / Hard
 //   Grade-keyed tier assignment (bank has 5 tiers):
 //     grd 0-5 &#8594; Easy: 1; Hard: rand(2,3)   [Medium=2, Hard=3]
 //     grd 6-7 &#8594; Easy: 2; Hard: rand(3,4)   [Medium=3, Hard=4]
 //     grd 8+  &#8594; Easy: 3; Hard: rand(4,5)   [Medium=4, Hard=5]
 //   Rationale: modern Hard takes the union of legacy Medium + legacy Hard.
 //
-// Names ($name1..$name4): boys/girls arrays — freshly picked on each
+// Names ($name1..$name4): boys/girls arrays ï¿½ freshly picked on each
 // generate, matching legacy behavior. Half the sentences reference them.
 //
 // Sentence bank: each entry has "*answer+" markers. Question displays the
@@ -19,13 +19,13 @@
 // in red (matching legacy UX).
 //
 // FIB canonicalization: lowercase + strip whitespace/punctuation
-// (periods, commas, apostrophes, quotes) — matches legacy behavior
+// (periods, commas, apostrophes, quotes) ï¿½ matches legacy behavior
 // (legacy stripped . ' , and spaces, but did NOT lowercase; modern
 // lowercases both for more forgiving matching).
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 5.
 //
-// Theme: ex-24-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-24-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'complements-subject.php'
 
@@ -54,7 +54,7 @@ $lvl = $_SESSION['level'];
 
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? 5)));
 
-// Level + grade &#8594; tier (§10)
+// Level + grade &#8594; tier (ï¿½10)
 $grdKey = ($grd <= 5) ? 0 : (($grd <= 7) ? 1 : 2);
 $configs = [
     0 => ['Easy' => [1, 1], 'Hard' => [2, 3]],
@@ -215,14 +215,14 @@ if (isset($_POST['Submit1']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // THEME
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-24-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-24-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-24-left.jpg',
-    'right_side'    => $base . '/english/images/ex-24-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-24-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-24-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-24-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-24-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-24-left.jpg',
+    'right_side'    => $base . '/English/images/ex-24-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-24-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-24-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================
@@ -259,7 +259,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     $p1 = strpos($qsentence, '*');
     $p2 = strpos($qsentence, '+');
     if ($p1 === false || $p2 === false) {
-        // Fallback — skip the question
+        // Fallback ï¿½ skip the question
         $qsentence = $pool[0];
         $p1 = strpos($qsentence, '*');
         $p2 = strpos($qsentence, '+');

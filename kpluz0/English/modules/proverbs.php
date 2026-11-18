@@ -1,10 +1,10 @@
 <?php
-// english/modules/proverbs.php
-// Proverbs — click the correct meaning of a proverb.
-// Single level (Easy) — 4 choices at all times. Grade-aware pool:
-//   grd 0–3  &#8594; simpler proverbs
-//   grd 4–10 &#8594; more advanced proverbs
-// Legacy had 3 levels, but its $arrnum branch was dead code — the real pool
+// English/modules/proverbs.php
+// Proverbs ï¿½ click the correct meaning of a proverb.
+// Single level (Easy) ï¿½ 4 choices at all times. Grade-aware pool:
+//   grd 0ï¿½3  &#8594; simpler proverbs
+//   grd 4ï¿½10 &#8594; more advanced proverbs
+// Legacy had 3 levels, but its $arrnum branch was dead code ï¿½ the real pool
 // split was by grade (<4 vs >=4), preserved here. 4-choice count taken from
 // legacy Hard (hardest of legacy's 2/3/4 choice progression) and applied to
 // the single-level Easy label per the current request.
@@ -25,11 +25,11 @@ $moduleTitle = 'Proverbs';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade (§3) ----
+// ---- Grade (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
-// Single level — no selector. Scorer still wants a level string.
+// Single level ï¿½ no selector. Scorer still wants a level string.
 $lvl = 'Easy';
 
 // ---- Tier / pool selection (grade-aware) ----
@@ -37,7 +37,7 @@ function resolve_proverbs_tier(int $grd): int {
     return ($grd < 4) ? 1 : 2;
 }
 
-// ---- Data (§5) — verbatim from legacy, sentence-case definitions ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy, sentence-case definitions ----
 $proverbsByTier = [
     1 => [
         "A chain is only as strong as its weakest link:What a team of people can do may be limited by the weakest member of that team",
@@ -180,7 +180,7 @@ $proverbsByTier = [
     ],
 ];
 
-// ---- Pre-parse (§5.1) — normalize trailing period into the definition ----
+// ---- Pre-parse (ï¿½5.1) ï¿½ normalize trailing period into the definition ----
 $itemsByTier = [];
 foreach ($proverbsByTier as $tier => $rawList) {
     $itemsByTier[$tier] = [];
@@ -194,7 +194,7 @@ foreach ($proverbsByTier as $tier => $rawList) {
     }
 }
 
-// ---- Helpers (§8.4, §8.6 + hugging technique) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6 + hugging technique) ----
 function proverbs_box(string $html, int $minHeight = 80, int $widthPx = 0): void {
     $sizing = ($widthPx > 0)
         ? 'width:' . $widthPx . 'px;max-width:100%;'
@@ -223,7 +223,7 @@ function bind_last_words(string $text, int $words = 2): string {
     }, $esc, 1);
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -234,7 +234,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $tier = resolve_proverbs_tier($grd);
     $pool = $itemsByTier[$tier] ?? $itemsByTier[1];
@@ -280,7 +280,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

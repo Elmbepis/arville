@@ -1,10 +1,10 @@
 <?php
-// english/modules/direct-indirect-speech.php
-// FIB (free-text entry). Bypass QEngine per §D.
+// English/modules/direct-indirect-speech.php
+// FIB (free-text entry). Bypass QEngine per ï¿½D.
 // Shows a direct-speech sentence; student types the indirect-speech clause
 // that follows "[Pronoun] said that".
 //
-// Levels (§E — 2-level scheme, Medium+Hard merged): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme, Medium+Hard merged): Easy / Hard
 //   Grade-keyed tier assignment (bank has 5 tiers):
 //     grd 0-5 &#8594; Easy: 1; Hard: rand(2,3)   [Medium=2, Hard=3]
 //     grd 6-7 &#8594; Easy: 2; Hard: rand(3,4)   [Medium=3, Hard=4]
@@ -17,18 +17,18 @@
 // {boy}, {girl}, {surname} are substituted per pick.
 //
 // Data hygiene applied during conversion:
-//   • Deduplicated within each tier (legacy had verbatim duplicate entries
+//   ï¿½ Deduplicated within each tier (legacy had verbatim duplicate entries
 //     in tiers 2-3 that reduced variety).
-//   • Fixed "&He." &#8594; "&He" (trailing period broke pronoun extraction) in
+//   ï¿½ Fixed "&He." &#8594; "&He" (trailing period broke pronoun extraction) in
 //     tier 3 aardvark entry.
-//   • Fixed "Mrs.{surname}" &#8594; "Mrs. {surname}" (missing space) in tier 4.
+//   ï¿½ Fixed "Mrs.{surname}" &#8594; "Mrs. {surname}" (missing space) in tier 4.
 //
 // Answer canonicalization: lowercase + strip whitespace + period/question
 // mark (matches legacy comparison: case-insensitive, space-stripped).
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
 //
-// Theme: ex-26-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-26-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'direct-indirect-speech.php'
 
@@ -57,7 +57,7 @@ $lvl = $_SESSION['level'];
 
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5)));
 
-// Level + grade &#8594; tier (§10)
+// Level + grade &#8594; tier (ï¿½10)
 $grdKey = ($grd <= 5) ? 0 : (($grd <= 7) ? 1 : 2);
 $configs = [
     0 => ['Easy' => [1, 1], 'Hard' => [2, 3]],
@@ -75,7 +75,7 @@ $girls = ['Alyssa','Amelia','Andrea','Anna','Ariana','Bella','Betty','Camille','
 $surnames = ['Aquino','Castro','Cruz','Dantes','Fajardo','Gascon','Gonzales','Martinez','Mendez','Paredes','Revilla','Santos','Tolentino'];
 
 // ============================================================
-// Bank — 5 tiers, placeholders {boy} {girl} {surname}
+// Bank ï¿½ 5 tiers, placeholders {boy} {girl} {surname}
 // ============================================================
 $bank = [];
 $bank[1] = [
@@ -350,14 +350,14 @@ if (isset($_POST['Submit1']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // THEME
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-26-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-26-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-26-left.jpg',
-    'right_side'    => $base . '/english/images/ex-26-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-26-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-26-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-26-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-26-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-26-left.jpg',
+    'right_side'    => $base . '/English/images/ex-26-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-26-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-26-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================

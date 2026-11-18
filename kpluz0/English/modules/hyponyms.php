@@ -1,12 +1,12 @@
 <?php
-// english/modules/hyponyms.php
-// Hyponyms — identify which of four words is NOT a hyponym of the given
-// category (hypernym). The category word inside <i>…</i> in the question is
+// English/modules/hyponyms.php
+// Hyponyms ï¿½ identify which of four words is NOT a hyponym of the given
+// category (hypernym). The category word inside <i>ï¿½</i> in the question is
 // highlighted pink at render.
-// Single level (Easy) — legacy forced $_SESSION['level']="Easy" at the top and
+// Single level (Easy) ï¿½ legacy forced $_SESSION['level']="Easy" at the top and
 // level never affected content (only which legacy EPluz_accounts column was
 // updated, now handled by Scorer). Grade displayed but does not affect tier.
-// 4 choices, "hugging" layout — all buttons match the widest choice's width
+// 4 choices, "hugging" layout ï¿½ all buttons match the widest choice's width
 // via a width:fit-content wrapper (see conversion notes).
 
 session_name('KPLUZ_SESSION');
@@ -25,16 +25,16 @@ $moduleTitle = 'Hyponyms';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade (§3) ----
+// ---- Grade (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
-// Single level — no selector (legacy forced Easy and content never varied by level).
+// Single level ï¿½ no selector (legacy forced Easy and content never varied by level).
 $lvl = 'Easy';
 
-// ---- Data (§5) — verbatim from legacy (30 items) ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy (30 items) ----
 // Format: "<question>=<correct>[<w1>+<w2>]<w3>"
-// Questions carry <i>…</i> around the hypernym; rendered as pink italic.
+// Questions carry <i>ï¿½</i> around the hypernym; rendered as pink italic.
 $rawQuestions = [
     "All of the following are hyponyms of <i>flower</i> except ____.=ostrich[rose+daisy]chrysanthemum",
     "All of the following are hyponyms of <i>bird</i> except ____.=trout[owl+eagle]pigeon",
@@ -68,7 +68,7 @@ $rawQuestions = [
     "All of the following are hyponyms of <i>vehicle</i> except ____.=suitcase[yacht+motorcycle]dump truck",
 ];
 
-// ---- Pre-parse (§5.1) ----
+// ---- Pre-parse (ï¿½5.1) ----
 $items = [];
 foreach ($rawQuestions as $raw) {
     $eq = strpos($raw, '=');
@@ -89,7 +89,7 @@ foreach ($rawQuestions as $raw) {
     ];
 }
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function hy_box(string $html, int $minHeight = 140): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -99,7 +99,7 @@ function hy_box(string $html, int $minHeight = 140): void {
        . $html . '</div>';
 }
 
-// Escape everything EXCEPT the specific <i>…</i> pair, which is re-emitted as
+// Escape everything EXCEPT the specific <i>ï¿½</i> pair, which is re-emitted as
 // a styled italic (color #CC0066) around the hypernym.
 function hy_render_question(string $q): string {
     $esc = htmlspecialchars($q);
@@ -109,7 +109,7 @@ function hy_render_question(string $q): string {
     return $esc;
 }
 
-// ---- No-repeat picker (§6) ----
+// ---- No-repeat picker (ï¿½6) ----
 function pick_hy(array $pool, string $sessionKey): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -140,7 +140,7 @@ function build_hy_question(array $items, string $lvl, string $sessionKey): array
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -151,12 +151,12 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = build_hy_question($items, $lvl, $sessionKey);
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

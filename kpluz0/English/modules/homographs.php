@@ -1,15 +1,15 @@
 <?php
-// english/modules/homographs.php
-// Homographs — identify an alternative meaning of a homograph.
-// Single level (Easy) — legacy forced $_SESSION['level']="Easy" at the top and
+// English/modules/homographs.php
+// Homographs ï¿½ identify an alternative meaning of a homograph.
+// Single level (Easy) ï¿½ legacy forced $_SESSION['level']="Easy" at the top and
 // the level never affected content (only which legacy DB column was updated,
 // now handled by Scorer). Grade displayed but does not affect tier.
-// 4 choices always. Choices are phrases (15–30 chars), so the layout uses a
-// vertical stack (one per row) per §9.1 "4 (long sentences)" — a 2×2 grid
-// would wrap awkwardly for 4–6-word answers.
+// 4 choices always. Choices are phrases (15ï¿½30 chars), so the layout uses a
+// vertical stack (one per row) per ï¿½9.1 "4 (long sentences)" ï¿½ a 2ï¿½2 grid
+// would wrap awkwardly for 4ï¿½6-word answers.
 //
 // LAYOUT RULE (permanent): "Click on the correct answer below." ALWAYS sits
-// immediately above the choice buttons — never above the question box.
+// immediately above the choice buttons ï¿½ never above the question box.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -27,14 +27,14 @@ $moduleTitle = 'Homographs';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade (§3) ----
+// ---- Grade (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
-// Single level — no selector (legacy forced Easy and content never varied by level).
+// Single level ï¿½ no selector (legacy forced Easy and content never varied by level).
 $lvl = 'Easy';
 
-// ---- Data (§5) — verbatim from legacy (28 items) ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy (28 items) ----
 // Format: "<question>=<correct>[<w1>+<w2>]<w3>"
 $rawQuestions = [
     "The word 'does' is the present, third-party, singular form of 'do'. It may also mean what?=female deer[an amount of medicine+to sleep lightly]the number '2'",
@@ -67,7 +67,7 @@ $rawQuestions = [
     "The word 'built' is the past tense of 'build'. It may also mean what?=the size and shape of a body[a feeling of regret or remorse+a structure with a roof and walls]an animal sound",
 ];
 
-// ---- Pre-parse (§5.1) ----
+// ---- Pre-parse (ï¿½5.1) ----
 $items = [];
 foreach ($rawQuestions as $raw) {
     $eq = strpos($raw, '=');
@@ -88,7 +88,7 @@ foreach ($rawQuestions as $raw) {
     ];
 }
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function hg_box(string $html, int $minHeight = 140): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -106,7 +106,7 @@ function hg_bind_last_words(string $text, int $words = 2): string {
     }, $esc, 1);
 }
 
-// ---- No-repeat picker (§6) ----
+// ---- No-repeat picker (ï¿½6) ----
 function pick_hg(array $pool, string $sessionKey): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -137,7 +137,7 @@ function build_hg_question(array $items, string $lvl, string $sessionKey): array
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -148,12 +148,12 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = build_hg_question($items, $lvl, $sessionKey);
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

@@ -1,6 +1,6 @@
 <?php
-// english/modules/speaker-id.php
-// Identifying the Speaker in a Story — reading comprehension MC (4 choices).
+// English/modules/speaker-id.php
+// Identifying the Speaker in a Story ï¿½ reading comprehension MC (4 choices).
 // 4 stories; grade-aware pools per level.
 
 session_name('KPLUZ_SESSION');
@@ -106,7 +106,7 @@ $stories = [
             "Jay screamed, \"Roy, help me get up your tree!\" Roy replied, \"I can't! You're on your own!\"",
             "Then Jay remembered that animals don't like dead bodies, so he fell to the ground and played dead. The bear sniffed him and thought he was dead. So, it went on its way.",
             "Roy asked Jay, \"What did the bear whisper into your ears?\"",
-            "Jay replied, \"The bear told me to keep away from friends that don't help friends — friends like you.\"",
+            "Jay replied, \"The bear told me to keep away from friends that don't help friends ï¿½ friends like you.\"",
         ],
         'questions' => [
             ['q' => 'Who brought up the idea of walking into the forest?',                                    'correct' => 'Jay',                'wrong' => ['Roy', 'the bear', 'the cub']],

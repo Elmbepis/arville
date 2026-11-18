@@ -1,19 +1,19 @@
 <?php
-// english/modules/bias-text.php
-// STATIC passage-interpretation + choice. Bypass QEngine per §D.
+// English/modules/bias-text.php
+// STATIC passage-interpretation + choice. Bypass QEngine per ï¿½D.
 // Shows a persuasive passage; student clicks the bias technique it uses.
 //
-// Levels (§E — single-level collapse §5):
+// Levels (ï¿½E ï¿½ single-level collapse ï¿½5):
 //   Legacy hardcoded $_SESSION['level']="Easy" with no level radios in the
 //   HTML. Collapsed to $lvl='Easy' (preserves legacy 1-point value). No
 //   selector rendered.
 //
-// Grade-keyed content (§10 — legacy quirk preserved):
+// Grade-keyed content (ï¿½10 ï¿½ legacy quirk preserved):
 //   Legacy used `if ($grd==8)` to swap in a much harder bank with LONG
 //   descriptions ("to relate and appeal to the masses or common people")
 //   instead of short technique names ("plain folks appeal"). All other
 //   grades got the short-name bank. Grades 9-10 fell through to the short
-//   version (likely legacy oversight but preserved per §5).
+//   version (likely legacy oversight but preserved per ï¿½5).
 //
 //   Preserved exactly:
 //     $grd == 8  &#8594; $bankLong (34 questions, long descriptions)
@@ -24,7 +24,7 @@
 //     otherwise &#8594; "Click on the bias technique used above."
 //
 // 34 active questions per bank preserved verbatim. Legacy Q13 was empty
-// (only a `//13` comment, no content) in both banks — skip preserved.
+// (only a `//13` comment, no content) in both banks ï¿½ skip preserved.
 //
 // Paragraph breaks: some passages have `<br/><br/>` before an attribution
 // line (Q6, Q11, Q17, Q33, Q35). Rendered via bt_render_passage() which
@@ -32,19 +32,19 @@
 // browser text flow) then whitelists <br> tags back in.
 //
 // Font sizing matches journalistic-writing.php reference:
-//   prompt 1.35rem · card 1.35rem · feedback card 1.25rem
-//   hint 1.2rem · choice buttons 1.25rem
-//   "Your answer is" 14pt · verdict 16pt (inline, unchanged)
+//   prompt 1.35rem ï¿½ card 1.35rem ï¿½ feedback card 1.25rem
+//   hint 1.2rem ï¿½ choice buttons 1.25rem
+//   "Your answer is" 14pt ï¿½ verdict 16pt (inline, unchanged)
 //
-// Choice layout (§14): maxLen &#8804; 17 &#8594; 2×2 grid; else 1-col hug.
+// Choice layout (ï¿½14): maxLen &#8804; 17 &#8594; 2ï¿½2 grid; else 1-col hug.
 // All grade-8 questions use 1-col (descriptions 30-50 chars).
 // Non-grade-8 short bank: mostly 1-col (due to "glittering generality"
-// 21 chars as a common distractor), 5 questions use 2×2 (Q7, Q12, Q16,
-// Q26, Q29 — no "glittering generality" distractor).
+// 21 chars as a common distractor), 5 questions use 2ï¿½2 (Q7, Q12, Q16,
+// Q26, Q29 ï¿½ no "glittering generality" distractor).
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
 //
-// Theme: ex-27-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-27-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'bias-text.php'
 
@@ -65,13 +65,13 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Bias Techniques in Text';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Easy';   // single-level collapse (§5)
+$lvl         = 'Easy';   // single-level collapse (ï¿½5)
 
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5)));
 
 // ============================================================
-// Bank: default (short technique names) — 34 questions
-// Legacy Q13 empty — skipped.
+// Bank: default (short technique names) ï¿½ 34 questions
+// Legacy Q13 empty ï¿½ skipped.
 // ============================================================
 $bankShort = [
     "I'm just an average person, who doesn't have money to throw away on a pair of athletic shoes that won't last as long as it takes to run around the block. GymFans athletic shoes combine quality and style with a price I can afford.=plain folks appeal[name-calling+fear]glittering generality",
@@ -111,8 +111,8 @@ $bankShort = [
 ];
 
 // ============================================================
-// Bank: grade-8 (long descriptions) — 34 questions
-// Legacy Q13 empty — skipped.
+// Bank: grade-8 (long descriptions) ï¿½ 34 questions
+// Legacy Q13 empty ï¿½ skipped.
 // ============================================================
 $bankLong = [
     "I'm just an average person, who doesn't have money to throw away on a pair of athletic shoes that won't last as long as it takes to run around the block. GymFans athletic shoes combine quality and style with a price I can afford.=to relate and appeal to the masses or common people[to give the alternative a bad label or connotation+to scare one into agreeing with the message]to promise something wonderful or of extraordinary value",
@@ -214,14 +214,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // Theme
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-27-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-27-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-27-left.jpg',
-    'right_side'    => $base . '/english/images/ex-27-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-27-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-27-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-27-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-27-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-27-left.jpg',
+    'right_side'    => $base . '/English/images/ex-27-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-27-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-27-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================

@@ -1,10 +1,10 @@
 <?php
-// english/modules/verbs-basic-forms.php
-// Basic Forms of Verbs — given a verb in its base form, type the requested
+// English/modules/verbs-basic-forms.php
+// Basic Forms of Verbs ï¿½ given a verb in its base form, type the requested
 // tense/form (simple past, simple present singular, present participle, or
 // past participle).
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 6 content tiers via (level × grade); text-input answer.
+// 6 content tiers via (level ï¿½ grade); text-input answer.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -22,7 +22,7 @@ $moduleTitle = 'Basic Forms of Verbs';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -33,7 +33,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+// ---- Tier mapping (ï¿½4) ï¿½ legacy Easy / legacy Hard; Medium folded into Hard ----
 function resolve_vb_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 4) return 1;
@@ -47,7 +47,7 @@ function resolve_vb_tier(string $lvl, int $grd): int {
     return 6;
 }
 
-// ---- Data (§5) — verbatim from legacy, with 4 data fixes ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy, with 4 data fixes ----
 // Fixes:
 //   * tier 1 "feel-feels-felt"              &#8594; "feel-feels-felt-felt-feeling"  (truncated)
 //   * tier 1 "send-send-sent-sent-sending"  &#8594; "send-sends-sent-sent-sending"  (wrong present)
@@ -257,7 +257,7 @@ $dataByTier = [
     ],
 ];
 
-// ---- Helpers (§8.4) ----
+// ---- Helpers (ï¿½8.4) ----
 function vb_prompt_box(string $html, int $minHeight = 100): void {
     echo '<div style="width:fit-content;max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:24px 40px;'
@@ -284,7 +284,7 @@ function vb_bind_last_words(string $text, int $words = 2): string {
     }, $esc, 1);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_vb_question(array $dataByTier, string $lvl, int $grd, string $sessionKey): ?array {
     $tier = resolve_vb_tier($lvl, $grd);
     $pool = $dataByTier[$tier] ?? [];
@@ -347,7 +347,7 @@ function build_vb_question(array $dataByTier, string $lvl, int $grd, string $ses
     ];
 }
 
-// ---- Answer processing (§7 — text input) ----
+// ---- Answer processing (ï¿½7 ï¿½ text input) ----
 $result = null; $scorer = null;
 if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -367,13 +367,13 @@ if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $newQ = build_vb_question($dataByTier, $lvl, $grd, $sessionKey);
     if ($newQ !== null) $_SESSION[$sessionKey]['current'] = $newQ;
 }
 
-// ---- Render (§8, §10) ----
+// ---- Render (ï¿½8, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -439,7 +439,7 @@ render_header($moduleTitle.' - Grade '.$grd.' - '.$lvl, $moduleTitle.' - Grade '
 endif;
 ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p><table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>
   <?php foreach ($levels as $l): ?>

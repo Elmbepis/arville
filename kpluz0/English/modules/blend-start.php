@@ -1,23 +1,23 @@
 <?php
-// english/modules/blend-start.php
-// STATIC word bank + choice. Bypass QEngine per §D.
+// English/modules/blend-start.php
+// STATIC word bank + choice. Bypass QEngine per ï¿½D.
 // Shows a noun image with the first two-letter consonant blend blanked;
 // click the correct blend.
 //
-// Levels (§E — 2-level scheme): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme): Easy / Hard
 //   Legacy mapped its 3 radio levels to $grd / $grd+1 / $grd+2. Collapsed to
 //   2 levels (no Medium rule) preserving the $grd-driven tiering:
 //     Easy = arrnum from $grd        (legacy Easy)
 //     Hard = arrnum from $grd + 2    (legacy Hard)
-//   The legacy Medium ($grd+1) tier is dropped per §5.
+//   The legacy Medium ($grd+1) tier is dropped per ï¿½5.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 5.
 //
 // Choice layout: 4 blend choices in ONE row (.letter-row). Manual anchors
-// (§15 bypass) — render_choices' sizing is inadequate for these large tiles.
+// (ï¿½15 bypass) ï¿½ render_choices' sizing is inadequate for these large tiles.
 //
-// Image: english/images/phonics/{word}.jpg (validated via file_exists).
-// Theme: ex-29-* (110/582/108) &#8594; paper-69-* per §8 fit test.
+// Image: English/images/phonics/{word}.jpg (validated via file_exists).
+// Theme: ex-29-* (110/582/108) &#8594; paper-69-* per ï¿½8 fit test.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'blend-start.php'
 
@@ -53,12 +53,12 @@ $pools = [
     3 => ["bridge","brook","cliff","clones","cradle","crate","crayfish","crevice","cricket","crochet","crocodile","crown","crutch","driver","flame","flashlight","flamingo","flock","flower","flute","grave","ground","prince","princess","prunes","scalp","scooter","scorpion","skunk","sleep","sleet","slipper","sloth","snake","spear","spider","spoon","spread","spring","stairs","steam","steed","steel","stork","stalk","storm","stove","stump","swamp","tractor","trail","trident"],
 ];
 
-// §10 grade-keyed config: Easy = $grd, Hard = $grd + 2 (clamped 0-3)
+// ï¿½10 grade-keyed config: Easy = $grd, Hard = $grd + 2 (clamped 0-3)
 $offset = ($lvl === 'Hard') ? 2 : 0;
 $arrnum = min(3, max(0, $grd + $offset));
 
 $words = $pools[$arrnum];
-$imgDirFs = __DIR__ . '/../../english/images/phonics/';
+$imgDirFs = __DIR__ . '/../../English/images/phonics/';
 
 function pick_word_blend($words, $sessionKey, $imgDirFs) {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
@@ -140,8 +140,8 @@ if ($result === null || isset($_POST['Submit2'])) {
 
     $_SESSION[$sessionKey]['current'] = [
         'word'    => $word,
-        'image'   => $base . '/english/images/phonics/' . $word . '.jpg',
-        'qmark'   => $base . '/english/images/blank-qmark2.jpg',
+        'image'   => $base . '/English/images/phonics/' . $word . '.jpg',
+        'qmark'   => $base . '/English/images/blank-qmark2.jpg',
         'answer'  => $answer,
         'choices' => $choices,
         'lvl'     => $lvl,

@@ -1,10 +1,10 @@
 <?php
-// english/modules/alphabetizing.php
-// MULTI-FIB rank-assignment. Bypass QEngine per §D.
+// English/modules/alphabetizing.php
+// MULTI-FIB rank-assignment. Bypass QEngine per ï¿½D.
 // Shows N words in random order; student types a rank number (1..N) beside each.
 // Scored as a single concatenated string in alphabetical order.
 //
-// Levels (§E — 2-level scheme): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme): Easy / Hard
 //   Easy = legacy Easy. 3 words (grd<4) / 5 words (grd>=4).
 //         Length cap maxlen=7 at grd<3.
 //   Hard = legacy Medium + legacy Hard merged.
@@ -13,9 +13,9 @@
 //   Rationale: merged Hard = legacy Medium behavior, which subsumes the
 //   legacy Hard "consecutive" branch at grd>7.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 5.
 //
-// Theme: ex-*-001 (136/547/117, not in §8 fit list) &#8594; paper-69-*.
+// Theme: ex-*-001 (136/547/117, not in ï¿½8 fit list) &#8594; paper-69-*.
 // Score box: score-*-3 (English default).
 // DB row required: modules.url = 'alphabetizing.php'
 
@@ -80,7 +80,7 @@ $allwords[10] = $allwords[9];
 
 $words = $allwords[$grd];
 
-// Level config (§10 shape: simple ranges with $grd-keyed thresholds)
+// Level config (ï¿½10 shape: simple ranges with $grd-keyed thresholds)
 if ($lvl === 'Easy') {
     $numWords = ($grd >= 4) ? 5 : 3;
     $useConsecutive = false;

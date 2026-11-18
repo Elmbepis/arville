@@ -1,23 +1,23 @@
 <?php
-// english/modules/grammar-perfect-tenses.php
-// Grammar: Perfect Tenses — click the verb form that correctly fits the blank.
-// 12 sentence pools mapped by (level × grade). Legacy Easy + Medium; modern
-// folds legacy Medium into Hard per handover §3.2.
-// 4 choices always in a 2×2 grid; correct answer guaranteed to appear.
+// English/modules/grammar-perfect-tenses.php
+// Grammar: Perfect Tenses ï¿½ click the verb form that correctly fits the blank.
+// 12 sentence pools mapped by (level ï¿½ grade). Legacy Easy + Medium; modern
+// folds legacy Medium into Hard per handover ï¿½3.2.
+// 4 choices always in a 2ï¿½2 grid; correct answer guaranteed to appear.
 //
 // Legacy quirk: legacy had a forced Hard&#8594;Medium conversion at the top of the
 // file, so legacy Hard was never actually used. Modern Hard = legacy Medium.
 //
-// Legacy had no pools for grades 0–2 — clamped to grade 3 (pool 1/2).
+// Legacy had no pools for grades 0ï¿½2 ï¿½ clamped to grade 3 (pool 1/2).
 //
-// Data fixes (§5.4):
-//   • pool 3 "florists" — wrong3 duplicated correct; fixed to <will have arranged
-//   • pool 4 "tenors" — has&#8594;have (plural subject) + distractor order fixed
-//   • pool 4 "merhcant" &#8594; "merchant"
-//   • pool 5 "bicuits" &#8594; "biscuits"
-//   • pool 5 "managers" — wrong3 duplicated correct; fixed to <has selected
-//   • pool 7 "solutiom" &#8594; "solution"
-//   • pool 7 "army officers" — wrong3 duplicated correct; fixed to <has directed
+// Data fixes (ï¿½5.4):
+//   ï¿½ pool 3 "florists" ï¿½ wrong3 duplicated correct; fixed to <will have arranged
+//   ï¿½ pool 4 "tenors" ï¿½ has&#8594;have (plural subject) + distractor order fixed
+//   ï¿½ pool 4 "merhcant" &#8594; "merchant"
+//   ï¿½ pool 5 "bicuits" &#8594; "biscuits"
+//   ï¿½ pool 5 "managers" ï¿½ wrong3 duplicated correct; fixed to <has selected
+//   ï¿½ pool 7 "solutiom" &#8594; "solution"
+//   ï¿½ pool 7 "army officers" ï¿½ wrong3 duplicated correct; fixed to <has directed
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -35,7 +35,7 @@ $moduleTitle = 'Grammar: Perfect Tenses';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -46,7 +46,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 function resolve_gft_pool(string $lvl, int $grd): int {
     if ($grd < 0) $grd = 0;
     if ($grd > 10) $grd = 10;
@@ -66,13 +66,13 @@ function resolve_gft_pool(string $lvl, int $grd): int {
     return 12; // 8 or 10
 }
 
-// ---- Value pools (§5) ----
+// ---- Value pools (ï¿½5) ----
 $boyPool     = ['Alex','Ben','Carlos','Daniel','Diego','Gabriel','Isaac','Jaime','Jose','Juan','Jonathan','Lucas','Luis','Max','Roberto','Samuel','Tomas'];
 $girlPool    = ['Annie','Betty','Caring','Elisa','Emma','Eva','Evelyn','Grace','Josie','Julie','Katring','Laura','Lydia','Maring','Olive','Tina','Toyang'];
 $surnamePool = ['Cruz','de Guzman','Gomez','Padua','Santos','Reyes','Tolentino','Torres'];
 $dayPool     = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
-// ---- Sentence pools — format: 'sentence=answer>wrong1+wrong2<wrong3' ----
+// ---- Sentence pools ï¿½ format: 'sentence=answer>wrong1+wrong2<wrong3' ----
 $sentencePools = [
     1 => [
         'The gardener ___ the flowers just a moment ago.=has picked>had picked+will have picked<have picked',
@@ -338,7 +338,7 @@ $sentencePools = [
     ],
 ];
 
-// ---- Helpers (§8.4, §8.6 + hugging technique) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6 + hugging technique) ----
 function gft_compute_width(string $html, int $maxWidthPx = 480, int $minWidthPx = 220): int {
     $charPx          = 11;
     $horizontalSpace = 40;
@@ -444,7 +444,7 @@ function gft_pick_question(array $pool, string $sessionKey, int $poolId): ?array
     return ['answer' => $parsed['answer'], 'sentence' => $sentence, 'wrong' => $parsed['wrong']];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -455,7 +455,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $poolId = resolve_gft_pool($lvl, $grd);
     $pool   = $sentencePools[$poolId] ?? $sentencePools[1];
@@ -481,7 +481,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -554,7 +554,7 @@ render_header($moduleTitle.'<br/>Grade '.$grd.' - '.$lvl, $moduleTitle.'<br/>Gra
   <input type="submit" name="Submit2" value=" New Question " style="display:block;margin:25px auto;font-family:Arial,sans-serif;font-size:11pt;">
 <?php endif; ?>
 
-  <!-- Difficulty radios (§10.4 — Easy / Hard only, 12pt label) -->
+  <!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only, 12pt label) -->
   <div align="center" style="margin-top:20px;">
     <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p>
     <table border="0" width="80%" cellspacing="0" cellpadding="0" style="margin:0 auto;"><tr>

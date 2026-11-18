@@ -1,10 +1,10 @@
 <?php
-// english/modules/diphthongs.php
-// Words with Diphthongs — multiple choice: click the word containing a diphthong.
+// English/modules/diphthongs.php
+// Words with Diphthongs ï¿½ multiple choice: click the word containing a diphthong.
 // 2 tiers via level only (Easy &#8594; pool 1, Hard &#8594; pool 3); grade is displayed
-// but does not affect tier selection (matches legacy behavior — $grd was never used).
-// 4 choices always (2×2 grid), 1 diphthong + 3 non-diphthong distractors.
-// Grade from $_SESSION['user_grade'] (0–10).
+// but does not affect tier selection (matches legacy behavior ï¿½ $grd was never used).
+// 4 choices always (2ï¿½2 grid), 1 diphthong + 3 non-diphthong distractors.
+// Grade from $_SESSION['user_grade'] (0ï¿½10).
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -22,7 +22,7 @@ $moduleTitle = 'Words with Diphthongs';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -33,14 +33,14 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4.3) ----
+// ---- Tier mapping (ï¿½4.3) ----
 // Legacy: Easy &#8594; $arrnum=1, Medium &#8594; $arrnum=2, Hard &#8594; $arrnum=3. Grade never used.
 // Modern (2 levels): Easy &#8594; 1, Hard &#8594; 3 (harder of legacy Medium/Hard).
 function resolve_diphthongs_tier(string $lvl, int $grd): int {
     return ($lvl === 'Easy') ? 1 : 3;
 }
 
-// ---- Data (§5) — verbatim from legacy ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy ----
 // Pool 2 is preserved from legacy but unreachable under the current 2-level design.
 $diphs = [];
 $diphs[1] = [
@@ -71,7 +71,7 @@ $notdiphs[3] = [
     "stuntman","violin","visited","wrench","wrist"
 ];
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function diph_box(string $html, int $minHeight = 140): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -81,7 +81,7 @@ function diph_box(string $html, int $minHeight = 140): void {
        . $html . '</div>';
 }
 
-// ---- No-repeat picker (§6) ----
+// ---- No-repeat picker (ï¿½6) ----
 function pick_diphthong(array $pool, string $sessionKey, int $tier): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -122,7 +122,7 @@ function build_diphthong_question(array $diphs, array $notdiphs, int $tier, stri
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -133,13 +133,13 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $tier = resolve_diphthongs_tier($lvl, $grd);
     $_SESSION[$sessionKey]['current'] = build_diphthong_question($diphs, $notdiphs, $tier, $lvl, $sessionKey);
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

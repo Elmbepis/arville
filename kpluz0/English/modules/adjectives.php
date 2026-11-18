@@ -1,8 +1,8 @@
 <?php
-// english/modules/adjectives.php
-// Identifying Adjectives — click the adjective among four words (4 choices).
-// 2 levels (Easy, Hard); tier index = grade-aware word bank (0–10).
-// grade from $_SESSION['user_grade'] (0–10).
+// English/modules/adjectives.php
+// Identifying Adjectives ï¿½ click the adjective among four words (4 choices).
+// 2 levels (Easy, Hard); tier index = grade-aware word bank (0ï¿½10).
+// grade from $_SESSION['user_grade'] (0ï¿½10).
 
 session_name('KPLUZ_SESSION');
 session_start();

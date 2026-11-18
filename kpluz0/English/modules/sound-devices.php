@@ -1,15 +1,15 @@
 <?php
-// english/modules/sound-devices.php
-// STATIC question bank + choice. Bypass QEngine per §D.
+// English/modules/sound-devices.php
+// STATIC question bank + choice. Bypass QEngine per ï¿½D.
 // Shows a sentence; student identifies which sound device it demonstrates.
 //
-// Levels (§E — 2-level scheme, Medium+Hard merged): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme, Medium+Hard merged): Easy / Hard
 //   Legacy had 3 levels with distinct content tiers (arrnum 1-4). Modern:
 //     Easy &#8594; legacy Easy config
 //     Hard &#8594; 50/50 pick between legacy Medium config and legacy Hard config
 //   Preserves every legacy tier's content pool exactly.
 //
-// Grade-keyed config (§10) — two bands × three internal configs:
+// Grade-keyed config (ï¿½10) ï¿½ two bands ï¿½ three internal configs:
 //   grd 0-6, grd 7-10. Each (band, internal) resolves to arrnum 1-4.
 //
 // Sound devices: onomatopoeia, alliteration, assonance, consonance, rhyme.
@@ -19,11 +19,11 @@
 // stripped for question display.
 //
 // Data fix: legacy tier-4 assonance entry 1 had "=assonance=onomatopoeia=..."
-// (missing ? after answer) — corrected to "?assonance?onomatopoeia=...".
+// (missing ? after answer) ï¿½ corrected to "?assonance?onomatopoeia=...".
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
 //
-// Theme: ex-28-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-28-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'sound-devices.php'
 
@@ -72,7 +72,7 @@ if ($grd <= 6) {
 }
 
 // ============================================================
-// Bank — 4 tiers (arrnum 1-4)
+// Bank ï¿½ 4 tiers (arrnum 1-4)
 // ============================================================
 $bankByTier = [];
 
@@ -211,7 +211,7 @@ $bankByTier[4] = [
     "[V]aliance and [v]alor are two [v]irtues we'll never observe in these [v]illainous [v]ermins.+alliteration?onomatopoeia=rhyme=assonance",
     "The [dr]owsy operator had [dr]iven the [dr]edger into the secluded [dr]illing zone.+alliteration?onomatopoeia=rhyme=assonance",
     "The [br]awny [st]untman [br]aved the [st]orm to [br]ing [br]eakfast to the [st]randed [st]udents at the [br]ewery.+alliteration?onomatopoeia=rhyme=assonance",
-    // assonance (3) — item 1 fixed: '=' after answer replaced with '?'
+    // assonance (3) ï¿½ item 1 fixed: '=' after answer replaced with '?'
     "Mr. P[e]r[e]z conf[e]ssed that he f[e]lt d[e]j[e]ct[e]d and d[e]sp[e]rate during their qu[e]st for wat[e]r.+assonance?onomatopoeia=consonance=alliteration",
     "The m[ou]thy gr[ou]ch den[ou]nced the ast[ou]nded cr[ow]d for being r[ow]dy.+assonance?onomatopoeia=consonance=alliteration",
     "M[y] st[y]mied friend was der[i]ded b[y] a r[i]val tr[y]ing to underm[i]ne our l[i]velihood.+assonance?onomatopoeia=consonance=alliteration",
@@ -328,14 +328,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // Theme
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-28-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-28-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-28-left.jpg',
-    'right_side'    => $base . '/english/images/ex-28-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-28-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-28-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-28-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-28-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-28-left.jpg',
+    'right_side'    => $base . '/English/images/ex-28-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-28-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-28-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================

@@ -1,7 +1,7 @@
 <?php
-// english/modules/context-clues.php
-// Context Clues — read a sentence with a highlighted target word; pick its meaning.
-// 6 tiers via (level × grade); module targets grades 2–10 (0–1 clamped to 2).
+// English/modules/context-clues.php
+// Context Clues ï¿½ read a sentence with a highlighted target word; pick its meaning.
+// 6 tiers via (level ï¿½ grade); module targets grades 2ï¿½10 (0ï¿½1 clamped to 2).
 // Easy &#8594; legacy Easy formula, Hard &#8594; legacy Hard formula (harder of Medium/Hard).
 // 3 choices always (correct meaning + 2 distractors), vertical stack.
 
@@ -21,7 +21,7 @@ $moduleTitle = 'Context Clues';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -32,12 +32,12 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 // Legacy:
 //   Easy:   grd 2-3&#8594;1, 4-5&#8594;2, 6-7&#8594;3, &#8805;8&#8594;4
 //   Medium: grd 2-3&#8594;2, 4-5&#8594;3, 6-7&#8594;4, &#8805;8&#8594;5
 //   Hard:   grd 2-3&#8594;3, 4-5&#8594;4, 6-7&#8594;5, &#8805;8&#8594;6
-// Module is for grades 2–10; treat grades 0-1 as grade 2.
+// Module is for grades 2ï¿½10; treat grades 0-1 as grade 2.
 function resolve_context_clues_tier(string $lvl, int $grd): int {
     if ($grd < 2) $grd = 2;
     if ($lvl === 'Easy') {
@@ -59,7 +59,7 @@ function resolve_context_clues_tier(string $lvl, int $grd): int {
 $redq  = '{v}';
 $grayq = '{/v}';
 
-// ---- Raw data (§5) — verbatim from legacy, two typo fixes noted below ----
+// ---- Raw data (ï¿½5) ï¿½ verbatim from legacy, two typo fixes noted below ----
 $rawData = [];
 
 $rawData[1] = [
@@ -265,7 +265,7 @@ $rawData[6] = [
     "vituperate=to berate or insult+to exalt or dignify/to invigorate or energize>The disheartened basketball players don't have the confidence to win anymore because their coach $redq vituperate $grayq them all the time.",
 ];
 
-// ---- Pre-parse data (§5.1) ----
+// ---- Pre-parse data (ï¿½5.1) ----
 function parse_context_entry(string $raw): ?array {
     $eq    = strpos($raw, '=');
     $plus  = strpos($raw, '+');
@@ -298,7 +298,7 @@ foreach ($rawData as $tier => $rawList) {
     }
 }
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function clues_box(string $html, int $minHeight = 140): void {
     echo '<div style="max-width:520px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -332,7 +332,7 @@ function render_context_sentence(string $sentence): string {
     return $out;
 }
 
-// ---- No-repeat picker (§6.2) ----
+// ---- No-repeat picker (ï¿½6.2) ----
 function pick_clues_item(array $pool, string $sessionKey, int $tier): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -351,7 +351,7 @@ function pick_clues_item(array $pool, string $sessionKey, int $tier): array {
     return $item;
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -362,7 +362,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $tier = resolve_context_clues_tier($lvl, $grd);
     $pool = $items[$tier] ?? $items[1];
@@ -382,7 +382,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

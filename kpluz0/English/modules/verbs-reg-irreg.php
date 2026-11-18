@@ -1,16 +1,16 @@
 <?php
-// english/modules/verbs-reg-irreg.php
-// Regular and Irregular Verbs — given a verb in base form, identify whether it
+// English/modules/verbs-reg-irreg.php
+// Regular and Irregular Verbs ï¿½ given a verb in base form, identify whether it
 // is a regular or an irregular verb.
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 5 content tiers via (level × grade); 2 M/C choices (1×2 grid).
+// 5 content tiers via (level ï¿½ grade); 2 M/C choices (1ï¿½2 grid).
 //
 // Data convention: entries are '<base>-<pastOrParticiple>' with an optional
 // trailing '*' marking that the shown form is a past participle (not past
-// tense) — e.g. 'mow-mown*'. The asterisk is stripped at definition time.
+// tense) ï¿½ e.g. 'mow-mown*'. The asterisk is stripped at definition time.
 //
 // LAYOUT RULE (permanent): "Click on the correct answer below." ALWAYS sits
-// immediately above the choice buttons — never above the verb box.
+// immediately above the choice buttons ï¿½ never above the verb box.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -28,7 +28,7 @@ $moduleTitle = 'Regular and Irregular Verbs';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -39,20 +39,20 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+// ---- Tier mapping (ï¿½4) ï¿½ legacy Easy / legacy Hard; Medium folded into Hard ----
 function resolve_vri_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 4) return 1;
         if ($grd <= 6) return 2;
         return 3;
     }
-    // Hard — legacy Hard formula
+    // Hard ï¿½ legacy Hard formula
     if ($grd <= 4) return 3;
     if ($grd <= 6) return 4;
     return 5;
 }
 
-// ---- Data (§5) — verbatim from legacy, pre-parsed at definition time ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy, pre-parsed at definition time ----
 $rawIrreg = [
     1 => [
         'be-was','bend-bent','come-came','dig-dug','do-did','eat-ate','fall-fell',
@@ -155,7 +155,7 @@ $rawReg = [
     ],
 ];
 
-// Parse into ['base', 'form', 'is_pp'] at definition time (§5.1).
+// Parse into ['base', 'form', 'is_pp'] at definition time (ï¿½5.1).
 function vri_parse(string $raw): array {
     $pos = strpos($raw, '-');
     if ($pos === false) return ['base' => $raw, 'form' => '', 'is_pp' => false];
@@ -177,7 +177,7 @@ foreach ($rawReg as $tier => $list) {
     $dataByTier[$tier]['regular'] = array_map('vri_parse', $list);
 }
 
-// ---- Helpers (§8.4) ----
+// ---- Helpers (ï¿½8.4) ----
 // Hugging box: fits the verb (base) or base-past pair with ample padding.
 function vri_word_box(string $html, int $minHeight = 100): void {
     echo '<div style="width:fit-content;max-width:480px;min-height:' . $minHeight . 'px;'
@@ -196,7 +196,7 @@ function vri_bind_last_words(string $text, int $words = 2): string {
     }, $esc, 1);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_vri_question(array $dataByTier, string $lvl, int $grd, string $sessionKey): ?array {
     $tier = resolve_vri_tier($lvl, $grd);
     $tierData = $dataByTier[$tier] ?? null;
@@ -245,7 +245,7 @@ function build_vri_question(array $dataByTier, string $lvl, int $grd, string $se
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -256,13 +256,13 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $newQ = build_vri_question($dataByTier, $lvl, $grd, $sessionKey);
     if ($newQ !== null) $_SESSION[$sessionKey]['current'] = $newQ;
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -366,7 +366,7 @@ render_header($moduleTitle.'<br/>Grade '.$grd.' - '.$lvl, $moduleTitle.'<br/>Gra
 endif;
 ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p><table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>
   <?php foreach ($levels as $l): ?>

@@ -1,7 +1,7 @@
 <?php
-// english/modules/fact-opinion.php
-// Fact and Opinion — MC (fact / opinion). 5 tiers via (level × grade).
-// Grade from $_SESSION['user_grade'] (0–10).
+// English/modules/fact-opinion.php
+// Fact and Opinion ï¿½ MC (fact / opinion). 5 tiers via (level ï¿½ grade).
+// Grade from $_SESSION['user_grade'] (0ï¿½10).
 
 session_name('KPLUZ_SESSION');
 session_start();

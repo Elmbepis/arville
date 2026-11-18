@@ -1,9 +1,9 @@
 <?php
-// english/modules/print-nonprint-elements.php
-// Elements of Print and Non-print Materials — image-choice; identify elements,
+// English/modules/print-nonprint-elements.php
+// Elements of Print and Non-print Materials ï¿½ image-choice; identify elements,
 // purposes, and types of print/non-print media from pictures.
 //
-// Single-level (§5 collapse): legacy hardcoded $_SESSION['level']="Easy" with
+// Single-level (ï¿½5 collapse): legacy hardcoded $_SESSION['level']="Easy" with
 // no level radios in the HTML. Collapsed to $lvl='Easy'. No selector rendered;
 // no grade/level suffix in the header (matches values-vis-media.php).
 //
@@ -11,15 +11,15 @@
 // in English/images/others/ via '**<file>.jpg'. Parsed at definition time into
 // structured ['img','q','correct','wrong'] arrays.
 //
-// §21 image validation: file_exists() at pick-time — any question whose image
+// ï¿½21 image validation: file_exists() at pick-time ï¿½ any question whose image
 // is missing is skipped. If every remaining entry is invalid, module shows
 // "Temporarily unavailable."
 //
-// Choice layout (§14): maxLen &#8804; 17 &#8594; 2×2 grid; else 1-col hug. Many print/
+// Choice layout (ï¿½14): maxLen &#8804; 17 &#8594; 2ï¿½2 grid; else 1-col hug. Many print/
 // non-print answers are short single words or short phrases; longer
 // "to <verb> ..." answers fall to 1-col.
 //
-// $grd defensive default (§11): $_SESSION['user_grade'], clamped 0–10.
+// $grd defensive default (ï¿½11): $_SESSION['user_grade'], clamped 0ï¿½10.
 // Not used for content selection (single-pool module).
 //
 // Theme: ex-27-* (matches legacy). Score box: score-*-1.
@@ -44,13 +44,13 @@ $imageDirFs = __DIR__ . '/../../English/images/others/';
 $moduleTitle = 'Elements of Print and Non-print Materials';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Easy';   // single-level collapse (§5) — legacy hardcoded Easy
+$lvl         = 'Easy';   // single-level collapse (ï¿½5) ï¿½ legacy hardcoded Easy
 
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
 // ============================================================
-// Question bank — parsed at definition time
+// Question bank ï¿½ parsed at definition time
 // ============================================================
 $allQuestions = [
     0  => ['img' => 'imgpnp01.jpg', 'q' => 'What is the purpose of putting illustrations in storybooks?', 'correct' => 'to engage readers', 'wrong' => ['to enhance the plot', 'to give information', 'to make readers focus']],
@@ -119,7 +119,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
 }
 
 // ============================================================
-// Generate (single pool — all 30 questions)
+// Generate (single pool ï¿½ all 30 questions)
 // ============================================================
 if ($result === null || isset($_POST['Submit2'])) {
     $used = $_SESSION[$sessionKey]['used'] ?? [];

@@ -1,6 +1,6 @@
 <?php
-// english/modules/greetings-polite-exps.php
-// Greetings and Polite Expressions — static question bank + 4 MC choices (vertical).
+// English/modules/greetings-polite-exps.php
+// Greetings and Polite Expressions ï¿½ static question bank + 4 MC choices (vertical).
 // Modernised to the container.php / scorer.php pattern used by plural.php.
 
 session_name('KPLUZ_SESSION');

@@ -1,14 +1,14 @@
 <?php
-// english/modules/irreg-verbs-using.php
-// Using Irregular Verbs in Sentences — fill in the blank with the correct
-// irregular verb form. 4 choices always (2×2 grid): 1 correct form + 3
+// English/modules/irreg-verbs-using.php
+// Using Irregular Verbs in Sentences ï¿½ fill in the blank with the correct
+// irregular verb form. 4 choices always (2ï¿½2 grid): 1 correct form + 3
 // plausible wrong forms.
-// Single level (Easy) — legacy hardcoded $_SESSION['level']="Easy" at the top
+// Single level (Easy) ï¿½ legacy hardcoded $_SESSION['level']="Easy" at the top
 // and content never varied by grade or level (one big flat pool of 35 items).
 // Grade displayed but does not affect tier.
 //
 // LAYOUT RULE (permanent): "Click on the correct answer below." ALWAYS sits
-// immediately above the choice buttons — never above the question/sentence box.
+// immediately above the choice buttons ï¿½ never above the question/sentence box.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -26,14 +26,14 @@ $moduleTitle = 'Using Irregular Verbs<br/>in Sentences';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade (§3) ----
+// ---- Grade (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
-// Single level — no selector.
+// Single level ï¿½ no selector.
 $lvl = 'Easy';
 
-// ---- Data (§5) — verbatim from legacy (35 items) ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy (35 items) ----
 // Format: "<sentence with ____ >=<correct>[<w1>+<w2>]<w3>"
 $rawQuestions = [
     "Have you ____ your hotdog sandwich already?=eaten[ate+eating]eated",
@@ -73,7 +73,7 @@ $rawQuestions = [
     "Be careful because I think he really ____ what he said to you.=meant[meaned+meanted]meaning",
 ];
 
-// ---- Pre-parse (§5.1) ----
+// ---- Pre-parse (ï¿½5.1) ----
 $items = [];
 foreach ($rawQuestions as $raw) {
     $eq = strpos($raw, '=');
@@ -94,7 +94,7 @@ foreach ($rawQuestions as $raw) {
     ];
 }
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function ivu_box(string $html, int $minHeight = 140): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -123,7 +123,7 @@ function ivu_highlight_blank(string $sentence, string $answer): string {
     return $out;
 }
 
-// ---- No-repeat picker (§6) ----
+// ---- No-repeat picker (ï¿½6) ----
 function pick_ivu(array $pool, string $sessionKey): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -154,7 +154,7 @@ function build_ivu_question(array $items, string $lvl, string $sessionKey): arra
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -165,12 +165,12 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = build_ivu_question($items, $lvl, $sessionKey);
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

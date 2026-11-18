@@ -1,29 +1,29 @@
 <?php
-// english/modules/syllable-counting.php
-// FREE-TEXT — user types the syllable count of the shown word. Bypass QEngine.
-// FIB pattern per §12: Submit1 for answer, Submit2 for new question.
+// English/modules/syllable-counting.php
+// FREE-TEXT ï¿½ user types the syllable count of the shown word. Bypass QEngine.
+// FIB pattern per ï¿½12: Submit1 for answer, Submit2 for new question.
 //
-// Levels (§5 — 2-level scheme):
+// Levels (ï¿½5 ï¿½ 2-level scheme):
 //   Legacy had four separate word-pools (tiers 1-4) with genuine difficulty
-//   differentiation — NOT fake. Per §10, preserve real differentiation:
+//   differentiation ï¿½ NOT fake. Per ï¿½10, preserve real differentiation:
 //     grd 0-1 &#8594; Easy: 1; Hard: rand(2,3)   [Medium=2, Hard=3]
 //     grd 2+  &#8594; Easy: 2; Hard: rand(3,4)   [Medium=3, Hard=4]
 //   Tiers:
-//     1 — 1-3 syllables (basic CVC / common two-syllable)
-//     2 — 1-3 syllables (harder, blends, three-syllable)
-//     3 — 1-4 syllables (silent-e, harder blends, four-syllable)
-//     4 — mixed 1-5 syllables (advanced, four- and five-syllable)
+//     1 ï¿½ 1-3 syllables (basic CVC / common two-syllable)
+//     2 ï¿½ 1-3 syllables (harder, blends, three-syllable)
+//     3 ï¿½ 1-4 syllables (silent-e, harder blends, four-syllable)
+//     4 ï¿½ mixed 1-5 syllables (advanced, four- and five-syllable)
 //
 // Word format: "<syllCount><syllable-break>" e.g. "2an-gel".
 //   $ans = first char (count). Display word = syll-break stripped of hyphens.
 //   Feedback shows syllabified card.
 //
-// Answer handling (§12 F.1): canonicalise with (string)(int)trim().
-// Input sizing (§12 F.4): max(100, (digitCount + 1) * 32 + 24) px.
-// maxlength (§12 F.5): strlen((string)$ans) + 1.
+// Answer handling (ï¿½12 F.1): canonicalise with (string)(int)trim().
+// Input sizing (ï¿½12 F.4): max(100, (digitCount + 1) * 32 + 24) px.
+// maxlength (ï¿½12 F.5): strlen((string)$ans) + 1.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 2.
-// Theme: ex-*-23 (75/655/70) &#8594; fits §8 &#8594; paper-69-*.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 2.
+// Theme: ex-*-23 (75/655/70) &#8594; fits ï¿½8 &#8594; paper-69-*.
 // Score box: score-*-3 (English default).
 // DB row required: modules.url = 'syllable-counting.php'
 
@@ -53,7 +53,7 @@ $lvl = $_SESSION['level'];
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? 2)));
 
 // ============================================================
-// BANK — tier &#8594; list of "<count><syllabified>" strings
+// BANK ï¿½ tier &#8594; list of "<count><syllabified>" strings
 // ============================================================
 $sylldivs = [];
 

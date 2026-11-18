@@ -1,7 +1,7 @@
 <?php
-// english/modules/nouns-possessive.php
-// Possessive Nouns — text-input exercise, rewritten sentence.
-// 5 tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
+// English/modules/nouns-possessive.php
+// Possessive Nouns ï¿½ text-input exercise, rewritten sentence.
+// 5 tiers via (level ï¿½ grade); grade from $_SESSION['user_grade'] (0ï¿½10).
 // Plural nouns are preceded by these/those/numerals so readings are unambiguous.
 
 session_name('KPLUZ_SESSION');
@@ -69,14 +69,14 @@ function possessive_pool_for(int $tier, $name1, $name2, $name3, $name4, $item, $
     switch ($tier) {
         case 1:
             return [
-                // Singular — names, my/the/our + single noun
+                // Singular ï¿½ names, my/the/our + single noun
                 "$name1* $item", "$name2* $item", "$name3* $item", "$name4* $item",
                 "children* toys", "my aunt* $item", "my brother* $item", "my cousin* $item",
                 "my father* $item", "the baby* toes", "my friend* $item", "my mother* $item",
                 "my sister* $item", "my teacher* $item", "my uncle* $item", "our dog* paws",
                 "the bird* beak", "the child* toy", "the man* $item", "the plant* leaves",
                 "the sun* rays", "the turtle* shell",
-                // Plural — forced with numerals (animate) or these/those (objects)
+                // Plural ï¿½ forced with numerals (animate) or these/those (objects)
                 "my two sisters+ $item2", "my two brothers+ $item2", "my three cousins+ $item2",
                 "my two aunts+ $item2", "my two uncles+ $item2", "my two friends+ $item2",
                 "these shoes+ soles", "my three teachers+ $item2", "these apples+ taste",
@@ -96,7 +96,7 @@ function possessive_pool_for(int $tier, $name1, $name2, $name3, $name4, $item, $
                 "He showed me his dog* puppies.", "I painted my dog* new house.",
                 "She is $name1* math teacher.", "The cake* icing is very sweet.",
                 "Their house* floor is dusty.",
-                // Plural — forced
+                // Plural ï¿½ forced
                 "$name1 took those hens+ eggs.", "$name3 wrote those boxes+ labels.",
                 "Do not disturb these bees+ hive.", "He counted those cows+ calves.",
                 "His two shoes+ soles are very muddy.", "I checked these books+ titles.",
@@ -124,7 +124,7 @@ function possessive_pool_for(int $tier, $name1, $name2, $name3, $name4, $item, $
                 "Our town* former mayor visited them.",
                 "The baby rabbit* fur feels soft and warm.",
                 "The bush* leaves turned brown before it died.",
-                // Plural — forced
+                // Plural ï¿½ forced
                 "$name1 cleaned the five police cars+ muddy tires.",
                 "$name1 polished those bicycles+ shiny parts.",
                 "$name1 tripped over those trees+ roots and fell.",
@@ -153,7 +153,7 @@ function possessive_pool_for(int $tier, $name1, $name2, $name3, $name4, $item, $
                 "The bank* helpful teller answered all of $name1* questions.",
                 "Our company* young engineers designed this car* unusual engine.",
                 "This manager* check with many zeroes is for all your troubles.",
-                // Plural — forced
+                // Plural ï¿½ forced
                 "These teachers+ dedication made those students+ future brighter.",
                 "Those nurses+ positive attitude lessened those patients+ suffering.",
                 "Those students+ science project made their village much safer.",
@@ -177,7 +177,7 @@ function possessive_pool_for(int $tier, $name1, $name2, $name3, $name4, $item, $
                 "Even the team* injured players were asked to play in yesterday* hard-fought game.",
                 "You're now the zoo* only veterinarian, so expect to be very busy all year round.",
                 "The batallion* remaining soldiers felt abandoned when no reinforcements arrived.",
-                // Plural — forced
+                // Plural ï¿½ forced
                 "These officials+ bodyguards looked worried as those buses+ passengers shouted at them.",
                 "These statues+ proud sculptor was disappointed when nobody came to his exhibit.",
                 "Even those retail stores+ most loyal customers were taken away by online shops.",

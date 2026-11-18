@@ -1,9 +1,9 @@
 <?php
-// english/modules/text-types-factual.php
-// STATIC question bank + choice. Bypass QEngine per §D.
+// English/modules/text-types-factual.php
+// STATIC question bank + choice. Bypass QEngine per ï¿½D.
 // Shows a factual text passage; student clicks its text structure.
 //
-// Levels (§E — single-level collapse §5):
+// Levels (ï¿½E ï¿½ single-level collapse ï¿½5):
 //   Legacy hardcoded $_SESSION['level']="Easy" with no level radios in the
 //   HTML. Collapsed to $lvl='Easy' (preserves legacy 1-point value). No
 //   selector rendered.
@@ -14,26 +14,26 @@
 //
 // Data hygiene: legacy bank entries ended with a trailing newline before
 // the closing quote; the last distractor (choice[3]) carried "\n" into the
-// rendered href — harmless in legacy (only affected a wrong-answer button)
+// rendered href ï¿½ harmless in legacy (only affected a wrong-answer button)
 // but sloppy. Modern parser trims every component.
 //
 // Paragraph breaks (<br/><br/>) inside some passages (Q13, Q18, Q19, Q21,
-// Q23, Q24, Q26, Q27, Q29, Q30, Q31, Q33) preserved via whitelist render —
+// Q23, Q24, Q26, Q27, Q29, Q30, Q31, Q33) preserved via whitelist render ï¿½
 // everything escaped, then only <br>, <br/>, <br /> restored.
 //
 // Font sizing matches journalistic-writing.php reference:
-//   prompt 1.35rem · question card 1.35rem · feedback card 1.25rem
-//   hint 1.2rem · choice buttons 1.25rem
-//   "Your answer is" 14pt · verdict 16pt (inline, unchanged)
+//   prompt 1.35rem ï¿½ question card 1.35rem ï¿½ feedback card 1.25rem
+//   hint 1.2rem ï¿½ choice buttons 1.25rem
+//   "Your answer is" 14pt ï¿½ verdict 16pt (inline, unchanged)
 //
-// Choice layout (§14): maxLen &#8804; 17 &#8594; 2×2 grid; else 1-col hug.
+// Choice layout (ï¿½14): maxLen &#8804; 17 &#8594; 2ï¿½2 grid; else 1-col hug.
 // All 33 questions route to 1-col since "comparison and contrast" (23) or
 // "problem and solution" (20) appears in every choice set.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
-// (Not used for content selection — single-pool module.)
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
+// (Not used for content selection ï¿½ single-pool module.)
 //
-// Theme: ex-27-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-27-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'text-types-factual.php'
 
@@ -54,13 +54,13 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Identifying Factual Text Types';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Easy';   // single-level collapse (§5)
+$lvl         = 'Easy';   // single-level collapse (ï¿½5)
 
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5)));
 
 // ============================================================
 // Question bank: "passage=answer[d1+d2]d3"
-// Entries end with a trailing newline before the closing quote — trimmed
+// Entries end with a trailing newline before the closing quote ï¿½ trimmed
 // by the parser.
 // ============================================================
 $bank = [
@@ -159,14 +159,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // Theme
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-27-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-27-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-27-left.jpg',
-    'right_side'    => $base . '/english/images/ex-27-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-27-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-27-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-27-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-27-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-27-left.jpg',
+    'right_side'    => $base . '/English/images/ex-27-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-27-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-27-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================

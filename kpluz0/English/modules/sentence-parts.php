@@ -1,6 +1,6 @@
 <?php
-// english/modules/sentence-parts.php
-// Parts of a Sentence — highlighted region, pick "Subject" or "Predicate".
+// English/modules/sentence-parts.php
+// Parts of a Sentence ï¿½ highlighted region, pick "Subject" or "Predicate".
 // Two choices rendered side-by-side on one line with a space between them.
 // Tiers 1-2 &#8594; Easy; tiers 3-7 &#8594; Hard (grade-shifted like plural.php).
 

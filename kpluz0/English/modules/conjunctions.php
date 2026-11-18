@@ -1,10 +1,10 @@
 <?php
-// english/modules/conjunctions.php
-// Conjunctions — fill in the blank with the most suitable conjunction.
-// 7 tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
+// English/modules/conjunctions.php
+// Conjunctions ï¿½ fill in the blank with the most suitable conjunction.
+// 7 tiers via (level ï¿½ grade); grade from $_SESSION['user_grade'] (0ï¿½10).
 // Easy: grd<=2&#8594;1, 3-4&#8594;2, 5-6&#8594;3, 7-8&#8594;4, >=9&#8594;5     (legacy Easy)
 // Hard: grd<=2&#8594;3, 3-4&#8594;4, 5-6&#8594;5, 7-8&#8594;6, >=9&#8594;7     (legacy Hard; legacy Medium folded in)
-// 3 choices always (1 correct + 2 baked-in distractors), 1×3 grid.
+// 3 choices always (1 correct + 2 baked-in distractors), 1ï¿½3 grid.
 // Name placeholders {boy}, {girl}, {name}, {surname} rolled fresh per question.
 
 session_name('KPLUZ_SESSION');
@@ -23,7 +23,7 @@ $moduleTitle = 'Conjunctions';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -34,7 +34,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 function resolve_conjunctions_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 2) return 1;
@@ -50,7 +50,7 @@ function resolve_conjunctions_tier(string $lvl, int $grd): int {
     return 7;
 }
 
-// ---- Raw data (§5) — verbatim from legacy; typos fixed ----
+// ---- Raw data (ï¿½5) ï¿½ verbatim from legacy; typos fixed ----
 // Format: 'correct*wrong1+wrong2=sentence with ____'
 // Name placeholders: {boy}, {girl}, {name}, {surname}
 $rawByTier = [
@@ -363,7 +363,7 @@ $girlsNames = ['Alyssa','Amelia','Andrea','Anna','Ariana','Bella','Betty','Camil
     'Mariah','Melanie','Mia','Naomi','Natalie','Olivia','Samantha','Sarah','Sophia','Stella','Tina','Victoria'];
 $surnames = ['Aquino','Castro','Cruz','Dantes','Fajardo','Gascon','Gonzales','Martinez','Mendez','Paredes','Revilla','Santos','Tolentino'];
 
-// ---- Pre-parse (§5.1) ----
+// ---- Pre-parse (ï¿½5.1) ----
 function parse_conj_item(string $raw): ?array {
     $eq = strpos($raw, '=');
     if ($eq === false) return null;
@@ -392,7 +392,7 @@ foreach ($rawByTier as $tier => $rawList) {
     }
 }
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function conj_box(string $html, int $minHeight = 100): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -425,7 +425,7 @@ function conj_apply_names(string $template, array $names): string {
     );
 }
 
-// ---- No-repeat picker (§6.2) ----
+// ---- No-repeat picker (ï¿½6.2) ----
 function pick_conj_item(array $pool, string $sessionKey, int $tier): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -444,7 +444,7 @@ function pick_conj_item(array $pool, string $sessionKey, int $tier): array {
     return $item;
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -455,7 +455,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $tier = resolve_conjunctions_tier($lvl, $grd);
     $pool = $items[$tier] ?? $items[1];
@@ -484,7 +484,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

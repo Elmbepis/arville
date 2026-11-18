@@ -1,9 +1,9 @@
 <?php
-// english/modules/objects.php
-// Direct and Indirect Objects — given a sentence, type the complete direct
+// English/modules/objects.php
+// Direct and Indirect Objects ï¿½ given a sentence, type the complete direct
 // object or the complete indirect object.
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 6 content tiers via (level × grade); text-input answer.
+// 6 content tiers via (level ï¿½ grade); text-input answer.
 //
 // Data markers per sentence:
 //   (verb)        &#8594; the verb
@@ -12,18 +12,18 @@
 //                   sentence has no indirect object)
 //
 // Question mechanics (preserved from legacy):
-//   • Default target = direct object.
-//   • If the sentence has an indirect object, 50/50 the target switches to
+//   ï¿½ Default target = direct object.
+//   ï¿½ If the sentence has an indirect object, 50/50 the target switches to
 //     indirect object.
-//   • Comparison is case-insensitive and ignores spaces.
-//   • A trailing period on the user's input is stripped before comparison.
+//   ï¿½ Comparison is case-insensitive and ignores spaces.
+//   ï¿½ A trailing period on the user's input is stripped before comparison.
 //
-// Data fix (§5.4): tier 6 "products*" &#8594; "products+" (typo in the closing
+// Data fix (ï¿½5.4): tier 6 "products*" &#8594; "products+" (typo in the closing
 // marker; legacy code would not have extracted the direct object correctly).
 //
 // LAYOUT RULE (permanent): "Click on the correct answer below." ALWAYS sits
-// immediately above the choice buttons — never above the sentence box.
-// (Not applicable here — text-input module; the Submit button is the affordance.)
+// immediately above the choice buttons ï¿½ never above the sentence box.
+// (Not applicable here ï¿½ text-input module; the Submit button is the affordance.)
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -41,7 +41,7 @@ $moduleTitle = 'Direct and Indirect Objects';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -52,7 +52,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+// ---- Tier mapping (ï¿½4) ï¿½ legacy Easy / legacy Hard; Medium folded into Hard ----
 function resolve_obj_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 3) return 1;
@@ -66,7 +66,7 @@ function resolve_obj_tier(string $lvl, int $grd): int {
     return 6;
 }
 
-// ---- Name pools (§5.2) — verbatim from legacy ----
+// ---- Name pools (ï¿½5.2) ï¿½ verbatim from legacy ----
 $boys = ['Adam','Alexander','Andrew','Angelo','Benjamin','Brandon','Carlos',
     'Charles','Christopher','Daniel','David','Diego','Dominic','Gabriel','Ian',
     'Isaac','Jack','Jacob','James','Jason','Jose','John','Jonathan','Joseph',
@@ -79,7 +79,7 @@ $girls = ['Alyssa','Amelia','Andrea','Anna','Ariana','Bella','Betty','Camille',
     'Leah','Lillian','Lydia','Madeline','Maria','Mariah','Melanie','Mia','Naomi',
     'Natalie','Olivia','Samantha','Sarah','Sophia','Stella','Tina','Victoria'];
 
-// ---- Data (§5) — verbatim from legacy, with placeholders + 1 typo fix ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy, with placeholders + 1 typo fix ----
 $rawByTier = [
     1 => [
         "Our teacher is (reading) *a book+.",
@@ -213,7 +213,7 @@ $rawByTier = [
     ],
 ];
 
-// ---- Parser (§5.1 — run after name substitution, before question assembly) ----
+// ---- Parser (ï¿½5.1 ï¿½ run after name substitution, before question assembly) ----
 function obj_parse(string $raw): ?array {
     $verb = null; $dobj = null; $iobj = null;
     if (preg_match('/\(([^)]+)\)/u', $raw, $m)) {
@@ -237,7 +237,7 @@ function obj_parse(string $raw): ?array {
     ];
 }
 
-// ---- Render helpers (§8.2 target #CC0066) ----
+// ---- Render helpers (ï¿½8.2 target #CC0066) ----
 function obj_render(array $p, string $highlight = ''): string {
     $verbEsc = htmlspecialchars($p['verb']);
     $dobjEsc = htmlspecialchars($p['dobj']);
@@ -274,7 +274,7 @@ function obj_box(string $html, int $minHeight = 100): void {
        . '</div>';
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_obj_question(array $rawByTier, string $lvl, int $grd,
                             string $sessionKey, array $boys, array $girls): ?array {
     $tier = resolve_obj_tier($lvl, $grd);
@@ -326,7 +326,7 @@ function build_obj_question(array $rawByTier, string $lvl, int $grd,
     ];
 }
 
-// ---- Answer processing (§7 — text input) ----
+// ---- Answer processing (ï¿½7 ï¿½ text input) ----
 $result = null; $scorer = null;
 if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -347,7 +347,7 @@ if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) — with tier-1 fallback if generation fails ----
+// ---- Question generation (ï¿½6) ï¿½ with tier-1 fallback if generation fails ----
 if ($result === null || isset($_POST['Submit2'])) {
     $newQ = build_obj_question($rawByTier, $lvl, $grd, $sessionKey, $boys, $girls);
     if ($newQ !== null) {
@@ -358,7 +358,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     }
 }
 
-// ---- Render (§8, §10) ----
+// ---- Render (ï¿½8, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -472,7 +472,7 @@ render_header($moduleTitle.'<br/>Grade '.$grd.' - '.$lvl,
 endif;
 ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only, 12pt label) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only, 12pt label) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p>
   <table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>

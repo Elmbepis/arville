@@ -1,6 +1,6 @@
 <?php
-// english/modules/sentences-punctuating.php
-// Punctuating Sentences — pick the ending punctuation from 4 single-char
+// English/modules/sentences-punctuating.php
+// Punctuating Sentences ï¿½ pick the ending punctuation from 4 single-char
 // choices ( . ? ! , ) laid out on one line.
 
 session_name('KPLUZ_SESSION');
@@ -28,7 +28,7 @@ $legacyTier = ($grd <= 1) ? 1 : (($grd <= 3) ? 2 : (($grd <= 5) ? 3 : (($grd <= 
 if ($lvl === 'Hard') $legacyTier += 2;
 $tier = min(7, max(1, $legacyTier));
 
-// Human-readable kind names — simple on Easy, technical on Hard
+// Human-readable kind names ï¿½ simple on Easy, technical on Hard
 $kindNames = ($lvl === 'Hard')
     ? [1 => 'declarative', 2 => 'interrogative', 3 => 'imperative', 4 => 'exclamatory']
     : [1 => 'telling',     2 => 'asking',        3 => 'commanding', 4 => 'exclaiming'];

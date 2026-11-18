@@ -1,7 +1,7 @@
 <?php
-// english/modules/cause-effect.php
-// Cause and Effect Relationship — MC (4 choices from same sublist).
-// 5 tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
+// English/modules/cause-effect.php
+// Cause and Effect Relationship ï¿½ MC (4 choices from same sublist).
+// 5 tiers via (level ï¿½ grade); grade from $_SESSION['user_grade'] (0ï¿½10).
 // All bordered boxes: max-width 480px, both-axis centered content.
 
 session_name('KPLUZ_SESSION');

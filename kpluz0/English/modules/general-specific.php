@@ -1,30 +1,30 @@
 <?php
-// english/modules/general-specific.php
-// STATIC question bank + choice. Bypass QEngine per §D.
+// English/modules/general-specific.php
+// STATIC question bank + choice. Bypass QEngine per ï¿½D.
 // Shows a statement; student clicks whether it's "general" or "specific".
 //
-// Levels (§E — single-level collapse §5):
+// Levels (ï¿½E ï¿½ single-level collapse ï¿½5):
 //   Legacy hardcoded $_SESSION['level']="Easy" with no level radios in the
 //   HTML. Collapsed to $lvl='Easy' (preserves legacy 1-point value). No
 //   selector rendered.
 //
 // Legacy quirk (fixed): the entire $gens/$specs banks were wrapped in
-// `if ($grd >= 4) { ... }` — grades 0–3 triggered count() on undefined
+// `if ($grd >= 4) { ... }` ï¿½ grades 0ï¿½3 triggered count() on undefined
 // variables and the module broke. Modern clamps grades < 4 up to 4,
 // matching the legacy module's intended lower bound.
 //
 // Legacy quirk (preserved): $gens and $specs are topically paired by index
 // but the legacy generator picks each independently (`rand` on each array
-// separately), so pairing is effectively random. Preserved as-is — each
+// separately), so pairing is effectively random. Preserved as-is ï¿½ each
 // statement is independently classifiable, so correctness is unaffected.
 //
-// Placeholder: {girl} used in one specific entry ("My Aunt {girl}…").
+// Placeholder: {girl} used in one specific entry ("My Aunt {girl}ï¿½").
 //
-// Choice layout (§14): 2 choices always on one row, equal-width boxes.
+// Choice layout (ï¿½14): 2 choices always on one row, equal-width boxes.
 //   Both labels ("general" / "specific") are short; 1fr 1fr grid gives
 //   uniform halves without any wasted space.
 //
-// Theme: ex-24-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-24-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'general-specific.php'
 
@@ -45,7 +45,7 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'General and Specific Statements';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Easy';   // single-level collapse (§5)
+$lvl         = 'Easy';   // single-level collapse (ï¿½5)
 
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5)));
 if ($grd < 4) $grd = 4;   // legacy had no bank for grades < 4
@@ -111,14 +111,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // THEME
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-24-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-24-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-24-left.jpg',
-    'right_side'    => $base . '/english/images/ex-24-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-24-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-24-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-24-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-24-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-24-left.jpg',
+    'right_side'    => $base . '/English/images/ex-24-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-24-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-24-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================

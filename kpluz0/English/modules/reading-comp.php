@@ -1,10 +1,10 @@
 <?php
-// english/modules/reading-comp.php
-// Story and Article Comprehension — multi-question quiz with 4-choice M/C per question.
-// A story/article image is shown; the student answers 4–7 questions with radio buttons
+// English/modules/reading-comp.php
+// Story and Article Comprehension ï¿½ multi-question quiz with 4-choice M/C per question.
+// A story/article image is shown; the student answers 4ï¿½7 questions with radio buttons
 // and must get a PERFECT score to earn a point (legacy behaviour preserved).
 // 2 levels (Easy, Hard) via legacy tier mapping; Hard uses the harder of legacy Medium/Hard.
-// Grade-aware: Easy grd 0&#8594;tier 0 … Easy grd 8+&#8594;tier 8; Hard grd 0&#8594;tier 2 … Hard grd 8+&#8594;tier 10.
+// Grade-aware: Easy grd 0&#8594;tier 0 ï¿½ Easy grd 8+&#8594;tier 8; Hard grd 0&#8594;tier 2 ï¿½ Hard grd 8+&#8594;tier 10.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -22,7 +22,7 @@ $moduleTitle = 'Story and Article Comprehension';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -33,13 +33,13 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 function resolve_rcomp_arrnum(string $lvl, int $grd): int {
     if ($lvl === 'Easy') return min(8, $grd);
     return min(10, $grd + 2);
 }
 
-// ---- Data (§5) — verbatim from legacy ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy ----
 $articles = [];
 $imgs     = [];
 $qs       = [];
@@ -211,7 +211,7 @@ function rcomp_parse_choices(string $line): ?array {
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -239,7 +239,7 @@ if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $arrnum = resolve_rcomp_arrnum($lvl, $grd);
 
@@ -290,7 +290,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

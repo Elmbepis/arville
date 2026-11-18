@@ -1,28 +1,28 @@
 <?php
-// english/modules/rhymes-songs-poems.php
-// STATIC bank of 18 poem / song excerpts + 4-choice. Bypass QEngine per §3.
+// English/modules/rhymes-songs-poems.php
+// STATIC bank of 18 poem / song excerpts + 4-choice. Bypass QEngine per ï¿½3.
 // Question: show a poem (rhyming words not highlighted); user clicks the pair
 //   of words from the poem that rhyme with each other.
 //
-// Single-level module — §5 collapse. Legacy hardcoded $_SESSION['level']="Medium"
+// Single-level module ï¿½ ï¿½5 collapse. Legacy hardcoded $_SESSION['level']="Medium"
 //   and had no level selector; all questions are equally difficulty. Dropped
 //   $levels, no selector, $lvl fixed to 'Easy' (Scorer point value will be 1;
-//   legacy gave 2 points per correct — flag for review if you want 2).
-//   Preserved as single-level per §5 to match English module conventions.
+//   legacy gave 2 points per correct ï¿½ flag for review if you want 2).
+//   Preserved as single-level per ï¿½5 to match English module conventions.
 //
 // Question format in bank:
-//   'poem'       — poem text with `1`/`2` markers around the rhyming words
-//   'answer'     — "word1, word2" (comma-separated pair, the correct answer)
-//   'distractors' — 3 alternative "word1, word2" pairs (words pulled from
+//   'poem'       ï¿½ poem text with `1`/`2` markers around the rhyming words
+//   'answer'     ï¿½ "word1, word2" (comma-separated pair, the correct answer)
+//   'distractors' ï¿½ 3 alternative "word1, word2" pairs (words pulled from
 //                   the poem that do NOT rhyme with each other)
 //
 // Prompt shows poem with markers stripped; feedback shows poem with markers
 //   converted to highlighted spans.
 //
-// Choice layout (§14): answer/distractors are ~8-18 char strings &#8594; 2×2 grid.
+// Choice layout (ï¿½14): answer/distractors are ~8-18 char strings &#8594; 2ï¿½2 grid.
 //
 // $grd not used (single-level).
-// Theme: ex-*-27 (75/655/70) &#8594; fits §8 &#8594; paper-69-*.
+// Theme: ex-*-27 (75/655/70) &#8594; fits ï¿½8 &#8594; paper-69-*.
 // Score box: score-*-3 (English default).
 // DB row required: modules.url = 'rhymes-songs-poems.php'
 
@@ -43,7 +43,7 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Rhymes in Songs and Poems';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Easy';   // single-level (§5)
+$lvl         = 'Easy';   // single-level (ï¿½5)
 
 // ============================================================
 // BANK

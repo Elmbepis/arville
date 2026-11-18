@@ -1,9 +1,9 @@
 <?php
-// english/modules/grammar-subj-be.php
-// Grammar: 'To Be' Verbs in Sentences — click the correct be-verb (am/is/are/was/were/will/will be).
-// 16 sentence pools mapped from (level × grade). Legacy had Easy + Medium; modern
-// folds legacy Medium into Hard per handover §3.2.
-// 4 choices always in a 2×2 grid; correct answer guaranteed to appear.
+// English/modules/grammar-subj-be.php
+// Grammar: 'To Be' Verbs in Sentences ï¿½ click the correct be-verb (am/is/are/was/were/will/will be).
+// 16 sentence pools mapped from (level ï¿½ grade). Legacy had Easy + Medium; modern
+// folds legacy Medium into Hard per handover ï¿½3.2.
+// 4 choices always in a 2ï¿½2 grid; correct answer guaranteed to appear.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -21,7 +21,7 @@ $moduleTitle = "Grammar: 'To Be' Verbs in Sentences";
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -32,7 +32,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 // Legacy $arrnum determines the verbosity of the value pools (adj, time expressions).
 // Legacy:
 //   Easy:   grd<=2&#8594;1, 3-4&#8594;2, 5-6&#8594;3, >=7&#8594;4
@@ -76,7 +76,7 @@ function resolve_gsb_pool(string $lvl, int $grd): int {
     return 16; // grade 10
 }
 
-// ---- Value pools (§5) ----
+// ---- Value pools (ï¿½5) ----
 $namePool = ['Adam','Adrian','Alex','Andrew','Angelo','Carlos','Carson','Chris','Daniel','David','Diego','Domeng','Elijah','Ethan','Gabriel','Hayden',
     'Ian','Isaac','Isaiah','Jack','Jacob','James','Jason','Jose','John','Jonathan','Joseph','Joshua','Juan','Julian','Justin','Kevin','Lucas',
     'Luis','Luke','Matthew','Max','Michael','Nathan','Noah','Oliver','Robert','Ryan','Samuel','Tristan','William',
@@ -114,7 +114,7 @@ $itemPoolMedium = [
     10 => ['rubber container','wooden planter','metal pipe','ceramic tile','plastic jar','electric fan'],
 ];
 
-// ---- Sentence pools — verbatim from legacy, using {placeholder} markers ----
+// ---- Sentence pools ï¿½ verbatim from legacy, using {placeholder} markers ----
 $sentencePools = [
     // Pool 1: grd<=1 Easy
     1 => [
@@ -603,7 +603,7 @@ $sentencePools = [
     ],
 ];
 
-// ---- Helpers (§8.4, §8.6 + hugging technique) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6 + hugging technique) ----
 function gsb_compute_width(string $html, int $maxWidthPx = 480, int $minWidthPx = 220): int {
     $charPx          = 11;  // Arial 17pt &#8776; 11px/char
     $horizontalSpace = 40;
@@ -662,13 +662,13 @@ function gsb_roll_values(int $arrnum, int $grd): array {
     $girl    = $girlPool[array_rand($girlPool)];
     $surname = $surnamePool[array_rand($surnamePool)];
 
-    // Subjects — singular
+    // Subjects ï¿½ singular
     if (rand(0,1) === 1) {
         $ssubj = $subjs1a[array_rand($subjs1a)];
     } else {
         $ssubj = $possPool[array_rand($possPool)] . ' ' . $subjs1b[array_rand($subjs1b)];
     }
-    // Subjects — plural
+    // Subjects ï¿½ plural
     if (rand(0,1) === 1) {
         $psubj = $subjs2a[array_rand($subjs2a)];
     } else {
@@ -770,7 +770,7 @@ function gsb_pick_question(array $pool, string $sessionKey, int $poolId, int $ar
     return ['answer' => $parsed['answer'], 'sentence' => $sentence];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -781,7 +781,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $poolId = resolve_gsb_pool($lvl, $grd);
     $arrnum = resolve_gsb_arrnum($lvl, $grd);
@@ -813,7 +813,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

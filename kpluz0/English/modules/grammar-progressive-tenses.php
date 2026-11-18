@@ -1,9 +1,9 @@
 <?php
-// english/modules/grammar-progressive-tenses.php
-// Grammar: Progressive Tenses — click the verb form that correctly fits the blank.
-// 14 sentence pools mapped by (level × grade). Legacy had Easy + Medium; modern
-// folds legacy Medium into Hard per handover §3.2.
-// 4 choices always in a 2×2 grid; correct answer guaranteed to appear.
+// English/modules/grammar-progressive-tenses.php
+// Grammar: Progressive Tenses ï¿½ click the verb form that correctly fits the blank.
+// 14 sentence pools mapped by (level ï¿½ grade). Legacy had Easy + Medium; modern
+// folds legacy Medium into Hard per handover ï¿½3.2.
+// 4 choices always in a 2ï¿½2 grid; correct answer guaranteed to appear.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -21,7 +21,7 @@ $moduleTitle = 'Grammar: Progressive Tenses';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -32,11 +32,11 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 // Legacy pool selection:
 //   Easy:   grd 2&#8594;1, 3&#8594;3, 4&#8594;5, 5&#8594;7, 6&#8594;9, 7/9&#8594;11, 8/10&#8594;13
 //   Medium: grd 2&#8594;2, 3&#8594;4, 4&#8594;6, 5&#8594;8, 6&#8594;10, 7/9&#8594;12, 8/10&#8594;14
-// Legacy had no pools for grades 0 or 1 — clamp to grade 2 (pool 1/2).
+// Legacy had no pools for grades 0 or 1 ï¿½ clamp to grade 2 (pool 1/2).
 function resolve_gpt_pool(string $lvl, int $grd): int {
     if ($grd < 0) $grd = 0;
     if ($grd > 10) $grd = 10;
@@ -59,13 +59,13 @@ function resolve_gpt_pool(string $lvl, int $grd): int {
     return 14; // 8 or 10
 }
 
-// ---- Value pools (§5) ----
+// ---- Value pools (ï¿½5) ----
 $boyPool = ['Alex','Ben','Carlos','Daniel','Diego','Gabriel','Isaac','Jaime','Jose','Juan','Jonathan','Lucas','Luis','Max','Roberto','Samuel','Tomas'];
 $girlPool = ['Annie','Betty','Caring','Elisa','Emma','Eva','Evelyn','Grace','Josie','Julie','Katring','Laura','Lydia','Maring','Olive','Tina','Toyang'];
 $surnamePool = ['Cruz','de Guzman','Gomez','Padua','Santos','Reyes','Tolentino','Torres'];
 $dayPool = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
-// ---- Sentence pools — verbatim from legacy, with one typo fixed ----
+// ---- Sentence pools ï¿½ verbatim from legacy, with one typo fixed ----
 // Format: 'sentence=answer>wrong1+wrong2<wrong3'
 $sentencePools = [
     1 => [
@@ -374,7 +374,7 @@ $sentencePools = [
     ],
 ];
 
-// ---- Helpers (§8.4, §8.6 + hugging technique) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6 + hugging technique) ----
 function gpt_compute_width(string $html, int $maxWidthPx = 480, int $minWidthPx = 220): int {
     $charPx          = 11; // Arial 17pt &#8776; 11px/char
     $horizontalSpace = 40;
@@ -481,7 +481,7 @@ function gpt_pick_question(array $pool, string $sessionKey, int $poolId): ?array
     return ['answer' => $parsed['answer'], 'sentence' => $sentence, 'wrong' => $parsed['wrong']];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -492,7 +492,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $poolId = resolve_gpt_pool($lvl, $grd);
     $pool   = $sentencePools[$poolId] ?? $sentencePools[1];
@@ -518,7 +518,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

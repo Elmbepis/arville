@@ -1,22 +1,22 @@
 <?php
-// english/modules/timexp-present.php
-// STATIC question bank + choice. Bypass QEngine per §D.
+// English/modules/timexp-present.php
+// STATIC question bank + choice. Bypass QEngine per ï¿½D.
 // Shows a sentence with a blank; student clicks the correct present-tense
 // time expression from 4 choices.
 //
-// Levels (§E — single-level collapse §5):
+// Levels (ï¿½E ï¿½ single-level collapse ï¿½5):
 //   Legacy hardcoded $_SESSION['level']="Easy" with no level radios in the
-//   HTML — a single-level module. Content bank is identical regardless of
+//   HTML ï¿½ a single-level module. Content bank is identical regardless of
 //   level. Collapsed to $lvl='Easy' (preserves legacy 1-point value). No
 //   selector rendered.
 //
-// Choice layout (§14): 2×2 grid when all choices fit comfortably on one
+// Choice layout (ï¿½14): 2ï¿½2 grid when all choices fit comfortably on one
 // line per cell (maxLen &#8804; 17 chars at 1.15rem font &#8776; 22 chars fit per
 // 231px cell); otherwise stacked 1-col for cleaner presentation of long
 // time expressions like "at a time like this" or "three times a week".
 //
 // DB row required: modules.url = 'timexp-present.php'
-// Theme: ex-27-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-27-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 
 session_name('KPLUZ_SESSION');
@@ -36,7 +36,7 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Time Expressions for the Present Tense';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Easy';   // single-level collapse (§5)
+$lvl         = 'Easy';   // single-level collapse (ï¿½5)
 
 // ============================================================
 // Question bank: "prompt=answer[d1+d2]d3"
@@ -123,14 +123,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // THEME
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-27-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-27-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-27-left.jpg',
-    'right_side'    => $base . '/english/images/ex-27-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-27-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-27-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-27-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-27-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-27-left.jpg',
+    'right_side'    => $base . '/English/images/ex-27-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-27-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-27-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================
@@ -213,7 +213,7 @@ render_header($moduleTitle, $moduleTitle, $theme);
     margin: 12px auto 0;
   }
 
-  /* 2×2 grid — used when all 4 choices fit comfortably per cell */
+  /* 2ï¿½2 grid ï¿½ used when all 4 choices fit comfortably per cell */
   .tp-grid-2x2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -221,7 +221,7 @@ render_header($moduleTitle, $moduleTitle, $theme);
     max-width: 480px;
     margin: 20px auto;
   }
-  /* 1-col stack — used when choices are too long for 2-across */
+  /* 1-col stack ï¿½ used when choices are too long for 2-across */
   .tp-grid-1col {
     display: grid;
     grid-template-columns: auto;
@@ -286,7 +286,7 @@ render_header($moduleTitle, $moduleTitle, $theme);
     <p class="tp-hint">Click on your answer.</p>
 
     <?php
-        // Choice layout: 2×2 when all choices fit comfortably per cell;
+        // Choice layout: 2ï¿½2 when all choices fit comfortably per cell;
         // 1-col stack otherwise. Threshold 17 chars &#8776; 22 chars fit per
         // 231px cell at 1.15rem font, so 17 leaves safe breathing room.
         $maxLen = 0;

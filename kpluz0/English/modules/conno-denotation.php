@@ -1,10 +1,10 @@
 <?php
-// english/modules/conno-denotation.php
-// STATIC question bank + choice. Bypass QEngine per §D.
+// English/modules/conno-denotation.php
+// STATIC question bank + choice. Bypass QEngine per ï¿½D.
 // Shows a sentence with the target word/phrase highlighted red; student
 // clicks its connotation or denotation based on context.
 //
-// Levels (§E — single-level collapse §5):
+// Levels (ï¿½E ï¿½ single-level collapse ï¿½5):
 //   Legacy hardcoded $_SESSION['level']="Medium" with no level radios in
 //   the HTML. Content bank is identical regardless of level. Collapsed to
 //   $lvl='Hard' (legacy Medium 2-pt &#8594; modern Hard 2-pt; preserves the
@@ -14,14 +14,14 @@
 // where code "c" = connotation, "d" = denotation. The (target) parenthetical
 // is highlighted red in both question and feedback views.
 //
-// Choice layout (§14):
-//   2×2 grid  &#8594; when all choices fit comfortably per cell (maxLen &#8804; 14)
+// Choice layout (ï¿½14):
+//   2ï¿½2 grid  &#8594; when all choices fit comfortably per cell (maxLen &#8804; 14)
 //   1-col hug &#8594; otherwise (grid auto column, boxes hug longest choice)
 //
 // 22 questions preserved. Legacy had an empty /* */ comment block between
-// the last question and the closing bracket — no content lost.
+// the last question and the closing bracket ï¿½ no content lost.
 //
-// Theme: ex-27-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-27-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'conno-denotation.php'
 
@@ -42,7 +42,7 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Denotation and Connotation';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Hard';   // single-level collapse (§5) — legacy was Medium/2pts
+$lvl         = 'Hard';   // single-level collapse (ï¿½5) ï¿½ legacy was Medium/2pts
 
 // ============================================================
 // Question bank: "<code><sentence>=<answer>[<d1>+<d2>]<d3>"
@@ -129,14 +129,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // THEME
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-27-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-27-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-27-left.jpg',
-    'right_side'    => $base . '/english/images/ex-27-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-27-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-27-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-27-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-27-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-27-left.jpg',
+    'right_side'    => $base . '/English/images/ex-27-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-27-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-27-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================
@@ -226,7 +226,7 @@ render_header($moduleTitle, $moduleTitle, $theme);
     margin: 30px auto 0;
   }
 
-  /* 2×2 grid — equal halves, used when all choices fit per cell */
+  /* 2ï¿½2 grid ï¿½ equal halves, used when all choices fit per cell */
   .cn-grid-2x2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -234,7 +234,7 @@ render_header($moduleTitle, $moduleTitle, $theme);
     max-width: 100%;
     margin: 18px auto;
   }
-  /* 1-col hugging grid — column width = max-content of widest choice;
+  /* 1-col hugging grid ï¿½ column width = max-content of widest choice;
      every choice stretches to that width, column centered. */
   .cn-grid-1col {
     display: grid;

@@ -1,21 +1,21 @@
 <?php
-// english/modules/vowels-short.php
-// STATIC word bank + image choice. Bypass QEngine per §D.
+// English/modules/vowels-short.php
+// STATIC word bank + image choice. Bypass QEngine per ï¿½D.
 // Shows a noun image with the FIRST vowel blanked; click the correct vowel.
 //
-// Levels (§E — 2-level scheme): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme): Easy / Hard
 //   Easy = legacy Easy pool (short CVC words)
 //   Hard = legacy Medium + legacy Hard merged (mixed-complexity words)
 //   Rationale: Medium and Hard are phonetically similar; merging preserves
 //   all legacy vocabulary while honouring the no-Medium rule.
 //
-// Choice count: 5 vowel images (a/e/i/o/u). Natural complete set — the 5
-// vowels ARE the answer space. Explicit exception to §13.7 4-choice guarantee:
+// Choice count: 5 vowel images (a/e/i/o/u). Natural complete set ï¿½ the 5
+// vowels ARE the answer space. Explicit exception to ï¿½13.7 4-choice guarantee:
 // dropping one vowel would leave a valid answer unclickable. Documented here.
 //
-// Image: english/images/nouns/{word}.jpg (validated via file_exists).
-// Vowel tiles: english/images/vowel-{a,e,i,o,u}a.jpg.
-// Theme: ex-24-* (110/582/108) &#8594; paper-69-* per §C fit test.
+// Image: English/images/nouns/{word}.jpg (validated via file_exists).
+// Vowel tiles: English/images/vowel-{a,e,i,o,u}a.jpg.
+// Theme: ex-24-* (110/582/108) &#8594; paper-69-* per ï¿½C fit test.
 // Score box: score-*-3.
 // DB row required: modules.url = 'vowels-short.php'
 
@@ -42,7 +42,7 @@ if (isset($_POST['level'])) $_SESSION['level'] = $_POST['level'];
 if (!isset($_SESSION['level']) || !in_array($_SESSION['level'], $levels)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// Word pools — Medium + Hard merged into Hard (§E)
+// Word pools ï¿½ Medium + Hard merged into Hard (ï¿½E)
 $easyWords = ["bag","bat","bed","boy","bud","bug","bun","bus","cab","cap","car","cat","cop","cot","cup","dog","elf","fan","fat","fin","fox","gem","gum","ham","hat","hen","hip","hog","hug","hut","jam","jar","jet","jug","keg","kid","leg","let","lid","log","man","map","mat","men","mop","mug","net","nun","nut","pad","pan","peg","pen","pet","pig","pin","pot","pug","rag","ram","rat","rim","rug","sun","ten","tin","top","tot","toy","van","vat","web","yam"];
 $mediumWords = ["band","barn","bell","bump","card","cart","crab","crib","desk","dish","doll","drum","duck","farm","flag","frog","hand","head","hill","hump","king","lamp","land","lips","lock","lump","mask","nest","pest","pond","pump","rest","rock","rust","sled","sock","tank","tent","twig","well","yard","yarn"];
 $hardWords = ["block","bread","brick","brush","cactus","clock","dress","flock","glass","grass","prince","scarf","shelf","shrub","skink","skunk","snack","splash","spread","spring","stamp","stump","thread","thumb","trash","truck","watch","wrench","wrist"];
@@ -53,7 +53,7 @@ $wordsByLevel = [
 ];
 $words  = array_values(array_unique($wordsByLevel[$lvl]));
 $vowels = ['a', 'e', 'i', 'o', 'u'];
-$imgDirFs = __DIR__ . '/../../english/images/nouns/';
+$imgDirFs = __DIR__ . '/../../English/images/nouns/';
 
 function pick_word_vowels($words, $sessionKey, $imgDirFs, $vowels) {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
@@ -145,12 +145,12 @@ if ($result === null || isset($_POST['Submit2'])) {
         }
     }
 
-    // All 5 vowel image buttons (natural answer space, §13.7 exception)
+    // All 5 vowel image buttons (natural answer space, ï¿½13.7 exception)
     $choiceItems = [];
     foreach ($vowels as $v) {
         $choiceItems[] = [
             'value' => $v,
-            'image' => $base . '/english/images/vowel-' . $v . 'a.jpg',
+            'image' => $base . '/English/images/vowel-' . $v . 'a.jpg',
             'alt'   => $v,
         ];
     }
@@ -158,8 +158,8 @@ if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = [
         'word'        => $word,
         'blankPos'    => $blankPos,
-        'image'       => $base . '/english/images/nouns/' . $word . '.jpg',
-        'qmark'       => $base . '/english/images/blank-qmark.jpg',
+        'image'       => $base . '/English/images/nouns/' . $word . '.jpg',
+        'qmark'       => $base . '/English/images/blank-qmark.jpg',
         'answer'      => $answer,
         'choiceItems' => $choiceItems,
         'lvl'         => $lvl,

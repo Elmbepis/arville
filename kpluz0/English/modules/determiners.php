@@ -1,26 +1,26 @@
 <?php
-// english/modules/determiners.php
-// Correct Usage of Determiners — fill in the blank with the correct determiner.
+// English/modules/determiners.php
+// Correct Usage of Determiners ï¿½ fill in the blank with the correct determiner.
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 6 content tiers via (level × grade); 3 M/C choices (1×3 grid).
+// 6 content tiers via (level ï¿½ grade); 3 M/C choices (1ï¿½3 grid).
 //
 // Data markers per sentence: *correct1wrong12wrong2+
-//   • *            opens the marker
-//   • "1"          separates correct from first distractor
-//   • "2"          separates first distractor from second
-//   • +            closes the marker
+//   ï¿½ *            opens the marker
+//   ï¿½ "1"          separates correct from first distractor
+//   ï¿½ "2"          separates first distractor from second
+//   ï¿½ +            closes the marker
 //   Example: "saw *a1an2any+ tortoise" &#8594; correct "a", wrong ["an","any"]
 //
 // Legacy preserved the whole marker replaced by a 4-underscore blank (____)
 // on the question page, and the answer filled in (highlighted) on feedback.
 //
-// Data fix (§5.4): tier 6 "…*the1each2any+  given instructions…" had a double
+// Data fix (ï¿½5.4): tier 6 "ï¿½*the1each2any+  given instructionsï¿½" had a double
 // space after the marker; normalized to single space.
 //
 // LAYOUT RULE (mirrors objects.php / pronouns-subj-obj.php):
-//   • Sentence box hugs its content (inline-flex wrapper) with ample padding.
-//   • text-wrap:pretty (not balance) inside the box content.
-//   • "Click on the correct answer below." sits immediately above buttons.
+//   ï¿½ Sentence box hugs its content (inline-flex wrapper) with ample padding.
+//   ï¿½ text-wrap:pretty (not balance) inside the box content.
+//   ï¿½ "Click on the correct answer below." sits immediately above buttons.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -38,7 +38,7 @@ $moduleTitle = 'Correct Usage of Determiners';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -49,7 +49,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+// ---- Tier mapping (ï¿½4) ï¿½ legacy Easy / legacy Hard; Medium folded into Hard ----
 function resolve_det_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 4) return 1;
@@ -63,7 +63,7 @@ function resolve_det_tier(string $lvl, int $grd): int {
     return 6;
 }
 
-// ---- Name pools (§5.2) — verbatim from legacy ----
+// ---- Name pools (ï¿½5.2) ï¿½ verbatim from legacy ----
 $boys = ['Adam','Alexander','Andrew','Angelo','Benjamin','Brandon','Carlos',
     'Charles','Christopher','Daniel','David','Diego','Dominic','Gabriel','Ian',
     'Isaac','Jack','Jacob','James','Jason','Jose','John','Jonathan','Joseph',
@@ -78,7 +78,7 @@ $girls = ['Alyssa','Amelia','Andrea','Anna','Ariana','Bella','Betty','Camille',
 $surnames = ['Aquino','Castro','Cruz','Dantes','Fajardo','Gascon','Gonzales',
     'Martinez','Mendez','Paredes','Revilla','Santos','Tolentino'];
 
-// ---- Data (§5) — verbatim from legacy, with placeholders + 1 spacing fix ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy, with placeholders + 1 spacing fix ----
 $rawByTier = [
     1 => [
         "{name} saw *a1an2any+ tortoise in their backyard.",
@@ -202,7 +202,7 @@ $rawByTier = [
     ],
 ];
 
-// ---- Parser (§5.1) — run once at definition time ----
+// ---- Parser (ï¿½5.1) ï¿½ run once at definition time ----
 function det_parse(string $raw): ?array {
     if (!preg_match('/\*([^+]+)\+/u', $raw, $m)) return null;
     $marker = $m[1];
@@ -230,8 +230,8 @@ foreach ($rawByTier as $tier => $list) {
     }
 }
 
-// ---- Helpers (§8.4, §8.6) ----
-// Hugging sentence box — outer text-align:center wrapper + inner inline-flex
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
+// Hugging sentence box ï¿½ outer text-align:center wrapper + inner inline-flex
 // that shrink-wraps content (inline-flex avoids width:fit-content + flex
 // conflict; vertical-align:middle prevents baseline gap).
 function det_box(string $html, int $minHeight = 100): void {
@@ -247,14 +247,14 @@ function det_box(string $html, int $minHeight = 100): void {
        . '</div>';
 }
 
-// Feedback sentence — replace the ____ blank with the answer in pink.
+// Feedback sentence ï¿½ replace the ____ blank with the answer in pink.
 function det_fill_blank(string $sentence, string $answer): string {
     $esc = htmlspecialchars($sentence);
     $ans = '<strong style="color:#CC0066;">' . htmlspecialchars($answer) . '</strong>';
     return str_replace('____', $ans, $esc);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_det_question(array $dataByTier, string $lvl, int $grd,
                             string $sessionKey, array $boys, array $girls,
                             array $surnames): ?array {
@@ -302,7 +302,7 @@ function build_det_question(array $dataByTier, string $lvl, int $grd,
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -314,7 +314,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) — with tier-1 fallback ----
+// ---- Question generation (ï¿½6) ï¿½ with tier-1 fallback ----
 if ($result === null || isset($_POST['Submit2'])) {
     $newQ = build_det_question($dataByTier, $lvl, $grd, $sessionKey, $boys, $girls, $surnames);
     if ($newQ !== null) {
@@ -325,7 +325,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     }
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -413,7 +413,7 @@ render_header($moduleTitle.'<br/>Grade '.$grd.' - '.$lvl,
 endif;
 ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only, 12pt label) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only, 12pt label) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p>
   <table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>

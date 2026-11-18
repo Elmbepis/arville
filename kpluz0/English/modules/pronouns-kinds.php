@@ -1,26 +1,26 @@
 <?php
-// english/modules/pronouns-kinds.php
-// Kinds of Pronouns — identify the type of a highlighted pronoun in a
+// English/modules/pronouns-kinds.php
+// Kinds of Pronouns ï¿½ identify the type of a highlighted pronoun in a
 // sentence or phrase.
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 5 content tiers via (level × grade); 4 M/C choices (2×2 grid).
+// 5 content tiers via (level ï¿½ grade); 4 M/C choices (2ï¿½2 grid).
 //
-// Form availability per tier (legacy §):
-//   tier 1–2 &#8594; personal, possessive, interrogative, demonstrative
+// Form availability per tier (legacy ï¿½):
+//   tier 1ï¿½2 &#8594; personal, possessive, interrogative, demonstrative
 //   tier 3   &#8594; + indefinite
-//   tier 4–5 &#8594; + reflexive, intensive
-// Distractor pools grow at the same boundaries, so at tiers 1–2 "indefinite"
+//   tier 4ï¿½5 &#8594; + reflexive, intensive
+// Distractor pools grow at the same boundaries, so at tiers 1ï¿½2 "indefinite"
 // shows up only as a distractor, and at tier 3 "reflexive"/"intensive" show up
 // only as distractors. Preserved verbatim.
 //
 // Data markers:
 //   *...+              surround the pronoun to highlight (rendered #CC0066 pink)
-//   {p} / {p_lower}    pronoun placeholders (form 1–2 only)
+//   {p} / {p_lower}    pronoun placeholders (form 1ï¿½2 only)
 //   {name1} {name2}    random boy-or-girl names (form 1 tier 5, form 4, form 5)
-//   {boy} / {girl}     gender-specific name placeholders (forms 6–7 only)
+//   {boy} / {girl}     gender-specific name placeholders (forms 6ï¿½7 only)
 //
 // LAYOUT RULE (permanent): "Click on the correct answer below." ALWAYS sits
-// immediately above the choice buttons — never above the sentence box.
+// immediately above the choice buttons ï¿½ never above the sentence box.
 
 session_name('KPLUZ_SESSION');
 session_start();
@@ -38,7 +38,7 @@ $moduleTitle = 'Kinds of Pronouns';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -49,7 +49,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+// ---- Tier mapping (ï¿½4) ï¿½ legacy Easy / legacy Hard; Medium folded into Hard ----
 function resolve_pk_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 4) return 1;
@@ -61,7 +61,7 @@ function resolve_pk_tier(string $lvl, int $grd): int {
     return 5;
 }
 
-// ---- Data (§5) — verbatim from legacy, templated for placeholders ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy, templated for placeholders ----
 $dataByTier = [
     1 => [
         'personal' => [
@@ -456,7 +456,7 @@ $dataByTier = [
     ],
 ];
 
-// ---- Name pools (§5.2) — verbatim from legacy ----
+// ---- Name pools (ï¿½5.2) ï¿½ verbatim from legacy ----
 $boys = [
     'Adam','Adrian','Alex','Alexander','Andrew','Angelo','Austin','Benjamin','Brandon',
     'Caleb','Cameron','Carlos','Carson','Carter','Charles','Christopher','Daniel','David',
@@ -488,7 +488,7 @@ function pk_choice_pool(int $tier): array {
     return ['personal','possessive','interrogative','demonstrative','indefinite','reflexive','intensive'];
 }
 
-// ---- Render helpers (§8.2 target #CC0066) ----
+// ---- Render helpers (ï¿½8.2 target #CC0066) ----
 // Convert *... + markers in a raw sentence to pink-highlighted text.
 function pk_render_sentence(string $raw): string {
     $out = '';
@@ -537,7 +537,7 @@ function pk_article(string $word): string {
     return in_array($f, ['a','e','i','o','u'], true) ? 'an' : 'a';
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_pk_question(array $dataByTier, string $lvl, int $grd,
                            string $sessionKey, array $allNames,
                            array $boys, array $girls): ?array {
@@ -608,7 +608,7 @@ function build_pk_question(array $dataByTier, string $lvl, int $grd,
     ];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -619,7 +619,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) — with tier-1 fallback if generation fails ----
+// ---- Question generation (ï¿½6) ï¿½ with tier-1 fallback if generation fails ----
 if ($result === null || isset($_POST['Submit2'])) {
     $newQ = build_pk_question($dataByTier, $lvl, $grd, $sessionKey, $allNames, $boys, $girls);
     if ($newQ !== null) {
@@ -630,7 +630,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     }
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -710,7 +710,7 @@ render_header($moduleTitle.' - Grade '.$grd.' - '.$lvl,
 endif;
 ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:12pt Arial,sans-serif;">Select difficulty level for next question:</p>
   <table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>

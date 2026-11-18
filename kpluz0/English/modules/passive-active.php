@@ -1,12 +1,12 @@
 <?php
-// english/modules/passive-active.php
-// STATIC question bank + choice. Bypass QEngine per §D.
+// English/modules/passive-active.php
+// STATIC question bank + choice. Bypass QEngine per ï¿½D.
 // Shows a question about active/passive voice; student clicks the matching
 // sentence from 4 choices.
 //
-// Levels (§E — single-level collapse §5):
+// Levels (ï¿½E ï¿½ single-level collapse ï¿½5):
 //   Legacy hardcoded $_SESSION['level']="Medium" with no level radios in
-//   the HTML — a single-level module. Content bank is identical regardless
+//   the HTML ï¿½ a single-level module. Content bank is identical regardless
 //   of level. Collapsed to $lvl='Hard' (single-level Medium&#8594;Hard mapping
 //   preserves the legacy 2-point value). No selector rendered.
 //
@@ -24,10 +24,10 @@
 // Text wraps naturally if a choice exceeds the 480px page max-width.
 //
 // Legacy picfile dead-code removed: no bank entry ever contained "**.jpg"
-// markers — image display was never triggered. Omitted entirely.
+// markers ï¿½ image display was never triggered. Omitted entirely.
 //
 // DB row required: modules.url = 'passive-active.php'
-// Theme: ex-27-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-27-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 
 session_name('KPLUZ_SESSION');
@@ -47,7 +47,7 @@ $base = rtrim(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))), '/');
 $moduleTitle = 'Passive and Active Voices';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
-$lvl         = 'Hard';   // single-level collapse (§5) — legacy was Medium/2pts
+$lvl         = 'Hard';   // single-level collapse (ï¿½5) ï¿½ legacy was Medium/2pts
 
 // ============================================================
 // Question bank: "question=answer[d1+d2]d3"
@@ -118,14 +118,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // THEME
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-27-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-27-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-27-left.jpg',
-    'right_side'    => $base . '/english/images/ex-27-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-27-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-27-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-27-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-27-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-27-left.jpg',
+    'right_side'    => $base . '/English/images/ex-27-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-27-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-27-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================
@@ -207,7 +207,7 @@ render_header($moduleTitle, $moduleTitle, $theme);
     text-align: center;
     margin: 12px auto 0;
   }
-  /* Single-column auto grid — column = max-content of the widest choice.
+  /* Single-column auto grid ï¿½ column = max-content of the widest choice.
      justify-content: center keeps it centered; justify-items: stretch
      (default) makes every row item share that width. */
   .pa-choices {

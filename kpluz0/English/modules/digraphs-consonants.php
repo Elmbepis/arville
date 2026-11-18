@@ -1,30 +1,30 @@
 <?php
-// english/modules/digraphs-consonants.php
-// STATIC word bank + choice. Bypass QEngine per §D.
+// English/modules/digraphs-consonants.php
+// STATIC word bank + choice. Bypass QEngine per ï¿½D.
 // Shows a word (or sentence fill) with the consonant digraph blanked;
 // click the correct 2-letter consonant digraph.
 //
-// Levels (§E — 2-level scheme): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme): Easy / Hard
 //   Easy = image questions. Pool by $grd:
-//     grd<=1 &#8594; tier0 images (chain, shark, sheep, …)  [legacy Easy]
-//     grd>1  &#8594; tier1 images (cheek, cheese, knife, …) [legacy Medium/Easy]
+//     grd<=1 &#8594; tier0 images (chain, shark, sheep, ï¿½)  [legacy Easy]
+//     grd>1  &#8594; tier1 images (cheek, cheese, knife, ï¿½) [legacy Medium/Easy]
 //   Hard = sentence questions. Pool by $grd:
-//     grd<=1 &#8594; tier2 sentences (chance, thank, …)     [legacy Hard]
+//     grd<=1 &#8594; tier2 sentences (chance, thank, ï¿½)     [legacy Hard]
 //     grd>1  &#8594; tier2 sentences (same as grd<=1)        [legacy Medium/Hard]
 //
 // Preserved legacy $grd tiering; collapsed 3 radio levels to 2 by making
 // "Easy = image, Hard = sentence" the differentiation axis (image
 // recognition vs sentence comprehension). Legacy grd<=1 Hard had mixed
-// image/sentence — now pure sentence. Legacy grd>1 Easy was sentence —
+// image/sentence ï¿½ now pure sentence. Legacy grd>1 Easy was sentence ï¿½
 // now image. Documented as accepted behavior change.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 5.
 //
 // Choice layout: 4 digraph choices in ONE row (.letter-row). Manual anchors
-// (§15 bypass) — render_choices' sizing is inadequate for these large tiles.
+// (ï¿½15 bypass) ï¿½ render_choices' sizing is inadequate for these large tiles.
 //
-// Image: english/images/phonics/{word}.jpg (validated via file_exists).
-// Theme: ex-29-* (110/582/108) &#8594; paper-69-* per §8 fit test.
+// Image: English/images/phonics/{word}.jpg (validated via file_exists).
+// Theme: ex-29-* (110/582/108) &#8594; paper-69-* per ï¿½8 fit test.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'digraphs-consonants.php'
 
@@ -106,7 +106,7 @@ $f_sentences_t2 = [
 $bDigraphs = ["ch","gh","gn","kn","sh","th","wr"];
 $fDigraphs = ["ch","ll","ng","ph","sh","ss","th","zz"];
 
-// §10 grade-keyed config
+// ï¿½10 grade-keyed config
 // Easy: image. grd<=1 &#8594; tier0, grd>1 &#8594; tier1.
 // Hard: sentence. grd<=1 &#8594; tier2, grd>1 &#8594; tier2.
 if ($lvl === 'Easy') {
@@ -119,7 +119,7 @@ if ($lvl === 'Easy') {
     $useImage = false;
 }
 
-$imgDirFs = __DIR__ . '/../../english/images/phonics/';
+$imgDirFs = __DIR__ . '/../../English/images/phonics/';
 
 function pick_from_pool($pool, $sessionKey, $imgDirFs, $useImage) {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
@@ -261,8 +261,8 @@ if ($result === null || isset($_POST['Submit2'])) {
         'sentence' => $sentence,
         'position' => $position,
         'useImage' => $useImage,
-        'image'    => $base . '/english/images/phonics/' . $word . '.jpg',
-        'qmark'    => $base . '/english/images/blank-qmark2.jpg',
+        'image'    => $base . '/English/images/phonics/' . $word . '.jpg',
+        'qmark'    => $base . '/English/images/blank-qmark2.jpg',
         'answer'   => $answer,
         'choices'  => $choices,
         'lvl'      => $lvl,

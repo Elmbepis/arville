@@ -1,9 +1,9 @@
 <?php
-// english/modules/prefix-suffix.php
-// Prefixes and Suffixes — text-input: the root word is pre-filled in an
+// English/modules/prefix-suffix.php
+// Prefixes and Suffixes ï¿½ text-input: the root word is pre-filled in an
 // editable box; the student types just the prefix (before the root) or
 // the suffix (after the root) to build the target word.
-// 5 tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
+// 5 tiers via (level ï¿½ grade); grade from $_SESSION['user_grade'] (0ï¿½10).
 // Easy: grd<=3&#8594;1, grd 4-6&#8594;2, grd>=7&#8594;3   (legacy Easy)
 // Hard: grd<=3&#8594;3, grd 4-6&#8594;4, grd>=7&#8594;5   (legacy Hard; legacy Medium folded in)
 
@@ -23,7 +23,7 @@ $moduleTitle = 'Prefixes and Suffixes';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -34,7 +34,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 function resolve_prefix_suffix_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 3) return 1;
@@ -46,9 +46,9 @@ function resolve_prefix_suffix_tier(string $lvl, int $grd): int {
     return 5;
 }
 
-// ---- Raw data (§5) — verbatim from legacy, typos fixed ----
+// ---- Raw data (ï¿½5) ï¿½ verbatim from legacy, typos fixed ----
 // Format: 'affix+root=hint'  (prefix items)
-//         'root+affix=hint'  (suffix items — root may end in 'e', '%', 'te', 'de', 'se', 'e%')
+//         'root+affix=hint'  (suffix items ï¿½ root may end in 'e', '%', 'te', 'de', 'se', 'e%')
 $rawByTier = [
     1 => [
         'prefix' => [
@@ -611,7 +611,7 @@ function prefix_suffix_parse(string $raw, string $type): ?array {
     ];
 }
 
-// ---- Pre-parse data (§5.1) ----
+// ---- Pre-parse data (ï¿½5.1) ----
 $items = [];
 foreach ($rawByTier as $tier => $raw) {
     $items[$tier] = [];
@@ -637,7 +637,7 @@ function normalize_ps_answer(string $s): string {
     return str_replace(' ', '', strtolower(trim($s)));
 }
 
-// ---- No-repeat picker (§6.2) ----
+// ---- No-repeat picker (ï¿½6.2) ----
 function pick_ps_item(array $pool, string $sessionKey, int $tier): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -656,7 +656,7 @@ function pick_ps_item(array $pool, string $sessionKey, int $tier): array {
     return $item;
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -675,7 +675,7 @@ if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $tier = resolve_prefix_suffix_tier($lvl, $grd);
     $pool = $items[$tier] ?? $items[1];
@@ -687,7 +687,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = $item;
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

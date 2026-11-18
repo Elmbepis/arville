@@ -1,6 +1,6 @@
 <?php
-// english/modules/phrase-sentence.php
-// Phrases and Sentences — shown text, pick "phrase" or "sentence".
+// English/modules/phrase-sentence.php
+// Phrases and Sentences ï¿½ shown text, pick "phrase" or "sentence".
 // Modernised to the container.php / scorer.php pattern used by plural.php.
 // Two choices rendered side-by-side on one line with a space between them.
 

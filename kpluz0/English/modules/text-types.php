@@ -1,14 +1,14 @@
 <?php
-// english/modules/text-types.php
-// STATIC question bank + choice. Bypass QEngine per §D.
+// English/modules/text-types.php
+// STATIC question bank + choice. Bypass QEngine per ï¿½D.
 // Shows a text passage; student clicks its text type / text structure.
 //
-// Levels (§E — single-level collapse §5):
+// Levels (ï¿½E ï¿½ single-level collapse ï¿½5):
 //   Legacy hardcoded $_SESSION['level']="Medium" with no level radios in the
 //   HTML. Collapsed to $lvl='Hard' (single-level Medium&#8594;Hard mapping
 //   preserves the legacy 2-point value). No selector rendered.
 //
-// Grade-keyed content (§10) — two distinct banks:
+// Grade-keyed content (ï¿½10) ï¿½ two distinct banks:
 //   grd 0-4 &#8594; 17 questions testing basic text types
 //             (descriptive / instructional / argumentative / expository / narrative)
 //   grd 5+  &#8594; 16 questions testing text structures
@@ -20,12 +20,12 @@
 // preserved in question display via tt_render_passage() which escapes
 // everything except <br> tags.
 //
-// HTML entity in advanced Q11 ("Sergio Osmeña Sr.") converted to UTF-8
-// literal ñ for clean htmlspecialchars round-trip.
+// HTML entity in advanced Q11 ("Sergio Osmeï¿½a Sr.") converted to UTF-8
+// literal ï¿½ for clean htmlspecialchars round-trip.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5.
 //
-// Theme: ex-27-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-27-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'text-types.php'
 
@@ -47,12 +47,12 @@ $moduleTitle = 'Identifying Text Types';
 $moduleId    = basename(__FILE__);
 $sessionKey  = 'mod_' . md5($moduleId);
 
-$lvl = 'Hard';   // single-level collapse (§5) — legacy was Medium/2pts
+$lvl = 'Hard';   // single-level collapse (ï¿½5) ï¿½ legacy was Medium/2pts
 
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? $_SESSION['user_grade'] ?? 5)));
 
 // ============================================================
-// Bank: Basic (grades 0-4) — text TYPES
+// Bank: Basic (grades 0-4) ï¿½ text TYPES
 // ============================================================
 $bankBasic = [
     "Revered in times past as a sign of good fortune, this scarab is beautiful. An inch long and an inch wide, this beetle features a deep cobalt blue body, blue and white Austrian Crystal wings, and golden accents. It would look fabulous on your favorite jacket.=descriptive[argumentative+expository]instructional",
@@ -75,7 +75,7 @@ $bankBasic = [
 ];
 
 // ============================================================
-// Bank: Advanced (grades 5+) — text STRUCTURES
+// Bank: Advanced (grades 5+) ï¿½ text STRUCTURES
 // ============================================================
 $bankAdvanced = [
     "The surface of the Earth is divided into pieces called 'tectonic plates.' These plates move. When the plates rub against each other, they do not move smoothly. When the plates do not move smoothly, earthquakes result. Some parts of the world get more earthquakes than other parts. The parts of the earth that get most earthquakes are near the edges of these plates.=explanation[time order+classification]enumeration",
@@ -88,7 +88,7 @@ $bankAdvanced = [
     "Proper washing of hands is necessary. First, you must wet your hands with clean, running water. Then, lather your hands by rubbing them together with soap. Scrub your hands for at least 20 seconds. Then, rinse your hands well under clean, running water. Lastly, dry your hands using a clean, dry towel.=time order[explanation+classification]enumeration",
     "Do you know how to plants seeds? First, prepare the plot for planting. Next, dig holes in it that are one meter apart from each other. Then, drop a seed in each hole and cover it with soil. Lastly, water the seeds every day. Before long, you'll see some plants sprouting.=time order[explanation+classification]enumeration",
     "Water habitats include seas and oceans, lakes and ponds, rivers and streams, marshes, swamps, bogs, brackish water bodies, and wetlands.=enumeration[explanation+classification]time order",
-    "The past presidents of the Philippines are Emilio Aguinaldo, Manuel L. Quezon, Jose P. Laurel, Sergio Osmeña Sr., Manuel Roxas, Elpidio Quirino, Ramon Magsaysay, Carlos P. Garcia, Diosdado P. Macapagal, Ferdinand Marcos, Corazon Aquino, Fidel V. Ramos, Joseph Estrada, Gloria Macapagal Arroyo, and Benigno Aquino III.=enumeration[explanation+classification]time order",
+    "The past presidents of the Philippines are Emilio Aguinaldo, Manuel L. Quezon, Jose P. Laurel, Sergio Osmeï¿½a Sr., Manuel Roxas, Elpidio Quirino, Ramon Magsaysay, Carlos P. Garcia, Diosdado P. Macapagal, Ferdinand Marcos, Corazon Aquino, Fidel V. Ramos, Joseph Estrada, Gloria Macapagal Arroyo, and Benigno Aquino III.=enumeration[explanation+classification]time order",
     "Metamorphosis is a process by which animals undergo extreme, rapid physical changes some time after birth. The result of metamorphosis may be change to the organism's entire body plan, such as a change in the animal's number of legs, its means of eating, or its means of breathing. Commonly known examples of metamorphosis include the process undergone by most insects, and the transformation of tadpoles into frogs.=explanation[time order+classification]enumeration",
     "Indonesia, Malaysia, Singapore, Thailand, Brunei, Vietnam, Laos, Myanmar, Cambodia, and the Philippines are the member nations of ASEAN.=enumeration[explanation+classification]time order",
     "To tie a simple tie knot, you must first put the wide end of the tie under the thinner one. Then, pass it over to the right side. Afterwards, pass it through the big loop, and then through the central wrap. Bring it out completely. Lastly, tighten by sliding up the knot to the collar.=time order[explanation+classification]enumeration",
@@ -149,14 +149,14 @@ if (isset($_GET['ansclick']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // Theme
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-27-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-27-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-27-left.jpg',
-    'right_side'    => $base . '/english/images/ex-27-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-27-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-27-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-27-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-27-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-27-left.jpg',
+    'right_side'    => $base . '/English/images/ex-27-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-27-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-27-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================

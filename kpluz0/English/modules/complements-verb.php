@@ -1,37 +1,37 @@
 <?php
-// english/modules/complements-verb.php
-// FIB (free-text entry). Bypass QEngine per §D.
+// English/modules/complements-verb.php
+// FIB (free-text entry). Bypass QEngine per ï¿½D.
 // Student types the complete phrase that serves as the verb complement
 // in the given sentence. For tiers 2-5, the target verb is highlighted
 // in blue; for tier 1, the verb is plain (student identifies it).
 //
-// Levels (§E — 2-level scheme, Medium+Hard merged): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme, Medium+Hard merged): Easy / Hard
 //   Grade-keyed tier assignment (bank has 5 tiers):
 //     grd 0-5 &#8594; Easy: 1; Hard: rand(2,3)   [Medium=2, Hard=3]
 //     grd 6-7 &#8594; Easy: 2; Hard: rand(3,4)   [Medium=3, Hard=4]
 //     grd 8+  &#8594; Easy: 3; Hard: rand(4,5)   [Medium=4, Hard=5]
 //   Rationale: modern Hard takes the union of legacy Medium + legacy Hard.
 //
-// Names ($n1..$n4): boys/girls arrays — freshly picked on each generate.
+// Names ($n1..$n4): boys/girls arrays ï¿½ freshly picked on each generate.
 // Several sentences reference them.
 //
 // Sentence bank: each entry has "*answer+" markers for the complement and
 // "(verb)" markers for the target verb. Question displays the answer
 // markers stripped, and shows "(verb)" either stripped (tier 1) or
-// highlighted blue (tiers 2+). Feedback shows both — answer red, verb blue.
+// highlighted blue (tiers 2+). Feedback shows both ï¿½ answer red, verb blue.
 //
 // Legacy bug fixed: the feedback note formerly used `$grd==4 && level=="Easy"`
-// to choose "main verb" vs "blue verb" — that mis-labeled every other
+// to choose "main verb" vs "blue verb" ï¿½ that mis-labeled every other
 // tier-1 grade combo. Modern: base on tier (`$arrnum === 1`) for both the
-// question prompt and the feedback note — consistent with legacy's own
+// question prompt and the feedback note ï¿½ consistent with legacy's own
 // question-prompt logic.
 //
 // FIB canonicalization: lowercase + strip whitespace/punctuation
 // (periods, commas, apostrophes, quotes).
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 5.
 //
-// Theme: ex-23-* (75/655/70) &#8594; fits §8 fit test, use module's own.
+// Theme: ex-23-* (75/655/70) &#8594; fits ï¿½8 fit test, use module's own.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'complements-verb.php'
 
@@ -60,7 +60,7 @@ $lvl = $_SESSION['level'];
 
 $grd = min(10, max(0, (int)($_SESSION['grade'] ?? 5)));
 
-// Level + grade &#8594; tier (§10)
+// Level + grade &#8594; tier (ï¿½10)
 $grdKey = ($grd <= 5) ? 0 : (($grd <= 7) ? 1 : 2);
 $configs = [
     0 => ['Easy' => [1, 1], 'Hard' => [2, 3]],
@@ -226,14 +226,14 @@ if (isset($_POST['Submit1']) && isset($_SESSION[$sessionKey]['current']) && !iss
 // THEME
 // ============================================================
 $theme = [
-    'top_banner'    => $base . '/english/images/ex-23-top.jpg',
-    'title_bg'      => $base . '/english/images/ex-23-top2.jpg',
-    'left_side'     => $base . '/english/images/ex-23-left.jpg',
-    'right_side'    => $base . '/english/images/ex-23-right.jpg',
-    'content_bg'    => $base . '/english/images/ex-23-content.jpg',
-    'bottom_banner' => $base . '/english/images/ex-23-bottom.jpg',
-    'score_top'     => $base . '/english/images/score-top-1.jpg',
-    'score_bottom'  => $base . '/english/images/score-bottom-1.jpg',
+    'top_banner'    => $base . '/English/images/ex-23-top.jpg',
+    'title_bg'      => $base . '/English/images/ex-23-top2.jpg',
+    'left_side'     => $base . '/English/images/ex-23-left.jpg',
+    'right_side'    => $base . '/English/images/ex-23-right.jpg',
+    'content_bg'    => $base . '/English/images/ex-23-content.jpg',
+    'bottom_banner' => $base . '/English/images/ex-23-bottom.jpg',
+    'score_top'     => $base . '/English/images/score-top-1.jpg',
+    'score_bottom'  => $base . '/English/images/score-bottom-1.jpg',
 ];
 
 // ============================================================
@@ -434,7 +434,7 @@ render_header($moduleTitle . ' - ' . $lvl, $moduleTitle . ' - ' . $lvl, $theme);
     </div>
 <?php endif; ?>
 
-    <!-- LEVEL RADIOS — INSIDE the form so they submit with Submit1 or Submit2 -->
+    <!-- LEVEL RADIOS ï¿½ INSIDE the form so they submit with Submit1 or Submit2 -->
     <div align="center" style="margin-top:20px;">
         <p style="margin-top:5px; margin-bottom:0">
             <font face="Verdana" style="font-size:10pt;" color="#000080">Select difficulty level for next question:</font>

@@ -1,32 +1,32 @@
 <?php
-// english/modules/digraphs-vowels.php
-// STATIC word bank + choice. Bypass QEngine per §D.
+// English/modules/digraphs-vowels.php
+// STATIC word bank + choice. Bypass QEngine per ï¿½D.
 // Shows a word (or sentence fill) with the vowel digraph blanked;
 // click the correct 2-letter vowel digraph.
 //
-// Levels (§E — 2-level scheme): Easy / Hard
+// Levels (ï¿½E ï¿½ 2-level scheme): Easy / Hard
 //   Easy = image questions. Pool by $grd:
-//     grd<=1 &#8594; tier0 images (beads, sheep, spoon, …)  [legacy Easy]
-//     grd>1  &#8594; tier1 images (beetle, cheese, wheat, …) [legacy Medium/Easy]
+//     grd<=1 &#8594; tier0 images (beads, sheep, spoon, ï¿½)  [legacy Easy]
+//     grd>1  &#8594; tier1 images (beetle, cheese, wheat, ï¿½) [legacy Medium/Easy]
 //   Hard = sentence questions. Pool by $grd:
-//     grd<=1 &#8594; tier2 sentences (beach, clean, …)  [legacy Medium/Hard]
+//     grd<=1 &#8594; tier2 sentences (beach, clean, ï¿½)  [legacy Medium/Hard]
 //     grd>1  &#8594; tier2 sentences (same as grd<=1)    [legacy Medium/Hard]
 //
 // Preserved legacy $grd tiering; collapsed 3 radio levels to 2 by making
 // "Easy = image, Hard = sentence" the differentiation axis. Legacy grd>1
-// Easy was pure sentence — now image. Documented as accepted behavior change.
+// Easy was pure sentence ï¿½ now image. Documented as accepted behavior change.
 //
-// $grd defensive default (§11): $_SESSION['grade'] ?? 5.
+// $grd defensive default (ï¿½11): $_SESSION['grade'] ?? 5.
 //
 // Answer detection: first vowel digraph (ea, ee, oa, oe, oo, ou, ue, ui) in
-// the word. Display blanks only that position (legacy blanked all — no pool
+// the word. Display blanks only that position (legacy blanked all ï¿½ no pool
 // word in this bank has two vowel digraphs).
 //
 // Choice layout: 4 digraph choices in ONE row (.letter-row). Manual anchors
-// (§15 bypass).
+// (ï¿½15 bypass).
 //
-// Image: english/images/phonics/{word}.jpg (validated via file_exists).
-// Theme: ex-24-* &#8594; paper-69-* per §8 fit test.
+// Image: English/images/phonics/{word}.jpg (validated via file_exists).
+// Theme: ex-24-* &#8594; paper-69-* per ï¿½8 fit test.
 // Score box: score-*-1 (matches legacy).
 // DB row required: modules.url = 'digraphs-vowels.php'
 
@@ -59,7 +59,7 @@ $grd = (int)($_SESSION['grade'] ?? 5);
 $images_t0 = ["beads","beak","beans","bear","beef","boar","books","boot","bread","broom","cook","deer","feet","food","leaf","leap","meal","meat","moon","pear","peas","read","seal","seeds","sheep","shoe","sleep","soup","spoon","tree","trees","wood","wheel"];
 $images_t1 = ["beet","beetle","beard","board","cheek","cheese","coop","fruits","glue","goose","groom","group","hoof","hook","hoop","leash","leaves","peach","roots","seam","sleep","wheat","wheel"];
 
-// Sentence pools (word|sentence pairs, tier 2 — hard sentences)
+// Sentence pools (word|sentence pairs, tier 2 ï¿½ hard sentences)
 $sentences_t2 = [
     "beach-We went to the ____ last Sunday.",
     "beams-Do you see the ____ of light over there?",
@@ -89,7 +89,7 @@ $sentences_t2 = [
 
 $vDigraphs = ["ea","ee","oa","oe","oo","ou","ue","ui"];
 
-// §10 grade-keyed config
+// ï¿½10 grade-keyed config
 if ($lvl === 'Easy') {
     $pool     = ($grd <= 1) ? $images_t0 : $images_t1;
     $useImage = true;
@@ -98,7 +98,7 @@ if ($lvl === 'Easy') {
     $useImage = false;
 }
 
-$imgDirFs = __DIR__ . '/../../english/images/phonics/';
+$imgDirFs = __DIR__ . '/../../English/images/phonics/';
 
 function pick_from_pool_v($pool, $sessionKey, $imgDirFs, $useImage) {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
@@ -238,8 +238,8 @@ if ($result === null || isset($_POST['Submit2'])) {
         'sentence' => $sentence,
         'ansPos'   => $ansPos,
         'useImage' => $useImage,
-        'image'    => $base . '/english/images/phonics/' . $word . '.jpg',
-        'qmark'    => $base . '/english/images/blank-qmark2.jpg',
+        'image'    => $base . '/English/images/phonics/' . $word . '.jpg',
+        'qmark'    => $base . '/English/images/blank-qmark2.jpg',
         'answer'   => $answer,
         'choices'  => $choices,
         'lvl'      => $lvl,

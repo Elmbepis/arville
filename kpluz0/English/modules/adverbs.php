@@ -1,10 +1,10 @@
 <?php
-// english/modules/adverbs.php
-// Identifying Adverbs — pick the word that's exclusively or mainly used as an adverb.
-// 6 tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
+// English/modules/adverbs.php
+// Identifying Adverbs ï¿½ pick the word that's exclusively or mainly used as an adverb.
+// 6 tiers via (level ï¿½ grade); grade from $_SESSION['user_grade'] (0ï¿½10).
 // Easy: grd<=3&#8594;1, 4-5&#8594;2, 6-7&#8594;3, >=8&#8594;4     (legacy Easy)
 // Hard: grd<=3&#8594;3, 4-5&#8594;4, 6-7&#8594;5, >=8&#8594;6     (legacy Hard; legacy Medium folded in)
-// 4 choices always in a 2×2 grid: 1 adverb + 2 "-y non-adverbs" + 1 "-ly non-adverb".
+// 4 choices always in a 2ï¿½2 grid: 1 adverb + 2 "-y non-adverbs" + 1 "-ly non-adverb".
 // No-repeat tracked independently for the adverb and the "-ly" distractor.
 
 session_name('KPLUZ_SESSION');
@@ -23,7 +23,7 @@ $moduleTitle = 'Identifying Adverbs';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -34,7 +34,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) ----
+// ---- Tier mapping (ï¿½4) ----
 function resolve_adverbs_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 3) return 1;
@@ -48,11 +48,11 @@ function resolve_adverbs_tier(string $lvl, int $grd): int {
     return 6;
 }
 
-// ---- Data (§5) — verbatim from legacy ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy ----
 // Each tier has three pools:
-//   nonadvs   — "-y"-looking words that aren't adverbs (e.g. "angry", "army")
-//   nonadvs2  — "-ly"-looking words that aren't adverbs (e.g. "ally", "daily")
-//   adverbs   — actual adverbs (the correct answers)
+//   nonadvs   ï¿½ "-y"-looking words that aren't adverbs (e.g. "angry", "army")
+//   nonadvs2  ï¿½ "-ly"-looking words that aren't adverbs (e.g. "ally", "daily")
+//   adverbs   ï¿½ actual adverbs (the correct answers)
 $pools = [
     1 => [
         'nonadvs' => [
@@ -185,7 +185,7 @@ $pools = [
     ],
 ];
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function adverbs_box(string $html, int $minHeight = 130): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -202,7 +202,7 @@ function bind_last_words(string $text, int $words = 2): string {
     }, $esc, 1);
 }
 
-// ---- No-repeat pickers (§6.2) — separate keys for adverb vs -ly distractor ----
+// ---- No-repeat pickers (ï¿½6.2) ï¿½ separate keys for adverb vs -ly distractor ----
 function pick_adverb_answer(array $pool, string $sessionKey, int $tier): string {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -247,7 +247,7 @@ function pick_two_y_distractors(array $pool, string $exclude = ''): array {
     return [$filtered[$keys[0]], $filtered[$keys[1]]];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -258,7 +258,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $tier = resolve_adverbs_tier($lvl, $grd);
     $pool = $pools[$tier] ?? $pools[1];
@@ -278,7 +278,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

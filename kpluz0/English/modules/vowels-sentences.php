@@ -1,12 +1,12 @@
 <?php
-// english/modules/vowels-sentences.php
-// Short and Long Vowels in Sentences — read the sentence, identify the vowel
+// English/modules/vowels-sentences.php
+// Short and Long Vowels in Sentences ï¿½ read the sentence, identify the vowel
 // class (short/long a, e, i, o, u, or pairs) of the highlighted vowel.
-// Pool is grade-gated per handover §4.4 (breadth grows with grade).
-// 4 choices always (correct class + 3 distractors) in a 2×2 grid.
+// Pool is grade-gated per handover ï¿½4.4 (breadth grows with grade).
+// 4 choices always (correct class + 3 distractors) in a 2ï¿½2 grid.
 //
 // Question view: target vowel rendered as plain text (student must find it
-//   from the prompt — matching legacy behaviour of hiding the underline).
+//   from the prompt ï¿½ matching legacy behaviour of hiding the underline).
 // Feedback view: target vowel highlighted in pink (#CC0066) so the student
 //   can see exactly which letter(s) were being asked about.
 
@@ -26,7 +26,7 @@ $moduleTitle = 'Short and Long Vowels in Sentences';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -37,7 +37,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Pool selection (§4.4 — grade gates breadth, not depth) ----
+// ---- Pool selection (ï¿½4.4 ï¿½ grade gates breadth, not depth) ----
 function resolve_vowels_pool(string $lvl, int $grd): array {
     if ($lvl === 'Easy') {
         if ($grd <= 2) return range(0, 14);  // 15 simplest single-vowel
@@ -47,7 +47,7 @@ function resolve_vowels_pool(string $lvl, int $grd): array {
     return range(0, 29);                       // all 30 incl. multi-vowel
 }
 
-// ---- Data (§5) — pre-parsed per handover §5.1 ----
+// ---- Data (ï¿½5) ï¿½ pre-parsed per handover ï¿½5.1 ----
 // Marker {v}...{/v} wraps the target vowel in the sentence.
 $items = [
     // 0
@@ -175,7 +175,7 @@ $items = [
      'prompt'   => 'What is the vowel of the word for what Harry used to catch a catfish?',
      'correct'  => 'short e',
      'wrong'    => ['long e', 'short a', 'short i']],
-    // 25 — multi-vowel starts here
+    // 25 ï¿½ multi-vowel starts here
     ['sentence' => '{v}A{/v}im{v}ee{/v} donated some of her money to their church.',
      'prompt'   => 'Which of these are the vowels in the name of the person who did something good?',
      'correct'  => 'long a and long e',
@@ -202,7 +202,7 @@ $items = [
      'wrong'    => ['short a and long i', 'long a and long i', 'short a and short i']],
 ];
 
-// ---- Helpers (§8.4, §8.6) ----
+// ---- Helpers (ï¿½8.4, ï¿½8.6) ----
 function vowels_box(string $html, int $minHeight = 130): void {
     echo '<div style="max-width:520px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -244,7 +244,7 @@ function vowels_render_sentence(string $sentence, bool $highlight = false): stri
     return $out;
 }
 
-// ---- No-repeat picker (§6.2) ----
+// ---- No-repeat picker (ï¿½6.2) ----
 function pick_vowels_item(array $allItems, array $poolIdxs, string $sessionKey): array {
     $used = $_SESSION[$sessionKey]['used'] ?? [];
     $available = [];
@@ -252,7 +252,7 @@ function pick_vowels_item(array $allItems, array $poolIdxs, string $sessionKey):
         if (!in_array($idx, $used, true)) $available[] = $idx;
     }
     if (empty($available)) {
-        // Pool exhausted — clear only this pool's keys, preserving other history
+        // Pool exhausted ï¿½ clear only this pool's keys, preserving other history
         $used = array_values(array_filter($used, fn($k) => !in_array($k, $poolIdxs, true)));
         $available = $poolIdxs;
     }
@@ -263,7 +263,7 @@ function pick_vowels_item(array $allItems, array $poolIdxs, string $sessionKey):
     return $allItems[$idx];
 }
 
-// ---- Answer processing (§7) ----
+// ---- Answer processing (ï¿½7) ----
 $result = null; $scorer = null;
 if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -274,7 +274,7 @@ if (isset($_GET['ansclick'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $poolIdxs = resolve_vowels_pool($lvl, $grd);
     $item     = pick_vowels_item($items, $poolIdxs, $sessionKey);
@@ -292,7 +292,7 @@ if ($result === null || isset($_POST['Submit2'])) {
     ];
 }
 
-// ---- Render (§8, §9, §10) ----
+// ---- Render (ï¿½8, ï¿½9, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',

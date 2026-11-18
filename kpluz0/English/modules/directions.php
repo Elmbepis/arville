@@ -1,6 +1,6 @@
 <?php
-// english/modules/directions.php
-// Following Simple Directions — MC (4 choices).
+// English/modules/directions.php
+// Following Simple Directions ï¿½ MC (4 choices).
 // Easy pool: 15 one-step items. Hard pool: 15 multi-step items.
 // Grade-aware: Easy &#8594; Easy pool. Hard @ 0-2 &#8594; merged. Hard @ 3+ &#8594; Hard only.
 

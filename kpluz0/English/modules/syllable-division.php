@@ -1,13 +1,13 @@
 <?php
-// english/modules/syllable-division.php
-// Syllable Division — divide a word into its syllables using hyphens.
+// English/modules/syllable-division.php
+// Syllable Division ï¿½ divide a word into its syllables using hyphens.
 // Two levels (Easy/Hard); grade from $_SESSION['user_grade'] (0-10).
-// 6 content tiers via (level × grade); text-input answer.
+// 6 content tiers via (level ï¿½ grade); text-input answer.
 //
 // Text-input mechanics (preserved from legacy):
-//   • Input is prefilled with the word (no hyphens); student inserts hyphens.
-//   • Comparison ignores spaces and case — matches legacy behavior.
-//   • Correct feedback reads: "The <N> syllables of the word '<word>' are
+//   ï¿½ Input is prefilled with the word (no hyphens); student inserts hyphens.
+//   ï¿½ Comparison ignores spaces and case ï¿½ matches legacy behavior.
+//   ï¿½ Correct feedback reads: "The <N> syllables of the word '<word>' are
 //     divided this way: '<syl-la-ble>'."
 //
 // Word box uses width:fit-content so the box "hugs" the word (with ample
@@ -29,7 +29,7 @@ $moduleTitle = 'Syllable Division';
 $moduleId = basename(__FILE__);
 $sessionKey = 'mod_' . md5($moduleId);
 
-// ---- Grade / level (§3) ----
+// ---- Grade / level (ï¿½3) ----
 $grd = (int)($_SESSION['user_grade'] ?? 0);
 if ($grd < 0 || $grd > 10) $grd = 0;
 
@@ -40,7 +40,7 @@ if ($_SESSION['level'] === 'Medium') $_SESSION['level'] = 'Hard';
 if (!in_array($_SESSION['level'], $levels, true)) $_SESSION['level'] = 'Easy';
 $lvl = $_SESSION['level'];
 
-// ---- Tier mapping (§4) — legacy Easy / legacy Hard; Medium folded into Hard ----
+// ---- Tier mapping (ï¿½4) ï¿½ legacy Easy / legacy Hard; Medium folded into Hard ----
 function resolve_sd_tier(string $lvl, int $grd): int {
     if ($lvl === 'Easy') {
         if ($grd <= 3) return 1;
@@ -54,7 +54,7 @@ function resolve_sd_tier(string $lvl, int $grd): int {
     return 6;
 }
 
-// ---- Data (§5) — verbatim from legacy ----
+// ---- Data (ï¿½5) ï¿½ verbatim from legacy ----
 // Format: "<syllableCount><syl-la-ble>"
 $dataByTier = [
     1 => [
@@ -130,8 +130,8 @@ $dataByTier = [
     ],
 ];
 
-// ---- Helpers (§8.4) ----
-// Standard box — used on the feedback page (contains a full sentence).
+// ---- Helpers (ï¿½8.4) ----
+// Standard box ï¿½ used on the feedback page (contains a full sentence).
 function sd_box(string $html, int $minHeight = 140): void {
     echo '<div style="max-width:480px;min-height:' . $minHeight . 'px;'
        . 'margin:20px auto;padding:20px 26px;'
@@ -141,7 +141,7 @@ function sd_box(string $html, int $minHeight = 140): void {
        . $html . '</div>';
 }
 
-// Word box — hugs the word (width:fit-content), capped at 480px, with ample
+// Word box ï¿½ hugs the word (width:fit-content), capped at 480px, with ample
 // padding so short words like "an" or "day" don't render as a skinny capsule.
 function sd_word_box(string $html, int $minHeight = 100): void {
     echo '<div style="width:fit-content;max-width:480px;min-height:' . $minHeight . 'px;'
@@ -152,7 +152,7 @@ function sd_word_box(string $html, int $minHeight = 100): void {
        . $html . '</div>';
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 function build_sd_question(array $dataByTier, string $lvl, int $grd, string $sessionKey): array {
     $tier = resolve_sd_tier($lvl, $grd);
     $pool = $dataByTier[$tier];
@@ -185,7 +185,7 @@ function build_sd_question(array $dataByTier, string $lvl, int $grd, string $ses
     ];
 }
 
-// ---- Answer processing (§7 — text input) ----
+// ---- Answer processing (ï¿½7 ï¿½ text input) ----
 $result = null; $scorer = null;
 if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST['Submit2'])) {
     $cur     = $_SESSION[$sessionKey]['current'];
@@ -207,12 +207,12 @@ if (isset($_POST['Submit1'], $_SESSION[$sessionKey]['current']) && !isset($_POST
     unset($_SESSION[$sessionKey]['current']);
 }
 
-// ---- Question generation (§6) ----
+// ---- Question generation (ï¿½6) ----
 if ($result === null || isset($_POST['Submit2'])) {
     $_SESSION[$sessionKey]['current'] = build_sd_question($dataByTier, $lvl, $grd, $sessionKey);
 }
 
-// ---- Render (§8, §10) ----
+// ---- Render (ï¿½8, ï¿½10) ----
 $theme = [
     'top_banner'=>$base.'/math/images/images/paper-69-top.jpg',
     'title_bg'=>$base.'/math/images/images/paper-69-top2.jpg',
@@ -279,7 +279,7 @@ render_header($moduleTitle.' - '.$lvl, $moduleTitle.' - '.$lvl, $theme);
   </div>
 <?php endif; ?>
 
-<!-- Difficulty radios (§10.4 — Easy / Hard only) -->
+<!-- Difficulty radios (ï¿½10.4 ï¿½ Easy / Hard only) -->
 <div align="center" style="margin-top:20px;">
   <p style="margin-bottom:0;color:#000080;font:10pt Arial,sans-serif;">Select difficulty level for next question:</p>
   <table border="0" width="80%" cellspacing="0" cellpadding="0"><tr>

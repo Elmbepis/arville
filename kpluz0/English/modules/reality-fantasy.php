@@ -1,7 +1,7 @@
 <?php
-// english/modules/reality-fantasy.php
-// Reality and Fantasy — static question bank + 2 MC choices (reality/fantasy).
-// 6 tiers via (level × grade); grade from $_SESSION['user_grade'] (0–10).
+// English/modules/reality-fantasy.php
+// Reality and Fantasy ï¿½ static question bank + 2 MC choices (reality/fantasy).
+// 6 tiers via (level ï¿½ grade); grade from $_SESSION['user_grade'] (0ï¿½10).
 
 session_name('KPLUZ_SESSION');
 session_start();
