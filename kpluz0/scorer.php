@@ -25,7 +25,13 @@ class Scorer {
      */
     public function __construct($dbConnection, $moduleUrl = null) {
         $this->db = $dbConnection;
-        $this->moduleId = $this->resolveModuleId($moduleUrl);
+        try {
+            $this->moduleId = $this->resolveModuleId($moduleUrl);
+        } catch (\Throwable $e) {
+            error_log('Scorer module lookup failed: ' . $e->getMessage());
+            // Never attribute a failed lookup to an unrelated module.
+            $this->moduleId = null;
+        }
         if (!isset($_SESSION['score'])) {
             $_SESSION['score'] = 0;
         }
@@ -61,7 +67,7 @@ class Scorer {
 
         if (empty($moduleKey)) {
             $this->addDebug("WARNING: Could not extract module key from '$moduleUrl'");
-            return 1;
+            return null;
         }
 
         // Escape LIKE wildcards in case a filename ever contains them
@@ -157,27 +163,49 @@ class Scorer {
             $filename, $moduleKey, $subject ?? '(unknown)'
         ));
         $this->addDebug("WARNING: Module not found for key '$moduleKey'. Using fallback ID 1.");
-        return 1;
+        return null;
     }
 
     /**
      * Helper: prepare + execute a parameterised lookup and return the
      * first row's `id`, or null on no match. All params are strings.
      */
+    // Fetch one associative row without requiring the optional mysqlnd driver.
+    private function fetchFirstRow($stmt) {
+        $metadata = $stmt->result_metadata();
+        if (!$metadata) return null;
+        $fields = $metadata->fetch_fields();
+        $values = array_fill(0, count($fields), null);
+        $refs = [];
+        foreach ($values as $i => &$value) $refs[$i] = &$value;
+        unset($value);
+        $stmt->bind_result(...$refs);
+        $found = $stmt->fetch();
+        if ($found !== true) return null;
+        $row = [];
+        foreach ($fields as $i => $field) $row[$field->name] = $values[$i];
+        $metadata->free();
+        return $row;
+    }
+
     private function queryModuleId($sql, array $params, $description) {
-        $stmt = $this->db->prepare($sql);
-        if (!$stmt) {
-            $this->addDebug("Prepare failed ($description): " . $this->db->error);
-            return null;
-        }
-        $types = str_repeat('s', count($params));
-        $stmt->bind_param($types, ...$params);
-        $stmt->execute();
-        $row = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-        if ($row) {
-            $this->addDebug("Found module ID {$row['id']} by $description");
-            return (int)$row['id'];
+        try {
+            $stmt = $this->db->prepare($sql);
+            if (!$stmt) {
+                $this->addDebug("Prepare failed ($description): " . $this->db->error);
+                return null;
+            }
+            $types = str_repeat('s', count($params));
+            $stmt->bind_param($types, ...$params);
+            $stmt->execute();
+            $row = $this->fetchFirstRow($stmt);
+            $stmt->close();
+            if ($row) {
+                $this->addDebug("Found module ID {$row['id']} by $description");
+                return (int)$row['id'];
+            }
+        } catch (\Throwable $e) {
+            $this->addDebug("Module lookup failed ($description): " . $e->getMessage());
         }
         return null;
     }
@@ -205,7 +233,13 @@ class Scorer {
 
         if ($this->db) {
             $this->addDebug("Database connection exists, saving...");
-            $saveResult = $this->saveToDatabase($isCorrect, $level);
+            try {
+                $saveResult = $this->saveToDatabase($isCorrect, $level);
+            } catch (\Throwable $e) {
+                error_log('Scorer database save failed: ' . $e->getMessage());
+                $this->addDebug('Database save failed; check server PHP error log.');
+                $saveResult = false;
+            }
             $this->addDebug("saveToDatabase returned: " . ($saveResult ? 'TRUE' : 'FALSE'));
         } else {
             $this->addDebug("No database connection – skipping save.");
@@ -220,6 +254,10 @@ class Scorer {
     // ============================================================
     private function saveToDatabase($correct, $level) {
         $this->addDebug("saveToDatabase START");
+        if (!$this->moduleId) {
+            $this->addDebug('Module ID unresolved; refusing to save to the wrong module.');
+            return false;
+        }
 
         // Use session user_id directly
         $userId = $_SESSION['user_id'] ?? null;
@@ -263,8 +301,7 @@ class Scorer {
         }
         $stmt->bind_param("ii", $userId, $this->moduleId);
         $stmt->execute();
-        $result = $stmt->get_result();
-        $row = $result->fetch_assoc();
+        $row = $this->fetchFirstRow($stmt);
         $stmt->close();
 
         if ($row) {
@@ -274,7 +311,11 @@ class Scorer {
                 WHERE id = ?");
             if ($updateStmt) {
                 $updateStmt->bind_param("ii", $addPoints, $row['id']);
-                $updateStmt->execute();
+                if (!$updateStmt->execute()) {
+                    $this->addDebug('Update failed: ' . $updateStmt->error);
+                    $updateStmt->close();
+                    return false;
+                }
                 $this->addDebug("Updated row id {$row['id']} for $level. Added $addPoints to $scoreCol, incremented $qnumCol.");
                 $updateStmt->close();
                 return true;
@@ -297,7 +338,11 @@ class Scorer {
             if ($insertStmt) {
                 $blueBar = 'no';
                 $insertStmt->bind_param("iiiiiis", $userId, $this->moduleId, $easyScore, $easyQnum, $hardScore, $hardQnum, $blueBar);
-                $insertStmt->execute();
+                if (!$insertStmt->execute()) {
+                    $this->addDebug('Insert failed: ' . $insertStmt->error);
+                    $insertStmt->close();
+                    return false;
+                }
                 $this->addDebug("Inserted new row for user $userId, module {$this->moduleId}.");
                 $insertStmt->close();
                 return true;
@@ -325,8 +370,7 @@ class Scorer {
         }
         $stmt->bind_param("s", $username);
         $stmt->execute();
-        $result = $stmt->get_result();
-        if ($row = $result->fetch_assoc()) {
+        if ($row = $this->fetchFirstRow($stmt)) {
             $id = $row['id'];
             $stmt->close();
             $this->addDebug("Found user ID $id for username '$username'.");
