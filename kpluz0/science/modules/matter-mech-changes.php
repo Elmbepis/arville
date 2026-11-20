@@ -1,0 +1,42 @@
+<?php
+// Changing Matter by Mechanical Means — streamlined legacy question bank.
+// One shared pool; 29 multiple-choice and 6 true/false questions.
+$_SESSION['title'] = 'Changing Matter by Mechanical Means';
+$questions = array(
+    'Why can a metal sheet be flattened by hammering without breaking?=It is malleable>It is brittle+It is elastic<It is porous',
+    'Which property allows a rubber band to return to its original shape after stretching?=elasticity>ductility+malleability<brittleness',
+    'Why does a mirror often shatter when struck by a hammer?=It is brittle>It is ductile+It is malleable<It is elastic',
+    'Which material is most likely to break when dropped onto a hard floor?=ceramic cup>rubber ball+foam sponge<cloth towel',
+    'A material that is easily scratched by a fingernail has relatively low ____.=hardness>elasticity+ductility<malleability',
+    'When a metal rod bends, what happens to the material on the inner side of the bend?=It is compressed>It is stretched+It is melted<It is cut',
+    'What action are the tools in the picture mainly designed to perform?=cutting>pressing+hammering<stretching**mch2.jpg',
+    'Which action means applying pressure to squeeze or flatten an object?=pressing>cutting+twisting<stretching',
+    'How does the machine shown extract juice from the orange?=pressing>sawing+hammering<grinding**mch3.jpg',
+    'What action does the road roller in the picture use to flatten asphalt?=compressing>slicing+twisting<stretching**mch4.jpg',
+    'What is the grinder doing to the steel bar in the picture?=cutting it>bending it+stretching it<compressing it**mch5.jpg',
+    'What is the grinder doing to the marble surface in the picture?=polishing it>stretching it+folding it<compressing it**mch6.jpg',
+    'How is the metalsmith shaping the heated metal in the picture?=hammering it>stretching it by hand+sawing it<twisting it**mch7.jpg',
+    'Which object can usually be bent easily without breaking?=flexible plastic ruler>ceramic plate+glass bottle<stone tile',
+    'Which object is most suitable for demonstrating bending?=plastic drinking straw>glass marble+brick<ceramic mug',
+    'Which object can be stretched substantially and then return to its shape?=rubber band>wooden pencil+metal coin<glass tumbler',
+    'Which object can be flattened by pressing it with your hand?=slice of bread>concrete block+ceramic tile<steel spoon',
+    'Stepping on a ripe tomato and flattening it is an example of ____.=crushing>slicing+drilling<stretching',
+    'What mechanical action divides paper into smaller pieces using scissors?=cutting>compressing+bending<polishing',
+    'What mechanical action changes the shape of modeling clay when you squeeze it?=pressing>sawing+drilling<stretching',
+    'What happens to the shape of a metal wire when it is bent into a loop?=Its shape changes>It becomes a liquid+It turns into a gas<It becomes a new substance',
+    'Which process makes a rough wooden surface smoother by rubbing it with sandpaper?=sanding>stretching+folding<compressing',
+    'Which action would best turn a large piece of cardboard into two smaller pieces?=cutting>stretching+compressing<polishing',
+    'What property makes copper suitable for drawing into thin wires?=ductility>brittleness+porosity<hardness',
+    'Which property makes aluminum suitable for being rolled into thin foil?=malleability>brittleness+transparency<solubility',
+    'Which tool is best for making a hole in a wooden board?=drill>paintbrush+rolling pin<sandpaper',
+    'What mechanical action is used when a rolling pin flattens dough?=pressing>cutting+drilling<twisting',
+    'What happens to the particles of a material on the outside of a bent rod?=They become farther apart as that side stretches>They become closer together as that side compresses+They turn into a different substance<They disappear from the rod',
+    'Which statement best describes a change caused only by cutting a sheet of paper?=Its size and shape change, but it remains paper>It changes into a different substance+Its particles become a new element<It changes from solid to liquid',
+    'Ductility is the ability of a material to be drawn into thin wires.=true>false',
+    'A material that can be hammered into thin sheets is described as ductile.=false>true',
+    'If material A scratches material B, material A is harder than material B.=true>false',
+    'All highly malleable materials are also highly ductile.=false>true',
+    'In the bent rod shown, side A is stretched while side B is compressed.=true>false**mch1.jpg',
+    'In the bent rod shown, the material at side A is compressed while side B is stretched.=false>true**mch1.jpg',
+);
+?>

@@ -389,10 +389,18 @@ $headerHtml = '';
 try {
     ob_start();
     render_header(
-        $moduleTitle . ' - KPluz.com',
-        nl2br(htmlspecialchars($moduleTitle)),
-        $themeImages
-    );
+    strip_tags($moduleTitle) . ' - KPluz.com',
+    nl2br(htmlspecialchars(
+        str_ireplace(
+            ['<br>', '<br/>', '<br />'],
+            "\n",
+            $moduleTitle
+        ),
+        ENT_QUOTES,
+        'UTF-8'
+    )),
+    $themeImages
+);
     $headerHtml = ob_get_clean();
 } catch (\Throwable $e) {
     while (ob_get_level() > 0) ob_end_clean();

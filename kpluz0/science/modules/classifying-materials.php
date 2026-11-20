@@ -1,0 +1,36 @@
+<?php
+// Streamlined from classifying-materials.php; one legacy question pool for all grades.
+$_SESSION['title'] = 'Classifying Materials Based on Properties';
+
+$questions = array(
+    'What happens naturally to the materials shown over time?=They decay>They remain unchanged indefinitely+They become magnetic<They turn into glass**classify-materials1.jpg',
+    'Which statement describes the materials shown?=They do not readily biodegrade>They quickly rot in soil+They dissolve completely in rain<They are made of living tissue**classify-materials2.jpg',
+    'How do the pictured objects behave when placed in cooking oil?=They sink>They float at the surface+They dissolve<They evaporate**classify-materials2.jpg',
+    'What happens to the pictured objects when placed in water?=They float>They sink to the bottom+They dissolve<They absorb all the water**classify-materials3.jpg',
+    'What happens to the pictured materials after biological decomposition?=They decay>They become permanently elastic+They turn into metal<They become nonbiodegradable**classify-materials3.jpg',
+    'Which property describes the materials shown?=Biodegradability>Magnetism+Electrical conductivity<Elasticity**classify-materials4.jpg',
+    'What happens when the pictured objects are placed in water?=They sink>They float+They dissolve<They evaporate**classify-materials4.jpg',
+    'What do the pictured materials do when exposed to water?=Absorb water>Repel all water+Dissolve immediately<Become magnetic**classify-materials5.jpg',
+    'Which term best describes the pictured absorbent materials?=Porous>Waterproof+Nonabsorbent<Impermeable**classify-materials5.jpg',
+    'How do the pictured objects interact with water?=They do not readily absorb it>They soak it up like a sponge+They dissolve in it<They chemically produce it**classify-materials6.jpg',
+    'Which description fits the pictured materials?=Nonporous>Highly porous+Water-absorbing<Sponge-like**classify-materials6.jpg',
+    'What happens when the pictured objects are placed in water?=They sink>They float+They dissolve<They evaporate**classify-materials6.jpg',
+    'Which property is illustrated by the pictured objects?=Elasticity>Brittleness+Rigidity<Biodegradability**classify-materials7.jpg',
+    'What term describes a material whose molecules are attracted to water molecules?=Hydrophilic>Hydrophobic+Oleophilic<Water-repellent',
+    'Which property makes a sponge useful for wiping up spilled water?=Absorbency>Magnetism+Transparency<Electrical conductivity',
+    'Which material would be most suitable for a waterproof raincoat?=Nonabsorbent fabric>Cotton towel+Paper tissue<Open-cell sponge',
+    'What does biodegradable mean?=Able to be broken down by living organisms>Able to float in every liquid+Able to return to shape after stretching<Able to attract iron',
+    'Which material is most likely to biodegrade naturally?=Banana peel>Glass bottle+Plastic ruler<Aluminum can',
+    'Which material is least likely to biodegrade?=Glass>Leaves+Fruit peel<Paper',
+    'An object sinks in a liquid when its average density is ____.=greater than the liquid density>less than the liquid density+always zero<equal to the density of air',
+    'If an object floats in water, what is generally true of its average density?=It is lower than the density of water>It is higher than the density of water+It must be made of metal<It must be soluble in water',
+    'What does elasticity allow a material to do after being stretched within its elastic limit?=Return to its original shape>Break into small pieces+Absorb more water<Dissolve in liquid',
+    'Which item best demonstrates elasticity?=Rubber band>Glass cup+Ceramic plate<Dry twig',
+    'Which property describes glass when it shatters instead of bending?=Brittleness>Elasticity+Absorbency<Biodegradability',
+    'The objects shown are biodegradable.=true>false**classify-materials1.jpg',
+    'The objects shown are not biodegradable.=true>false**classify-materials2.jpg',
+    'The brittle objects shown are examples of elastic materials.=false>true**classify-materials2.jpg',
+    'Objects denser than a liquid tend to sink in that liquid.=true>false',
+    'Most glass and hard plastic objects are biodegradable.=false>true',
+    'Glass and concrete are examples of materials that easily return to their original shape after stretching.=false>true',
+);
