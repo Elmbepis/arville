@@ -1,0 +1,42 @@
+<?php
+
+$_SESSION['title'] = 'Energy Transformation';
+
+$questions = array(
+    "A small battery-operated fan works by ____ to ____ energy conversion.=chemical, mechanical>mechanical, chemical+chemical, thermal<chemical, sonic",
+    "A radio that runs on batteries works by ____ to ____ energy conversion.=chemical, sonic>chemical, thermal+chemical, light<sonic, chemical",
+    "Flowing or falling bodies of water such as rivers, streams, and waterfalls can make the turbines of generators rotate, causing the generators to produce electricity. This is an example of ____ to electrical energy conversion.=mechanical>light+chemical<thermal",
+    "If you attach a rotating grinder to a bicycle's pedal, you can sharpen a knife by pedalling. The energy you'd use to pedal would come from the food you've eaten. This is an example of ____ to ____ energy conversion.=chemical, mechanical>chemical, electrical+chemical, sonic<mechanical, chemical",
+    "If you strum the strings of a guitar using your fingers, sound waves are produced and scatter in all directions. This is an example of ____ energy conversion.=mechanical to sonic>electrical to sonic+thermal to sonic<sonic to mechanical",
+    "Placing an object at an elevated position increases its ____ energy.=potential>kinetic+thermal<chemical",
+    "Producing electricity from wind by attaching a dynamo to a wind turbine is an example of ____ to electrical energy conversion.=mechanical>light+sonic<thermal",
+    "Producing electricity from sunlight by using solar panels is an example of ____ energy conversion.=light to electrical>sound to electrical+light to chemical<light to thermal",
+    "Generating electricity by first producing steam from heat under the surface of Earth is an example of ____ to electrical energy conversion.=thermal>mechanical+light<chemical",
+    "The ____ energy of a swinging pendulum remains constant as the pendulum swings.=total mechanical>potential+kinetic<electrical",
+    "The ____ energy of a swinging pendulum is maximum when it is at the highest point of its swing.=potential>kinetic+total mechanical<sonic",
+    "The ____ energy of a swinging pendulum is maximum when it is pointing to the ground.=kinetic>potential+total mechanical<chemical",
+    "The lights of a bicycle get their energy from a dynamo, a small DC generator that produces electricity when it is rotated by one of the bicycle's wheels as the cyclist pedals. This is an example of ____ to ____ energy conversion.=mechanical, light>mechanical, thermal+electrical, mechanical<mechanical, sonic",
+    "The operation of a small battery-powered fan is an example of chemical to electrical to ____ energy conversion.=mechanical>sonic+thermal<light",
+    "The potential energy of a falling object is being transformed continuously into ____ energy.=kinetic>electrical+thermal<sonic",
+    "We are able to push or pull objects because of the energy that we get from the food we eat. This is an example of ____ energy conversion.=chemical to mechanical>chemical to electrical+chemical to sonic<mechanical to chemical",
+    "When you speak on a microphone, the sound waves of your voice are turned into electrical signals that can be transmitted over wires. This is an example of ____ energy conversion.=sound to electrical>sound to light+electrical to sound<sound to thermal",
+    "When you turn on a flashlight, chemical reactions within its batteries produce an electric current that makes the bulb light up. This is an example of chemical to ____ to light energy conversion.=electrical>thermal+sonic<mechanical",
+    "Winds can make the turbines of generators rotate, causing the generators to produce electricity. This is an example of ____ to ____ energy conversion.=mechanical, electrical>mechanical, light+electrical, mechanical<mechanical, thermal",
+    "You can focus sunlight onto an object to heat it up until it produces steam. The steam can then drive a generator to produce electricity. This is an example of ____ to electrical energy conversion.=thermal>mechanical+light<chemical",
+    "You can produce steam by focusing sunlight onto an object that heats up easily. The steam can then drive the turbine of a mill that rotates to grind grains. This is an example of ____ to ____ energy conversion.=thermal, mechanical>thermal, electrical+thermal, chemical<mechanical, thermal",
+    "A typical nuclear power plant uses which type of energy conversion?=nuclear to electrical>nuclear to chemical+sonic to electrical<electrical to nuclear",
+    "A typical geothermal power plant uses which type of energy conversion?=thermal to electrical>thermal to chemical+light to electrical<electrical to thermal",
+    "A typical hydroelectric power plant uses ____ to electrical energy conversion.=mechanical>thermal+chemical<nuclear",
+    "Garden lights that use solar panels employ light to ____ to light energy conversion?=electrical>mechanical+chemical<thermal",
+    "The alternator of a car is like a mini-generator, charging the car's battery when the car is running. It therefore uses ____ to electrical energy conversion.=mechanical>sonic+thermal<light",
+    "What energy transformation occurs when an electric kettle heats water?=electrical to thermal>thermal to electrical+chemical to mechanical<light to chemical",
+    "What energy transformation takes place when plants make glucose through photosynthesis?=light to chemical>chemical to light+mechanical to electrical<thermal to sound",
+    "When a moving bicycle slows down because of friction, some of its kinetic energy is transformed into ____ energy.=thermal>nuclear+chemical<gravitational potential",
+    // True/False questions
+    "What's shown in the picture is an example of a system that uses light to electrical to mechanical energy conversion=true>false**energy-conversion1.jpg",
+    "What's shown in the picture is an example of electrical to chemical energy conversion=false>true**energy-conversion2.jpg",
+    "What's shown in the picture operates by electrical to thermal energy conversion=true>false**energy-conversion3.jpg",
+    "What's shown in the picture operates by sonic to thermal energy conversion=false>true**energy-conversion4.jpg",
+    "The kinetic energy of a pendulum changes as it swings=true>false",
+    "The kinetic energy of a pendulum stays constant throughout its swing=false>true",
+);

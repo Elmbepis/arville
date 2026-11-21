@@ -1,0 +1,41 @@
+<?php
+$_SESSION['title'] = 'Effects of Oxygen and Heat on Matter';
+
+$questions = array(
+    'The process wherein an element or material combines with oxygen to form a new compound is called ____.=oxidation>deposition+sublimation<dissolution',
+    'An iron chain changes its color from silver-gray to reddish brown after some time because of the formation of a new compound called ____.=rust>residue+precipitate<wax',
+    'When two different elements chemically combine, the new pure substance is a ____.=compound>mixture+solution<suspension',
+    'Which of these refers to the new compound formed when oxygen chemically reacts with another element?=oxide>colloid+alloy<sulfide',
+    'What happens to the proteins in an egg when it is cooked?=They denature and coagulate>They dissolve into water+They turn into oxygen<They evaporate',
+    'Which change explains why the clear part of a raw egg becomes white and firm when heated?=Protein denaturation and coagulation>Freezing of proteins+Evaporation of proteins<Melting of proteins',
+    'Which metal is most likely to form an oxide when exposed to oxygen and moisture?=iron>gold+platinum<silver',
+    'Which formula represents iron(III) oxide, a major component of rust?=Fe2O3>FeS+FeCl3<FeCO3',
+    'Which process is a rapid reaction with oxygen that releases heat and often light?=combustion>condensation+freezing<dissolution',
+    'A piece of wood burns in air. What chemical process is taking place?=combustion>corrosion+condensation<sublimation',
+    'When something made of iron is rusting, it is undergoing a process called ____.=corrosion>combustion+ignition<oxygenation',
+    'Which substance is NOT required for ordinary rusting of iron?=nitrogen>oxygen+water<iron',
+    'Which is NOT one of the three requirements of the fire triangle?=carbon dioxide>oxygen+heat<fuel',
+    'Which change is usually caused by cooling rather than heating?=condensation>melting+evaporation<sublimation',
+    'Which change usually requires heat to be absorbed rather than removed?=sublimation>freezing+condensation<deposition',
+    'Which gas is a major component of air rather than a product of burning carbon-based fuel?=nitrogen>carbon dioxide+carbon monoxide<sulfur dioxide',
+    'A rocket operating in space must carry fuel and its own ____.=oxidizer>atmospheric air+cooling water<exhaust gas',
+    'In an ordinary wood fire, what provides the oxygen needed for combustion?=surrounding air>wood ash+soil<sunlight',
+    'The substance that supplies oxygen for a combustion reaction is the ____.=oxidizer>fuel+ash<smoke',
+    'Why does a freshly cut apple often turn brown when exposed to air?=Enzymatic oxidation>Freezing+Condensation<Melting',
+    'Which change in a burning candle is generally reversible?=melting of wax>burning of the wick+formation of soot<burning of wax',
+    'How does the object shown help stop a fire?=It cuts off the oxygen supply to the fuel>It adds oxygen to the flame+It supplies more heat<It adds more fuel**moxyheat1.jpg',
+    'What change occurs when liquid water is heated until it becomes water vapor?=vaporization>condensation+freezing<deposition',
+    'What happens to liquid water when enough heat is removed for it to turn into ice?=freezing>melting+evaporation<sublimation',
+    'Why can a metal spoon become hot when left in a pot of hot soup?=Heat is conducted through the metal>Oxygen turns the spoon into fuel+The metal evaporates<The spoon produces heat by rusting',
+    'Which action helps slow the rusting of an iron gate?=Coating it with protective paint>Scratching away its paint+Leaving it wet outdoors<Adding salt water',
+    'Why does a fire go out when a small candle is covered with an airtight glass jar?=The available oxygen becomes insufficient>Its wax instantly freezes+Its wick becomes metal<The jar removes all heat immediately',
+    'Which is an example of a chemical change caused by heating?=Cooking an egg>Melting ice+Boiling pure water<Softening candle wax',
+    'What happens when sugar is heated enough to caramelize?=New substances form and its color and flavor change>It becomes pure water+It freezes into ice<It turns into table salt',
+    'Heating generally makes particles move faster and can speed up chemical reactions.=true>false',
+    'Painting an iron surface can help prevent rust by limiting contact with oxygen and water.=true>false',
+    'Burning wood is a chemical reaction that releases heat and often light.=true>false',
+    'Heat always makes every solid object contract.=false>true',
+    'Fire extinguishers put out fires by supplying extra oxygen to the fuel.=false>true',
+    'Caramelized sugar turns back into ordinary sugar simply by cooling.=false>true'
+    
+);
