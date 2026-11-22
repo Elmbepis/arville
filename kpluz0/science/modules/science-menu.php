@@ -57,7 +57,7 @@ function science_module_href($mod, $base) {
 
     // Converted modules that sit in this folder and open directly,
     // bypassing q-display-legacy.php
-    $directModules = ['animal-classifications'];
+    $directModules = ['animal-classifications', 'wp-mvds', 'wp-temperature', 'wp-disp-vel-acc', 'wp-disp-vel-acc', 'wp-force', 'wp-impulse-momentum', 'wp-work-energy', 'wp-friction', 'wp-torque'];
     if (in_array($moduleName, $directModules, true)) {
         return rtrim(dirname($_SERVER['SCRIPT_NAME']), '/') . '/' . rawurlencode($moduleName) . '.php';
     }
