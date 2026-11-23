@@ -183,8 +183,26 @@ $videosHover = $iconBase . 'videosb.jpg';
                                                     if ($idx < $total):
                                                         $mod = $modules[$idx];
                                                         $imgId = 'mod-' . $mod['id'];
+                                                        // Route numbered q-display variants through the root legacy quiz handler.
+                                                        // Leave all unrelated module links untouched.
+                                                        $moduleUrl = $mod['url'];
+                                                        $urlParts = parse_url($moduleUrl);
+                                                        $urlPath = $urlParts['path'] ?? '';
+                                                        if (preg_match('~(?:^|/)(?:q-display|q-dsiplay)[0-9]+\.php$~i', $urlPath)) {
+                                                            parse_str($urlParts['query'] ?? '', $urlQuery);
+                                                            if (!empty($urlQuery['mfile'])) {
+                                                                $moduleFile = basename(str_replace('\\', '/', $urlQuery['mfile']));
+                                                                $moduleName = preg_replace('~\.php$~i', '', $moduleFile);
+                                                                unset($urlQuery['mfile']);
+                                                                $newQuery = ['m' => 'Filipino/modules/' . $moduleName] + $urlQuery;
+                                                                $moduleUrl = $base . '/q-display-legacy.php?' . http_build_query($newQuery, '', '&', PHP_QUERY_RFC3986);
+                                                                if (!empty($urlParts['fragment'])) {
+                                                                    $moduleUrl .= '#' . $urlParts['fragment'];
+                                                                }
+                                                            }
+                                                        }
                                                 ?>
-                                                    <td width="221" align="center" valign="top" style="padding:0; margin:0;"><p style="margin:0 0 40px 0; padding:0; line-height:normal;"><a href="<?= htmlspecialchars($mod['url']) ?>"><img border="0" id="<?= $imgId ?>" src="<?= htmlspecialchars($mod['image_normal']) ?>" onmouseover="FP_swapImg(1,0,'<?= $imgId ?>','<?= htmlspecialchars($mod['image_hover']) ?>')" onmouseout="FP_swapImg(0,0,'<?= $imgId ?>','<?= htmlspecialchars($mod['image_normal']) ?>')" style="display:inline-block;"></a></p></td>
+                                                    <td width="221" align="center" valign="top" style="padding:0; margin:0;"><p style="margin:0 0 40px 0; padding:0; line-height:normal;"><a href="<?= htmlspecialchars($moduleUrl) ?>"><img border="0" id="<?= $imgId ?>" src="<?= htmlspecialchars($mod['image_normal']) ?>" onmouseover="FP_swapImg(1,0,'<?= $imgId ?>','<?= htmlspecialchars($mod['image_hover']) ?>')" onmouseout="FP_swapImg(0,0,'<?= $imgId ?>','<?= htmlspecialchars($mod['image_normal']) ?>')" style="display:inline-block;"></a></p></td>
                                                 <?php else: ?>
                                                     <td width="221" align="center" valign="top" style="padding:0; margin:0;">&nbsp;</td>
                                                 <?php endif; endfor; ?>
