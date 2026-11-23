@@ -542,10 +542,15 @@
 
             switch (o.creator) {
 
-                case 'cubicle':
-                    return createCubicle(o.pos_x, o.pos_y, o.pos_z,
+                case 'cubicle': {
+                    const c = createCubicle(o.pos_x, o.pos_y, o.pos_z,
                         p.size, p.wallTex, p.bannerTex, p.poleTex, p.floorTex);
-
+                    if (p.depthScale) {
+                        c.scale.z = p.depthScale;
+                    }
+                    return c;
+                }
+                
                 case 'billboard':
                     return createBillboard(o.pos_x, o.pos_y, o.pos_z,
                         p.totalHeight, p.displayWidth, p.displayHeight,
