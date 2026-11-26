@@ -432,7 +432,7 @@ echo $headerHtml;
     <div style="max-width:480px; margin:10px auto 0; text-align:center;">
         <img src="<?php echo htmlspecialchars($cur['image']); ?>" alt=""
              onerror="this.style.display='none';"
-             style="max-width:100%; max-height:280px; height:auto; border:1px solid #DDD; border-radius:8px; background:#fff;">
+             style="max-width:100%; max-height:none !important; width:auto !important; height:auto !important; border:1px solid #DDD; border-radius:8px; background:#fff;">
     </div>
     <?php endif; ?>
 
@@ -461,7 +461,7 @@ echo $headerHtml;
     <div style="max-width:480px; margin:10px auto 0; text-align:center;">
         <img src="<?php echo htmlspecialchars($q['image']); ?>" alt=""
              onerror="this.style.display='none';"
-             style="max-width:100%; max-height:280px; height:auto; border:1px solid #DDD; border-radius:8px; background:#fff;">
+             style="max-width:100%; max-height:none !important; width:auto !important; height:auto !important; border:1px solid #DDD; border-radius:8px; background:#fff;">
     </div>
     <?php endif; ?>
 
