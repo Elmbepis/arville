@@ -117,6 +117,12 @@ function qdl_resolve_theme($subject, $base, $moduleId, $isFreshNavigation = true
             'score_top'    => 'science/images/score-top-5.jpg',
             'score_bottom' => 'science/images/score-bottom-5.jpg',
         ],
+        'filipino' => [
+            'prefixes'     => ['testfil01', 'testfil02'],
+            'folder'       => 'Filipino/modules/images/',
+            'score_top'    => 'Filipino/images/score-top.jpg',
+            'score_bottom' => 'Filipino/images/score-bottom.jpg',
+        ],
     ];
 
     if (!isset($configs[$subject])) {

@@ -129,6 +129,16 @@ function _subject_theme_configs() {
         'score_bottom'   => 'science/images/score-bottom-5.jpg',
     ];
 
+    // ---- FILIPINO: in Filipimo/modules/images/ ----
+    $configs['filipino'] = [
+        'prefix_folders' => [
+            'testfil01' => 'Filipino/modules/images/',
+            'testfil02' => 'Filipino/modules/images/',
+        ],
+        'score_top'      => 'Filipino/images/score-top.jpg',
+        'score_bottom'   => 'Filipino/images/score-bottom.jpg',
+    ];
+
     // AP deliberately omitted — handled by q-display-legacy.php v22+.
 
     return $configs;
