@@ -543,7 +543,7 @@ render_header($moduleTitle, $moduleTitle, $theme);
         <?php echo $result['correct'] ? '&#9989; Ito ay tumpak!' : '&#10060; Ito ay hindi tumpak.'; ?>
     </p>
     <div style="text-align:center;margin:20px auto;">
-        <span style="display:inline-block !important;width:480px !important;min-width:0 !important;max-width:min(480px,100%);padding:30px 40px;background:#FCFBE6;border:2px solid #DDD;border-radius:10px;box-sizing:border-box;font-size:16pt;font-weight:700;color:#800080;line-height:1.5;text-wrap:wrap;overflow-wrap:anywhere;text-align:left;">
+        <span style="display:inline-block !important;width:480px !important;min-width:0 !important;max-width:min(480px,100%);padding:30px 40px;background:#FCFBE6;border:2px solid #DDD;border-radius:10px;box-sizing:border-box;font-size:16pt;font-weight:500;color:#800080;line-height:1.3;text-wrap:wrap;overflow-wrap:anywhere;text-align:left;">
             <?php echo str_replace('&lt;br/&gt;', '<br/>', pss_h($cur['word'])); ?><?php if ($cur['source'] !== ''): ?><span style="display:block;margin-top:16px;font-size:11pt;font-weight:normal;color:#666;">Pinagkunan:<br/><?php echo str_replace('&lt;br/&gt;', '<br/>', pss_h($cur['source'])); ?></span><?php endif; ?><br/><span style="display:inline-block;margin-top:12px;font-weight:normal;">Sagot:</span> <strong style="color:#CC0066;"><?php echo pss_h($cur['correct']); ?></strong>
         </span>
     </div>
@@ -551,7 +551,7 @@ render_header($moduleTitle, $moduleTitle, $theme);
 <?php else:
     $cur = $_SESSION[$sessionKey]['current']; ?>
     <div style="text-align:center;margin:20px auto;">
-    <span style="display:inline-block !important;width:480px !important;min-width:0 !important;max-width:min(480px,100%);padding:30px 40px;background:#FCFBE6;border:2px solid #DDD;border-radius:10px;box-sizing:border-box;font-size:16pt;font-weight:700;color:#800080;line-height:1.5;text-wrap:wrap;overflow-wrap:anywhere;text-align:left;">
+    <span style="display:inline-block !important;width:480px !important;min-width:0 !important;max-width:min(480px,100%);padding:30px 40px;background:#FCFBE6;border:2px solid #DDD;border-radius:10px;box-sizing:border-box;font-size:16pt;font-weight:500;color:#800080;line-height:1.3;text-wrap:wrap;overflow-wrap:anywhere;text-align:left;">
         <?php echo str_replace('&lt;br/&gt;', '<br/>', pss_h($cur['word'])); ?><?php if ($cur['source'] !== ''): ?><span style="display:block;margin-top:16px;font-size:11pt;font-weight:normal;color:#666;">Pinagkunan:<br/><?php echo str_replace('&lt;br/&gt;', '<br/>', pss_h($cur['source'])); ?></span><?php endif; ?>
     </span>
 </div>
