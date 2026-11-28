@@ -1,0 +1,32 @@
+<?php
+$_SESSION['title'] = "Practicing Good Health Habits";
+
+$questions = [
+    "Eating lean meat is healthy because it doesn't have too much bad fat.=true>false",
+    "Using stairs to go up and down is good for our heart and lungs.=true>false",
+    "Walking or biking to nearby places is better than to riding a jeepney.=true>false",
+    "Listening to very loud music can harm our ears.=true>false",
+    "Exercising keeps our heart and lungs strong.=true>false",
+    "Eating too much and becoming too fat is not healthy.=true>false",
+    "Eating food that has germs on it can make you sick.=true>false",
+    "Washing your hands properly with soap remove germs from them.=true>false",
+    "Flies carry germs so we should keep them away from our food.=true>false",
+    "Skipping meals and overeating are good eating habits.=false>true",
+    "Washing our hands before we eat is not a good health habit.=false>true",
+    "Drinking four glasses of water each day is enough.=false>true",
+    "Drinking nothing but soft drinks makes us healthy.=false>true",
+    "Staying up late every night is good for our health.=false>true",
+    "Eating junk food is good if they're delicious.=false>true",
+    "Germs are big enough for you to see.=false>true",
+    "The germs in your hands can not make you sick.=false>true",
+    "Which of the following is NOT safe?=climbing up a very tall tree>avoiding wet and slippery places+looking left and right before crossing a street<avoiding horseplay",
+    "Which of the following is NOT safe?=playing outside during a lightning storm>not going near deep bodies of water+avoiding wild stray dogs<wearing a helmet while biking",
+    "Which of the following is NOT safe?=playing with fire>staying inside the house during a storm+wearing shoes when going outside<avoiding places that are littered with junk",
+    "Which of the following does NOT make you healthy?=playing online games>eating a balanced diet+regular exercise<getting enough sleep",
+    "Which of the following could make you sick?=eating a rotten fruit>drinking clean water+avoiding mosquito bites<resting when you are tired",
+    "Which of the following could make you sick?=drinking dirty water>eating cooked food+wearing a sweater when it is cold<taking vitamins",
+    "Which is the health habit labelled as 'A' in the picture above?=taking a bath>exercising+getting enough sleep<eating healthy food**mapeh/modules/qimages/health/health-habits1.jpg",
+    "Which is the health habit labelled as 'B' in the picture above?=exercising>taking a bath+getting enough sleep<eating healthy food**mapeh/modules/qimages/health/health-habits1.jpg",
+    "Which is the health habit labelled as 'C' in the picture above?=getting enough sleep>exercising+taking a bath<eating healthy food**mapeh/modules/qimages/health/health-habits1.jpg",
+    "Which is the health habit labelled as 'D' in the picture above?=eating healthy food>exercising+getting enough sleep<taking a bath**mapeh/modules/qimages/health/health-habits1.jpg",
+];

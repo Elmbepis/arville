@@ -1,0 +1,30 @@
+<?php
+$_SESSION['title'] = "Following Safety Rules";
+
+$questions = [
+    "You should never pet or touch a strange animal.=true>false",
+    "Running from a dog makes it want to chase you.=true>false",
+    "It is better to stand very still if a strange dog comes near you.=true>false",
+    "You should never try to take food from an animal.=true>false",
+    "You should run at once if a dog walks by you.=false>true",
+    "You should never tell an adult if you're bitten by an animal.=false>true",
+    "You may tease an animal when it's sleeping or eating.=false>true",
+    "Which of the these should you NOT do if a strange dog is near you?=run as fast as you can>try to stand still+move very slowly<avoid touching it",
+    "You shouldn't play with something sharp because ____.=you might get cut>you might slip and break an arm+you might get a burn<you might get sick",
+    "You shouldn't run on a wet floor because ____.=you might slip and break an arm>you might get cut+you might get a burn<you might get sick",
+    "You shouldn't play with fire because ____.=you might get a burn>you might get cut+you might slip and break an arm<you might get sick",
+    "You shouldn't eat something dirty because ____.=you might get sick>you might get cut+you might slip and break an arm<you might get a burn",
+    "You shouldn't cross a street without looking left and right because ____.=you might get hit by a car>you might choke+you might get an electric shock<you might fall and break an arm",
+    "You shouldn't swallow your food without chewing it first because ____.=you might choke>you might get hit by a car+you might get an electric shock<you might fall and break an arm",
+    "You shouldn't touch the inside of an electric appliance that is 'on' because ____.=you might get an electric shock>you might get hit by a car+you might choke<you might fall and break an arm",
+    "You shouldn't climb a broken ladder because ____.=you might fall and break an arm>you might get hit by a car+you might choke<you might get an electric shock",
+    "You shouldn't go to a place with lots of mosquitoes because ____.=you might get sick>you might lose your hearing+you might lose your eyesight<you might get poisoned",
+    "You shouldn't listen to very, very loud music every day because ____.=you might lose your hearing>you might get sick+you might lose your eyesight<you might get poisoned",
+    "You shouldn't look at the sun directly because ____.=you might lose your eyesight>you might get sick+you might lose your hearing<you might get poisoned",
+    "You shouldn't drink from a strange bottle because ____.=you might get poisoned>you might get sick+you might lose your hearing<you might lose your eyesight",
+    "You shouldn't stay under a tree during a thunderstorm because ____.=you might get hit by lightning>you might drown+you might suffocate<you might break your back",
+    "You shouldn't jump into water without knowing how deep it is because ____.=you might drown>you might get hit by lightning+you might suffocate<you might break your back",
+    "You shouldn't put a plastic bag over your head because ____.=you might suffocate>you might get hit by lightning+you might drown<you might break your back",
+    "You shouldn't lift something too heavy for you because ____.=you might break your back>you might get hit by lightning+you might drown<you might suffocate",
+    "What's shown in the picture might happen if you ____.=pet or tease a strange dog>stay away from a strange dog+take good care of your pet<avoid teasing a dog**mapeh/modules/qimages/health/safety-rules1.jpg",
+];
