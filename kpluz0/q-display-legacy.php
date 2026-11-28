@@ -226,7 +226,7 @@ if (isset($_POST['level']) && in_array($_POST['level'], ['Easy', 'Hard'], true))
 // ============================================================
 // LANGUAGE
 // ============================================================
-$englishSubjects = ['english', 'math', 'science', 'tle'];
+$englishSubjects = ['english', 'math', 'science', 'tle', 'mapeh'];
 $uiLang = in_array($subject, $englishSubjects, true) ? 'en' : 'fil';
 
 $uiStrings = [
